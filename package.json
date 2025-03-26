@@ -1,0 +1,15 @@
+{
+  "name": "air-guard-v2-schemas",
+  "version": "1.0.0",
+  "description": "Schemas for AirGuard V2",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "shisyamo4131",
+  "license": "ISC",
+  "peerDependencies": {
+    "air-firebase-v2": "file:../air-firebase-v2"
+  }
+}
