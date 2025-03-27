@@ -23,11 +23,8 @@ export default class User extends FireModel {
     employeeId: { type: String, default: "", required: false },
 
     /**
-     * Authorization Properties
-     * 権限に関するプロパティ
+     * アプリの仕様権限
      */
-    isAdmin: { type: Boolean, default: false, required: false },
-    isDeveloper: { type: Boolean, default: false, required: false },
-    isManager: { type: Boolean, default: false, required: false },
+    roles: { type: Array, default: () => [], required: false },
   };
 }
