@@ -11,7 +11,7 @@ export default class Company extends FireModel {
     prefecture: { type: String, default: "", required: false },
     city: { type: String, default: "", required: false },
     address: { type: String, default: "", required: false },
-    buiding: { type: String, default: "", required: false },
+    building: { type: String, default: "", required: false },
     tel: { type: String, default: "", required: false },
     fax: { type: String, default: "", required: false },
   };
