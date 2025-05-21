@@ -32,6 +32,7 @@ export default class User extends FireModel {
       type: String,
       default: "",
       label: "従業員ID",
+      hidden: true, // 従業員管理ができるまでは非表示にしておく（2025-05-21）
       required: false,
     },
 
