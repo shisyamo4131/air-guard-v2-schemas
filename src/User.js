@@ -4,7 +4,13 @@ export default class User extends FireModel {
   static collectionPath = "Users";
   static classProps = {
     /** Authentication's uid */
-    uid: { type: String, default: "", label: "UID", required: false },
+    uid: {
+      type: String,
+      default: "",
+      label: "UID",
+      hidden: true,
+      required: false,
+    },
 
     /** email */
     email: { type: String, default: "", label: "email", required: true },
