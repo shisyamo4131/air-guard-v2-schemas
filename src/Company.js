@@ -32,6 +32,12 @@ export default class Company extends FireModel {
       default: "",
       required: false,
     },
+    location: {
+      type: Object,
+      default: () => ({}),
+      required: false,
+      hidden: true,
+    },
     tel: { type: String, label: "電話番号", default: "", required: false },
     fax: { type: String, label: "FAX番号", default: "", required: false },
   };
