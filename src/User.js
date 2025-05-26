@@ -56,5 +56,13 @@ export default class User extends FireModel {
       required: false,
       hidden: true,
     },
+
+    disabled: {
+      type: Boolean,
+      default: false,
+      label: "状態",
+      required: false,
+      hidden: true,
+    },
   };
 }
