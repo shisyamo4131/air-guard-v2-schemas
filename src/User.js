@@ -13,7 +13,17 @@ export default class User extends FireModel {
     },
 
     /** email */
-    email: { type: String, default: "", label: "email", required: true },
+    email: {
+      type: String,
+      default: "",
+      label: "email",
+      required: true,
+      component: {
+        attrs: {
+          inputType: "email",
+        },
+      },
+    },
 
     /** display name */
     displayName: {
@@ -21,6 +31,15 @@ export default class User extends FireModel {
       default: "",
       label: "表示名",
       required: false,
+      component: {
+        attrs: {
+          counter: true,
+          maxlength: 6,
+          rules: [
+            (v) => !v || v.length <= 6 || "30文字以内で入力してください。",
+          ],
+        },
+      },
     },
 
     /**
