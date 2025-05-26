@@ -39,6 +39,12 @@ export default class User extends FireModel {
     /**
      * アプリの仕様権限
      */
-    roles: { type: Array, default: () => [], label: "権限", required: false },
+    roles: {
+      type: Array,
+      default: () => [],
+      label: "権限",
+      required: false,
+      hidden: true,
+    },
   };
 }
