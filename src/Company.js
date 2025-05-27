@@ -34,11 +34,26 @@ export default class Company extends FireModel {
     },
     location: {
       type: Object,
-      default: () => ({}),
+      default: null,
       required: false,
       hidden: true,
     },
     tel: { type: String, label: "電話番号", default: "", required: false },
     fax: { type: String, label: "FAX番号", default: "", required: false },
   };
+
+  afterInitialize() {
+    Object.defineProperties(this, {
+      fullAddress: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return `${this.prefecture}${this.city}${this.address}`;
+        },
+        set(v) {
+          // read-only
+        },
+      },
+    });
+  }
 }
