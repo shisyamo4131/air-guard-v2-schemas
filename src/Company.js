@@ -127,7 +127,7 @@ export default class Company extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          return `${this.prefecture}${this.city}${this.address}`;
+          return `${this.prefecture?.title || ""}${this.city}${this.address}`;
         },
         set(v) {
           // read-only

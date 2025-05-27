@@ -52,9 +52,5 @@ export const PREFECTURES = Object.freeze({
 export const PREFECTURES_ARRAY = Object.entries(PREFECTURES)
   .sort((a, b) => a[0].localeCompare(b[0])) // キー（都道府県コード）でソート
   .map(([key, value]) => {
-    return { value: key, title: `${key}: ${value.name}` };
+    return { value: key, title: value.name };
   });
-
-export const getPrefectureNameByCode = (code) => {
-  return PREFECTURES[code]?.name || "";
-};
