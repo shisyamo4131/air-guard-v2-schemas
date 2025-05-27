@@ -40,22 +40,16 @@ export default class Company extends FireModel {
       label: "郵便番号",
       default: "",
       required: false,
-      component: {
-        attrs: {
-          inputType: "zipcode",
-        },
-      },
     },
-    prefecture: {
-      type: Object,
+    prefCode: {
+      type: String,
       label: "都道府県",
-      default: null,
+      default: "",
       required: false,
       component: {
         name: "air-select",
         attrs: {
           items: PREFECTURES_ARRAY,
-          returnObject: true,
         },
       },
     },
@@ -137,10 +131,22 @@ export default class Company extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          return `${this.prefecture?.title || ""}${this.city}${this.address}`;
+          return `${this.prefecture}${this.city}${this.address}`;
         },
         set(v) {
           // read-only
+        },
+      },
+      prefecture: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.prefCode) return "";
+          const pref = PREFECTURES_ARRAY.find(
+            ({ value }) => value === this.prefCode
+          );
+          if (!pref) return "";
+          return pref?.title || "";
         },
       },
     });
