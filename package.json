@@ -4,6 +4,10 @@
   "description": "Schemas for AirGuard V2",
   "main": "index.js",
   "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./constants": "./src/constants/index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

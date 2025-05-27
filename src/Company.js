@@ -1,4 +1,5 @@
 import FireModel from "air-firebase-v2";
+import { PREFECTURES_ARRAY } from "./constants/prefectures";
 
 export default class Company extends FireModel {
   static collectionPath = "Companies";
@@ -36,10 +37,17 @@ export default class Company extends FireModel {
     },
     zipcode: { type: String, label: "郵便番号", default: "", required: false },
     prefecture: {
-      type: String,
+      type: Object,
       label: "都道府県",
-      default: "",
+      default: null,
       required: false,
+      component: {
+        name: "air-select",
+        attrs: {
+          items: PREFECTURES_ARRAY,
+          returnObject: true,
+        },
+      },
     },
     city: {
       type: String,
