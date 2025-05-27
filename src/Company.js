@@ -1,5 +1,5 @@
 import FireModel from "air-firebase-v2";
-import { PREFECTURES_ARRAY } from "./constants/prefectures";
+import { PREFECTURES_ARRAY } from "./constants/prefectures.js";
 
 export default class Company extends FireModel {
   static collectionPath = "Companies";
