@@ -12,6 +12,9 @@ export default class User extends FireModel {
       component: {
         attrs: {
           inputType: "email",
+          rules: [
+            (v) => !v || v.length <= 50 || "50文字以内で入力してください。",
+          ],
         },
       },
     },
@@ -25,9 +28,8 @@ export default class User extends FireModel {
       component: {
         attrs: {
           counter: true,
-          maxlength: 6,
           rules: [
-            (v) => !v || v.length <= 6 || "30文字以内で入力してください。",
+            (v) => !v || v.length <= 6 || "6文字以内で入力してください。",
           ],
         },
       },
