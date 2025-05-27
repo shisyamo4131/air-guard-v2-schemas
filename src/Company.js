@@ -35,7 +35,17 @@ export default class Company extends FireModel {
         },
       },
     },
-    zipcode: { type: String, label: "郵便番号", default: "", required: false },
+    zipcode: {
+      type: String,
+      label: "郵便番号",
+      default: "",
+      required: false,
+      component: {
+        attrs: {
+          inputType: "zipcode",
+        },
+      },
+    },
     prefecture: {
       type: Object,
       label: "都道府県",
