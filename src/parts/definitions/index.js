@@ -9,6 +9,7 @@ import {
 } from "./address.js";
 import { check, isForeigner } from "./check.js";
 import { code } from "./code.js";
+import { date, startDate, endDate } from "./date.js";
 import {
   name,
   displayName,
@@ -33,7 +34,9 @@ export const availableDefinitions = {
   code,
   companyName,
   companyNameKana,
+  date,
   displayName,
+  endDate,
   fax,
   firstName,
   firstNameKana,
@@ -47,6 +50,7 @@ export const availableDefinitions = {
   nationality,
   oneLine,
   prefCode,
+  startDate,
   tel,
   zipcode,
 };
