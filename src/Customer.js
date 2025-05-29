@@ -25,7 +25,7 @@ export default class Customer extends FireModel {
     tel: defField("tel"),
     fax: defField("fax"),
   };
-
+  static tokenFields = ["customerName", "customerNameKana"];
   afterInitialize() {
     Object.defineProperties(this, {
       fullAddress: fullAddress(),
