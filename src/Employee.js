@@ -1,6 +1,7 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { fullName } from "./parts/definitions/name.js";
+import { prefecture, fullAddress } from "./parts/definitions/address.js";
 
 export default class Employee extends FireModel {
   static collectionPath = "Employees";
@@ -13,14 +14,30 @@ export default class Employee extends FireModel {
     lastNameKana: defField("lastNameKana", { required: true }),
     firstNameKana: defField("firstNameKana", { required: true }),
     displayName: defField("displayName", { required: true }),
+    zipcode: defField("zipcode", { required: true }),
+    prefCode: defField("prefCode", { required: true }),
+    city: defField("city", { required: true }),
+    address: defField("address", { required: true }),
+    building: defField("building"),
+    location: defField("location", { hidden: true }),
     isForeigner: defField("isForeigner"),
     foreignName: defField("foreignName"),
     nationality: defField("nationality"),
   };
+  static tokenFields = [
+    "lastName",
+    "firstName",
+    "lastNameKana",
+    "firstNameKana",
+    "foreignName",
+    "displayName",
+  ];
 
   afterInitialize() {
     Object.defineProperties(this, {
       fullName: fullName(),
+      fullAddress: fullAddress(),
+      prefecture: prefecture(),
     });
   }
 
