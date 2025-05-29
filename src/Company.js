@@ -7,8 +7,8 @@ export default class Company extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    name: defField("companyName", { required: true }),
-    nameKana: defField("companyNameKana", { required: true }),
+    companyName: defField("companyName", { required: true }),
+    companyNameKana: defField("companyNameKana", { required: true }),
     /** 以下、管理者アカウント作成時に未入力状態で作成されるため required は未定義とする */
     zipcode: defField("zipcode"),
     prefCode: defField("prefCode"),
