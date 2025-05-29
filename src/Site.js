@@ -22,6 +22,9 @@ export default class Site extends FireModel {
     address: defField("address", { required: true }),
     building: defField("building"),
     location: defField("location", { hidden: true }),
+    startDate: defField("startDate", { required: true }),
+    // --- 終了日は未入力状態を許容 -> 無期限を意味する
+    endDate: defField("endDate"),
   };
   static tokenFields = ["siteName", "siteNameKana"];
   afterInitialize() {
