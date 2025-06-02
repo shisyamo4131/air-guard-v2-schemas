@@ -22,6 +22,7 @@ export default class Site extends FireModel {
     address: defField("address", { required: true }),
     building: defField("building"),
     location: defField("location", { hidden: true }),
+    companyId: defField("customerId", { required: true }),
   };
   static tokenFields = ["siteName", "siteNameKana"];
   afterInitialize() {

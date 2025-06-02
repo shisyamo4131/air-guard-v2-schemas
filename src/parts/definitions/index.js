@@ -24,6 +24,7 @@ import {
 } from "./name.js";
 import { oneLine, nationality } from "./oneLine.js";
 import { tel, fax } from "./tel.js";
+import { docId, customerId } from "./docId.js";
 
 // 利用可能な定義のマッピングオブジェクト
 export const availableDefinitions = {
@@ -34,8 +35,10 @@ export const availableDefinitions = {
   code,
   companyName,
   companyNameKana,
+  customerId,
   date,
   displayName,
+  docId,
   endDate,
   fax,
   firstName,
