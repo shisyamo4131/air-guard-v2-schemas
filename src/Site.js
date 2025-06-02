@@ -1,6 +1,7 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { prefecture, fullAddress } from "./parts/definitions/address.js";
+import Customer from "./Customer.js";
 
 export default class Site extends FireModel {
   static collectionPath = "Sites";
@@ -22,7 +23,17 @@ export default class Site extends FireModel {
     address: defField("address", { required: true }),
     building: defField("building"),
     location: defField("location", { hidden: true }),
-    companyId: defField("customerId", { required: true }),
+    customerId: defField("customerId", {
+      required: true,
+      component: {
+        attrs: {
+          api: async (search) =>
+            await new Customer().fetchDocs({ constraints: search }),
+          fetchItemByKeyApi: async (docId) =>
+            await new Customer().fetchDoc({ docId }),
+        },
+      },
+    }),
   };
   static tokenFields = ["siteName", "siteNameKana"];
   afterInitialize() {

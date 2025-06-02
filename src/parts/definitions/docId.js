@@ -14,7 +14,12 @@ export const customerId = {
   label: "取引先",
   required: undefined,
   component: {
-    name: "air-autocomplete",
-    attrs: {},
+    name: "air-autocomplete-api",
+    attrs: {
+      cacheItems: true,
+      clearable: true,
+      itemTitle: "customerName",
+      itemValue: "docId",
+    },
   },
 };
