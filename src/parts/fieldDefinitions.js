@@ -87,6 +87,10 @@ export const defField = (key, options = {}) => {
   if (options.hasOwnProperty("hidden")) {
     newConfig.hidden = options.hidden;
   }
+  // customClass の処理: options に customClass があれば newConfig に設定
+  if (options.hasOwnProperty("customClass")) {
+    newConfig.customClass = options.customClass;
+  }
 
   // options.component オブジェクトの処理
   if (typeof options.component === "object" && options.component !== null) {
