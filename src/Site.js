@@ -1,6 +1,6 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-import { prefecture, fullAddress } from "./parts/definitions/address.js";
+import { defAccessor } from "./parts/accessorDefinitions.js";
 import Customer from "./Customer.js";
 
 export default class Site extends FireModel {
@@ -38,8 +38,8 @@ export default class Site extends FireModel {
   static tokenFields = ["siteName", "siteNameKana"];
   afterInitialize() {
     Object.defineProperties(this, {
-      fullAddress: fullAddress(),
-      prefecture: prefecture(),
+      fullAddress: defAccessor("fullAddress"),
+      prefecture: defAccessor("prefecture"),
     });
   }
 }

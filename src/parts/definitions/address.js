@@ -74,33 +74,3 @@ export const location = {
     attrs: {},
   },
 };
-
-export const prefecture = () => {
-  return {
-    configurable: true,
-    enumerable: true,
-    get() {
-      if (!this.prefCode) return "";
-      const result = PREFECTURES_ARRAY.find(
-        ({ value }) => value === this.prefCode
-      );
-      return result?.title || "";
-    },
-    set(v) {
-      // read-only
-    },
-  };
-};
-
-export const fullAddress = () => {
-  return {
-    configurable: true,
-    enumerable: true,
-    get() {
-      return `${this.prefecture}${this.city}${this.address}`;
-    },
-    set(v) {
-      // read-only
-    },
-  };
-};

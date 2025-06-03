@@ -125,19 +125,3 @@ export const companyNameKana = {
     },
   },
 };
-
-export const fullName = () => {
-  return {
-    configurable: true,
-    enumerable: true,
-    configurable: true,
-    enumerable: true,
-    get() {
-      if (!this.lastName || !this.firstName) return "";
-      return `${this.lastName} ${this.firstName}`;
-    },
-    set(v) {
-      // read-only
-    },
-  };
-};
