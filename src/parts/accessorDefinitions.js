@@ -11,6 +11,11 @@ import { PREFECTURES_ARRAY } from "../constants/index.js";
  * @type {Object.<string, AccessorImplementation>}
  */
 const accessorImplementations = {
+  customerId: {
+    get() {
+      return this?.customer?.docId;
+    },
+  },
   prefecture: {
     /**
      * `this.prefCode` に基づいて都道府県名を取得します。
