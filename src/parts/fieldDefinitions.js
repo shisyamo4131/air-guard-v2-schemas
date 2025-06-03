@@ -1,7 +1,342 @@
-import {
-  availableDefinitions,
-  defaultDefinition,
-} from "./definitions/index.js";
+import { PREFECTURES_ARRAY } from "../constants/index.js";
+
+export const fieldDefinitions = {
+  address: {
+    type: String,
+    default: null,
+    label: "町域名・番地",
+    length: 15,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  building: {
+    type: String,
+    default: null,
+    label: "建物名・階数",
+    length: 30,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  check: {
+    type: Boolean,
+    default: false,
+    label: undefined,
+    required: undefined,
+    component: {
+      name: "air-checkbox",
+      attrs: {},
+    },
+  },
+  city: {
+    type: String,
+    default: null,
+    label: "市区町村",
+    length: 10,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  code: {
+    type: String,
+    default: null,
+    label: "市区町村",
+    length: 10,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  companyName: {
+    type: String,
+    default: null,
+    label: "会社名",
+    length: 20,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  companyNameKana: {
+    type: String,
+    default: null,
+    label: "会社名（カナ）",
+    length: 20,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        inputType: "katakana",
+      },
+    },
+  },
+  customer: {
+    type: Object,
+    default: null,
+    label: "取引先",
+    required: undefined,
+    component: {
+      name: "air-autocomplete-api",
+      attrs: {
+        cacheItems: true,
+        clearable: true,
+        itemTitle: "customerName",
+        itemValue: "docId",
+        returnObject: true,
+      },
+    },
+  },
+  date: {
+    type: Object,
+    default: null,
+    label: "日付",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
+  default: {
+    type: String,
+    default: null,
+    label: undefined,
+    length: undefined,
+    required: undefined,
+    hidden: undefined,
+    component: {
+      name: undefined,
+      attrs: {},
+    },
+  },
+  displayName: {
+    type: String,
+    default: null,
+    label: "表示名",
+    length: 6,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  docId: {
+    type: String,
+    default: null,
+    label: undefined,
+    required: undefined,
+    component: {
+      attrs: {},
+    },
+  },
+  endDate: {
+    type: Object,
+    default: null,
+    label: "終了日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
+  fax: {
+    type: String,
+    default: null,
+    label: "FAX番号",
+    length: undefined,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        counter: true,
+        inputType: "tel",
+      },
+    },
+  },
+  firstName: {
+    type: String,
+    default: null,
+    label: "名",
+    length: 20,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  firstNameKana: {
+    type: String,
+    default: null,
+    label: "メイ",
+    length: 40,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        inputType: "katakana",
+      },
+    },
+  },
+  foreignName: {
+    type: String,
+    default: null,
+    label: "本名",
+    length: 50,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  isForeigner: {
+    type: Boolean,
+    default: false,
+    label: "外国籍",
+    required: undefined,
+    component: {
+      name: "air-checkbox",
+      attrs: {},
+    },
+  },
+  lastName: {
+    type: String,
+    default: null,
+    label: "姓",
+    length: 20,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  lastNameKana: {
+    type: String,
+    default: null,
+    label: "セイ",
+    length: 40,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        inputType: "katakana",
+      },
+    },
+  },
+  location: {
+    type: Object,
+    default: null,
+    label: undefined,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  name: {
+    type: String,
+    default: null,
+    label: "名前",
+    length: 20,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  nameKana: {
+    type: String,
+    default: null,
+    label: "名前（カナ）",
+    length: 40,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        inputType: "katakana",
+      },
+    },
+  },
+  nationality: {
+    type: String,
+    default: null,
+    label: "国籍",
+    length: 50,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  oneLine: {
+    type: String,
+    default: null,
+    label: undefined,
+    length: 50,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  prefCode: {
+    type: String,
+    default: null,
+    label: "都道府県",
+    length: 2,
+    required: undefined,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: PREFECTURES_ARRAY,
+      },
+    },
+  },
+  startDate: {
+    type: Object,
+    default: null,
+    label: "開始日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
+  tel: {
+    type: String,
+    default: null,
+    label: "電話番号",
+    length: undefined,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        counter: true,
+        inputType: "tel",
+      },
+    },
+  },
+  zipcode: {
+    type: String,
+    default: null,
+    label: "郵便番号",
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        counter: true,
+        inputType: "zipcode",
+      },
+    },
+  },
+};
 
 /**
  * FireModel を継承したカスタムクラスの classProps で使用するプロパティ定義です。
@@ -14,34 +349,36 @@ import {
  */
 
 export const defField = (key, options = {}) => {
-  let baseConfigSource = availableDefinitions[key];
+  let baseConfigSource = fieldDefinitions[key];
   let isFallback = false;
+  const effectiveDefaultDefinition = fieldDefinitions.default;
 
   if (!baseConfigSource) {
     console.warn(
-      `[parts/fieldDefinitions.js defField] Definition for key "${key}" not found. Using defaultDefinition as base.`
+      `[parts/fieldDefinitions.js defField] Definition for key "${key}" not found. Using fieldDefinitions.default as base.`
     );
-    baseConfigSource = defaultDefinition;
+    baseConfigSource = effectiveDefaultDefinition;
     isFallback = true;
   }
 
   // ステップ1: defaultDefinition と baseConfigSource をマージして newConfig の基礎を作成
   // これにより、baseConfigSource にないプロパティは defaultDefinition の値が使われる
-  const newConfig = { ...defaultDefinition, ...baseConfigSource };
+  const newConfig = { ...effectiveDefaultDefinition, ...baseConfigSource };
 
   // ステップ2: component オブジェクトのディープコピー
   // newConfig.component は baseConfigSource.component または defaultDefinition.component のいずれか (またはそのマージ結果)
   // これを新しいオブジェクトとして確定させる
   // まず、newConfig.component が存在するか確認し、なければ defaultDefinition.component を使う
   const componentSourceForCopy =
-    newConfig.component || defaultDefinition.component;
+    newConfig.component || effectiveDefaultDefinition.component;
   newConfig.component = { ...componentSourceForCopy }; // 新しい component オブジェクトを作成
 
   // ステップ3: component.attrs オブジェクトのディープコピー
   // newConfig.component.attrs も同様に新しいオブジェクトにする
   const attrsSourceForCopy =
     newConfig.component.attrs ||
-    (defaultDefinition.component && defaultDefinition.component.attrs);
+    (effectiveDefaultDefinition.component &&
+      effectiveDefaultDefinition.component.attrs);
   newConfig.component.attrs = { ...attrsSourceForCopy }; // 新しい attrs オブジェクトを作成
 
   // ステップ4: component.attrs.rules 配列のディープコピー
@@ -54,10 +391,10 @@ export const defField = (key, options = {}) => {
   } else {
     // rules が存在しないか、配列でない場合は、defaultDefinition の rules を参照 (なければ空配列)
     newConfig.component.attrs.rules =
-      defaultDefinition.component &&
-      defaultDefinition.component.attrs &&
-      Array.isArray(defaultDefinition.component.attrs.rules)
-        ? [...defaultDefinition.component.attrs.rules] // defaultDefinition に rules があればコピー
+      effectiveDefaultDefinition.component &&
+      effectiveDefaultDefinition.component.attrs &&
+      Array.isArray(effectiveDefaultDefinition.component.attrs.rules)
+        ? [...effectiveDefaultDefinition.component.attrs.rules] // defaultDefinition に rules があればコピー
         : []; // それ以外は空配列
   }
 

@@ -23,7 +23,16 @@ export default class Site extends FireModel {
     address: defField("address", { required: true }),
     building: defField("building"),
     location: defField("location", { hidden: true }),
-    customer: defField("customer", { required: true, customClass: Customer }),
+    customer: defField("customer", {
+      required: true,
+      customClass: Customer,
+      component: {
+        attrs: {
+          api: async (search) =>
+            await new Customer().fetchDocs({ constraints: search }),
+        },
+      },
+    }),
   };
   static tokenFields = ["siteName", "siteNameKana"];
 
