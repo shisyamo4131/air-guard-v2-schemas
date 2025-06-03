@@ -23,11 +23,13 @@ export default class Site extends FireModel {
     address: defField("address", { required: true }),
     building: defField("building"),
     location: defField("location", { hidden: true }),
-    customerId: defField("customerId", { required: true }),
+    customer: defField("customer", { required: true, customClass: Customer }),
   };
   static tokenFields = ["siteName", "siteNameKana"];
+
   afterInitialize() {
     Object.defineProperties(this, {
+      customerId: defAccessor("customerId"),
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
     });

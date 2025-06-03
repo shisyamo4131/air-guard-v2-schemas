@@ -8,9 +8,9 @@ export const docId = {
   },
 };
 
-export const customerId = {
-  type: String,
-  default: undefined,
+export const customer = {
+  type: Object,
+  default: null,
   label: "取引先",
   required: undefined,
   component: {
@@ -20,6 +20,7 @@ export const customerId = {
       clearable: true,
       itemTitle: "customerName",
       itemValue: "docId",
+      returnObject: true,
     },
   },
 };
