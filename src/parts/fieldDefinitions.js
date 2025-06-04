@@ -1,6 +1,49 @@
 import { PREFECTURES_ARRAY } from "../constants/index.js";
 
 export const fieldDefinitions = {
+  /**
+   * 雇用状態
+   * 従業員の雇用契約の状態です。
+   * { active: 在職中, terminated: 退職済 }
+   */
+  employmentStatus: {
+    type: String,
+    default: "active",
+    label: "雇用状態",
+    required: undefined,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "在職中", value: "active" },
+          { title: "退職済", value: "terminated" },
+        ],
+      },
+    },
+  },
+  /** 入社日 */
+  dateOfHire: {
+    type: Object,
+    default: null,
+    label: "入社日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
+  /** 退職日 */
+  dateOfTermination: {
+    type: Object,
+    default: null,
+    label: "退職日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
+  /** 住所 */
   address: {
     type: String,
     default: null,

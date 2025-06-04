@@ -22,6 +22,18 @@ export default class Employee extends FireModel {
     isForeigner: defField("isForeigner"),
     foreignName: defField("foreignName"),
     nationality: defField("nationality"),
+
+    /** 入社日 */
+    dateOfHire: defField("dateOfHire", { required: true }),
+
+    /** 雇用状態 */
+    employmentStatus: defField("employmentStatus", {
+      required: true,
+      default: "active",
+    }),
+
+    /** 退職日 */
+    dateOfTermination: defField("dateOfTermination"),
   };
   static tokenFields = [
     "lastName",
@@ -60,14 +72,28 @@ export default class Employee extends FireModel {
   }
 
   /**
+   * 退職済である場合の必須フィールドを検証します。
+   * エラーがある場合は例外をスローします。
+   */
+  _validateTerminatedRequiredFields() {
+    if (this.employmentStatus === "terminated") {
+      if (!this.dateOfTermination) {
+        throw new Error(
+          "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'."
+        );
+      }
+    }
+  }
+
+  /**
    * 新しい従業員ドキュメントが作成される前に実行されるフック。
    * - 親クラスの `beforeCreate` を呼び出します。
    * - 従業員が外国人の場合、外国人名と国籍が未入力であればエラーをスローします。
    */
   async beforeCreate() {
-    // 親クラスの beforeCreate フックを実行
     await super.beforeCreate();
     this._validateForeignerRequiredFields();
+    this._validateTerminatedRequiredFields();
   }
 
   /**
@@ -78,5 +104,6 @@ export default class Employee extends FireModel {
   async beforeUpdate() {
     await super.beforeUpdate();
     this._validateForeignerRequiredFields();
+    this._validateTerminatedRequiredFields();
   }
 }
