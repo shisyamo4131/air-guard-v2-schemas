@@ -79,6 +79,21 @@ export const fieldDefinitions = {
       },
     },
   },
+  contractStatus: {
+    type: String,
+    default: "active",
+    label: "契約状態",
+    required: undefined,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "契約中", value: "active" },
+          { title: "契約終了", value: "terminated" },
+        ],
+      },
+    },
+  },
   customer: {
     type: Object,
     default: null,
@@ -92,6 +107,30 @@ export const fieldDefinitions = {
         itemTitle: "customerName",
         itemValue: "docId",
         returnObject: true,
+      },
+    },
+  },
+  customerName: {
+    type: String,
+    default: null,
+    label: "取引先名",
+    length: 20,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+  customerNameKana: {
+    type: String,
+    default: null,
+    label: "取引先名（カナ）",
+    length: 20,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        inputType: "katakana",
       },
     },
   },

@@ -8,14 +8,8 @@ export default class Customer extends FireModel {
   static logicalDelete = true;
   static classProps = {
     code: defField("code", { label: "取引先コード" }),
-    customerName: defField("companyName", {
-      label: "取引先名",
-      required: true,
-    }),
-    customerNameKana: defField("companyNameKana", {
-      label: "取引先名（カナ）",
-      required: true,
-    }),
+    name: defField("customerName", { required: true }),
+    nameKana: defField("customerNameKana", { required: true }),
     zipcode: defField("zipcode", { required: true }),
     prefCode: defField("prefCode", { required: true }),
     city: defField("city", { required: true }),
@@ -24,8 +18,9 @@ export default class Customer extends FireModel {
     location: defField("location", { hidden: true }),
     tel: defField("tel"),
     fax: defField("fax"),
+    contractStatus: defField("contractStatus", { required: true }),
   };
-  static tokenFields = ["customerName", "customerNameKana"];
+  static tokenFields = ["name", "nameKana"];
   static hasMany = [
     {
       collectionPath: "Sites",
