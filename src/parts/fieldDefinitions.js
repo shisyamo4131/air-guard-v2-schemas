@@ -1,6 +1,33 @@
 import { PREFECTURES_ARRAY } from "../constants/index.js";
 
 export const fieldDefinitions = {
+  /** 性別 */
+  gender: {
+    type: String,
+    default: "male",
+    label: "性別",
+    required: undefined,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "男性", value: "male" },
+          { title: "女性", value: "female" },
+        ],
+      },
+    },
+  },
+  /** 生年月日 */
+  dateOfBirth: {
+    type: Object,
+    default: null,
+    label: "生年月日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
   /**
    * 雇用状態
    * 従業員の雇用契約の状態です。

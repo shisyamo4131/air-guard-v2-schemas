@@ -13,6 +13,12 @@ export default class Employee extends FireModel {
     lastNameKana: defField("lastNameKana", { required: true }),
     firstNameKana: defField("firstNameKana", { required: true }),
     displayName: defField("displayName", { required: true }),
+
+    /** 性別 */
+    gender: defField("gender", { required: true }),
+
+    /** 生年月日 */
+    dateOfBirth: defField("dateOfBirth", { required: true }),
     zipcode: defField("zipcode", { required: true }),
     prefCode: defField("prefCode", { required: true }),
     city: defField("city", { required: true }),
