@@ -26,6 +26,14 @@ export default class Customer extends FireModel {
     fax: defField("fax"),
   };
   static tokenFields = ["customerName", "customerNameKana"];
+  static hasMany = [
+    {
+      collectionPath: "Sites",
+      field: "customerId",
+      condition: "==",
+      type: "collection",
+    },
+  ];
   afterInitialize() {
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
