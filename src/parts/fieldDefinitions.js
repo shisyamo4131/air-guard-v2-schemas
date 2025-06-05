@@ -1,76 +1,6 @@
 import { PREFECTURES_ARRAY } from "../constants/index.js";
 
 export const fieldDefinitions = {
-  /** 性別 */
-  gender: {
-    type: String,
-    default: "male",
-    label: "性別",
-    required: undefined,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "男性", value: "male" },
-          { title: "女性", value: "female" },
-        ],
-      },
-    },
-  },
-  /** 生年月日 */
-  dateOfBirth: {
-    type: Object,
-    default: null,
-    label: "生年月日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  /**
-   * 雇用状態
-   * 従業員の雇用契約の状態です。
-   * { active: 在職中, terminated: 退職済 }
-   */
-  employmentStatus: {
-    type: String,
-    default: "active",
-    label: "雇用状態",
-    required: undefined,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "在職中", value: "active" },
-          { title: "退職済", value: "terminated" },
-        ],
-      },
-    },
-  },
-  /** 入社日 */
-  dateOfHire: {
-    type: Object,
-    default: null,
-    label: "入社日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  /** 退職日 */
-  dateOfTermination: {
-    type: Object,
-    default: null,
-    label: "退職日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  /** 住所 */
   address: {
     type: String,
     default: null,
@@ -89,8 +19,13 @@ export const fieldDefinitions = {
     length: 30,
     required: undefined,
     component: {
-      name: "air-text-field",
-      attrs: {},
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "男性", value: "male" },
+          { title: "女性", value: "female" },
+        ],
+      },
     },
   },
   check: {
@@ -117,7 +52,7 @@ export const fieldDefinitions = {
   code: {
     type: String,
     default: null,
-    label: "市区町村",
+    label: undefined,
     length: 10,
     required: undefined,
     component: {
@@ -126,13 +61,12 @@ export const fieldDefinitions = {
     },
   },
   companyName: {
-    type: String,
+    type: Object,
     default: null,
-    label: "会社名",
-    length: 20,
+    label: "生年月日",
     required: undefined,
     component: {
-      name: "air-text-field",
+      name: "air-date-input",
       attrs: {},
     },
   },
@@ -145,7 +79,10 @@ export const fieldDefinitions = {
     component: {
       name: "air-text-field",
       attrs: {
-        inputType: "katakana",
+        items: [
+          { title: "在職中", value: "active" },
+          { title: "退職済", value: "terminated" },
+        ],
       },
     },
   },
@@ -153,23 +90,23 @@ export const fieldDefinitions = {
     type: String,
     default: "active",
     label: "契約状態",
+    type: Object,
+    default: null,
+    label: "入社日",
     required: undefined,
     component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "契約中", value: "active" },
-          { title: "契約終了", value: "terminated" },
-        ],
-      },
+      name: "air-date-input",
+      attrs: {},
     },
   },
   customer: {
     type: Object,
     default: null,
-    label: "取引先",
+    label: "退職日",
     required: undefined,
     component: {
+      name: "air-date-input",
+      attrs: {},
       name: "air-autocomplete-api",
       attrs: {
         cacheItems: true,
@@ -214,6 +151,39 @@ export const fieldDefinitions = {
       attrs: {},
     },
   },
+  /** 生年月日 */
+  dateOfBirth: {
+    type: Object,
+    default: null,
+    label: "生年月日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
+  /** 入社日 */
+  dateOfHire: {
+    type: Object,
+    default: null,
+    label: "入社日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
+  /** 退職日 */
+  dateOfTermination: {
+    type: Object,
+    default: null,
+    label: "退職日",
+    required: undefined,
+    component: {
+      name: "air-date-input",
+      attrs: {},
+    },
+  },
   default: {
     type: String,
     default: null,
@@ -244,6 +214,26 @@ export const fieldDefinitions = {
     required: undefined,
     component: {
       attrs: {},
+    },
+  },
+  /**
+   * 雇用状態
+   * 従業員の雇用契約の状態です。
+   * { active: 在職中, terminated: 退職済 }
+   */
+  employmentStatus: {
+    type: String,
+    default: "active",
+    label: "雇用状態",
+    required: undefined,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "在職中", value: "active" },
+          { title: "退職済", value: "terminated" },
+        ],
+      },
     },
   },
   endDate: {
@@ -303,6 +293,22 @@ export const fieldDefinitions = {
     component: {
       name: "air-text-field",
       attrs: {},
+    },
+  },
+  /** 性別 */
+  gender: {
+    type: String,
+    default: "male",
+    label: "性別",
+    required: undefined,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "男性", value: "male" },
+          { title: "女性", value: "female" },
+        ],
+      },
     },
   },
   isForeigner: {
