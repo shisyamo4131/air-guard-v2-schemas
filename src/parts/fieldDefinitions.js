@@ -432,16 +432,28 @@ export const fieldDefinitions = {
       },
     },
   },
+
+  /** 郵便番号 */
   zipcode: {
     type: String,
     default: null,
     label: "郵便番号",
     required: undefined,
     component: {
-      name: "air-text-field",
+      name: "air-postal-code",
       attrs: {
         counter: true,
         inputType: "zipcode",
+        "onUpdate:address": (item, updater) => {
+          return (result) => {
+            updater({
+              prefCode: result.prefcode,
+              prefecture: result.address1,
+              city: result.address2,
+              address: result.address3,
+            });
+          };
+        },
       },
     },
   },
