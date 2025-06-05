@@ -90,9 +90,6 @@ export const fieldDefinitions = {
     type: String,
     default: "active",
     label: "契約状態",
-    type: Object,
-    default: null,
-    label: "入社日",
     required: undefined,
     component: {
       name: "air-date-input",
@@ -102,11 +99,9 @@ export const fieldDefinitions = {
   customer: {
     type: Object,
     default: null,
-    label: "退職日",
+    label: "取引先",
     required: undefined,
     component: {
-      name: "air-date-input",
-      attrs: {},
       name: "air-autocomplete-api",
       attrs: {
         cacheItems: true,
@@ -213,6 +208,7 @@ export const fieldDefinitions = {
     label: undefined,
     required: undefined,
     component: {
+      name: "air-text-field",
       attrs: {},
     },
   },
@@ -383,17 +379,6 @@ export const fieldDefinitions = {
     type: String,
     default: null,
     label: "国籍",
-    length: 50,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  oneLine: {
-    type: String,
-    default: null,
-    label: undefined,
     length: 50,
     required: undefined,
     component: {

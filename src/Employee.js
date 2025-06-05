@@ -19,15 +19,33 @@ export default class Employee extends FireModel {
 
     /** 生年月日 */
     dateOfBirth: defField("dateOfBirth", { required: true }),
+
+    /** 住所: zipcode が更新されると prefCode, city, address は自動更新される */
     zipcode: defField("zipcode", { required: true }),
     prefCode: defField("prefCode", { required: true }),
     city: defField("city", { required: true }),
     address: defField("address", { required: true }),
     building: defField("building"),
+
+    /** location: 原則非表示で OK */
     location: defField("location", { hidden: true }),
+
+    /** 外国籍情報: true の場合は foreignName, nationality を必須 */
     isForeigner: defField("isForeigner"),
-    foreignName: defField("foreignName"),
-    nationality: defField("nationality"),
+    foreignName: defField("foreignName", {
+      component: {
+        attrs: {
+          required: (item) => item.isForeigner,
+        },
+      },
+    }),
+    nationality: defField("nationality", {
+      component: {
+        attrs: {
+          required: (item) => item.isForeigner,
+        },
+      },
+    }),
 
     /** 入社日 */
     dateOfHire: defField("dateOfHire", { required: true }),
@@ -36,9 +54,12 @@ export default class Employee extends FireModel {
     employmentStatus: defField("employmentStatus", { required: true }),
 
     /** 退職日 */
-    // dateOfTermination: defField("dateOfTermination")
     dateOfTermination: defField("dateOfTermination", {
-      required: (item) => item.employmentStatus === "terminated",
+      component: {
+        attrs: {
+          required: (item) => item.employmentStatus === "terminated",
+        },
+      },
     }),
   };
   static tokenFields = [
