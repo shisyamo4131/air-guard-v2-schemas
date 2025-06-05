@@ -39,7 +39,10 @@ export default class Employee extends FireModel {
     }),
 
     /** 退職日 */
-    dateOfTermination: defField("dateOfTermination"),
+    // dateOfTermination: defField("dateOfTermination")
+    dateOfTermination: defField("dateOfTermination", {
+      required: (item) => item.employmentStatus === "terminated",
+    }),
   };
   static tokenFields = [
     "lastName",
