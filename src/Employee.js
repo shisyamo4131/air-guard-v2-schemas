@@ -33,10 +33,7 @@ export default class Employee extends FireModel {
     dateOfHire: defField("dateOfHire", { required: true }),
 
     /** 雇用状態 */
-    employmentStatus: defField("employmentStatus", {
-      required: true,
-      default: "active",
-    }),
+    employmentStatus: defField("employmentStatus", { required: true }),
 
     /** 退職日 */
     // dateOfTermination: defField("dateOfTermination")
