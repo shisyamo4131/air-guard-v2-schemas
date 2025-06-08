@@ -60,32 +60,6 @@ export const fieldDefinitions = {
       attrs: {},
     },
   },
-  companyName: {
-    type: Object,
-    default: null,
-    label: "生年月日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  companyNameKana: {
-    type: String,
-    default: null,
-    label: "会社名（カナ）",
-    length: 20,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        items: [
-          { title: "在職中", value: "active" },
-          { title: "退職済", value: "terminated" },
-        ],
-      },
-    },
-  },
   contractStatus: {
     type: String,
     default: "active",
