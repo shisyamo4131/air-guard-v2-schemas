@@ -53,3 +53,10 @@ export default class Customer extends FireModel {
     });
   }
 }
+
+export class CustomerMinimal extends Customer {
+  afterInitialize() {
+    super.afterInitialize();
+    delete this.remarks;
+  }
+}
