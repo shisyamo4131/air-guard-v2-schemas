@@ -111,7 +111,7 @@ export const fieldDefinitions = {
       attrs: {
         cacheItems: true,
         clearable: true,
-        itemTitle: "customerName",
+        itemTitle: "name",
         itemValue: "docId",
         returnObject: true,
       },
