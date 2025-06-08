@@ -92,8 +92,13 @@ export const fieldDefinitions = {
     label: "契約状態",
     required: undefined,
     component: {
-      name: "air-date-input",
-      attrs: {},
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "契約中", value: "active" },
+          { title: "契約終了", value: "terminated" },
+        ],
+      },
     },
   },
   customer: {
@@ -109,30 +114,6 @@ export const fieldDefinitions = {
         itemTitle: "customerName",
         itemValue: "docId",
         returnObject: true,
-      },
-    },
-  },
-  customerName: {
-    type: String,
-    default: null,
-    label: "取引先名",
-    length: 20,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  customerNameKana: {
-    type: String,
-    default: null,
-    label: "取引先名（カナ）",
-    length: 20,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        inputType: "katakana",
       },
     },
   },
@@ -399,6 +380,52 @@ export const fieldDefinitions = {
       },
     },
   },
+
+  /** 備考 */
+  remarks: {
+    type: String,
+    default: null,
+    label: "備考",
+    length: 200,
+    required: undefined,
+    component: {
+      name: "air-textarea",
+      attrs: {},
+    },
+  },
+
+  /** 必要人数 */
+  requiredPersonnel: {
+    type: Number,
+    default: null,
+    label: "必要人数",
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+
+  /**
+   * 勤務区分
+   * { day: 日勤, night: 夜勤 }
+   */
+  shiftType: {
+    type: String,
+    default: "day",
+    label: "勤務区分",
+    required: undefined,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "日勤", value: "day" },
+          { title: "夜勤", value: "night" },
+        ],
+      },
+    },
+  },
+
   startDate: {
     type: Object,
     default: null,
