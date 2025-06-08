@@ -7,18 +7,35 @@ export default class Customer extends FireModel {
   static useAutonumber = false;
   static logicalDelete = true;
   static classProps = {
+    /** 取引先コード */
     code: defField("code", { label: "取引先コード" }),
-    name: defField("customerName", { required: true }),
-    nameKana: defField("customerNameKana", { required: true }),
+    /** 取引先名 */
+    name: defField("name", { label: "取引先名", required: true }),
+    /** 取引先名（カナ） */
+    nameKana: defField("nameKana", {
+      label: "取引先名（カナ）",
+      required: true,
+    }),
+    /** 郵便番号 */
     zipcode: defField("zipcode", { required: true }),
+    /** 都道府県（CODE） */
     prefCode: defField("prefCode", { required: true }),
+    /** 市区町村 */
     city: defField("city", { required: true }),
+    /** 町域名・番地 */
     address: defField("address", { required: true }),
+    /** 建物名・階数 */
     building: defField("building"),
+    /** location */
     location: defField("location", { hidden: true }),
+    /** 電話番号 */
     tel: defField("tel"),
+    /** FAX番号 */
     fax: defField("fax"),
+    /** 契約状態 */
     contractStatus: defField("contractStatus", { required: true }),
+    /** 備考 */
+    remarks: defField("remarks"),
   };
   static tokenFields = ["name", "nameKana"];
   static hasMany = [
