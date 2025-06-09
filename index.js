@@ -1,7 +1,5 @@
-import Company from "./src/Company.js";
-import Site from "./src/Site.js";
-import Customer from "./src/Customer.js";
-import User from "./src/User.js";
-import Employee from "./src/Employee.js";
-
-export { Company, User, Employee, Customer, Site };
+export { default as Company } from "./src/Company.js";
+export { default as Customer, CustomerMinimal } from "./src/Customer.js";
+export { default as Employee } from "./src/Employee.js";
+export { default as Site } from "./src/Site.js";
+export { default as User } from "./src/User.js";
