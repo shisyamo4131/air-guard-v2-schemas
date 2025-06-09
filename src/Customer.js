@@ -58,5 +58,9 @@ export class CustomerMinimal extends Customer {
   afterInitialize() {
     super.afterInitialize();
     delete this.remarks;
+    delete this.tokenMap;
+    delete this.uid;
+    delete this.createdAt;
+    delete this.updatedAt;
   }
 }
