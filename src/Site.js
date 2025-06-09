@@ -31,7 +31,7 @@ export default class Site extends FireModel {
       component: {
         attrs: {
           api: () => {
-            async (search) =>
+            return async (search) =>
               await new CustomerMinimal().fetchDocs({ constraints: search });
           },
         },
