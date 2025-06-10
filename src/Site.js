@@ -9,12 +9,12 @@ export default class Site extends FireModel {
   static logicalDelete = true;
   static classProps = {
     code: defField("code", { label: "現場コード" }),
-    siteName: defField("name", {
+    name: defField("name", {
       label: "現場名",
       length: 40,
       required: true,
     }),
-    siteNameKana: defField("nameKana", {
+    nameKana: defField("nameKana", {
       label: "現場名（カナ）",
       length: 60,
       required: true,
