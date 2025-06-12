@@ -1,3 +1,4 @@
+export { default as CollectionRoute } from "./src/CollectionRoute.js";
 export { default as Company } from "./src/Company.js";
 export { default as Customer, CustomerMinimal } from "./src/Customer.js";
 export { default as Employee } from "./src/Employee.js";

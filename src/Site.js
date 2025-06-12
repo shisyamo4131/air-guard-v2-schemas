@@ -8,14 +8,14 @@ export default class Site extends FireModel {
   static useAutonumber = false;
   static logicalDelete = true;
   static classProps = {
-    code: defField("code", { label: "現場コード" }),
+    code: defField("code", { label: "排出場所コード" }),
     name: defField("name", {
-      label: "現場名",
+      label: "排出場所名",
       length: 40,
       required: true,
     }),
     nameKana: defField("nameKana", {
-      label: "現場名（カナ）",
+      label: "排出場所名（カナ）",
       length: 60,
       required: true,
     }),

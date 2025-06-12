@@ -146,6 +146,18 @@ export const fieldDefinitions = {
       attrs: {},
     },
   },
+  description: {
+    type: String,
+    default: null,
+    label: "説明",
+    length: 200,
+    required: undefined,
+    hidden: undefined,
+    component: {
+      name: "air-textarea",
+      attrs: {},
+    },
+  },
   displayName: {
     type: String,
     default: null,
@@ -260,6 +272,16 @@ export const fieldDefinitions = {
           { title: "女性", value: "female" },
         ],
       },
+    },
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+    label: "有効",
+    required: undefined,
+    component: {
+      name: "air-checkbox",
+      attrs: {},
     },
   },
   isForeigner: {
@@ -410,6 +432,18 @@ export const fieldDefinitions = {
       attrs: {},
     },
   },
+
+  stops: {
+    type: Array,
+    default: () => [],
+    label: "排出場所リスト",
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+
   tel: {
     type: String,
     default: null,
