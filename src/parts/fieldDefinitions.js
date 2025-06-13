@@ -155,7 +155,10 @@ export const fieldDefinitions = {
     hidden: undefined,
     component: {
       name: "air-textarea",
-      attrs: {},
+      attrs: {
+        counter: true,
+        maxlength: 200,
+      },
     },
   },
   displayName: {
@@ -386,7 +389,10 @@ export const fieldDefinitions = {
     required: undefined,
     component: {
       name: "air-textarea",
-      attrs: {},
+      attrs: {
+        counter: true,
+        maxlength: 200,
+      },
     },
   },
 

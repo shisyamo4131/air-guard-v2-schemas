@@ -26,9 +26,7 @@ export default class CollectionRoute extends FireModel {
      * - dayOfWeek: 曜日を表す数値 (例: 0=日, 1=月, ..., 6=土)
      * - { dayOfWeek: number, siteId: string, remarks: string }
      */
-    stops: defField("stops", {
-      hidden: (editMode) => editMode === "CREATE",
-    }),
+    stops: defField("stops", { hidden: true }),
 
     /** 有効フラグ (このルートが現在アクティブかどうか) */
     isActive: defField("isActive", {
@@ -97,6 +95,24 @@ export default class CollectionRoute extends FireModel {
           }
 
           return false;
+        },
+        set(value) {
+          // setter は何もしない
+        },
+      },
+
+      /**
+       * stops 配列に保存されているオブジェクトの siteId プロパティの値を重複無しでリストしたプロパティです。
+       */
+      siteIds: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.stops || !Array.isArray(this.stops)) {
+            return [];
+          }
+          const siteIds = this.stops.map((stop) => stop.siteId);
+          return [...new Set(siteIds)];
         },
         set(value) {
           // setter は何もしない

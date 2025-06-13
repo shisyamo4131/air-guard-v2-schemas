@@ -39,6 +39,14 @@ export default class Site extends FireModel {
     }),
   };
   static tokenFields = ["name", "nameKana"];
+  static hasMany = [
+    {
+      collectionPath: "CollectionRoutes",
+      field: "siteIds",
+      condition: "array-contains",
+      type: "collection",
+    },
+  ];
 
   afterInitialize() {
     Object.defineProperties(this, {
