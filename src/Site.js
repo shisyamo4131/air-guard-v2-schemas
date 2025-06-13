@@ -38,7 +38,7 @@ export default class Site extends FireModel {
       },
     }),
   };
-  static tokenFields = ["siteName", "siteNameKana"];
+  static tokenFields = ["name", "nameKana"];
 
   afterInitialize() {
     Object.defineProperties(this, {
