@@ -19,13 +19,8 @@ export const fieldDefinitions = {
     length: 30,
     required: undefined,
     component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "男性", value: "male" },
-          { title: "女性", value: "female" },
-        ],
-      },
+      name: "air-text-field",
+      attrs: {},
     },
   },
   check: {

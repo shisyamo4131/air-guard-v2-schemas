@@ -34,6 +34,7 @@ export default class Site extends FireModel {
             return async (search) =>
               await new CustomerMinimal().fetchDocs({ constraints: search });
           },
+          noFilter: true,
         },
       },
     }),
