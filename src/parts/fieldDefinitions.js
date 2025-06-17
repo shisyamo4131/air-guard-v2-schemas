@@ -423,8 +423,10 @@ export const fieldDefinitions = {
     label: "必要人数",
     required: undefined,
     component: {
-      name: "air-text-field",
-      attrs: {},
+      name: "air-number-input",
+      attrs: {
+        controlVariant: "split",
+      },
     },
   },
 
