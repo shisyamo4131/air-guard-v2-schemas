@@ -8,14 +8,14 @@ export default class Site extends FireModel {
   static useAutonumber = false;
   static logicalDelete = true;
   static classProps = {
-    code: defField("code", { label: "排出場所コード" }),
+    code: defField("code", { label: "現場コード" }),
     name: defField("name", {
-      label: "排出場所名",
+      label: "現場名",
       length: 40,
       required: true,
     }),
     nameKana: defField("nameKana", {
-      label: "排出場所名（カナ）",
+      label: "現場名（カナ）",
       length: 60,
       required: true,
     }),
@@ -38,13 +38,14 @@ export default class Site extends FireModel {
         },
       },
     }),
+    remarks: defField("remarks"),
   };
   static tokenFields = ["name", "nameKana"];
   static hasMany = [
     {
-      collectionPath: "CollectionRoutes",
-      field: "siteIds",
-      condition: "array-contains",
+      collectionPath: "SiteOperationSchedules",
+      field: "siteId",
+      condition: "==",
       type: "collection",
     },
   ];

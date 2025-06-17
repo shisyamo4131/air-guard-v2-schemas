@@ -26,11 +26,24 @@ export default class Employee extends FireModel {
     city: defField("city", { required: true }),
     address: defField("address", { required: true }),
     building: defField("building"),
+    location: defField("location", { hidden: true }), // 非表示でOK
 
-    /** location: 原則非表示で OK */
-    location: defField("location", { hidden: true }),
+    /** 入社日 */
+    dateOfHire: defField("dateOfHire", { required: true }),
 
-    /** 外国籍情報: true の場合は foreignName, nationality を必須 */
+    /** 雇用状態 */
+    employmentStatus: defField("employmentStatus", { required: true }),
+
+    /** 退職日 */
+    dateOfTermination: defField("dateOfTermination", {
+      component: {
+        attrs: {
+          required: (item) => item.employmentStatus === "terminated",
+        },
+      },
+    }),
+
+    /** 外国籍情報 */
     isForeigner: defField("isForeigner"),
     foreignName: defField("foreignName", {
       component: {
@@ -46,18 +59,23 @@ export default class Employee extends FireModel {
         },
       },
     }),
-
-    /** 入社日 */
-    dateOfHire: defField("dateOfHire", { required: true }),
-
-    /** 雇用状態 */
-    employmentStatus: defField("employmentStatus", { required: true }),
-
-    /** 退職日 */
-    dateOfTermination: defField("dateOfTermination", {
+    residenceStatus: {
+      type: String,
+      default: null,
+      label: "在留資格",
+      required: undefined,
+      component: {
+        name: "air-text-field",
+        attrs: {
+          required: (item) => item.isForeigner,
+        },
+      },
+    },
+    periodOfStay: defField("date", {
+      label: "在留期間満了日",
       component: {
         attrs: {
-          required: (item) => item.employmentStatus === "terminated",
+          required: (item) => item.isForeigner,
         },
       },
     }),
@@ -80,7 +98,7 @@ export default class Employee extends FireModel {
   }
 
   /**
-   * 外国籍の場合の必須フィールド（外国人名、国籍）を検証します。
+   * 外国籍の場合の必須フィールドを検証します。
    * エラーがある場合は例外をスローします。
    */
   _validateForeignerRequiredFields() {
@@ -93,6 +111,16 @@ export default class Employee extends FireModel {
       if (!this.nationality) {
         throw new Error(
           "[Employee.js] nationality is required when isForeigner is true."
+        );
+      }
+      if (!this.residenceStatus) {
+        throw new Error(
+          "[Employee.js] residenceStatus is required when isForeigner is true."
+        );
+      }
+      if (!this.periodOfStay) {
+        throw new Error(
+          "[Employee.js] periodOfStay is required when isForeigner is true."
         );
       }
     }
