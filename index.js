@@ -1,3 +1,4 @@
+export { default as CollectionItem } from "./src/CollectionItem.js";
 export { default as CollectionResult } from "./src/CollectionResult.js";
 export { default as CollectionRoute } from "./src/CollectionRoute.js";
 export { default as Company } from "./src/Company.js";

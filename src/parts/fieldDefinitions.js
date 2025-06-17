@@ -12,6 +12,16 @@ export const fieldDefinitions = {
       attrs: {},
     },
   },
+  bool: {
+    type: Boolean,
+    default: false,
+    label: "汎用ブール値",
+    required: undefined,
+    component: {
+      name: "air-checkbox",
+      attrs: {},
+    },
+  },
   building: {
     type: String,
     default: null,
@@ -53,6 +63,21 @@ export const fieldDefinitions = {
     component: {
       name: "air-text-field",
       attrs: {},
+    },
+  },
+  collectionItemType: {
+    type: String,
+    default: "municipal",
+    label: "種別",
+    required: null,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: [
+          { title: "一般廃棄物", value: "municipal" },
+          { title: "産業廃棄物", value: "industrial" },
+        ],
+      },
     },
   },
   contractStatus: {
