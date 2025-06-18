@@ -114,27 +114,12 @@ export default class SiteOperationSchedule extends FireModel {
   }
 
   /**
-   * ドキュメント作成前のデータ検証処理です。
+   * ドキュメント作成前または更新前のデータ検証処理です。
    * - hasError プロパティが truthy である場合、その値をメッセージとしてエラーをスローします。
    * - プロミスを返します。
    * @return {Promise<void>}
    */
-  beforeCreate() {
-    return new Promise((resolve, reject) => {
-      if (this.hasError) {
-        reject(new Error(this.hasError));
-      } else {
-        resolve();
-      }
-    });
-  }
-
-  /**
-   * ドキュメント更新前のデータ検証処理です。
-   * - hasError プロパティが truthy である場合、その値をメッセージとしてエラーをスローします。
-   * - プロミスを返します。
-   */
-  beforeUpdate() {
+  beforeEdit() {
     return new Promise((resolve, reject) => {
       if (this.hasError) {
         reject(new Error(this.hasError));
