@@ -7,10 +7,140 @@ export default class SiteOperationSchedule extends FireModel {
   static logicalDelete = false;
   static classProps = {
     siteId: defField("docId", { label: "現場", hidden: true, required: true }),
-    date: defField("date", { required: true }),
     shiftType: defField("shiftType", { required: true }),
+    startDate: defField("date", { label: "開始日", required: true }),
+    startTime: defField("time", { label: "開始時刻", required: true }),
+    endDate: defField("date", { label: "終了日", required: true }),
+    endTime: defField("time", { label: "終了時刻", required: true }),
     requiredPersonnel: defField("requiredPersonnel", { required: true }),
     workDescription: defField("remarks", { label: "作業内容" }),
     remarks: defField("remarks"),
   };
+
+  afterInitialize() {
+    Object.defineProperties(this, {
+      /**
+       * 当該スケジュールの実際の開始時刻を Date オブジェクトで返します。
+       * - `startDate` プロパティに設定されている Date オブジェクトは `年月日` のみを表しています。
+       * - 開始時刻は `startTime` プロパティに文字列として保存されています。
+       * - `startDate` と `startTime` を参照して、実際の開始時刻を Date オブジェクトとして返します。
+       * - 読み取り専用のプロパティで、セッターは機能しません。
+       */
+      startAt: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.startDate || !this.startTime) return null;
+
+          try {
+            // startDate は Date オブジェクトで、通常は日時の部分が 00:00:00 になっている
+            // startTime は "HH:mm" 形式の文字列
+            const [hours, minutes] = this.startTime.split(":").map(Number);
+
+            // startDate のコピーを作成し、時刻情報を設定
+            const startDateTime = new Date(this.startDate);
+            startDateTime.setHours(hours, minutes, 0, 0);
+
+            return startDateTime;
+          } catch (error) {
+            console.error(
+              "[SiteOperationSchedule.js startAt getter] Error parsing date or time:",
+              error
+            );
+            return null;
+          }
+        },
+        set(v) {},
+      },
+
+      /**
+       * 当該スケジュールの実際の終了時刻を Date オブジェクトで返します。
+       * - `endDate` プロパティに設定されている Date オブジェクトは `年月日` のみを表しています。
+       * - 終了時刻は `endTime` プロパティに文字列として保存されています。
+       * - `endDate` と `endTime` を参照して、実際の終了時刻を Date オブジェクトとして返します。
+       * - 読み取り専用のプロパティで、セッターは機能しません。
+       */
+      endAt: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.endDate || !this.endTime) return null;
+
+          try {
+            // endDate は Date オブジェクトで、通常は日時の部分が 00:00:00 になっている
+            // endTime は "HH:mm" 形式の文字列
+            const [hours, minutes] = this.endTime.split(":").map(Number);
+
+            // endDate のコピーを作成し、時刻情報を設定
+            const endDateTime = new Date(this.endDate);
+            endDateTime.setHours(hours, minutes, 0, 0);
+
+            return endDateTime;
+          } catch (error) {
+            console.error(
+              "[SiteOperationSchedule.js endAt getter] Error parsing date or time:",
+              error
+            );
+            return null;
+          }
+        },
+        set(v) {},
+      },
+
+      /**
+       * `startAt` と `endAt` を比較検証した結果を返します。
+       * - `startAt` <= `endAt` であれば false を返します。
+       * - `startAt` または `endAt` が有効な日付オブジェクトでない場合も false を返します。
+       *   - `startAt` と `endAt` が有効な日付オブジェクトでない場合、算出元プロパティの `required` 属性によって
+       *     必須入力となるため、データの妥当性は保たれます。
+       * - `startAt` > `endAt` である場合、このプロパティはエラーメッセージを返します。
+       * - セッターは機能しません。
+       */
+      hasError: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.startAt || !this.endAt) return false;
+
+          if (this.startAt > this.endAt) {
+            return "終了時刻は開始時刻より後に設定してください。";
+          }
+
+          return false;
+        },
+        set(v) {},
+      },
+    });
+  }
+
+  /**
+   * ドキュメント作成前のデータ検証処理です。
+   * - hasError プロパティが truthy である場合、その値をメッセージとしてエラーをスローします。
+   * - プロミスを返します。
+   * @return {Promise<void>}
+   */
+  beforeCreate() {
+    return new Promise((resolve, reject) => {
+      if (this.hasError) {
+        reject(new Error(this.hasError));
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  /**
+   * ドキュメント更新前のデータ検証処理です。
+   * - hasError プロパティが truthy である場合、その値をメッセージとしてエラーをスローします。
+   * - プロミスを返します。
+   */
+  beforeUpdate() {
+    return new Promise((resolve, reject) => {
+      if (this.hasError) {
+        reject(new Error(this.hasError));
+      } else {
+        resolve();
+      }
+    });
+  }
 }
