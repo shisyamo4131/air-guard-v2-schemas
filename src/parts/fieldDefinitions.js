@@ -494,8 +494,12 @@ export const fieldDefinitions = {
     length: undefined,
     required: undefined,
     component: {
-      name: "air-text-field",
-      attrs: {},
+      name: "air-time-picker-text-field",
+      attrs: {
+        pickerProps: {
+          format: "24hr",
+        },
+      },
     },
   },
 
