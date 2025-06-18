@@ -487,6 +487,18 @@ export const fieldDefinitions = {
     },
   },
 
+  time: {
+    type: String,
+    default: null,
+    label: "時刻",
+    length: undefined,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
+
   /** 郵便番号 */
   zipcode: {
     type: String,
