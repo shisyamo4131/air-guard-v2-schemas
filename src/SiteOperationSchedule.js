@@ -8,8 +8,61 @@ export default class SiteOperationSchedule extends FireModel {
   static classProps = {
     siteId: defField("docId", { label: "現場", hidden: true, required: true }),
     shiftType: defField("shiftType", { required: true }),
-    startDate: defField("date", { label: "開始日", required: true }),
-    startTime: defField("time", { label: "開始時刻", required: true }),
+    startDate: defField("date", {
+      label: "開始日",
+      required: true,
+      component: {
+        attrs: {
+          // 値が更新されたら endDate にも同一値をセット
+          "onUpdate:modelValue": (item, updateProperties) => {
+            return (event) => {
+              updateProperties({ endDate: event });
+            };
+          },
+        },
+      },
+    }),
+    startTime: defField("time", {
+      label: "開始時刻",
+      required: true,
+      component: {
+        attrs: {
+          /**
+           * 開始時刻の入力に応じて終了時刻を自動入力する機能を実装しようとしたが一旦保留。
+           * - 何時間後をセットするのかはユーザーによって変わるのでは？
+           * - 開始時刻のみを編集する更新処理で終了時刻が勝手に変更されるのはリスク。
+           */
+          // // 値が更新されたら endTime に 8時間 追加した時刻をセット
+          // "onUpdate:modelValue": (item, updateProperties) => {
+          //   return (event) => {
+          //     // `event` はユーザーが入力した文字列
+          //     // 1文字ずつ増減するため、結果として時刻文字列（hh:mm）と判断できなければ何もせずに終了
+          //     // また、item.startAt が日付オブジェクトでない場合も何もせずに終了
+          //     if (!event) return;
+          //     if (
+          //       !/^\d{2}:\d{2}$/.test(event) ||
+          //       !(item.startAt instanceof Date)
+          //     )
+          //       return;
+          //     const [hours, minutes] = event.split(":").map(Number);
+          //     const startDateTime = new Date(item.startAt);
+          //     startDateTime.setHours(hours, minutes, 0, 0);
+          //     // 8時間後の時刻を計算
+          //     const endDateTime = new Date(startDateTime);
+          //     endDateTime.setHours(endDateTime.getHours() + 8);
+          //     // 終了日と終了時刻を更新
+          //     const endDate = new Date(endDateTime);
+          //     endDate.setHours(0, 0, 0, 0); // 日付のみをセット
+          //     const endTime = `${String(endDateTime.getHours()).padStart(
+          //       2,
+          //       "0"
+          //     )}:${String(endDateTime.getMinutes()).padStart(2, "0")}`;
+          //     updateProperties({ endDate: endDate, endTime: endTime });
+          //   };
+          // },
+        },
+      },
+    }),
     endDate: defField("date", { label: "終了日", required: true }),
     endTime: defField("time", { label: "終了時刻", required: true }),
     requiredPersonnel: defField("requiredPersonnel", { required: true }),
