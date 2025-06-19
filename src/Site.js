@@ -38,7 +38,7 @@ export default class Site extends FireModel {
         },
       },
     }),
-    remarks: defField("remarks"),
+    remarks: defField("multipleLine", { label: "備考" }),
   };
   static tokenFields = ["name", "nameKana"];
   static hasMany = [

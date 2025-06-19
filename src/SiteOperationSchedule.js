@@ -65,10 +65,13 @@ export default class SiteOperationSchedule extends FireModel {
     }),
     endDate: defField("date", { label: "終了日", required: true }),
     endTime: defField("time", { label: "終了時刻", required: true }),
-    requiredPersonnel: defField("requiredPersonnel", { required: true }),
+    requiredPersonnel: defField("number", {
+      label: "必要人数",
+      required: true,
+    }),
     qualificationRequired: defField("check", { label: "要資格者" }),
     workDescription: defField("oneLine", { label: "作業内容" }),
-    remarks: defField("remarks"),
+    remarks: defField("multipleLine", { label: "備考" }),
   };
 
   afterInitialize() {

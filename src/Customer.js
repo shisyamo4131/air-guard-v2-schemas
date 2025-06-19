@@ -35,7 +35,7 @@ export default class Customer extends FireModel {
     /** 契約状態 */
     contractStatus: defField("contractStatus", { required: true }),
     /** 備考 */
-    remarks: defField("remarks"),
+    remarks: defField("multipleLine", { label: "備考" }),
   };
   static tokenFields = ["name", "nameKana"];
   static hasMany = [

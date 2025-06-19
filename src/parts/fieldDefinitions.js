@@ -90,44 +90,12 @@ export const fieldDefinitions = {
   code: generalDefinitions.code,
   /** date */
   date: generalDefinitions.date,
-  dateOfBirth: {
-    ...generalDefinitions.date,
-    label: "生年月日",
-  },
-  dateOfHire: {
-    ...generalDefinitions.date,
-    label: "入社日",
-  },
-  dateOfTermination: {
-    ...generalDefinitions.date,
-    label: "退職日",
-  },
-  endDate: {
-    ...generalDefinitions.date,
-    label: "終了日",
-  },
-  startDate: {
-    ...generalDefinitions.date,
-    label: "開始日",
-  },
 
   /** multiple-line */
   multipleLine: generalDefinitions.multipleLine,
-  description: {
-    ...generalDefinitions.multipleLine,
-    label: "説明",
-  },
-  remarks: {
-    ...generalDefinitions.multipleLine,
-    label: "備考",
-  },
 
   /** number */
   number: generalDefinitions.number,
-  requiredPersonnel: {
-    ...generalDefinitions.number,
-    label: "必要人数",
-  },
 
   /** one-line */
   oneLine: generalDefinitions.oneLine,
