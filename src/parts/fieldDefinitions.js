@@ -164,7 +164,7 @@ export const fieldDefinitions = {
     label: "セイ",
     length: 40,
     component: {
-      name: generalDefinitions.oneLine.name,
+      name: generalDefinitions.oneLine.component.name,
       attrs: {
         inputType: "katakana",
       },
@@ -180,7 +180,7 @@ export const fieldDefinitions = {
     label: "名前（カナ）",
     length: 40,
     component: {
-      name: generalDefinitions.oneLine.name,
+      name: generalDefinitions.oneLine.component.name,
       attrs: {
         inputType: "katakana",
       },
@@ -195,7 +195,7 @@ export const fieldDefinitions = {
     ...generalDefinitions.oneLine,
     label: "電話番号",
     component: {
-      name: generalDefinitions.oneLine.name,
+      name: generalDefinitions.oneLine.component.name,
       attrs: {
         counter: true,
         inputType: "tel",
@@ -296,7 +296,7 @@ export const fieldDefinitions = {
     label: "都道府県",
     length: 2,
     component: {
-      name: generalDefinitions.select.name,
+      name: generalDefinitions.select.component.name,
       attrs: {
         items: PREFECTURES_ARRAY,
       },
@@ -307,7 +307,7 @@ export const fieldDefinitions = {
     default: "day",
     label: "勤務区分",
     component: {
-      name: generalDefinitions.select.name,
+      name: generalDefinitions.select.component.name,
       attrs: {
         items: [
           { title: "日勤", value: "day" },
