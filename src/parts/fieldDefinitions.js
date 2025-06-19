@@ -386,6 +386,18 @@ export const fieldDefinitions = {
       attrs: {},
     },
   },
+  /** 汎用一行 */
+  oneLine: {
+    type: String,
+    default: null,
+    label: undefined,
+    length: 50,
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
   prefCode: {
     type: String,
     default: null,
