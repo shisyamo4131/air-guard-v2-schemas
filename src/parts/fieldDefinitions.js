@@ -1,439 +1,49 @@
 import { PREFECTURES_ARRAY } from "../constants/index.js";
 
-export const fieldDefinitions = {
-  address: {
-    type: String,
-    default: null,
-    label: "町域名・番地",
-    length: 15,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
+const defaultDefinition = {
+  type: String,
+  default: null,
+  label: undefined,
+  length: undefined,
+  required: undefined,
+  hidden: undefined,
+  component: {
+    name: undefined,
+    attrs: {},
   },
-  bool: {
-    type: Boolean,
-    default: false,
-    label: "汎用ブール値",
-    required: undefined,
-    component: {
-      name: "air-checkbox",
-      attrs: {},
-    },
-  },
-  building: {
-    type: String,
-    default: null,
-    label: "建物名・階数",
-    length: 30,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
+};
+
+/** 汎用パーツ */
+const generalDefinitions = {
   check: {
+    ...defaultDefinition,
     type: Boolean,
     default: false,
-    label: undefined,
-    required: undefined,
-    component: {
-      name: "air-checkbox",
-      attrs: {},
-    },
-  },
-  city: {
-    type: String,
-    default: null,
-    label: "市区町村",
-    length: 10,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
+    component: { name: "air-checkbox", attrs: {} },
   },
   code: {
-    type: String,
-    default: null,
-    label: undefined,
+    ...defaultDefinition,
     length: 10,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  collectionItemType: {
-    type: String,
-    default: "municipal",
-    label: "種別",
-    required: null,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "一般廃棄物", value: "municipal" },
-          { title: "産業廃棄物", value: "industrial" },
-        ],
-      },
-    },
-  },
-  contractStatus: {
-    type: String,
-    default: "active",
-    label: "契約状態",
-    required: undefined,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "契約中", value: "active" },
-          { title: "契約終了", value: "terminated" },
-        ],
-      },
-    },
-  },
-  customer: {
-    type: Object,
-    default: null,
-    label: "取引先",
-    required: undefined,
-    component: {
-      name: "air-autocomplete-api",
-      attrs: {
-        cacheItems: true,
-        clearable: true,
-        itemTitle: "name",
-        itemValue: "docId",
-        returnObject: true,
-      },
-    },
+    component: { name: "air-text-field", attrs: { inputType: "alphanumeric" } },
   },
   date: {
+    ...defaultDefinition,
     type: Object,
-    default: null,
     label: "日付",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  /** 生年月日 */
-  dateOfBirth: {
-    type: Object,
     default: null,
-    label: "生年月日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
+    component: { name: "air-date-input", attrs: {} },
   },
-  /** 入社日 */
-  dateOfHire: {
-    type: Object,
-    default: null,
-    label: "入社日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  /** 退職日 */
-  dateOfTermination: {
-    type: Object,
-    default: null,
-    label: "退職日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  default: {
-    type: String,
-    default: null,
-    label: undefined,
-    length: undefined,
-    required: undefined,
-    hidden: undefined,
-    component: {
-      name: undefined,
-      attrs: {},
-    },
-  },
-  description: {
-    type: String,
-    default: null,
-    label: "説明",
+  multipleLine: {
+    ...defaultDefinition,
     length: 200,
-    required: undefined,
-    hidden: undefined,
     component: {
       name: "air-textarea",
-      attrs: {
-        counter: true,
-        maxlength: 200,
-      },
+      attrs: { counter: true, maxlength: 200 },
     },
   },
-  displayName: {
-    type: String,
-    default: null,
-    label: "表示名",
-    length: 6,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  docId: {
-    type: String,
-    default: null,
-    label: undefined,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  /**
-   * 雇用状態
-   * 従業員の雇用契約の状態です。
-   * { active: 在職中, terminated: 退職済 }
-   */
-  employmentStatus: {
-    type: String,
-    default: "active",
-    label: "雇用状態",
-    required: undefined,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "在職中", value: "active" },
-          { title: "退職済", value: "terminated" },
-        ],
-      },
-    },
-  },
-  endDate: {
-    type: Object,
-    default: null,
-    label: "終了日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
-  },
-  fax: {
-    type: String,
-    default: null,
-    label: "FAX番号",
-    length: undefined,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        counter: true,
-        inputType: "tel",
-      },
-    },
-  },
-  firstName: {
-    type: String,
-    default: null,
-    label: "名",
-    length: 20,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  firstNameKana: {
-    type: String,
-    default: null,
-    label: "メイ",
-    length: 40,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        inputType: "katakana",
-      },
-    },
-  },
-  foreignName: {
-    type: String,
-    default: null,
-    label: "本名",
-    length: 50,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  /** 性別 */
-  gender: {
-    type: String,
-    default: "male",
-    label: "性別",
-    required: undefined,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "男性", value: "male" },
-          { title: "女性", value: "female" },
-        ],
-      },
-    },
-  },
-  isActive: {
-    type: Boolean,
-    default: true,
-    label: "有効",
-    required: undefined,
-    component: {
-      name: "air-checkbox",
-      attrs: {},
-    },
-  },
-  isForeigner: {
-    type: Boolean,
-    default: false,
-    label: "外国籍",
-    required: undefined,
-    component: {
-      name: "air-checkbox",
-      attrs: {},
-    },
-  },
-  lastName: {
-    type: String,
-    default: null,
-    label: "姓",
-    length: 20,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  lastNameKana: {
-    type: String,
-    default: null,
-    label: "セイ",
-    length: 40,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        inputType: "katakana",
-      },
-    },
-  },
-  location: {
-    type: Object,
-    default: null,
-    label: undefined,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  name: {
-    type: String,
-    default: null,
-    label: "名前",
-    length: 20,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  nameKana: {
-    type: String,
-    default: null,
-    label: "名前（カナ）",
-    length: 40,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        inputType: "katakana",
-      },
-    },
-  },
-  nationality: {
-    type: String,
-    default: null,
-    label: "国籍",
-    length: 50,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  /** 汎用一行 */
-  oneLine: {
-    type: String,
-    default: null,
-    label: undefined,
-    length: 50,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
-  prefCode: {
-    type: String,
-    default: null,
-    label: "都道府県",
-    length: 2,
-    required: undefined,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: PREFECTURES_ARRAY,
-      },
-    },
-  },
-
-  /** 備考 */
-  remarks: {
-    type: String,
-    default: null,
-    label: "備考",
-    length: 200,
-    required: undefined,
-    component: {
-      name: "air-textarea",
-      attrs: {
-        counter: true,
-        maxlength: 200,
-      },
-    },
-  },
-
-  /** 必要人数 */
-  requiredPersonnel: {
+  number: {
+    ...defaultDefinition,
     type: Number,
-    default: null,
-    label: "必要人数",
-    required: undefined,
     component: {
       name: "air-number-input",
       attrs: {
@@ -441,70 +51,22 @@ export const fieldDefinitions = {
       },
     },
   },
-
-  /**
-   * 勤務区分
-   * { day: 日勤, night: 夜勤 }
-   */
-  shiftType: {
-    type: String,
-    default: "day",
-    label: "勤務区分",
-    required: undefined,
-    component: {
-      name: "air-select",
-      attrs: {
-        items: [
-          { title: "日勤", value: "day" },
-          { title: "夜勤", value: "night" },
-        ],
-      },
-    },
-  },
-
-  startDate: {
+  object: {
+    ...defaultDefinition,
     type: Object,
-    default: null,
-    label: "開始日",
-    required: undefined,
-    component: {
-      name: "air-date-input",
-      attrs: {},
-    },
   },
-
-  stops: {
-    type: Array,
-    default: () => [],
-    label: "排出場所リスト",
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
+  oneLine: {
+    ...defaultDefinition,
+    length: 50,
+    component: { name: "air-text-field", attrs: {} },
   },
-
-  tel: {
-    type: String,
-    default: null,
-    label: "電話番号",
-    length: undefined,
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        counter: true,
-        inputType: "tel",
-      },
-    },
+  select: {
+    ...defaultDefinition,
+    component: { name: "air-select", attrs: {} },
   },
-
   time: {
-    type: String,
-    default: null,
+    ...defaultDefinition,
     label: "時刻",
-    length: undefined,
-    required: undefined,
     component: {
       name: "air-time-picker-text-field",
       attrs: {
@@ -514,13 +76,168 @@ export const fieldDefinitions = {
       },
     },
   },
+};
 
-  /** 郵便番号 */
+/** カスタムパーツ（汎用パーツ含む） */
+export const fieldDefinitions = {
+  /** check */
+  check: generalDefinitions.check,
+  isForeigner: {
+    ...generalDefinitions.check,
+    label: "外国籍",
+  },
+  /** code */
+  code: generalDefinitions.code,
+  /** date */
+  date: generalDefinitions.date,
+  dateOfBirth: {
+    ...generalDefinitions.date,
+    label: "生年月日",
+  },
+  dateOfHire: {
+    ...generalDefinitions.date,
+    label: "入社日",
+  },
+  dateOfTermination: {
+    ...generalDefinitions.date,
+    label: "退職日",
+  },
+  endDate: {
+    ...generalDefinitions.date,
+    label: "終了日",
+  },
+  startDate: {
+    ...generalDefinitions.date,
+    label: "開始日",
+  },
+
+  /** multiple-line */
+  multipleLine: generalDefinitions.multipleLine,
+  description: {
+    ...generalDefinitions.multipleLine,
+    label: "説明",
+  },
+  remarks: {
+    ...generalDefinitions.multipleLine,
+    label: "備考",
+  },
+
+  /** number */
+  number: generalDefinitions.number,
+  requiredPersonnel: {
+    ...generalDefinitions.number,
+    label: "必要人数",
+  },
+
+  /** one-line */
+  oneLine: generalDefinitions.oneLine,
+  address: {
+    ...generalDefinitions.oneLine,
+    label: "町域名・番地",
+    length: 15,
+  },
+  building: {
+    ...generalDefinitions.oneLine,
+    label: "建物名・階数",
+    length: 30,
+  },
+  city: {
+    ...generalDefinitions.oneLine,
+    label: "市区町村",
+    length: 10,
+  },
+  displayName: {
+    ...generalDefinitions.oneLine,
+    label: "表示名",
+    length: 6,
+  },
+  docId: {
+    ...generalDefinitions.oneLine,
+  },
+  fax: {
+    ...generalDefinitions.oneLine,
+    label: "FAX番号",
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        counter: true,
+        inputType: "tel",
+      },
+    },
+  },
+  firstName: {
+    ...generalDefinitions.oneLine,
+    label: "名",
+    length: 20,
+  },
+  firstNameKana: {
+    ...generalDefinitions.oneLine,
+    label: "メイ",
+    length: 40,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        inputType: "katakana",
+      },
+    },
+  },
+  foreignName: {
+    ...generalDefinitions.oneLine,
+    label: "本名",
+    length: 50,
+  },
+  lastName: {
+    ...generalDefinitions.oneLine,
+    label: "姓",
+    length: 20,
+  },
+  lastNameKana: {
+    ...generalDefinitions.oneLine,
+    label: "セイ",
+    length: 40,
+    component: {
+      name: generalDefinitions.oneLine.name,
+      attrs: {
+        inputType: "katakana",
+      },
+    },
+  },
+  name: {
+    ...generalDefinitions.oneLine,
+    label: "名前",
+    length: 20,
+  },
+  nameKana: {
+    ...generalDefinitions.oneLine,
+    label: "名前（カナ）",
+    length: 40,
+    component: {
+      name: generalDefinitions.oneLine.name,
+      attrs: {
+        inputType: "katakana",
+      },
+    },
+  },
+  nationality: {
+    ...generalDefinitions.oneLine,
+    label: "国籍",
+    length: 50,
+  },
+  tel: {
+    ...generalDefinitions.oneLine,
+    label: "電話番号",
+    component: {
+      name: generalDefinitions.oneLine.name,
+      attrs: {
+        counter: true,
+        inputType: "tel",
+      },
+    },
+  },
   zipcode: {
-    type: String,
+    ...generalDefinitions.oneLine,
     default: null,
     label: "郵便番号",
-    required: undefined,
     component: {
       name: "air-postal-code",
       attrs: {
@@ -539,6 +256,115 @@ export const fieldDefinitions = {
       },
     },
   },
+
+  /** object */
+  object: generalDefinitions.object,
+
+  customer: {
+    ...generalDefinitions.object,
+    label: "取引先",
+    component: {
+      name: "air-autocomplete-api",
+      attrs: {
+        cacheItems: true,
+        clearable: true,
+        itemTitle: "name",
+        itemValue: "docId",
+        returnObject: true,
+      },
+    },
+  },
+  location: {
+    ...generalDefinitions.object,
+    hidden: true,
+  },
+
+  /** select */
+  select: generalDefinitions.select,
+  contractStatus: {
+    ...generalDefinitions.select,
+    default: "active",
+    label: "契約状態",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: [
+          { title: "契約中", value: "active" },
+          { title: "契約終了", value: "terminated" },
+        ],
+      },
+    },
+  },
+  employmentStatus: {
+    ...generalDefinitions.select,
+    default: "active",
+    label: "雇用状態",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: [
+          { title: "在職中", value: "active" },
+          { title: "退職済", value: "terminated" },
+        ],
+      },
+    },
+  },
+  gender: {
+    ...generalDefinitions.select,
+    default: "male",
+    label: "性別",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: [
+          { title: "男性", value: "male" },
+          { title: "女性", value: "female" },
+        ],
+      },
+    },
+  },
+  prefCode: {
+    ...generalDefinitions.select,
+    label: "都道府県",
+    length: 2,
+    component: {
+      name: generalDefinitions.select.name,
+      attrs: {
+        items: PREFECTURES_ARRAY,
+      },
+    },
+  },
+  shiftType: {
+    ...generalDefinitions.select,
+    default: "day",
+    label: "勤務区分",
+    component: {
+      name: generalDefinitions.select.name,
+      attrs: {
+        items: [
+          { title: "日勤", value: "day" },
+          { title: "夜勤", value: "night" },
+        ],
+      },
+    },
+  },
+
+  /** time */
+  time: {
+    ...generalDefinitions.time,
+  },
+
+  /** else */
+  stops: {
+    type: Array,
+    default: () => [],
+    label: "排出場所リスト",
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {},
+    },
+  },
 };
 
 /**
@@ -554,7 +380,7 @@ export const fieldDefinitions = {
 export const defField = (key, options = {}) => {
   let baseConfigSource = fieldDefinitions[key];
   let isFallback = false;
-  const effectiveDefaultDefinition = fieldDefinitions.default;
+  const effectiveDefaultDefinition = defaultDefinition;
 
   if (!baseConfigSource) {
     console.warn(
