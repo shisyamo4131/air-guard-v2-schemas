@@ -6,7 +6,11 @@ export default class SiteOperationSchedule extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    siteId: defField("docId", { label: "現場", hidden: true, required: true }),
+    siteId: defField("oneLine", {
+      label: "現場",
+      hidden: true,
+      required: true,
+    }),
     shiftType: defField("shiftType", { required: true }),
     startDate: defField("date", {
       label: "開始日",

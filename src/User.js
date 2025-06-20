@@ -10,7 +10,7 @@ export default class User extends FireModel {
      * employee-id
      * - 従業員には該当しないユーザーが存在する可能性もあるため、必須にはしない。
      */
-    employeeId: defField("docId", { label: "従業員ID", hidden: true }),
+    employeeId: defField("oneLine", { label: "従業員ID", hidden: true }),
     roles: {
       type: Array,
       default: () => [],
