@@ -122,6 +122,17 @@ export const fieldDefinitions = {
   docId: {
     ...generalDefinitions.oneLine,
   },
+  email: {
+    ...generalDefinitions.oneLine,
+    label: "email",
+    length: 50,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        inputType: "email",
+      },
+    },
+  },
   fax: {
     ...generalDefinitions.oneLine,
     label: "FAX番号",

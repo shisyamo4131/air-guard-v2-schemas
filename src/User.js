@@ -1,56 +1,16 @@
 import FireModel from "air-firebase-v2";
+import { defField } from "./parts/fieldDefinitions";
 
 export default class User extends FireModel {
   static collectionPath = "Users";
   static classProps = {
-    /** email */
-    email: {
-      type: String,
-      default: "",
-      label: "email",
-      required: true,
-      component: {
-        attrs: {
-          inputType: "email",
-          rules: [
-            (v) => !v || v.length <= 50 || "50文字以内で入力してください。",
-          ],
-        },
-      },
-    },
-
-    /** display name */
-    displayName: {
-      type: String,
-      default: "",
-      label: "表示名",
-      required: false,
-      component: {
-        attrs: {
-          counter: true,
-          rules: [
-            (v) => !v || v.length <= 6 || "6文字以内で入力してください。",
-          ],
-        },
-      },
-    },
-
+    email: defField("email", { required: true }),
+    displayName: defField("displayName", { required: true }),
     /**
      * employee-id
-     * - Not required, as there may be users that do not fall under the employee category.
      * - 従業員には該当しないユーザーが存在する可能性もあるため、必須にはしない。
      */
-    employeeId: {
-      type: String,
-      default: "",
-      label: "従業員ID",
-      hidden: true, // 従業員管理ができるまでは非表示にしておく（2025-05-21）
-      required: false,
-    },
-
-    /**
-     * アプリの仕様権限
-     */
+    employeeId: defField("docId", { label: "従業員ID", hidden: true }),
     roles: {
       type: Array,
       default: () => [],
@@ -58,13 +18,10 @@ export default class User extends FireModel {
       required: false,
       hidden: true,
     },
-
-    disabled: {
-      type: Boolean,
-      default: false,
+    disabled: defField("check", {
       label: "状態",
+      default: false,
       required: false,
-      hidden: true,
-    },
+    }),
   };
 }
