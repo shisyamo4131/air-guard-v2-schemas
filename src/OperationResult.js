@@ -17,6 +17,11 @@ export default class OperationResult extends FireModel {
             return async (search) =>
               await new Site().fetchDocs({ constraints: search });
           },
+          fetchItemByKeyApi: () => {
+            return async (docId) => {
+              return await new Site().fetchDoc({ docId });
+            };
+          },
           itemValue: "docId",
           itemTitle: "name",
           noFilter: true,
