@@ -57,7 +57,6 @@ const generalDefinitions = {
   },
   oneLine: {
     ...defaultDefinition,
-    length: 50,
     component: { name: "air-text-field", attrs: {} },
   },
   select: {
@@ -119,9 +118,6 @@ export const fieldDefinitions = {
     label: "表示名",
     length: 6,
   },
-  docId: {
-    ...generalDefinitions.oneLine,
-  },
   email: {
     ...generalDefinitions.oneLine,
     label: "email",
@@ -136,6 +132,7 @@ export const fieldDefinitions = {
   fax: {
     ...generalDefinitions.oneLine,
     label: "FAX番号",
+    length: 13,
     component: {
       name: generalDefinitions.oneLine.component.name,
       attrs: {
@@ -205,6 +202,7 @@ export const fieldDefinitions = {
   tel: {
     ...generalDefinitions.oneLine,
     label: "電話番号",
+    length: 13,
     component: {
       name: generalDefinitions.oneLine.component.name,
       attrs: {
