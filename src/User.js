@@ -1,5 +1,5 @@
 import FireModel from "air-firebase-v2";
-import { defField } from "./parts/fieldDefinitions";
+import { defField } from "./parts/fieldDefinitions.js";
 
 export default class User extends FireModel {
   static collectionPath = "Users";
