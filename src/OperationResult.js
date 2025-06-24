@@ -35,6 +35,10 @@ class OperationResultDetail {
       isOjt: this.isOjt,
     };
   }
+
+  clone() {
+    return new this.constructor(this);
+  }
 }
 
 /**
