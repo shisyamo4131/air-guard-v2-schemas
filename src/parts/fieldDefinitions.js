@@ -199,6 +199,18 @@ export const fieldDefinitions = {
     label: "国籍",
     length: 50,
   },
+  siteId: {
+    ...generalDefinitions.oneLine,
+    label: "現場",
+    component: {
+      name: "air-autocomplete-api",
+      attrs: {
+        itemValue: "docId",
+        itemTitle: "name",
+        noFilter: true,
+      },
+    },
+  },
   tel: {
     ...generalDefinitions.oneLine,
     label: "電話番号",
@@ -272,6 +284,22 @@ export const fieldDefinitions = {
       },
     },
   },
+  dayType: {
+    ...generalDefinitions.select,
+    default: "weekday",
+    label: "曜日区分",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: [
+          { title: "平日", value: "weekday" },
+          { title: "土曜日", value: "saturday" },
+          { title: "日曜日", value: "sunday" },
+          { title: "祝日", value: "holiday" },
+        ],
+      },
+    },
+  },
   employmentStatus: {
     ...generalDefinitions.select,
     default: "active",
@@ -332,16 +360,6 @@ export const fieldDefinitions = {
   },
 
   /** else */
-  stops: {
-    type: Array,
-    default: () => [],
-    label: "排出場所リスト",
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {},
-    },
-  },
 };
 
 /**
