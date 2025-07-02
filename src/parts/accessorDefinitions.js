@@ -1,5 +1,4 @@
 import { PREFECTURES_ARRAY } from "../constants/index.js";
-
 /**
  * @typedef {object} AccessorImplementation - アクセサの実装を定義するオブジェクト。
  * @property {function} get - getter関数。
@@ -15,6 +14,29 @@ const accessorImplementations = {
     enumerable: true,
     get() {
       return this?.customer?.docId;
+    },
+    set(value) {
+      // No-op setter for read-only access
+    },
+  },
+  fullAddress: {
+    enumerable: true,
+    get() {
+      // 同じオブジェクトに 'prefecture' アクセサが定義されていることを前提とします
+      const prefecture = this.prefecture || "";
+      const city = this.city || "";
+      const address = this.address || "";
+      return `${prefecture}${city}${address}`;
+    },
+    set(value) {
+      // No-op setter for read-only access
+    },
+  },
+  fullName: {
+    enumerable: true,
+    get() {
+      if (!this.lastName || !this.firstName) return "";
+      return `${this.lastName} ${this.firstName}`;
     },
     set(value) {
       // No-op setter for read-only access
@@ -51,29 +73,6 @@ const accessorImplementations = {
       }
 
       return result.title;
-    },
-    set(value) {
-      // No-op setter for read-only access
-    },
-  },
-  fullAddress: {
-    enumerable: true,
-    get() {
-      // 同じオブジェクトに 'prefecture' アクセサが定義されていることを前提とします
-      const prefecture = this.prefecture || "";
-      const city = this.city || "";
-      const address = this.address || "";
-      return `${prefecture}${city}${address}`;
-    },
-    set(value) {
-      // No-op setter for read-only access
-    },
-  },
-  fullName: {
-    enumerable: true,
-    get() {
-      if (!this.lastName || !this.firstName) return "";
-      return `${this.lastName} ${this.firstName}`;
     },
     set(value) {
       // No-op setter for read-only access
