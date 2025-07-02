@@ -2,6 +2,9 @@ import { default as FireModel, BaseClass } from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import Site from "./Site.js";
 
+const MINUTES_PER_HOUR = 60;
+const MINUTES_PER_QUARTER_HOUR = 15;
+
 /**
  * OperationResult クラスの employees, outsourcers プロパティに適用するカスタムクラスのベースクラス
  */
@@ -208,8 +211,32 @@ class OperationResultDetail extends BaseClass {
         get: () => this._endAt,
         set: (v) => this._dateTimeSetter("_endAt", v),
       },
+      _breakMinutes: {
+        enumerable: false,
+        writable: true,
+        value: data.breakMinutes || 0,
+      },
+      breakMinutes: {
+        enumerable: true,
+        get: () => this._breakMinutes,
+        set: (v) => {
+          if (typeof v !== "number") {
+            console.warn(
+              `[OperationResultDetail.js breakMinutes] Expected a number, got: ${v}`
+            );
+            return;
+          }
+          // 15の倍数以外は設定不可能
+          if (v % MINUTES_PER_QUARTER_HOUR !== 0) {
+            console.warn(
+              `[OperationResultDetail.js breakMinutes] Must be a multiple of ${MINUTES_PER_QUARTER_HOUR}, got: ${v}`
+            );
+            return;
+          }
+          this._breakMinutes = Math.round(v);
+        },
+      },
     });
-    this.breakMinutes = data.breakMinutes || 0;
     this.overTimeMinutes = data.overTimeMinutes || 0;
     this.isQualificated = data.isQualificated || false;
     this.isOjt = data.isOjt || false;
@@ -242,6 +269,19 @@ class OperationResultDetail extends BaseClass {
   set endTime(v) {
     this._setTime("endAt", v);
   }
+
+  get breakHours() {
+    return this.breakMinutes / MINUTES_PER_HOUR;
+  }
+  set breakHours(v) {
+    if (typeof v !== "number") {
+      console.warn(
+        `[OperationResultDetail.js breakHours] Expected a number, got: ${v}`
+      );
+      return;
+    }
+    this.breakMinutes = Math.round(v * MINUTES_PER_HOUR);
+  }
 }
 
 /**
@@ -269,11 +309,9 @@ export default class OperationResult extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    siteId: defField("oneLine", {
-      label: "現場",
+    siteId: defField("siteId", {
       required: true,
       component: {
-        name: "air-autocomplete-api",
         attrs: {
           api: () => {
             return async (search) =>
@@ -284,35 +322,12 @@ export default class OperationResult extends FireModel {
               return await new Site().fetchDoc({ docId });
             };
           },
-          itemValue: "docId",
-          itemTitle: "name",
-          noFilter: true,
         },
       },
     }),
     date: defField("date", { label: "日付", required: true }),
-    dayType: {
-      type: String,
-      default: "weekday",
-      label: "曜日区分",
-      required: true,
-      component: {
-        name: "air-select",
-        attrs: {
-          items: [
-            { title: "平日", value: "weekday" },
-            { title: "土曜", value: "saturday" },
-            { title: "日曜", value: "sunday" },
-            { title: "祝日", value: "holiday" },
-          ],
-        },
-      },
-    },
+    dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
-    /**
-     * employees
-     * { employeeId, startAt, endAt, breakMinutes, overTimeMinutes, isQualificated, isOjt }
-     */
     employees: {
       type: Array,
       default: () => [],
@@ -320,10 +335,6 @@ export default class OperationResult extends FireModel {
       label: "稼働明細",
       required: false,
     },
-    /**
-     * outsourcers
-     * { outsourcerId, startAt, endAt, breakMinutes, overTimeMinutes, isQualificated, isOjt }
-     */
     outsourcers: {
       type: Array,
       default: () => [],
