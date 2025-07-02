@@ -12,16 +12,16 @@ import { PREFECTURES_ARRAY } from "../constants/index.js";
  */
 const accessorImplementations = {
   customerId: {
+    enumerable: true,
     get() {
       return this?.customer?.docId;
     },
+    set(value) {
+      // No-op setter for read-only access
+    },
   },
   prefecture: {
-    /**
-     * `this.prefCode` に基づいて都道府県名を取得します。
-     * @this {object & {prefCode?: string}} - アクセサが定義されるインスタンス。
-     * @returns {string} 都道府県名。見つからない場合やエラー時は空文字列。
-     */
+    enumerable: true,
     get() {
       if (!this.hasOwnProperty("prefCode")) {
         console.warn(
@@ -52,13 +52,12 @@ const accessorImplementations = {
 
       return result.title;
     },
+    set(value) {
+      // No-op setter for read-only access
+    },
   },
   fullAddress: {
-    /**
-     * prefecture、city、address を連結して完全な住所を取得します。
-     * @this {object & {prefecture?: string, city?: string, address?: string}} - インスタンス。
-     * @returns {string} 完全な住所文字列。
-     */
+    enumerable: true,
     get() {
       // 同じオブジェクトに 'prefecture' アクセサが定義されていることを前提とします
       const prefecture = this.prefecture || "";
@@ -66,16 +65,18 @@ const accessorImplementations = {
       const address = this.address || "";
       return `${prefecture}${city}${address}`;
     },
+    set(value) {
+      // No-op setter for read-only access
+    },
   },
   fullName: {
-    /**
-     * Gets the full name by concatenating lastName and firstName.
-     * @this {object & {lastName?: string, firstName?: string}} - インスタンス。
-     * @returns {string} 氏名文字列。
-     */
+    enumerable: true,
     get() {
       if (!this.lastName || !this.firstName) return "";
       return `${this.lastName} ${this.firstName}`;
+    },
+    set(value) {
+      // No-op setter for read-only access
     },
   },
 };
@@ -92,7 +93,7 @@ const accessorImplementations = {
  */
 export const defAccessor = (
   key,
-  { configurable = true, enumerable = true } = {}
+  { configurable = false, enumerable = false } = {}
 ) => {
   const implementation = accessorImplementations[key];
   if (!implementation) {
@@ -102,13 +103,8 @@ export const defAccessor = (
   }
 
   return {
-    configurable,
-    enumerable,
-    get: implementation.get,
-    set:
-      implementation.set ||
-      function (v) {
-        // read-only / 警告の出力も必要なし
-      },
+    ...implementation,
+    configurable: configurable || implementation.configurable || false,
+    enumerable: enumerable || implementation.enumerable || false,
   };
 };
