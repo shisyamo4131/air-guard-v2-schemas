@@ -1,3 +1,4 @@
+import { DAY_TYPE_ARRAY } from "../constants/day-type.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
 
 const defaultDefinition = {
@@ -316,12 +317,7 @@ export const fieldDefinitions = {
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: [
-          { title: "平日", value: "weekday" },
-          { title: "土曜日", value: "saturday" },
-          { title: "日曜日", value: "sunday" },
-          { title: "祝日", value: "holiday" },
-        ],
+        items: DAY_TYPE_ARRAY,
       },
     },
   },
