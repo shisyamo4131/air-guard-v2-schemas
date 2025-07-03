@@ -103,6 +103,9 @@ export const fieldDefinitions = {
 
   /** number */
   number: generalDefinitions.number,
+  price: {
+    ...generalDefinitions.number,
+  },
 
   /** one-line */
   oneLine: generalDefinitions.oneLine,
