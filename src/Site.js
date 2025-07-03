@@ -4,7 +4,7 @@ import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";
 
 export class Agreement extends BaseClass {
-  static name = "取極め";
+  static className = "取極め";
   static classProps = {
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
