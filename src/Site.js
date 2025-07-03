@@ -1,7 +1,28 @@
-import FireModel from "air-firebase-v2";
+import { default as FireModel, BaseClass } from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";
+
+export class Agreement extends BaseClass {
+  static classProps = {
+    dayType: defField("dayType", { required: true }),
+    shiftType: defField("shiftType", { required: true }),
+    category: defField("rateCategory", { required: true }),
+    value: defField("number", {
+      label: "単価",
+      required: true,
+      component: {
+        attrs: {
+          rules: [
+            (v) => (v > 0 ? true : "単価は0より大きい値を入力してください"),
+          ],
+        },
+      },
+    }),
+    overTimeValue: defField("number", { label: "時間外単価", required: true }),
+    billingUnit: defField("billingUnit", { required: true }),
+  };
+}
 
 export default class Site extends FireModel {
   static collectionPath = "Sites";
@@ -39,6 +60,7 @@ export default class Site extends FireModel {
       },
     }),
     remarks: defField("multipleLine", { label: "備考" }),
+    agreements: defField("array", { label: "取極め", customClass: Agreement }),
   };
   static tokenFields = ["name", "nameKana"];
   static hasMany = [
