@@ -24,7 +24,7 @@ export default class Site extends FireModel {
     city: defField("city", { required: true }),
     address: defField("address", { required: true }),
     building: defField("building"),
-    location: defField("location", { hidden: true }),
+    location: defField("location"),
     customer: defField("customer", {
       required: true,
       customClass: CustomerMinimal,
