@@ -15,6 +15,12 @@ const defaultDefinition = {
 
 /** 汎用パーツ */
 const generalDefinitions = {
+  array: {
+    ...defaultDefinition,
+    type: Array,
+    default: () => [],
+    component: { name: "air-select", attrs: { multiple: true } },
+  },
   check: {
     ...defaultDefinition,
     type: Boolean,
@@ -79,6 +85,8 @@ const generalDefinitions = {
 
 /** カスタムパーツ（汎用パーツ含む） */
 export const fieldDefinitions = {
+  /** array */
+  array: generalDefinitions.array,
   /** check */
   check: generalDefinitions.check,
   isForeigner: {
@@ -270,6 +278,20 @@ export const fieldDefinitions = {
 
   /** select */
   select: generalDefinitions.select,
+  billingUnit: {
+    ...generalDefinitions.select,
+    default: "day",
+    label: "請求単位",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: [
+          { title: "日", value: "day" },
+          { title: "時間", value: "time" },
+        ],
+      },
+    },
+  },
   contractStatus: {
     ...generalDefinitions.select,
     default: "active",
@@ -336,6 +358,20 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: PREFECTURES_ARRAY,
+      },
+    },
+  },
+  rateCategory: {
+    ...generalDefinitions.select,
+    default: "base",
+    label: "区分",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: [
+          { title: "基本", value: "base" },
+          { title: "資格", value: "qualified" },
+        ],
       },
     },
   },
