@@ -4,11 +4,12 @@ import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";
 
 export class Agreement extends BaseClass {
+  static name = "取極め";
   static classProps = {
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
     category: defField("rateCategory", { required: true }),
-    value: defField("number", {
+    unitPrice: defField("number", {
       label: "単価",
       required: true,
       component: {
@@ -19,7 +20,10 @@ export class Agreement extends BaseClass {
         },
       },
     }),
-    overTimeValue: defField("number", { label: "時間外単価", required: true }),
+    overTimeUnitPrice: defField("number", {
+      label: "時間外単価",
+      required: true,
+    }),
     billingUnit: defField("billingUnit", { required: true }),
   };
 }
