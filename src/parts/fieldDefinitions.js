@@ -1,4 +1,4 @@
-import { PREFECTURES_ARRAY } from "../constants/index.js";
+import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
 
 const defaultDefinition = {
   type: String,

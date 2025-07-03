@@ -1,4 +1,4 @@
-import { PREFECTURES_ARRAY } from "../constants/index.js";
+import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
 /**
  * @typedef {object} AccessorImplementation - アクセサの実装を定義するオブジェクト。
  * @property {function} get - getter関数。
