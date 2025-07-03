@@ -2,6 +2,7 @@ import { default as FireModel, BaseClass } from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";
+import { DAY_TYPE } from "./constants/day-type.js";
 
 export class Agreement extends BaseClass {
   static className = "取極め";
@@ -16,6 +17,14 @@ export class Agreement extends BaseClass {
     }),
     billingUnit: defField("billingUnit", { required: true }),
   };
+  static headers = [
+    {
+      title: "曜日区分",
+      key: "dayType",
+      value: (item) => DAY_TYPE[item.dayType],
+    },
+    { title: "勤務区分", key: "shiftType" },
+  ];
 }
 
 export default class Site extends FireModel {
