@@ -9,18 +9,8 @@ export class Agreement extends BaseClass {
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
     category: defField("rateCategory", { required: true }),
-    unitPrice: defField("number", {
-      label: "単価",
-      required: true,
-      component: {
-        attrs: {
-          rules: [
-            (v) => (v > 0 ? true : "単価は0より大きい値を入力してください"),
-          ],
-        },
-      },
-    }),
-    overTimeUnitPrice: defField("number", {
+    unitPrice: defField("price", { label: "単価", required: true }),
+    overTimeUnitPrice: defField("price", {
       label: "時間外単価",
       required: true,
     }),
