@@ -3,10 +3,12 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";
 import { DAY_TYPE } from "./constants/day-type.js";
+import { SHIFT_TYPE } from "./constants/shift-type.js";
 
 export class Agreement extends BaseClass {
   static className = "取極め";
   static classProps = {
+    from: defField("date", { label: "適用開始日", required: true }),
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
     category: defField("rateCategory", { required: true }),
@@ -19,11 +21,20 @@ export class Agreement extends BaseClass {
   };
   static headers = [
     {
+      title: "適用開始日",
+      key: "from",
+      value: (item) => item.from.toLocaleDateString(),
+    },
+    {
       title: "曜日区分",
       key: "dayType",
       value: (item) => DAY_TYPE[item.dayType],
     },
-    { title: "勤務区分", key: "shiftType" },
+    {
+      title: "勤務区分",
+      key: "shiftType",
+      value: (item) => SHIFT_TYPE[item.shiftType],
+    },
   ];
 }
 
