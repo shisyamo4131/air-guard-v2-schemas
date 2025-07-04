@@ -1,3 +1,4 @@
+import { BILLING_UNIT_TYPE_ARRAY } from "../constants/billing-unit-type.js";
 import { DAY_TYPE_ARRAY } from "../constants/day-type.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
 
@@ -282,17 +283,14 @@ export const fieldDefinitions = {
 
   /** select */
   select: generalDefinitions.select,
-  billingUnit: {
+  billingUnitType: {
     ...generalDefinitions.select,
     default: "day",
     label: "請求単位",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: [
-          { title: "日", value: "day" },
-          { title: "時間", value: "time" },
-        ],
+        items: BILLING_UNIT_TYPE_ARRAY,
       },
     },
   },

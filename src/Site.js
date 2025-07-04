@@ -26,7 +26,7 @@ export class Agreement extends BaseClass {
       label: "時間外単価",
       required: true,
     }),
-    billingUnit: defField("billingUnit", { required: true }),
+    billingUnitType: defField("billingUnitType", { required: true }),
   };
   static headers = [
     {
@@ -53,8 +53,8 @@ export class Agreement extends BaseClass {
     },
     {
       title: "請求単位",
-      key: "billingUnit",
-      value: (item) => item.billingUnit,
+      key: "billingUnitType",
+      value: (item) => item.billingUnitType,
       align: "center",
     },
   ];
