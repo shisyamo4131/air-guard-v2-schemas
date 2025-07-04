@@ -1,6 +1,11 @@
 import { BILLING_UNIT_TYPE_ARRAY } from "../constants/billing-unit-type.js";
+import { CONTRACT_STATUS_ARRAY } from "../constants/contract-status.js";
 import { DAY_TYPE_ARRAY } from "../constants/day-type.js";
+import { EMPLOYMENT_STATUS_ARRAY } from "../constants/employment-status.js";
+import { GENDER_ARRAY } from "../constants/gender.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
+import { RATE_CATEGORY_ARRAY } from "../constants/rate-category.js";
+import { SHIFT_TYPE_ARRAY } from "../constants/shift-type.js";
 
 const defaultDefinition = {
   type: String,
@@ -301,10 +306,7 @@ export const fieldDefinitions = {
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: [
-          { title: "契約中", value: "active" },
-          { title: "契約終了", value: "terminated" },
-        ],
+        items: CONTRACT_STATUS_ARRAY,
       },
     },
   },
@@ -326,10 +328,7 @@ export const fieldDefinitions = {
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: [
-          { title: "在職中", value: "active" },
-          { title: "退職済", value: "terminated" },
-        ],
+        items: EMPLOYMENT_STATUS_ARRAY,
       },
     },
   },
@@ -340,10 +339,7 @@ export const fieldDefinitions = {
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: [
-          { title: "男性", value: "male" },
-          { title: "女性", value: "female" },
-        ],
+        items: GENDER_ARRAY,
       },
     },
   },
@@ -365,10 +361,7 @@ export const fieldDefinitions = {
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: [
-          { title: "基本", value: "base" },
-          { title: "資格", value: "qualified" },
-        ],
+        items: RATE_CATEGORY_ARRAY,
       },
     },
   },
@@ -379,10 +372,7 @@ export const fieldDefinitions = {
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: [
-          { title: "日勤", value: "day" },
-          { title: "夜勤", value: "night" },
-        ],
+        items: SHIFT_TYPE_ARRAY,
       },
     },
   },
