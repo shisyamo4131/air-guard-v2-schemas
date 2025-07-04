@@ -116,6 +116,12 @@ export default class Site extends FireModel {
     },
   ];
 
+  static headers = [
+    { title: "code", key: "code", value: "code" },
+    { title: "現場名", key: "name", value: "name" },
+    { title: "取引先名", key: "customer.name", value: "customer.name" },
+  ];
+
   afterInitialize() {
     Object.defineProperties(this, {
       customerId: defAccessor("customerId"),
