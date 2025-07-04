@@ -5,6 +5,7 @@ import { CustomerMinimal } from "./Customer.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
+import { RATE_CATEGORY } from "./constants/rate-category.js";
 
 export class Agreement extends BaseClass {
   static className = "取極め";
@@ -19,9 +20,9 @@ export class Agreement extends BaseClass {
         return date;
       },
     }),
+    category: defField("rateCategory", { required: true }),
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
-    category: defField("rateCategory", { required: true }),
     unitPrice: defField("price", { label: "単価", required: true }),
     overTimeUnitPrice: defField("price", {
       label: "時間外単価",
@@ -40,7 +41,10 @@ export class Agreement extends BaseClass {
     {
       title: "区分",
       key: "type",
-      value: (item) => `${DAY_TYPE[item.dayType]}${SHIFT_TYPE[item.shiftType]}`,
+      value: (item) =>
+        `[${RATE_CATEGORY[item.category]}]${DAY_TYPE[item.dayType]}${
+          SHIFT_TYPE[item.shiftType]
+        }`,
     },
     {
       title: "単価",
