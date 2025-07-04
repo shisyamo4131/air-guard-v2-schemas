@@ -4,6 +4,7 @@ import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
+import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 
 export class Agreement extends BaseClass {
   static className = "取極め";
@@ -28,6 +29,8 @@ export class Agreement extends BaseClass {
     }),
     billingUnitType: defField("billingUnitType", { required: true }),
   };
+
+  /** HEADERS */
   static headers = [
     {
       title: "適用開始日",
@@ -54,13 +57,14 @@ export class Agreement extends BaseClass {
     {
       title: "請求単位",
       key: "billingUnitType",
-      value: (item) => item.billingUnitType,
+      value: (item) => BILLING_UNIT_TYPE[item.billingUnitType],
       align: "center",
     },
   ];
 }
 
 export default class Site extends FireModel {
+  static className = "現場";
   static collectionPath = "Sites";
   static useAutonumber = false;
   static logicalDelete = true;
