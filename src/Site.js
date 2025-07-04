@@ -8,7 +8,16 @@ import { SHIFT_TYPE } from "./constants/shift-type.js";
 export class Agreement extends BaseClass {
   static className = "取極め";
   static classProps = {
-    from: defField("date", { label: "適用開始日", required: true }),
+    from: defField("date", {
+      label: "適用開始日",
+      required: true,
+      // 既定値は当日日付（時刻は0時）とする
+      default: () => {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        return date;
+      },
+    }),
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
     category: defField("rateCategory", { required: true }),
@@ -26,14 +35,27 @@ export class Agreement extends BaseClass {
       value: (item) => item.from.toLocaleDateString(),
     },
     {
-      title: "曜日区分",
-      key: "dayType",
-      value: (item) => DAY_TYPE[item.dayType],
+      title: "区分",
+      key: "type",
+      value: (item) => `${DAY_TYPE[item.dayType]}${SHIFT_TYPE[item.shiftType]}`,
     },
     {
-      title: "勤務区分",
-      key: "shiftType",
-      value: (item) => SHIFT_TYPE[item.shiftType],
+      title: "単価",
+      key: "unitPrice",
+      value: (item) => item.unitPrice.toLocaleString(),
+      align: "end",
+    },
+    {
+      title: "時間外単価",
+      key: "overTimeUnitPrice",
+      value: (item) => item.overTimeUnitPrice.toLocaleString(),
+      align: "end",
+    },
+    {
+      title: "請求単位",
+      key: "billingUnit",
+      value: (item) => item.billingUnit,
+      align: "center",
     },
   ];
 }
