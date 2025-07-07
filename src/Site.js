@@ -6,6 +6,7 @@ import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import { RATE_CATEGORY } from "./constants/rate-category.js";
+import { fetchDocsApi } from "./apis/index.js";
 
 export class Agreement extends BaseClass {
   static className = "取極め";
@@ -95,10 +96,7 @@ export default class Site extends FireModel {
       customClass: CustomerMinimal,
       component: {
         attrs: {
-          api: () => {
-            return async (search) =>
-              await new CustomerMinimal().fetchDocs({ constraints: search });
-          },
+          api: () => fetchDocsApi(CustomerMinimal),
           noFilter: true,
         },
       },

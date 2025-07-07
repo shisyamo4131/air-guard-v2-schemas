@@ -1,6 +1,7 @@
 import { default as FireModel, BaseClass } from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import Site from "./Site.js";
+import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
 
 const MINUTES_PER_HOUR = 60;
 const MINUTES_PER_QUARTER_HOUR = 15;
@@ -313,15 +314,8 @@ export default class OperationResult extends FireModel {
       required: true,
       component: {
         attrs: {
-          api: () => {
-            return async (search) =>
-              await new Site().fetchDocs({ constraints: search });
-          },
-          fetchItemByKeyApi: () => {
-            return async (docId) => {
-              return await new Site().fetchDoc({ docId });
-            };
-          },
+          api: () => fetchDocsApi(Site),
+          fetchItemByKeyApi: () => fetchItemByKeyApi(Site),
         },
       },
     }),
