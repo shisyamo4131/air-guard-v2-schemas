@@ -3,6 +3,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 
 export default class Company extends FireModel {
+  static className = "会社";
   static collectionPath = "Companies";
   static useAutonumber = false;
   static logicalDelete = false;
