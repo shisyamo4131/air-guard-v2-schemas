@@ -47,6 +47,12 @@ export default class Customer extends FireModel {
       type: "collection",
     },
   ];
+
+  static headers = [
+    { key: "code", title: "取引先コード" },
+    { key: "name", title: "取引先名" },
+    { key: "fullAddress", title: "所在地" },
+  ];
   afterInitialize() {
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
