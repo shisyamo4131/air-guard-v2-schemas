@@ -3,6 +3,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 
 export default class Employee extends FireModel {
+  static className = "従業員";
   static collectionPath = "Employees";
   static useAutonumber = false;
   static logicalDelete = true;
@@ -89,6 +90,12 @@ export default class Employee extends FireModel {
     "firstNameKana",
     "foreignName",
     "displayName",
+  ];
+
+  static headers = [
+    { title: "code", key: "code" },
+    { title: "名前", key: "displayName" },
+    { title: "状態", key: "employmentStatus" },
   ];
 
   afterInitialize() {
