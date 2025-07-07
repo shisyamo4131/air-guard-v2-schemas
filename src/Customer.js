@@ -3,6 +3,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 
 export default class Customer extends FireModel {
+  static className = "取引先";
   static collectionPath = "Customers";
   static useAutonumber = false;
   static logicalDelete = true;
