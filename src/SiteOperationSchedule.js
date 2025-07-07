@@ -89,7 +89,6 @@ export default class SiteOperationSchedule extends FireModel {
        * - 読み取り専用のプロパティで、セッターは機能しません。
        */
       startAt: {
-        configurable: true,
         enumerable: true,
         get() {
           if (!this.startDate || !this.startTime) return null;
@@ -123,7 +122,6 @@ export default class SiteOperationSchedule extends FireModel {
        * - 読み取り専用のプロパティで、セッターは機能しません。
        */
       endAt: {
-        configurable: true,
         enumerable: true,
         get() {
           if (!this.endDate || !this.endTime) return null;
@@ -159,7 +157,6 @@ export default class SiteOperationSchedule extends FireModel {
        * - セッターは機能しません。
        */
       hasError: {
-        configurable: true,
         enumerable: true,
         get() {
           if (!this.startAt || !this.endAt) return false;
