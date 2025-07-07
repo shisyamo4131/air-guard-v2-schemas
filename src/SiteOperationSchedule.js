@@ -2,6 +2,7 @@ import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 
 export default class SiteOperationSchedule extends FireModel {
+  static className = "現場稼働予定";
   static collectionPath = "SiteOperationSchedules";
   static useAutonumber = false;
   static logicalDelete = false;
