@@ -2,6 +2,7 @@ import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 
 export default class User extends FireModel {
+  static className = "ユーザー";
   static collectionPath = "Users";
   static classProps = {
     email: defField("email", { required: true }),
@@ -24,4 +25,10 @@ export default class User extends FireModel {
       required: false,
     }),
   };
+
+  static headers = [
+    { title: "email", key: "email" },
+    { title: "表示名", key: "displayName" },
+    { title: "管理者", key: "roles" },
+  ];
 }
