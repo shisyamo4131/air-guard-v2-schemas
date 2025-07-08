@@ -104,6 +104,14 @@ export const fieldDefinitions = {
   code: generalDefinitions.code,
   /** date */
   date: generalDefinitions.date,
+  /** dateTime */
+  dateTime: {
+    ...generalDefinitions.date,
+    type: Object,
+    label: "日時",
+    default: () => new Date(),
+    component: { name: "air-date-time-picker", attrs: {} },
+  },
 
   /** multiple-line */
   multipleLine: generalDefinitions.multipleLine,
