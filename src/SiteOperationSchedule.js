@@ -14,7 +14,7 @@ export default class SiteOperationSchedule extends FireModel {
     }),
     shiftType: defField("shiftType", { required: true }),
     startAt: defField("dateTime", { label: "開始日時", required: true }),
-    endAt: defField("dateTime", { label: "終了日", required: true }),
+    endAt: defField("dateTime", { label: "終了日時", required: true }),
     requiredPersonnel: defField("number", {
       label: "必要人数",
       required: true,

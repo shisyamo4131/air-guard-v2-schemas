@@ -104,15 +104,13 @@ export const fieldDefinitions = {
   code: generalDefinitions.code,
   /** date */
   date: generalDefinitions.date,
-  /** dateTime */
   dateTime: {
     ...generalDefinitions.date,
-    type: Object,
     label: "日時",
-    default: null,
-    component: { name: "air-date-time-picker", attrs: {} },
+    component: {
+      name: "air-date-time-picker-text-field",
+    },
   },
-
   /** multiple-line */
   multipleLine: generalDefinitions.multipleLine,
 
