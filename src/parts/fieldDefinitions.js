@@ -108,7 +108,7 @@ export const fieldDefinitions = {
     ...generalDefinitions.date,
     label: "日時",
     component: {
-      name: "air-date-time-picker-text-field",
+      name: "air-date-time-picker-input",
     },
   },
   /** multiple-line */
