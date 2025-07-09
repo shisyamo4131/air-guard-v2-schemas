@@ -24,6 +24,16 @@ export class Agreement extends BaseClass {
     category: defField("rateCategory", { required: true }),
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
+    startTime: defField("time", {
+      label: "開始時刻",
+      required: true,
+      default: "08:00",
+    }),
+    endTime: defField("time", {
+      label: "終了時刻",
+      required: true,
+      default: "17:00",
+    }),
     unitPrice: defField("price", { label: "単価", required: true }),
     overTimeUnitPrice: defField("price", {
       label: "時間外単価",
