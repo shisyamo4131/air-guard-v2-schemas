@@ -109,7 +109,7 @@ export const fieldDefinitions = {
     ...generalDefinitions.date,
     type: Object,
     label: "日時",
-    default: () => new Date(),
+    default: null,
     component: { name: "air-date-time-picker", attrs: {} },
   },
 
