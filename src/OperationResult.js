@@ -10,6 +10,7 @@ const MINUTES_PER_QUARTER_HOUR = 15;
  * OperationResult クラスの employees, outsourcers プロパティに適用するカスタムクラスのベースクラス
  */
 class OperationResultDetail extends BaseClass {
+  static className = "稼働実績明細";
   /**
    * FirestoreのTimestampをJSのDateオブジェクトに変換します。
    * valueがfalsyな場合や、toDateメソッドを持たない場合は、そのまま返します。
@@ -289,6 +290,8 @@ class OperationResultDetail extends BaseClass {
  * OperationResult クラスの employees プロパティに適用するカスタムクラス
  */
 export class OperationResultEmployee extends OperationResultDetail {
+  static className = "稼働実績明細（従業員）";
+
   constructor(data = {}) {
     super(data);
     this.employeeId = data.employeeId || null;
@@ -299,6 +302,7 @@ export class OperationResultEmployee extends OperationResultDetail {
  * OperationResult クラスの outsourcers プロパティに適用するカスタムクラス
  */
 export class OperationResultOutsourcer extends OperationResultDetail {
+  static className = "稼働実績明細（外注）";
   constructor(data = {}) {
     super(data);
     this.outsourcerId = data.outsourcerId || null;
