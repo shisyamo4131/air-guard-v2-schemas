@@ -13,20 +13,7 @@ export default class SiteOperationSchedule extends FireModel {
       required: true,
     }),
     shiftType: defField("shiftType", { required: true }),
-    startAt: defField("dateTime", {
-      label: "開始日時",
-      required: true,
-      component: {
-        attrs: {
-          // 値が更新されたら endDate にも同一値をセット
-          "onUpdate:modelValue": (item, updateProperties) => {
-            return (event) => {
-              updateProperties({ endAt: event });
-            };
-          },
-        },
-      },
-    }),
+    startAt: defField("dateTime", { label: "開始日時", required: true }),
     endAt: defField("dateTime", { label: "終了日", required: true }),
     requiredPersonnel: defField("number", {
       label: "必要人数",
