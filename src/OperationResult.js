@@ -89,6 +89,7 @@ export class OperationResultOutsourcer extends OperationResultDetail {
 }
 
 export default class OperationResult extends FireModel {
+  static className = "稼働実績";
   static collectionPath = "OperationResults";
   static useAutonumber = false;
   static logicalDelete = false;
@@ -98,6 +99,7 @@ export default class OperationResult extends FireModel {
       component: {
         attrs: {
           api: () => fetchDocsApi(Site),
+          clearable: true,
           fetchItemByKeyApi: () => fetchItemByKeyApi(Site),
         },
       },
@@ -105,41 +107,17 @@ export default class OperationResult extends FireModel {
     date: defField("date", { label: "日付", required: true }),
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
-    employees: {
-      type: Array,
-      default: () => [],
+    employees: defField("array", {
+      label: "稼働実績明細（従業員）",
       customClass: OperationResultEmployee,
-      label: "稼働明細",
-      required: false,
-    },
-    outsourcers: {
-      type: Array,
-      default: () => [],
+    }),
+    outsourcers: defField("array", {
+      label: "稼働実績明細（外注）",
       customClass: OperationResultOutsourcer,
-      label: "稼働明細",
-      required: false,
-    },
+    }),
   };
-
-  addEmployee({
-    employeeId,
-    startAt,
-    endAt,
-    breakMinutes = 60,
-    overTimeMinutes = 0,
-    isQualificated = false,
-    isOjt = false,
-  } = {}) {
-    this.employees.push(
-      new OperationResultEmployee({
-        employeeId,
-        startAt,
-        endAt,
-        breakMinutes,
-        overTimeMinutes,
-        isQualificated,
-        isOjt,
-      })
-    );
-  }
+  static headers = [
+    { title: "日付", key: "date" },
+    { title: "現場", key: "siteId", value: "siteId" },
+  ];
 }
