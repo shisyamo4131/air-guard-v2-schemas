@@ -19,7 +19,7 @@ export default class Employee extends FireModel {
     gender: defField("gender", { required: true }),
 
     /** 生年月日 */
-    dateOfBirth: defField("date", { label: "生年月日", required: true }),
+    dateOfBirth: defField("dateAt", { label: "生年月日", required: true }),
 
     /** 住所: zipcode が更新されると prefCode, city, address は自動更新される */
     zipcode: defField("zipcode", { required: true }),
@@ -30,13 +30,13 @@ export default class Employee extends FireModel {
     location: defField("location", { hidden: true }), // 非表示でOK
 
     /** 入社日 */
-    dateOfHire: defField("date", { label: "入社日", required: true }),
+    dateOfHire: defField("dateAt", { label: "入社日", required: true }),
 
     /** 雇用状態 */
     employmentStatus: defField("employmentStatus", { required: true }),
 
     /** 退職日 */
-    dateOfTermination: defField("date", {
+    dateOfTermination: defField("dateAt", {
       label: "退職日",
       component: {
         attrs: {
@@ -73,7 +73,7 @@ export default class Employee extends FireModel {
         },
       },
     },
-    periodOfStay: defField("date", {
+    periodOfStay: defField("dateAt", {
       label: "在留期間満了日",
       component: {
         attrs: {

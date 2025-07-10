@@ -22,6 +22,10 @@ export default class Company extends FireModel {
     location: defField("location", { hidden: true }),
     tel: defField("tel"),
     fax: defField("fax"),
+    defaultStartTimeDayShift: defField("time", { label: "日勤既定開始時刻" }),
+    defaultEndTimeDayShift: defField("time", { label: "日勤既定終了時刻" }),
+    defaultStartTimeNightShift: defField("time", { label: "夜勤既定開始時刻" }),
+    defaultEndTimeNightShift: defField("time", { label: "夜勤既定終了時刻" }),
   };
 
   afterInitialize() {

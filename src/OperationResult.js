@@ -13,8 +13,8 @@ const MINUTES_PER_QUARTER_HOUR = 15;
 class OperationResultDetail extends BaseClass {
   static className = "稼働実績明細";
   static classProps = {
-    startAt: defField("dateTime", { label: "開始日時", required: true }),
-    endAt: defField("dateTime", { label: "終了日時", required: true }),
+    startAt: defField("dateTimeAt", { label: "開始日時", required: true }),
+    endAt: defField("dateTimeAt", { label: "終了日時", required: true }),
   };
   initialize(data = {}) {
     super.initialize(data);
@@ -104,7 +104,7 @@ export default class OperationResult extends FireModel {
         },
       },
     }),
-    date: defField("date", { label: "日付", required: true }),
+    dateAt: defField("dateAt", { label: "日付", required: true }),
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
     employees: defField("array", {
@@ -120,4 +120,29 @@ export default class OperationResult extends FireModel {
     { title: "日付", key: "date" },
     { title: "現場", key: "siteId", value: "siteId" },
   ];
+
+  afterInitialize() {
+    Object.defineProperties(this, {
+      date: {
+        configurable: true,
+        get() {
+          if (!this.dateAt) return "";
+          // Dateオブジェクトを文字列に変換
+          return this.dateAt.toLocaleDateString();
+        },
+        set(v) {
+          if (typeof v === "string") {
+            // 文字列をDateオブジェクトに変換
+            this.dateAt = new Date(v);
+          } else if (v instanceof Date) {
+            this.dateAt = v;
+          } else {
+            console.warn(
+              `[OperationResult.js date] Expected a string or Date object, got: ${v}`
+            );
+          }
+        },
+      },
+    });
+  }
 }

@@ -11,7 +11,7 @@ import { fetchDocsApi } from "./apis/index.js";
 export class Agreement extends BaseClass {
   static className = "取極め";
   static classProps = {
-    from: defField("date", {
+    from: defField("dateAt", {
       label: "適用開始日",
       required: true,
       // 既定値は当日日付（時刻は0時）とする

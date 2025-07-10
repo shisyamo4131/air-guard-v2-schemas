@@ -39,12 +39,22 @@ const generalDefinitions = {
     length: 10,
     component: { name: "air-text-field", attrs: { inputType: "alphanumeric" } },
   },
-  date: {
+  // 日付（00時固定としたDateオブジェクトとして使用する）
+  dateAt: {
     ...defaultDefinition,
     type: Object,
     label: "日付",
+    component: {
+      name: "air-date-input",
+    },
+  },
+  // 日時（時刻までを含んだDateオブジェクト）
+  dateTimeAt: {
+    ...defaultDefinition,
+    type: Object,
+    label: "日時",
     default: null,
-    component: { name: "air-date-input", attrs: {} },
+    component: { name: "air-date-time-picker-input", attrs: {} },
   },
   multipleLine: {
     ...defaultDefinition,
@@ -76,11 +86,12 @@ const generalDefinitions = {
     ...defaultDefinition,
     component: { name: "air-select", attrs: {} },
   },
+  // 時刻文字列
   time: {
     ...defaultDefinition,
     label: "時刻",
     component: {
-      name: "air-time-picker-text-field",
+      name: "air-time-picker-input",
       attrs: {
         pickerProps: {
           format: "24hr",
@@ -102,15 +113,10 @@ export const fieldDefinitions = {
   },
   /** code */
   code: generalDefinitions.code,
-  /** date */
-  date: generalDefinitions.date,
-  dateTime: {
-    ...generalDefinitions.date,
-    label: "日時",
-    component: {
-      name: "air-date-time-picker-input",
-    },
-  },
+  /** dateAt */
+  dateAt: generalDefinitions.dateAt,
+  /** dateTimeAt */
+  dateTimeAt: generalDefinitions.dateTimeAt,
   /** multiple-line */
   multipleLine: generalDefinitions.multipleLine,
 
