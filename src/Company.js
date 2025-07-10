@@ -34,4 +34,27 @@ export default class Company extends FireModel {
       prefecture: defAccessor("prefecture"),
     });
   }
+
+  /**
+   * Returns the default time map for day and night shifts.
+   * @returns {Object} An object containing start and end times for day and night shifts.
+   * @property {Object} day - Contains start and end times for the day shift.
+   * @property {Object} night - Contains start and end times for the night shift.
+   * @property {string} day.start - Default start time for the day shift.
+   * @property {string} day.end - Default end time for the day shift.
+   * @property {string} night.start - Default start time for the night shift.
+   * @property {string} night.end - Default end time for the night shift.
+   */
+  get defaultTimeMap() {
+    return {
+      day: {
+        start: this.defaultStartTimeDayShift || "08:00",
+        end: this.defaultEndTimeDayShift || "17:00",
+      },
+      night: {
+        start: this.defaultStartTimeNightShift || "20:00",
+        end: this.defaultEndTimeNightShift || "05:00",
+      },
+    };
+  }
 }
