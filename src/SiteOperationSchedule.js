@@ -1,5 +1,7 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
+import { runTransaction } from "firebase/firestore";
+import OperationResult from "./OperationResult.js";
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -7,11 +9,9 @@ export default class SiteOperationSchedule extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    siteId: defField("oneLine", {
-      label: "現場",
-      hidden: true,
-      required: true,
-    }),
+    siteId: defField("siteId", { required: true, hidden: true }),
+    dateAt: defField("dateAt", { label: "日付", required: true }),
+    dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
     startAt: defField("dateTimeAt", { label: "開始日時", required: true }),
     endAt: defField("dateTimeAt", { label: "終了日時", required: true }),
@@ -63,6 +63,102 @@ export default class SiteOperationSchedule extends FireModel {
         reject(new Error(this.hasError));
       } else {
         resolve();
+      }
+    });
+  }
+
+  /**
+   * ドキュメントを作成します。
+   * - トランザクションを使用して、現場稼働予定と同時に稼働実績を作成します。
+   * - 現場稼働予定のドキュメントIDを稼働実績の `siteOperationScheduleId` フィールドに設定します。
+   * - 稼働実績の作成に失敗した場合、現場稼働予定の作成もロールバックされます。
+   * @return {Promise<DocumentReference>} 作成されたドキュメントの参照を返します。
+   */
+  async create() {
+    const adapter = this.constructor.getAdapter();
+    const firestore = adapter.firestore;
+    const operationResult = new OperationResult(this.toObject());
+
+    const docRef = await runTransaction(firestore, async (transaction) => {
+      const docRef = await super.create({ transaction });
+      operationResult.siteOperationScheduleId = docRef.id;
+      operationResult.status = "scheduled";
+      await operationResult.create({ transaction });
+    });
+
+    return docRef;
+  }
+
+  /**
+   * ドキュメントを更新します。
+   * - トランザクションを使用して、現場稼働予定と同時に稼働実績を更新します。
+   * - 自身のドキュメントIDを持つ稼働実績を取得し、現場稼働予定のデータで更新します。
+   * - 自身のドキュメントIDを持つ稼働実績が存在しない場合、新たに稼働実績を作成します。
+   * - 稼働実績の更新に失敗した場合、現場稼働予定の更新もロールバックされます。
+   * @return {Promise<void>} 更新が成功した場合、何も返しません
+   * @throws {Error} 稼働実績として承認済みの現場稼働予定が存在する場合、更新できない旨のエラーをスローします。
+   * @throws {Error} トランザクション内での更新に失敗した場合、エラーをスローします。
+   */
+  async update() {
+    const adapter = this.constructor.getAdapter();
+    const firestore = adapter.firestore;
+    const operationResults = await new OperationResult().fetchDocs({
+      constraints: [["where", "siteOperationScheduleId", "==", this.docId]],
+    });
+
+    if (operationResults.some(({ status }) => status === "approved")) {
+      throw new Error(
+        "稼働実績として承認済みの現場稼働予定です。更新できません。"
+      );
+    }
+
+    await runTransaction(firestore, async (transaction) => {
+      await super.update({ transaction });
+      if (operationResults && operationResults.length > 0) {
+        for (const result of operationResults) {
+          result.initialize({
+            ...result.toObject(),
+            ...this.toObject(),
+            docId: result.docId,
+          });
+          await result.update({ transaction });
+        }
+      } else {
+        const operationResult = new OperationResult(this.toObject());
+        operationResult.siteOperationScheduleId = this.docId;
+        await operationResult.create({ transaction });
+      }
+    });
+  }
+
+  /**
+   * ドキュメントを削除します。
+   * - トランザクションを使用して、現場稼働予定と同時に稼働実績を削除します。
+   * - 現場稼働予定のドキュメントIDを持つ稼働実績を取得し、削除します。
+   * - 稼働実績の削除に失敗した場合、現場稼働予定の削除もロールバックされます。
+   * @return {Promise<void>} 削除が成功した場合、何も返しません
+   * @throws {Error} 稼働実績として承認済みの現場稼働予定が存在する場合、削除できない旨のエラーをスローします。
+   * @throws {Error} トランザクション内での削除に失敗した場合、エラーをスローします。
+   */
+  async delete() {
+    const adapter = this.constructor.getAdapter();
+    const firestore = adapter.firestore;
+    const operationResults = await new OperationResult().fetchDocs({
+      constraints: [["where", "siteOperationScheduleId", "==", this.docId]],
+    });
+
+    if (operationResults.some(({ status }) => status === "approved")) {
+      throw new Error(
+        "稼働実績として承認済みの現場稼働予定です。削除できません。"
+      );
+    }
+
+    await runTransaction(firestore, async (transaction) => {
+      await super.delete({ transaction });
+      if (operationResults && operationResults.length > 0) {
+        for (const result of operationResults) {
+          await result.delete({ transaction });
+        }
       }
     });
   }
