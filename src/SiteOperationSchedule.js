@@ -10,9 +10,9 @@ export default class SiteOperationSchedule extends FireModel {
   static logicalDelete = false;
   static classProps = {
     siteId: defField("siteId", { required: true, hidden: true }),
+    shiftType: defField("shiftType", { required: true }),
     dateAt: defField("dateAt", { label: "日付", required: true }),
     dayType: defField("dayType", { required: true }),
-    shiftType: defField("shiftType", { required: true }),
     startAt: defField("dateTimeAt", { label: "開始日時", required: true }),
     endAt: defField("dateTimeAt", { label: "終了日時", required: true }),
     requiredPersonnel: defField("number", {

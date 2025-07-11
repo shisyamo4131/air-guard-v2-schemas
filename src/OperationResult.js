@@ -151,7 +151,7 @@ export default class OperationResult extends FireModel {
     siteOperationScheduleId: defField("oneLine", { hidden: true }),
   };
   static headers = [
-    { title: "日付", key: "date" },
+    { title: "日付", key: "dateAt" },
     { title: "現場", key: "siteId", value: "siteId" },
   ];
 }

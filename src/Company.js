@@ -125,4 +125,28 @@ export default class Company extends FireModel {
       },
     };
   }
+
+  /**
+   * Returns the default start and end times for a given date and shift type.
+   * - If the shift type is not found in the default time map, it defaults to the day shift.
+   * - The start time is set to the default start time for the shift type.
+   * @param {Date} date - The date for which to get the default times.
+   * @param {string} shiftType - The type of shift (e.g., "day", "night").
+   * @returns {Object} An object containing the default start and end times.
+   */
+  getDefaultTime(date, shiftType) {
+    const defaultTimeMap = this.defaultTimeMap;
+    const time = defaultTimeMap[shiftType] || defaultTimeMap.day;
+
+    const startAt = new Date(date);
+    const endAt = new Date(date);
+
+    const [startH, startM] = time.start.split(":").map(Number);
+    const [endH, endM] = time.end.split(":").map(Number);
+
+    startAt.setHours(startH, startM, 0, 0);
+    endAt.setHours(endH, endM, 0, 0);
+
+    return { startAt, endAt };
+  }
 }
