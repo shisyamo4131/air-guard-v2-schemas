@@ -22,16 +22,84 @@ export default class Company extends FireModel {
     location: defField("location", { hidden: true }),
     tel: defField("tel"),
     fax: defField("fax"),
-    defaultStartTimeDayShift: defField("time", { label: "日勤既定開始時刻" }),
-    defaultEndTimeDayShift: defField("time", { label: "日勤既定終了時刻" }),
-    defaultStartTimeNightShift: defField("time", { label: "夜勤既定開始時刻" }),
-    defaultEndTimeNightShift: defField("time", { label: "夜勤既定終了時刻" }),
+    /** 以下は既定値を持っているので required を設定 */
+    defaultStartTimeDayShift: defField("time", {
+      label: "日勤開始時刻",
+      default: "08:00",
+      required: true,
+    }),
+    defaultEndTimeDayShift: defField("time", {
+      label: "日勤終了時刻",
+      default: "17:00",
+      required: true,
+    }),
+    defaultBreakMinutesDayShift: defField("number", {
+      label: "日勤休憩時間（分）",
+      defaultValue: 60,
+    }),
+    defaultStartTimeNightShift: defField("time", {
+      label: "夜勤開始時刻",
+      default: "20:00",
+      required: true,
+    }),
+    defaultEndTimeNightShift: defField("time", {
+      label: "夜勤終了時刻",
+      default: "05:00",
+      required: true,
+    }),
+    defaultBreakMinutesNightShift: defField("number", {
+      label: "夜勤休憩時間（分）",
+      defaultValue: 60,
+    }),
   };
 
   afterInitialize() {
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
+      defaultScheduledWorkMinutesDayShift: {
+        configurable: true,
+        enumerable: true,
+        /**
+         * defaultStartTimeDayShift と defaultEndTimeDayShift の時間差（分）から defaultBreakMinutesDayShift を引いた値を返すアクセサ
+         * @returns {number} 日勤の標準労働時間（分）
+         */
+        get: () => {
+          const start = this.defaultStartTimeDayShift || "08:00";
+          const end = this.defaultEndTimeDayShift || "17:00";
+          const breakMinutes = this.defaultBreakMinutesDayShift || 60;
+
+          const startTime = new Date(`1970-01-01T${start}:00`);
+          const endTime = new Date(`1970-01-01T${end}:00`);
+
+          const totalMinutes =
+            (endTime - startTime) / (1000 * 60) - breakMinutes;
+          return totalMinutes < 0 ? 0 : totalMinutes;
+        },
+        set: () => {},
+      },
+      defaultScheduledWorkMinutesNightShift: {
+        configurable: true,
+        enumerable: true,
+        /**
+         * defaultStartTimeNightShift と defaultEndTimeNightShift の時間差（分）から defaultBreakMinutesNightShift を引いた値を返すアクセサ
+         * @returns {number} 夜勤の標準労働時間（分）
+         */
+        get: () => {
+          const start = this.defaultStartTimeNightShift || "20:00";
+          const end = this.defaultEndTimeNightShift || "05:00";
+          const breakMinutes = this.defaultBreakMinutesNightShift || 60;
+          // 夜勤の終了時刻が翌日の05:00になるため、日付を1970-01-01に固定して計算
+          // 1970-01-01T20:00:00 から 1970-01-02T05:00:00 までの時間差を計算
+          const startTime = new Date(`1970-01-01T${start}:00`);
+          const endTime = new Date(`1970-01-02T${end}:00`);
+
+          const totalMinutes =
+            (endTime - startTime) / (1000 * 60) - breakMinutes;
+          return totalMinutes < 0 ? 0 : totalMinutes;
+        },
+        set: () => {},
+      },
     });
   }
 
