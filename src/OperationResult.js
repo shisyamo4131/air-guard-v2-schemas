@@ -135,6 +135,20 @@ export default class OperationResult extends FireModel {
     }),
     qualificationRequired: defField("check", { label: "要資格者" }),
     workDescription: defField("oneLine", { label: "作業内容" }),
+    unitPrice: defField("price", { label: "単価", required: true }),
+    overTimeUnitPrice: defField("price", {
+      label: "時間外単価",
+      required: true,
+    }),
+    unitPriceQualified: defField("price", {
+      label: "資格者単価",
+      required: true,
+    }),
+    overTimeUnitPriceQualified: defField("price", {
+      label: "資格者時間外単価",
+      required: true,
+    }),
+    billingUnitType: defField("billingUnitType", { required: true }),
     /** ここまで */
 
     employees: defField("array", {
@@ -156,4 +170,24 @@ export default class OperationResult extends FireModel {
     { title: "日付", key: "dateAt" },
     { title: "現場", key: "siteId", value: "siteId" },
   ];
+
+  /**
+   * 引数で受け取った従業員のIDを持つ新しい OperationResultEmployee を employees に追加します。
+   * - `employees` プロパティに既に存在する従業員IDが指定された場合はエラーをスローします。
+   * - `startAt`, `endAt`, `breakMinutes` は現在のインスタンスから取得されます。
+   * - `employeeId` は必須です。
+   * @param {string} employeeId - 従業員のID
+   */
+  addEmployee(employeeId) {
+    if (this.employees.some((emp) => emp.employeeId === employeeId)) {
+      throw new Error(`Employee with ID ${employeeId} already exists.`);
+    }
+    const newEmployee = new OperationResultEmployee({
+      employeeId,
+      startAt: this.startAt,
+      endAt: this.endAt,
+      breakMinutes: this.breakMinutes,
+    });
+    this.employees.push(newEmployee);
+  }
 }

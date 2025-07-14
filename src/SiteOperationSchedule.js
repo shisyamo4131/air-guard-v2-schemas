@@ -23,6 +23,22 @@ export default class SiteOperationSchedule extends FireModel {
     qualificationRequired: defField("check", { label: "要資格者" }),
     workDescription: defField("oneLine", { label: "作業内容" }),
     remarks: defField("multipleLine", { label: "備考" }),
+
+    /** 単価情報は hidden とし、required は false とする */
+    // これらのフィールドは、取極めから選択した場合にのみ設定されるため
+    // 直接入力は想定されていない。
+    // 当該クラスから複製された OperationResult クラスではこれらのフィールドを必須とする。
+    unitPrice: defField("price", { label: "単価", hidden: true }),
+    overTimeUnitPrice: defField("price", { label: "時間外単価", hidden: true }),
+    unitPriceQualified: defField("price", {
+      label: "資格者単価",
+      hidden: true,
+    }),
+    overTimeUnitPriceQualified: defField("price", {
+      label: "資格者時間外単価",
+      hidden: true,
+    }),
+    billingUnitType: defField("billingUnitType", { required: true }),
   };
 
   afterInitialize() {
