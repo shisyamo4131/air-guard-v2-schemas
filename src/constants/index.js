@@ -5,4 +5,3 @@ export * from "./billing-unit-type.js";
 export * from "./contract-status.js";
 export * from "./employment-status.js";
 export * from "./gender.js";
-export * from "./rate-category.js";

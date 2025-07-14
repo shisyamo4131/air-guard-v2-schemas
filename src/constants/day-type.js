@@ -8,3 +8,20 @@ export const DAY_TYPE = Object.freeze({
 export const DAY_TYPE_ARRAY = Object.entries(DAY_TYPE).map(([key, value]) => {
   return { value: key, title: value };
 });
+
+/**
+ * Returns the corresponding day type based on the given date's day of the week.
+ * - Sunday returns "sunday"
+ * - Saturday returns "saturday"
+ * - All other days return "weekday"
+ * @param {Date} date
+ * @returns {string} "sunday", "saturday", or "weekday"
+ * @throws {TypeError} if date is not a Date object
+ */
+export const getDayType = (date) => {
+  if (!(date instanceof Date) || isNaN(date)) {
+    throw new TypeError("引数は有効な Date オブジェクトでなければなりません。");
+  }
+  const day = date.getDay();
+  return day === 0 ? "sunday" : day === 6 ? "saturday" : "weekday";
+};

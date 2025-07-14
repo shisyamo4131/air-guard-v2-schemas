@@ -1,11 +1,12 @@
 import { default as FireModel, BaseClass } from "air-firebase-v2";
-import { defField } from "./parts/fieldDefinitions.js";
+import {
+  defField,
+  DEFAULT_BREAK_MINUTES,
+  MINUTES_PER_HOUR,
+  MINUTES_PER_QUARTER_HOUR,
+} from "./parts/fieldDefinitions.js";
 import Site from "./Site.js";
 import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
-
-const DEFAULT_BREAK_MINUTES = 60;
-const MINUTES_PER_HOUR = 60;
-const MINUTES_PER_QUARTER_HOUR = 15;
 
 /**
  * OperationResult クラスの employees, outsourcers プロパティに適用するカスタムクラスのベースクラス
@@ -127,6 +128,7 @@ export default class OperationResult extends FireModel {
     shiftType: defField("shiftType", { required: true }),
     startAt: defField("dateTimeAt", { label: "開始日時", required: true }),
     endAt: defField("dateTimeAt", { label: "終了日時", required: true }),
+    breakMinutes: defField("breakMinutes", { required: true }),
     requiredPersonnel: defField("number", {
       label: "必要人数",
       required: true,

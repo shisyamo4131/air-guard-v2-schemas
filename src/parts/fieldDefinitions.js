@@ -4,8 +4,11 @@ import { DAY_TYPE_ARRAY } from "../constants/day-type.js";
 import { EMPLOYMENT_STATUS_ARRAY } from "../constants/employment-status.js";
 import { GENDER_ARRAY } from "../constants/gender.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
-import { RATE_CATEGORY_ARRAY } from "../constants/rate-category.js";
 import { SHIFT_TYPE_ARRAY } from "../constants/shift-type.js";
+
+export const DEFAULT_BREAK_MINUTES = 60;
+export const MINUTES_PER_HOUR = 60;
+export const MINUTES_PER_QUARTER_HOUR = 15;
 
 const defaultDefinition = {
   type: String,
@@ -122,6 +125,16 @@ export const fieldDefinitions = {
 
   /** number */
   number: generalDefinitions.number,
+  breakMinutes: {
+    ...generalDefinitions.number,
+    label: "休憩時間（分）",
+    default: DEFAULT_BREAK_MINUTES,
+  },
+  overTimeMinutes: {
+    ...generalDefinitions.number,
+    label: "残業時間（分）",
+    default: 0,
+  },
   price: {
     ...generalDefinitions.number,
   },
@@ -363,17 +376,6 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: PREFECTURES_ARRAY,
-      },
-    },
-  },
-  rateCategory: {
-    ...generalDefinitions.select,
-    default: "base",
-    label: "区分",
-    component: {
-      name: generalDefinitions.select.component.name,
-      attrs: {
-        items: RATE_CATEGORY_ARRAY,
       },
     },
   },
