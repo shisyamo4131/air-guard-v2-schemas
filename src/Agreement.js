@@ -123,13 +123,13 @@ export default class Agreement extends BaseClass {
       startAt: {
         configurable: true,
         enumerable: true,
-        get: () => this.getStartAt(this.dateAt),
+        get: () => this._getStartAt(this.dateAt),
         set: (v) => {},
       },
       endAt: {
         configurable: true,
         enumerable: true,
-        get: () => this.getEndAt(this.dateAt),
+        get: () => this._getEndAt(this.dateAt),
         set: (v) => {},
       },
     });
@@ -168,7 +168,7 @@ export default class Agreement extends BaseClass {
    * @param {string|Object} date 日付文字列または Date オブジェクト
    * @returns {Date} 変換後の Date オブジェクト
    */
-  getStartAt(date) {
+  _getStartAt(date) {
     // date が null/undefined 以外で、かつ string／Date でないならエラー
     if (date != null && !(typeof date === "string" || date instanceof Date)) {
       throw new Error("Invalid date type");
@@ -191,7 +191,7 @@ export default class Agreement extends BaseClass {
    * @param {string|Object} date 日付文字列または Date オブジェクト
    * @returns {Date} 変換後の Date オブジェクト
    */
-  getEndAt(date) {
+  _getEndAt(date) {
     // date が null/undefined 以外で、かつ string／Date でないならエラー
     if (date != null && !(typeof date === "string" || date instanceof Date)) {
       throw new Error("Invalid date type");
@@ -207,29 +207,6 @@ export default class Agreement extends BaseClass {
 
     // 開始時刻を設定（秒・ミリ秒は 0）
     result.setHours(this.endHour, this.endMinute, 0, 0);
-    return result;
-  }
-
-  /**
-   * 現在の Agreement インスタンスを基に、指定された日付に対する新しい Agreement インスタンスを生成します。
-   * - `date` が指定されていない場合は、現在の日付を使用します。
-   * - `date` が文字列または Date オブジェクトでない場合はエラーをスローします。
-   * - `date` が有効な場合は、その日付を基に新しい Agreement インスタンスを作成します。
-   * - `dateAt` フィールドには指定された日付が設定されます
-   * @param {string|Object} date 日付文字列または Date オブジェクト
-   * @returns {Agreement} 新しい Agreement インスタンス
-   * @throws {Error} date が無効な場合
-   */
-  getDateAgreement(date) {
-    // date が null/undefined 以外で、かつ string／Date でないならエラー
-    if (date != null && !(typeof date === "string" || date instanceof Date)) {
-      throw new Error("Invalid date type");
-    }
-
-    const result = new Agreement(this);
-    result.dateAt = new Date(date || Date.now());
-    result.startAt = this.getStartAt(date);
-    result.endAt = this.getEndAt(date);
     return result;
   }
 }
