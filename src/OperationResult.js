@@ -190,4 +190,20 @@ export default class OperationResult extends FireModel {
     });
     this.employees.push(newEmployee);
   }
+
+  /**
+   * 引数で受け取った従業員のIDを持つ OperationResultEmployee を employees から削除します。
+   * - 従業員IDが見つからない場合はエラーをスローします。
+   * - `employeeId` は必須です。
+   * @param {string} employeeId - 従業員のID
+   */
+  removeEmployee(employeeId) {
+    const index = this.employees.findIndex(
+      (emp) => emp.employeeId === employeeId
+    );
+    if (index === -1) {
+      throw new Error(`Employee with ID ${employeeId} not found.`);
+    }
+    this.employees.splice(index, 1);
+  }
 }

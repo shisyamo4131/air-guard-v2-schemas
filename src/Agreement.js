@@ -32,6 +32,7 @@ export default class Agreement extends BaseClass {
       required: true,
       default: "17:00",
     }),
+    workingMinutes: defField("workingMinutes", { required: true }),
     breakMinutes: defField("breakMinutes", { required: true }),
     unitPrice: defField("price", { label: "単価", required: true }),
     overTimeUnitPrice: defField("price", {
@@ -63,10 +64,30 @@ export default class Agreement extends BaseClass {
       sortable: false,
     },
     {
-      title: "時間",
+      title: "勤務時間",
       key: "time",
-      value: (item) =>
-        `${item.startTime} ～ ${item.endTime} (休憩${item.breakMinutes}分)`,
+      value: (item) => `${item.startTime} ～ ${item.endTime}`,
+      sortable: false,
+    },
+    {
+      title: "実働時間",
+      key: "workingMinutes",
+      value: (item) => `${item.workingMinutes}分`,
+      align: "center",
+      sortable: false,
+    },
+    {
+      title: "休憩時間",
+      key: "breakMinutes",
+      value: (item) => `${item.breakMinutes}分`,
+      align: "center",
+      sortable: false,
+    },
+    {
+      title: "残業時間",
+      key: "overTimeWorkingMinutes",
+      value: (item) => `${item.overTimeWorkingMinutes}分`,
+      align: "center",
       sortable: false,
     },
     {
@@ -132,15 +153,43 @@ export default class Agreement extends BaseClass {
         get: () => this._getEndAt(this.dateAt),
         set: (v) => {},
       },
+      isNextDay: {
+        configurable: true,
+        enumerable: true,
+        get: () => this.startTime > this.endTime,
+        set: (v) => {},
+      },
+      totalWorkingMinutes: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          const start = this.startAt;
+          const end = this.endAt;
+          const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
+          return Math.max(0, diff - this.breakMinutes);
+        },
+        set: (v) => {},
+      },
+      overTimeWorkingMinutes: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          return Math.max(0, this.totalWorkingMinutes - this.workingMinutes);
+        },
+        set: (v) => {},
+      },
+      isWorkingMinutesInvalid: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          return (
+            this.totalWorkingMinutes !==
+            this.workingMinutes + this.overTimeWorkingMinutes
+          );
+        },
+        set: (v) => {},
+      },
     });
-  }
-
-  /**
-   * `startTime` と `endTime` を比較し、次の日にまたがるかどうかを判定します。
-   */
-  get isNextDay() {
-    // 開始時刻が終了時刻より前の場合は true
-    return this.startTime > this.endTime;
   }
 
   get startHour() {

@@ -15,7 +15,11 @@ export default class SiteOperationSchedule extends FireModel {
     shiftType: defField("shiftType", { required: true }),
     startAt: defField("dateTimeAt", { label: "予定開始日時", required: true }),
     endAt: defField("dateTimeAt", { label: "予定終了日時", required: true }),
+    workingMinutes: defField("workingMinutes", { required: true }),
     breakMinutes: defField("breakMinutes", { required: true }),
+    overTimeWorkingMinutes: defField("overTimeWorkingMinutes", {
+      required: true,
+    }),
     requiredPersonnel: defField("number", {
       label: "必要人数",
       required: true,
@@ -95,7 +99,6 @@ export default class SiteOperationSchedule extends FireModel {
     const adapter = this.constructor.getAdapter();
     const firestore = adapter.firestore;
     const operationResult = new OperationResult(this.toObject());
-
     const docRef = await runTransaction(firestore, async (transaction) => {
       const docRef = await super.create({ transaction });
       operationResult.siteOperationScheduleId = docRef.id;

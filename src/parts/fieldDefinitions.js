@@ -6,6 +6,7 @@ import { GENDER_ARRAY } from "../constants/gender.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
 import { SHIFT_TYPE_ARRAY } from "../constants/shift-type.js";
 
+export const DEFAULT_WORKING_MINUTES = 480;
 export const DEFAULT_BREAK_MINUTES = 60;
 export const MINUTES_PER_HOUR = 60;
 export const MINUTES_PER_QUARTER_HOUR = 15;
@@ -129,11 +130,40 @@ export const fieldDefinitions = {
     ...generalDefinitions.number,
     label: "休憩時間（分）",
     default: DEFAULT_BREAK_MINUTES,
+    validator: (v) => v >= 0,
+    component: {
+      ...generalDefinitions.number.component,
+      attrs: {
+        ...generalDefinitions.number.component.attrs,
+        min: 0,
+      },
+    },
   },
-  overTimeMinutes: {
+  overTimeWorkingMinutes: {
     ...generalDefinitions.number,
     label: "残業時間（分）",
     default: 0,
+    validator: (v) => v >= 0,
+    component: {
+      ...generalDefinitions.number.component,
+      attrs: {
+        ...generalDefinitions.number.component.attrs,
+        min: 0,
+      },
+    },
+  },
+  workingMinutes: {
+    ...generalDefinitions.number,
+    label: "実働時間（分）",
+    default: DEFAULT_WORKING_MINUTES,
+    validator: (v) => v >= 0,
+    component: {
+      ...generalDefinitions.number.component,
+      attrs: {
+        ...generalDefinitions.number.component.attrs,
+        min: 0,
+      },
+    },
   },
   price: {
     ...generalDefinitions.number,
