@@ -11,8 +11,14 @@ export default class SiteOperationSchedule extends FireModel {
   static classProps = {
     siteId: defField("siteId", { required: true, hidden: true }),
     dateAt: defField("dateAt", { label: "日付", required: true }),
-    dayType: defField("dayType", { required: true }),
-    shiftType: defField("shiftType", { required: true }),
+    dayType: defField("dayType", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
+    shiftType: defField("shiftType", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /**
      * 開始時刻（HH:MM形式）
      */
@@ -20,6 +26,7 @@ export default class SiteOperationSchedule extends FireModel {
       label: "開始時刻",
       required: true,
       default: "08:00",
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 終了時刻（HH:MM形式）
@@ -28,6 +35,7 @@ export default class SiteOperationSchedule extends FireModel {
       label: "終了時刻",
       required: true,
       default: "17:00",
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 規定実働時間（分）
@@ -36,13 +44,17 @@ export default class SiteOperationSchedule extends FireModel {
      */
     regulationWorkMinutes: defField("regulationWorkMinutes", {
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 休憩時間（分）
      * - `startTime` と `endTime` の間に取得される休憩時間（分）。
      * - `totalWorkMinutes` の計算に使用される。
      */
-    breakMinutes: defField("breakMinutes", { required: true }),
+    breakMinutes: defField("breakMinutes", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     requiredPersonnel: defField("number", {
       label: "必要人数",
       required: true,

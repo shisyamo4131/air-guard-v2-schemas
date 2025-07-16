@@ -29,14 +29,20 @@ export default class Agreement extends BaseClass {
      * - `DAY_TYPE` で定義された値を使用。
      * - `WEEKDAY`, `SATURDAY`, `SUNDAY`, `HOLIDAY` のいずれか。
      */
-    dayType: defField("dayType", { required: true }),
+    dayType: defField("dayType", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /**
      * 勤務区分
      * - 当該取極めが適用される勤務区分。
      * - `SHIFT_TYPE` で定義された値を使用。
      * - `DAY`, `NIGHT` のいずれか。
      */
-    shiftType: defField("shiftType", { required: true }),
+    shiftType: defField("shiftType", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /**
      * 開始時刻（HH:MM形式）
      */
@@ -44,6 +50,7 @@ export default class Agreement extends BaseClass {
       label: "開始時刻",
       required: true,
       default: "08:00",
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 終了時刻（HH:MM形式）
@@ -52,6 +59,7 @@ export default class Agreement extends BaseClass {
       label: "終了時刻",
       required: true,
       default: "17:00",
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 規定実働時間（分）
@@ -60,17 +68,25 @@ export default class Agreement extends BaseClass {
      */
     regulationWorkMinutes: defField("regulationWorkMinutes", {
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 休憩時間（分）
      * - `startTime` と `endTime` の間に取得される休憩時間（分）。
      * - `totalWorkMinutes` の計算に使用される。
      */
-    breakMinutes: defField("breakMinutes", { required: true }),
+    breakMinutes: defField("breakMinutes", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /**
      * 基本単価（円）
      */
-    unitPrice: defField("price", { label: "基本単価", required: true }),
+    unitPrice: defField("price", {
+      label: "基本単価",
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /**
      * 時間外単価（円/時間）
      * - `regulationWorkMinutes` を超える時間に対して適用される単価。
@@ -78,6 +94,7 @@ export default class Agreement extends BaseClass {
     overTimeUnitPrice: defField("price", {
       label: "時間外単価",
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 資格者単価（円）
@@ -86,6 +103,7 @@ export default class Agreement extends BaseClass {
     unitPriceQualified: defField("price", {
       label: "資格者単価",
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 資格者時間外単価（円/時間）
@@ -94,6 +112,7 @@ export default class Agreement extends BaseClass {
     overTimeUnitPriceQualified: defField("price", {
       label: "資格者時間外単価",
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
      * 請求単位

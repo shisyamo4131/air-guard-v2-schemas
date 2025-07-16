@@ -30,9 +30,9 @@ export default class Customer extends FireModel {
     /** location */
     location: defField("location", { hidden: true }),
     /** 電話番号 */
-    tel: defField("tel"),
+    tel: defField("tel", { colsDefinition: { cols: 12, sm: 6 } }),
     /** FAX番号 */
-    fax: defField("fax"),
+    fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
     /** 契約状態 */
     contractStatus: defField("contractStatus", { required: true }),
     /** 備考 */
