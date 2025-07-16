@@ -534,7 +534,10 @@ export const defField = (key, options = {}) => {
   if (options.hasOwnProperty("customClass")) {
     newConfig.customClass = options.customClass;
   }
-
+  // options.colsDefinition があれば、それを newConfig.colsDefinition に設定
+  if (options.hasOwnProperty("colsDefinition")) {
+    newConfig.colsDefinition = options.colsDefinition;
+  }
   // options.component オブジェクトの処理
   if (typeof options.component === "object" && options.component !== null) {
     // options.component.name があれば newConfig.component.name を上書き
