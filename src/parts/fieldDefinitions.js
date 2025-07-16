@@ -1,15 +1,28 @@
-import { BILLING_UNIT_TYPE_ARRAY } from "../constants/billing-unit-type.js";
-import { CONTRACT_STATUS_ARRAY } from "../constants/contract-status.js";
-import { DAY_TYPE_ARRAY } from "../constants/day-type.js";
-import { EMPLOYMENT_STATUS_ARRAY } from "../constants/employment-status.js";
-import { GENDER_ARRAY } from "../constants/gender.js";
+import {
+  BILLING_UNIT_TYPE_ARRAY,
+  BILLING_UNIT_TYPE_DEFAULT,
+} from "../constants/billing-unit-type.js";
+import {
+  CONTRACT_STATUS_ARRAY,
+  CONTRACT_STATUS_DEFAULT,
+} from "../constants/contract-status.js";
+import { DAY_TYPE_ARRAY, DAY_TYPE_DEFAULT } from "../constants/day-type.js";
+import {
+  EMPLOYMENT_STATUS_ARRAY,
+  EMPLOYMENT_STATUS_DEFAULT,
+} from "../constants/employment-status.js";
+import { GENDER_ARRAY, GENDER_DEFAULT } from "../constants/gender.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
-import { SHIFT_TYPE_ARRAY } from "../constants/shift-type.js";
+import {
+  SHIFT_TYPE_ARRAY,
+  SHIFT_TYPE_DEFAULT,
+} from "../constants/shift-type.js";
 
 export const DEFAULT_WORKING_MINUTES = 480;
 export const DEFAULT_BREAK_MINUTES = 60;
 export const MINUTES_PER_HOUR = 60;
 export const MINUTES_PER_QUARTER_HOUR = 15;
+export const MAX_SCHEDULED_WORKING_MINUTES = 480; // 8時間 * 60分
 
 const defaultDefinition = {
   type: String,
@@ -139,7 +152,7 @@ export const fieldDefinitions = {
       },
     },
   },
-  overTimeWorkingMinutes: {
+  overTimeWorkMinutes: {
     ...generalDefinitions.number,
     label: "残業時間（分）",
     default: 0,
@@ -152,9 +165,9 @@ export const fieldDefinitions = {
       },
     },
   },
-  workingMinutes: {
+  regulationWorkMinutes: {
     ...generalDefinitions.number,
-    label: "実働時間（分）",
+    label: "規定実働時間（分）",
     default: DEFAULT_WORKING_MINUTES,
     validator: (v) => v >= 0,
     component: {
@@ -162,6 +175,8 @@ export const fieldDefinitions = {
       attrs: {
         ...generalDefinitions.number.component.attrs,
         min: 0,
+        persistentHint: true,
+        hint: "この時間を超えると残業扱いになります。",
       },
     },
   },
@@ -345,7 +360,7 @@ export const fieldDefinitions = {
   select: generalDefinitions.select,
   billingUnitType: {
     ...generalDefinitions.select,
-    default: "day",
+    default: BILLING_UNIT_TYPE_DEFAULT,
     label: "請求単位",
     component: {
       name: generalDefinitions.select.component.name,
@@ -356,7 +371,7 @@ export const fieldDefinitions = {
   },
   contractStatus: {
     ...generalDefinitions.select,
-    default: "active",
+    default: CONTRACT_STATUS_DEFAULT,
     label: "契約状態",
     component: {
       name: generalDefinitions.select.component.name,
@@ -367,7 +382,7 @@ export const fieldDefinitions = {
   },
   dayType: {
     ...generalDefinitions.select,
-    default: "weekday",
+    default: DAY_TYPE_DEFAULT,
     label: "曜日区分",
     component: {
       name: generalDefinitions.select.component.name,
@@ -378,7 +393,7 @@ export const fieldDefinitions = {
   },
   employmentStatus: {
     ...generalDefinitions.select,
-    default: "active",
+    default: EMPLOYMENT_STATUS_DEFAULT,
     label: "雇用状態",
     component: {
       name: generalDefinitions.select.component.name,
@@ -389,7 +404,7 @@ export const fieldDefinitions = {
   },
   gender: {
     ...generalDefinitions.select,
-    default: "male",
+    default: GENDER_DEFAULT,
     label: "性別",
     component: {
       name: generalDefinitions.select.component.name,
@@ -411,7 +426,7 @@ export const fieldDefinitions = {
   },
   shiftType: {
     ...generalDefinitions.select,
-    default: "day",
+    default: SHIFT_TYPE_DEFAULT,
     label: "勤務区分",
     component: {
       name: generalDefinitions.select.component.name,

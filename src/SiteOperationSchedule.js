@@ -13,13 +13,36 @@ export default class SiteOperationSchedule extends FireModel {
     dateAt: defField("dateAt", { label: "日付", required: true }),
     dayType: defField("dayType", { required: true }),
     shiftType: defField("shiftType", { required: true }),
-    startAt: defField("dateTimeAt", { label: "予定開始日時", required: true }),
-    endAt: defField("dateTimeAt", { label: "予定終了日時", required: true }),
-    workingMinutes: defField("workingMinutes", { required: true }),
-    breakMinutes: defField("breakMinutes", { required: true }),
-    overTimeWorkingMinutes: defField("overTimeWorkingMinutes", {
+    /**
+     * 開始時刻（HH:MM形式）
+     */
+    startTime: defField("time", {
+      label: "開始時刻",
+      required: true,
+      default: "08:00",
+    }),
+    /**
+     * 終了時刻（HH:MM形式）
+     */
+    endTime: defField("time", {
+      label: "終了時刻",
+      required: true,
+      default: "17:00",
+    }),
+    /**
+     * 規定実働時間（分）
+     * - `unitPrice`(または `unitPriceQualified`) で定められた単価に対する最大実働時間。
+     * - この時間を超えると、残業扱いとなる。
+     */
+    regulationWorkMinutes: defField("regulationWorkMinutes", {
       required: true,
     }),
+    /**
+     * 休憩時間（分）
+     * - `startTime` と `endTime` の間に取得される休憩時間（分）。
+     * - `totalWorkMinutes` の計算に使用される。
+     */
+    breakMinutes: defField("breakMinutes", { required: true }),
     requiredPersonnel: defField("number", {
       label: "必要人数",
       required: true,
@@ -48,44 +71,152 @@ export default class SiteOperationSchedule extends FireModel {
   afterInitialize() {
     Object.defineProperties(this, {
       /**
-       * `startAt` と `endAt` を比較検証した結果を返します。
-       * - `startAt` <= `endAt` であれば false を返します。
-       * - `startAt` または `endAt` が有効な日付オブジェクトでない場合も false を返します。
-       *   - `startAt` と `endAt` が有効な日付オブジェクトでない場合、算出元プロパティの `required` 属性によって
-       *     必須入力となるため、データの妥当性は保たれます。
-       * - `startAt` > `endAt` である場合、このプロパティはエラーメッセージを返します。
-       * - セッターは機能しません。
+       * 開始日時（Date オブジェクト）
+       * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
        */
-      hasError: {
+      startAt: {
+        configurable: true,
         enumerable: true,
-        get() {
-          if (!this.startAt || !this.endAt) return false;
-
-          if (this.startAt > this.endAt) {
-            return "終了時刻は開始時刻より後に設定してください。";
-          }
-
-          return false;
+        get: () => this._getStartAt(this.dateAt),
+        set: (v) => {},
+      },
+      /**
+       * 終了日時（Date オブジェクト）
+       * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
+       */
+      endAt: {
+        configurable: true,
+        enumerable: true,
+        get: () => this._getEndAt(this.dateAt),
+        set: (v) => {},
+      },
+      /**
+       * 翌日フラグ
+       * - `startTime` が `endTime` よりも遅い場合、翌日扱いとする。
+       */
+      isSpansNextDay: {
+        configurable: true,
+        enumerable: true,
+        get: () => this.startTime > this.endTime,
+        set: (v) => {},
+      },
+      /**
+       * 総実働時間（分）
+       * - `startAt` と `endAt` の差から休憩時間を引いた値。
+       * - `startAt` と `endAt` の差が負の場合は 0を返す。
+       */
+      totalWorkMinutes: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          const start = this.startAt;
+          const end = this.endAt;
+          const breakMinutes = this.breakMinutes || 0;
+          const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
+          return Math.max(0, diff - breakMinutes);
         },
-        set(v) {},
+        set: (v) => {},
+      },
+      /**
+       * 残業時間（分）
+       * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値。
+       * - 残業時間は負にならないように 0 を下限とする。
+       */
+      overTimeWorkMinutes: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          return Math.max(
+            0,
+            this.totalWorkMinutes - this.regulationWorkMinutes
+          );
+        },
+        set: (v) => {},
       },
     });
   }
 
   /**
-   * ドキュメント作成前または更新前のデータ検証処理です。
-   * - hasError プロパティが truthy である場合、その値をメッセージとしてエラーをスローします。
-   * - プロミスを返します。
-   * @return {Promise<void>}
+   * 開始時刻の時間部分を取得します。
+   * - `startTime` が設定されていない場合は 0 を返します。
    */
-  beforeEdit() {
-    return new Promise((resolve, reject) => {
-      if (this.hasError) {
-        reject(new Error(this.hasError));
-      } else {
-        resolve();
-      }
-    });
+  get startHour() {
+    return this.startTime ? Number(this.startTime.split(":")[0]) : 0;
+  }
+
+  /**
+   * 終了時刻の時間部分を取得します。
+   * - `endTime` が設定されていない場合は 0 を返します。
+   */
+  get startMinute() {
+    return this.startTime ? Number(this.startTime.split(":")[1]) : 0;
+  }
+
+  /**
+   * 終了時刻の時間部分を取得します。
+   * - `endTime` が設定されていない場合は 0 を返します。
+   */
+  get endHour() {
+    return this.endTime ? Number(this.endTime.split(":")[0]) : 0;
+  }
+
+  /**
+   * 終了時刻の分部分を取得します。
+   * - `endTime` が設定されていない場合は 0 を返します。
+   */
+  get endMinute() {
+    return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
+  }
+
+  /**
+   * 引数で受け取った日付を Date オブジェクトに変換して返します。
+   * - 引数が文字列の場合、日付文字列として解釈します。
+   * - 引数がオブジェクトの場合、Date オブジェクトとして解釈します。
+   * - 引数が未指定または null の場合、現在の日付を返します。
+   * - `startTime` がセットされている場合はその時刻を反映します。
+   * @param {string|Object} date 日付文字列または Date オブジェクト
+   * @returns {Date} 変換後の Date オブジェクト
+   */
+  _getStartAt(date) {
+    // date が null/undefined 以外で、かつ string／Date でないならエラー
+    if (date != null && !(typeof date === "string" || date instanceof Date)) {
+      throw new Error("Invalid date type");
+    }
+
+    // 空文字・undefined・null → Date.now()、それ以外 → date をそのまま使う
+    const result = new Date(date || Date.now());
+
+    // 開始時刻を設定（秒・ミリ秒は 0）
+    result.setHours(this.startHour, this.startMinute, 0, 0);
+    return result;
+  }
+
+  /**
+   * 引数で受け取った日付を Date オブジェクトに変換して返します。
+   * - 引数が文字列の場合、日付文字列として解釈します。
+   * - 引数がオブジェクトの場合、Date オブジェクトとして解釈します。
+   * - 引数が未指定または null の場合、現在の日付を返します。
+   * - `endTime` がセットされている場合はその時刻を反映します。
+   * @param {string|Object} date 日付文字列または Date オブジェクト
+   * @returns {Date} 変換後の Date オブジェクト
+   */
+  _getEndAt(date) {
+    // date が null/undefined 以外で、かつ string／Date でないならエラー
+    if (date != null && !(typeof date === "string" || date instanceof Date)) {
+      throw new Error("Invalid date type");
+    }
+
+    // 空文字・undefined・null → Date.now()、それ以外 → date をそのまま使う
+    const result = new Date(date || Date.now());
+
+    if (this.isSpansNextDay) {
+      // 次の日にまたがる場合は、翌日の開始時刻を設定
+      result.setDate(result.getDate() + 1);
+    }
+
+    // 開始時刻を設定（秒・ミリ秒は 0）
+    result.setHours(this.endHour, this.endMinute, 0, 0);
+    return result;
   }
 
   /**

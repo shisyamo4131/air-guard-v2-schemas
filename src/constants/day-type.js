@@ -1,9 +1,12 @@
 // prettier-ignore
+export const DAY_TYPE_DEFAULT = "WEEKDAY";
+
 export const DAY_TYPE = Object.freeze({
-  weekday: '平日',
-  saturday: '土曜',
-  sunday: '日曜',
-  holiday: '祝日',});
+  WEEKDAY: "平日",
+  SATURDAY: "土曜",
+  SUNDAY: "日曜",
+  HOLIDAY: "祝日",
+});
 
 export const DAY_TYPE_ARRAY = Object.entries(DAY_TYPE).map(([key, value]) => {
   return { value: key, title: value };
@@ -11,11 +14,11 @@ export const DAY_TYPE_ARRAY = Object.entries(DAY_TYPE).map(([key, value]) => {
 
 /**
  * Returns the corresponding day type based on the given date's day of the week.
- * - Sunday returns "sunday"
- * - Saturday returns "saturday"
- * - All other days return "weekday"
+ * - Sunday returns "SUNDAY"
+ * - Saturday returns "SATURDAY"
+ * - All other days return "WEEKDAY"
  * @param {Date} date
- * @returns {string} "sunday", "saturday", or "weekday"
+ * @returns {string} "SUNDAY", "SATURDAY", or "WEEKDAY"
  * @throws {TypeError} if date is not a Date object
  */
 export const getDayType = (date) => {
@@ -23,5 +26,5 @@ export const getDayType = (date) => {
     throw new TypeError("引数は有効な Date オブジェクトでなければなりません。");
   }
   const day = date.getDay();
-  return day === 0 ? "sunday" : day === 6 ? "saturday" : "weekday";
+  return day === 0 ? "SUNDAY" : day === 6 ? "SATURDAY" : "WEEKDAY";
 };

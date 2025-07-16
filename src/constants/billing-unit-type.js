@@ -1,7 +1,9 @@
 // prettier-ignore
+export const BILLING_UNIT_TYPE_DEFAULT = "PER_DAY";
+
 export const BILLING_UNIT_TYPE = Object.freeze({
-  day: '日',
-  time: '時間',
+  PER_DAY: "日",
+  PER_HOUR: "時間",
 });
 
 export const BILLING_UNIT_TYPE_ARRAY = Object.entries(BILLING_UNIT_TYPE).map(

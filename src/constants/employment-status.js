@@ -1,7 +1,8 @@
 // prettier-ignore
+export const EMPLOYMENT_STATUS_DEFAULT = "ACTIVE";
 export const EMPLOYMENT_STATUS = Object.freeze({
-  active: '在職中',
-  terminated: '退職済み',
+  ACTIVE: "在職中",
+  TERMINATED: "退職済み",
 });
 
 export const EMPLOYMENT_STATUS_ARRAY = Object.entries(EMPLOYMENT_STATUS).map(
