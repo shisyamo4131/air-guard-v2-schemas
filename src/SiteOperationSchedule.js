@@ -12,22 +12,8 @@ export default class SiteOperationSchedule extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    status: {
-      type: String,
-      default: "DRAFT",
-      label: "ステータス",
-      required: true,
-      component: {
-        name: "air-select",
-        attrs: {
-          items: [
-            { title: "下書き", value: "DRAFT" },
-            { title: "配置確定", value: "ARRANGED" },
-            { title: "実績確定", value: "CONFIRMED" },
-          ],
-        },
-      },
-    },
+    /** ステータス（初期値: DRAFT） */
+    status: defField("siteOperationScheduleStatus", { required: true }),
     /** 現場ドキュメントID */
     siteId: defField("siteId", { required: true, hidden: true }),
     /** 日付（Date オブジェクト） */
