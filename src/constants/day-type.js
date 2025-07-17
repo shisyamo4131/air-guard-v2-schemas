@@ -1,4 +1,6 @@
 // prettier-ignore
+import holiday_jp from "@holiday-jp/holiday_jp";
+
 export const DAY_TYPE_DEFAULT = "WEEKDAY";
 
 export const DAY_TYPE = Object.freeze({
@@ -14,17 +16,25 @@ export const DAY_TYPE_ARRAY = Object.entries(DAY_TYPE).map(([key, value]) => {
 
 /**
  * Returns the corresponding day type based on the given date's day of the week.
- * - Sunday returns "SUNDAY"
- * - Saturday returns "SATURDAY"
- * - All other days return "WEEKDAY"
+ * If the date is a holiday, it returns "HOLIDAY".
+ * If the date is a Sunday, it returns "SUNDAY".
+ * If the date is a Saturday, it returns "SATURDAY".
+ * Otherwise, it returns "WEEKDAY".
  * @param {Date} date
- * @returns {string} "SUNDAY", "SATURDAY", or "WEEKDAY"
+ * @returns {string} - The day type corresponding to the date.
  * @throws {TypeError} if date is not a Date object
  */
 export const getDayType = (date) => {
-  if (!(date instanceof Date) || isNaN(date)) {
-    throw new TypeError("引数は有効な Date オブジェクトでなければなりません。");
+  if (!(date instanceof Date)) {
+    throw new TypeError("Input must be a Date object");
   }
-  const day = date.getDay();
-  return day === 0 ? "SUNDAY" : day === 6 ? "SATURDAY" : "WEEKDAY";
+  if (holiday_jp.isHoliday(date)) {
+    return DAY_TYPE.HOLIDAY;
+  } else if (date.getDay() === 0) {
+    return DAY_TYPE.SUNDAY;
+  } else if (date.getDay() === 6) {
+    return DAY_TYPE.SATURDAY;
+  } else {
+    return DAY_TYPE.WEEKDAY;
+  }
 };
