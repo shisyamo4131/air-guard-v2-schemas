@@ -1,7 +1,10 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-import { runTransaction } from "firebase/firestore";
-import OperationResult from "./OperationResult.js";
+import { getDateAt } from "./utils";
+import {
+  OperationResultEmployee,
+  OperationResultOutsourcer,
+} from "./OperationResultDetail.js";
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -9,28 +12,36 @@ export default class SiteOperationSchedule extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
+    status: {
+      type: String,
+      default: "DRAFT",
+      label: "ステータス",
+      required: true,
+      component: {
+        name: "air-select",
+        attrs: {
+          items: [
+            { title: "下書き", value: "DRAFT" },
+            { title: "配置確定", value: "ARRANGED" },
+            { title: "実績確定", value: "CONFIRMED" },
+          ],
+        },
+      },
+    },
+    /** 現場ドキュメントID */
     siteId: defField("siteId", { required: true, hidden: true }),
+    /** 日付（Date オブジェクト） */
     dateAt: defField("dateAt", { label: "日付", required: true }),
-    dayType: defField("dayType", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    shiftType: defField("shiftType", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 開始時刻（HH:MM形式）
-     */
+    /** 勤務区分 */
+    shiftType: defField("shiftType", { required: true }),
+    /** 開始時刻（HH:MM 形式） */
     startTime: defField("time", {
       label: "開始時刻",
       required: true,
       default: "08:00",
       colsDefinition: { cols: 12, sm: 6 },
     }),
-    /**
-     * 終了時刻（HH:MM形式）
-     */
+    /** 終了時刻（HH:MM 形式） */
     endTime: defField("time", {
       label: "終了時刻",
       required: true,
@@ -39,8 +50,7 @@ export default class SiteOperationSchedule extends FireModel {
     }),
     /**
      * 規定実働時間（分）
-     * - `unitPrice`(または `unitPriceQualified`) で定められた単価に対する最大実働時間。
-     * - この時間を超えると、残業扱いとなる。
+     * - この時間を超えたら残業扱いとする。
      */
     regulationWorkMinutes: defField("regulationWorkMinutes", {
       required: true,
@@ -55,31 +65,38 @@ export default class SiteOperationSchedule extends FireModel {
       required: true,
       colsDefinition: { cols: 12, sm: 6 },
     }),
+    /** 必要人数 */
     requiredPersonnel: defField("number", {
       label: "必要人数",
       required: true,
     }),
+    /** 要資格者フラグ */
     qualificationRequired: defField("check", { label: "要資格者" }),
+    /** 作業内容 */
     workDescription: defField("oneLine", { label: "作業内容" }),
+    /** 備考 */
     remarks: defField("multipleLine", { label: "備考" }),
 
-    /** 単価情報は hidden とし、required は false とする */
-    // これらのフィールドは、取極めから選択した場合にのみ設定されるため
-    // 直接入力は想定されていない。
-    // 当該クラスから複製された OperationResult クラスではこれらのフィールドを必須とする。
-    unitPrice: defField("price", { label: "単価", hidden: true }),
-    overTimeUnitPrice: defField("price", { label: "時間外単価", hidden: true }),
-    unitPriceQualified: defField("price", {
-      label: "資格者単価",
-      hidden: true,
-    }),
-    overTimeUnitPriceQualified: defField("price", {
-      label: "資格者時間外単価",
-      hidden: true,
-    }),
-    billingUnitType: defField("billingUnitType", { required: true }),
+    /**
+     * 配置従業員
+     * - この稼働予定に配置される従業員のリスト。
+     * - `OperationResultEmployee` クラスを使用して定義される。
+     * - `OperationResult` クラスの `employees` フィールドに転用される。
+     */
+    employees: defField("array", { customClass: OperationResultEmployee }),
+
+    /**
+     * 配置外注先
+     * - この稼働予定に配置される外注先のリスト。
+     * - `OperationResultOutsourcer` クラスを使用して定義される。
+     * - `OperationResult` クラスの `outsourcers` フィールドに転用される。
+     */
+    outsourcers: defField("array", { customClass: OperationResultOutsourcer }),
   };
 
+  /***************************************************************************
+   * AFTER INITIALIZE
+   ***************************************************************************/
   afterInitialize() {
     Object.defineProperties(this, {
       /**
@@ -89,7 +106,7 @@ export default class SiteOperationSchedule extends FireModel {
       startAt: {
         configurable: true,
         enumerable: true,
-        get: () => this._getStartAt(this.dateAt),
+        get: () => getDateAt(this.dateAt, this.startTime),
         set: (v) => {},
       },
       /**
@@ -99,7 +116,7 @@ export default class SiteOperationSchedule extends FireModel {
       endAt: {
         configurable: true,
         enumerable: true,
-        get: () => this._getEndAt(this.dateAt),
+        get: () => getDateAt(this.dateAt, this.endTime),
         set: (v) => {},
       },
       /**
@@ -138,191 +155,172 @@ export default class SiteOperationSchedule extends FireModel {
         configurable: true,
         enumerable: true,
         get: () => {
-          return Math.max(
-            0,
-            this.totalWorkMinutes - this.regulationWorkMinutes
-          );
+          const diff = this.totalWorkMinutes - this.regulationWorkMinutes;
+          return Math.max(0, diff);
         },
+        set: (v) => {},
+      },
+      /**
+       * `employees` プロパティから従業員のIDを取得するためのアクセサ
+       */
+      employeeIds: {
+        configurable: true,
+        enumerable: true,
+        get: () => this.employees.map((emp) => emp.employeeId),
+        set: (v) => {},
+      },
+      /**
+       * `outsourcers` プロパティから外注のIDを取得するためのアクセサ
+       */
+      outsourcerIds: {
+        configurable: true,
+        enumerable: true,
+        get: () => this.outsourcers.map((out) => out.outsourcerId),
         set: (v) => {},
       },
     });
   }
 
   /**
-   * 開始時刻の時間部分を取得します。
-   * - `startTime` が設定されていない場合は 0 を返します。
+   * 引数で受け取った従業員のIDを持つ新しい OperationResultEmployee を employees に追加します。
+   * - `employees` プロパティに既に存在する従業員IDが指定された場合はエラーをスローします。
+   * - `startAt`, `endAt`, `breakMinutes` は現在のインスタンスから取得されます。
+   * - `employeeId` は必須です。
+   * @param {string} employeeId - 従業員のID
+   * @param {number} [index=-1] - 挿入位置。-1 の場合は末尾に追加されます。
+   * @throws {Error} - 従業員IDが既に存在する場合
    */
-  get startHour() {
-    return this.startTime ? Number(this.startTime.split(":")[0]) : 0;
-  }
-
-  /**
-   * 終了時刻の時間部分を取得します。
-   * - `endTime` が設定されていない場合は 0 を返します。
-   */
-  get startMinute() {
-    return this.startTime ? Number(this.startTime.split(":")[1]) : 0;
-  }
-
-  /**
-   * 終了時刻の時間部分を取得します。
-   * - `endTime` が設定されていない場合は 0 を返します。
-   */
-  get endHour() {
-    return this.endTime ? Number(this.endTime.split(":")[0]) : 0;
-  }
-
-  /**
-   * 終了時刻の分部分を取得します。
-   * - `endTime` が設定されていない場合は 0 を返します。
-   */
-  get endMinute() {
-    return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
-  }
-
-  /**
-   * 引数で受け取った日付を Date オブジェクトに変換して返します。
-   * - 引数が文字列の場合、日付文字列として解釈します。
-   * - 引数がオブジェクトの場合、Date オブジェクトとして解釈します。
-   * - 引数が未指定または null の場合、現在の日付を返します。
-   * - `startTime` がセットされている場合はその時刻を反映します。
-   * @param {string|Object} date 日付文字列または Date オブジェクト
-   * @returns {Date} 変換後の Date オブジェクト
-   */
-  _getStartAt(date) {
-    // date が null/undefined 以外で、かつ string／Date でないならエラー
-    if (date != null && !(typeof date === "string" || date instanceof Date)) {
-      throw new Error("Invalid date type");
+  addEmployee(employeeId, index = -1) {
+    if (this.employees.some((emp) => emp.employeeId === employeeId)) {
+      throw new Error(`Employee with ID ${employeeId} already exists.`);
     }
-
-    // 空文字・undefined・null → Date.now()、それ以外 → date をそのまま使う
-    const result = new Date(date || Date.now());
-
-    // 開始時刻を設定（秒・ミリ秒は 0）
-    result.setHours(this.startHour, this.startMinute, 0, 0);
-    return result;
-  }
-
-  /**
-   * 引数で受け取った日付を Date オブジェクトに変換して返します。
-   * - 引数が文字列の場合、日付文字列として解釈します。
-   * - 引数がオブジェクトの場合、Date オブジェクトとして解釈します。
-   * - 引数が未指定または null の場合、現在の日付を返します。
-   * - `endTime` がセットされている場合はその時刻を反映します。
-   * @param {string|Object} date 日付文字列または Date オブジェクト
-   * @returns {Date} 変換後の Date オブジェクト
-   */
-  _getEndAt(date) {
-    // date が null/undefined 以外で、かつ string／Date でないならエラー
-    if (date != null && !(typeof date === "string" || date instanceof Date)) {
-      throw new Error("Invalid date type");
-    }
-
-    // 空文字・undefined・null → Date.now()、それ以外 → date をそのまま使う
-    const result = new Date(date || Date.now());
-
-    if (this.isSpansNextDay) {
-      // 次の日にまたがる場合は、翌日の開始時刻を設定
-      result.setDate(result.getDate() + 1);
-    }
-
-    // 開始時刻を設定（秒・ミリ秒は 0）
-    result.setHours(this.endHour, this.endMinute, 0, 0);
-    return result;
-  }
-
-  /**
-   * ドキュメントを作成します。
-   * - トランザクションを使用して、現場稼働予定と同時に稼働実績を作成します。
-   * - 現場稼働予定のドキュメントIDを稼働実績の `siteOperationScheduleId` フィールドに設定します。
-   * - 稼働実績の作成に失敗した場合、現場稼働予定の作成もロールバックされます。
-   * @return {Promise<DocumentReference>} 作成されたドキュメントの参照を返します。
-   */
-  async create() {
-    const adapter = this.constructor.getAdapter();
-    const firestore = adapter.firestore;
-    const operationResult = new OperationResult(this.toObject());
-    const docRef = await runTransaction(firestore, async (transaction) => {
-      const docRef = await super.create({ transaction });
-      operationResult.siteOperationScheduleId = docRef.id;
-      operationResult.status = "scheduled";
-      await operationResult.create({ transaction });
+    const newEmployee = new OperationResultEmployee({
+      employeeId,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      breakMinutes: this.breakMinutes,
+      overTimeWorkMinutes: this.overTimeWorkMinutes,
     });
-
-    return docRef;
+    if (index === -1) {
+      this.employees.push(newEmployee);
+    } else {
+      this.employees.splice(index, 0, newEmployee);
+    }
   }
 
   /**
-   * ドキュメントを更新します。
-   * - トランザクションを使用して、現場稼働予定と同時に稼働実績を更新します。
-   * - 自身のドキュメントIDを持つ稼働実績を取得し、現場稼働予定のデータで更新します。
-   * - 自身のドキュメントIDを持つ稼働実績が存在しない場合、新たに稼働実績を作成します。
-   * - 稼働実績の更新に失敗した場合、現場稼働予定の更新もロールバックされます。
-   * @return {Promise<void>} 更新が成功した場合、何も返しません
-   * @throws {Error} 稼働実績として承認済みの現場稼働予定が存在する場合、更新できない旨のエラーをスローします。
-   * @throws {Error} トランザクション内での更新に失敗した場合、エラーをスローします。
+   * 従業員の位置を変更します。
+   * @param {number} oldIndex - 変更前のインデックス
+   * @param {number} newIndex - 変更後のインデックス
    */
-  async update() {
-    const adapter = this.constructor.getAdapter();
-    const firestore = adapter.firestore;
-    const operationResults = await new OperationResult().fetchDocs({
-      constraints: [["where", "siteOperationScheduleId", "==", this.docId]],
-    });
-
-    if (operationResults.some(({ status }) => status === "approved")) {
-      throw new Error(
-        "稼働実績として承認済みの現場稼働予定です。更新できません。"
-      );
+  changeEmployee(oldIndex, newIndex) {
+    if (oldIndex < 0 || oldIndex >= this.employees.length) {
+      throw new Error(`Invalid old index: ${oldIndex}`);
     }
+    if (newIndex < 0 || newIndex >= this.employees.length) {
+      throw new Error(`Invalid new index: ${newIndex}`);
+    }
+    const employee = this.employees.splice(oldIndex, 1)[0];
+    this.employees.splice(newIndex, 0, employee);
+  }
 
-    await runTransaction(firestore, async (transaction) => {
-      await super.update({ transaction });
-      if (operationResults && operationResults.length > 0) {
-        for (const result of operationResults) {
-          result.initialize({
-            ...result.toObject(),
-            ...this.toObject(),
-            docId: result.docId,
-          });
-          await result.update({ transaction });
-        }
-      } else {
-        const operationResult = new OperationResult(this.toObject());
-        operationResult.siteOperationScheduleId = this.docId;
-        await operationResult.create({ transaction });
+  /**
+   * `employeeId` または `index` に対応する従業員を this.employees から削除します。
+   * - 数値の場合はインデックスとして削除します。
+   * - 文字列の場合は employeeId として一致する要素を探して削除します。
+   * - 不正な値や該当なしの場合はエラーをスローします。
+   *
+   * @param {string|number} target - 従業員のID（文字列）またはインデックス（数値）
+   */
+  removeEmployee(target) {
+    let index = -1;
+
+    if (typeof target === "number") {
+      index = target;
+      if (index < 0 || index >= this.employees.length) {
+        throw new Error(`Invalid index: ${index}`);
       }
-    });
+    } else if (typeof target === "string") {
+      index = this.employees.findIndex((emp) => emp.employeeId === target);
+      if (index === -1) {
+        throw new Error(`Employee with ID "${target}" not found.`);
+      }
+    } else {
+      throw new Error(`Invalid argument type: ${typeof target}`);
+    }
+
+    this.employees.splice(index, 1);
   }
 
   /**
-   * ドキュメントを削除します。
-   * - トランザクションを使用して、現場稼働予定と同時に稼働実績を削除します。
-   * - 現場稼働予定のドキュメントIDを持つ稼働実績を取得し、削除します。
-   * - 稼働実績の削除に失敗した場合、現場稼働予定の削除もロールバックされます。
-   * @return {Promise<void>} 削除が成功した場合、何も返しません
-   * @throws {Error} 稼働実績として承認済みの現場稼働予定が存在する場合、削除できない旨のエラーをスローします。
-   * @throws {Error} トランザクション内での削除に失敗した場合、エラーをスローします。
+   *
+   * 指定された外注先のIDを持つ新しい OperationResultOutsourcer を outsourcers に追加します。
+   * - `outsourcers` プロパティに既に存在する外注先IDが指定された場合はエラーをスローします。
+   * - `startAt`, `endAt`, `breakMinutes` は現在のインスタンスから取得されます。
+   * - `outsourcerId` は必須です。
+   * @param {string} outsourcerId
+   * @param {number} [index=-1] - 挿入位置。-1 の場合は末尾に追加されます。
+   * @throws {Error} - 外注先IDが既に存在する場合
    */
-  async delete() {
-    const adapter = this.constructor.getAdapter();
-    const firestore = adapter.firestore;
-    const operationResults = await new OperationResult().fetchDocs({
-      constraints: [["where", "siteOperationScheduleId", "==", this.docId]],
+  addOutsourcer(outsourcerId, index = -1) {
+    if (this.outsourcers.some((out) => out.outsourcerId === outsourcerId)) {
+      throw new Error(`Outsourcer with ID ${outsourcerId} already exists.`);
+    }
+    const newOutsourcer = new OperationResultOutsourcer({
+      outsourcerId,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      breakMinutes: this.breakMinutes,
+      overTimeWorkMinutes: this.overTimeWorkMinutes,
     });
+    if (index === -1) {
+      this.outsourcers.push(newOutsourcer);
+    } else {
+      this.outsourcers.splice(index, 0, newOutsourcer);
+    }
+  }
 
-    if (operationResults.some(({ status }) => status === "approved")) {
-      throw new Error(
-        "稼働実績として承認済みの現場稼働予定です。削除できません。"
-      );
+  /**
+   * 外注先の位置を変更します。
+   * @param {number} oldIndex - 変更前のインデックス
+   * @param {number} newIndex - 変更後のインデックス
+   */
+  changeOutsourcer(oldIndex, newIndex) {
+    if (oldIndex < 0 || oldIndex >= this.outsourcers.length) {
+      throw new Error(`Invalid old index: ${oldIndex}`);
+    }
+    if (newIndex < 0 || newIndex >= this.outsourcers.length) {
+      throw new Error(`Invalid new index: ${newIndex}`);
+    }
+    const outsourcer = this.outsourcers.splice(oldIndex, 1)[0];
+    this.outsourcers.splice(newIndex, 0, outsourcer);
+  }
+
+  /**
+   * `outsourcerId` または `index` に対応する外注先を this.outsourcers から削除します。
+   * - 数値の場合はインデックスとして削除します。
+   * - 文字列の場合は outsourcerId として一致する要素を探して削除します。
+   * - 不正な値や該当なしの場合はエラーをスローします。
+   *
+   * @param {string|number} target - 外注先のID（文字列）またはインデックス（数値）
+   */
+  removeOutsourcer(target) {
+    let index = -1;
+
+    if (typeof target === "number") {
+      index = target;
+      if (index < 0 || index >= this.outsourcers.length) {
+        throw new Error(`Invalid index: ${index}`);
+      }
+    } else if (typeof target === "string") {
+      index = this.outsourcers.findIndex((out) => out.outsourcerId === target);
+      if (index === -1) {
+        throw new Error(`Outsourcer with ID "${target}" not found.`);
+      }
+    } else {
+      throw new Error(`Invalid argument type: ${typeof target}`);
     }
 
-    await runTransaction(firestore, async (transaction) => {
-      await super.delete({ transaction });
-      if (operationResults && operationResults.length > 0) {
-        for (const result of operationResults) {
-          await result.delete({ transaction });
-        }
-      }
-    });
+    this.outsourcers.splice(index, 1);
   }
 }

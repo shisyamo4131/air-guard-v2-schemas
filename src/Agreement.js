@@ -3,6 +3,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
+import { getDateAt } from "./utils";
 
 export default class Agreement extends BaseClass {
   static className = "取極め";
@@ -219,7 +220,7 @@ export default class Agreement extends BaseClass {
       startAt: {
         configurable: true,
         enumerable: true,
-        get: () => this._getStartAt(this.dateAt),
+        get: () => getDateAt(this.dateAt, this.startTime),
         set: (v) => {},
       },
       /**
@@ -229,7 +230,7 @@ export default class Agreement extends BaseClass {
       endAt: {
         configurable: true,
         enumerable: true,
-        get: () => this._getEndAt(this.dateAt),
+        get: () => getDateAt(this.dateAt, this.endTime),
         set: (v) => {},
       },
       /**
@@ -308,56 +309,5 @@ export default class Agreement extends BaseClass {
    */
   get endMinute() {
     return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
-  }
-
-  /**
-   * 引数で受け取った日付を Date オブジェクトに変換して返します。
-   * - 引数が文字列の場合、日付文字列として解釈します。
-   * - 引数がオブジェクトの場合、Date オブジェクトとして解釈します。
-   * - 引数が未指定または null の場合、現在の日付を返します。
-   * - `startTime` がセットされている場合はその時刻を反映します。
-   * @param {string|Object} date 日付文字列または Date オブジェクト
-   * @returns {Date} 変換後の Date オブジェクト
-   */
-  _getStartAt(date) {
-    // date が null/undefined 以外で、かつ string／Date でないならエラー
-    if (date != null && !(typeof date === "string" || date instanceof Date)) {
-      throw new Error("Invalid date type");
-    }
-
-    // 空文字・undefined・null → Date.now()、それ以外 → date をそのまま使う
-    const result = new Date(date || Date.now());
-
-    // 開始時刻を設定（秒・ミリ秒は 0）
-    result.setHours(this.startHour, this.startMinute, 0, 0);
-    return result;
-  }
-
-  /**
-   * 引数で受け取った日付を Date オブジェクトに変換して返します。
-   * - 引数が文字列の場合、日付文字列として解釈します。
-   * - 引数がオブジェクトの場合、Date オブジェクトとして解釈します。
-   * - 引数が未指定または null の場合、現在の日付を返します。
-   * - `endTime` がセットされている場合はその時刻を反映します。
-   * @param {string|Object} date 日付文字列または Date オブジェクト
-   * @returns {Date} 変換後の Date オブジェクト
-   */
-  _getEndAt(date) {
-    // date が null/undefined 以外で、かつ string／Date でないならエラー
-    if (date != null && !(typeof date === "string" || date instanceof Date)) {
-      throw new Error("Invalid date type");
-    }
-
-    // 空文字・undefined・null → Date.now()、それ以外 → date をそのまま使う
-    const result = new Date(date || Date.now());
-
-    if (this.isSpansNextDay) {
-      // 次の日にまたがる場合は、翌日の開始時刻を設定
-      result.setDate(result.getDate() + 1);
-    }
-
-    // 開始時刻を設定（秒・ミリ秒は 0）
-    result.setHours(this.endHour, this.endMinute, 0, 0);
-    return result;
   }
 }

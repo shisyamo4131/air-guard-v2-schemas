@@ -99,6 +99,10 @@ const generalDefinitions = {
     ...defaultDefinition,
     component: { name: "air-text-field", attrs: {} },
   },
+  radio: {
+    ...defaultDefinition,
+    component: { name: "air-radio-group", attrs: {} },
+  },
   select: {
     ...defaultDefinition,
     component: { name: "air-select", attrs: {} },
@@ -355,6 +359,9 @@ export const fieldDefinitions = {
     ...generalDefinitions.object,
     hidden: true,
   },
+
+  /** radio */
+  radio: generalDefinitions.radio,
 
   /** select */
   select: generalDefinitions.select,
