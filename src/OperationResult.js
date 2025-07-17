@@ -10,7 +10,6 @@ export default class OperationResult extends SiteOperationSchedule {
   static logicalDelete = false;
   static classProps = {
     ...SiteOperationSchedule.classProps,
-
     /**
      * 現場ドキュメントID
      * - `SiteOperationSchedule` にそもそも含まれるが、API 経由での取得設定を追加するため上書き
