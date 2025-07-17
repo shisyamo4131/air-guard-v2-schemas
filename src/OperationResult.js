@@ -42,7 +42,6 @@ export default class OperationResult extends SiteOperationSchedule {
       required: true,
     }),
 
-    /** 現場稼働予定のドキュメントID */
     /**
      * 現場稼働予定のドキュメントID
      * - `SiteOperationSchedule` ドキュメントから生成されたドキュメントであれば
