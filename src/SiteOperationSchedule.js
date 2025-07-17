@@ -23,9 +23,15 @@ export default class SiteOperationSchedule extends FireModel {
      * - `SiteOperationSchedule` クラスでは不要なプロパティ。
      * - `OperationResult` クラスで使用される。
      */
-    dayType: defField("dayType", { required: true }),
+    dayType: defField("dayType", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /** 勤務区分 */
-    shiftType: defField("shiftType", { required: true }),
+    shiftType: defField("shiftType", {
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /** 開始時刻（HH:MM 形式） */
     startTime: defField("time", {
       label: "開始時刻",

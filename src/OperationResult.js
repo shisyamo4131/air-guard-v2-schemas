@@ -25,21 +25,28 @@ export default class OperationResult extends SiteOperationSchedule {
       },
     }),
     /** 基本単価 */
-    unitPrice: defField("price", { label: "基本単価", required: true }),
+    unitPrice: defField("price", {
+      label: "基本単価",
+      required: true,
+      colsDefinition: { cols: 12, sm: 6 },
+    }),
     /** 時間外単価 */
     overTimeUnitPrice: defField("price", {
       label: "時間外単価",
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /** 資格者単価 */
     unitPriceQualified: defField("price", {
       label: "資格者単価",
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
     /** 資格者時間外単価 */
     overTimeUnitPriceQualified: defField("price", {
       label: "資格者時間外単価",
       required: true,
+      colsDefinition: { cols: 12, sm: 6 },
     }),
 
     /**
