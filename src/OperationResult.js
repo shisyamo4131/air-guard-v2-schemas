@@ -17,6 +17,7 @@ class OperationResultDetail extends BaseClass {
      * 終了時刻（HH:MM形式）
      */
     endTime: defField("time", { label: "終了時刻", required: true }),
+
     /**
      * 休憩時間（分）
      */
