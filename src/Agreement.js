@@ -3,7 +3,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
-import { getDateAt } from "./utils";
+import { getDateAt } from "./utils/index.js";
 
 export default class Agreement extends BaseClass {
   static className = "取極め";

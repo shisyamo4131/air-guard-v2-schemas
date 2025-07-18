@@ -1,6 +1,6 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-import { getDateAt } from "./utils";
+import { getDateAt } from "./utils/index.js";
 import {
   OperationResultEmployee,
   OperationResultOutsourcer,
