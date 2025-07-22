@@ -4,6 +4,8 @@ import { defField, MINUTES_PER_HOUR } from "./parts/fieldDefinitions.js";
 class OperationResultDetail extends BaseClass {
   static className = "稼働実績明細";
   static classProps = {
+    /** ステータス */
+    status: defField("operationResultDetailStatus", { required: true }),
     /** 開始時刻（HH:MM形式） */
     startTime: defField("time", { label: "開始時刻", required: true }),
     /** 翌日開始フラグ */
