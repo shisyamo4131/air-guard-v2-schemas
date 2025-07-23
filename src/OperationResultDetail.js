@@ -1,11 +1,17 @@
 import { BaseClass } from "air-firebase-v2";
 import { defField, MINUTES_PER_HOUR } from "./parts/fieldDefinitions.js";
 
-class OperationResultDetail extends BaseClass {
+export default class OperationResultDetail extends BaseClass {
   static className = "稼働実績明細";
   static classProps = {
     /** ステータス */
     status: defField("operationResultDetailStatus", { required: true }),
+    /** 従業員ID または 外注先ID（isEmployee フラグにより判断） */
+    workerId: defField("oneLine", { required: true }),
+    /** 従業員かどうかのフラグ（true に固定） */
+    isEmployee: defField("check", { default: true, required: true }),
+    /** 人数（既定値は 1 に固定） */
+    amount: defField("number", { default: 1, required: true, hidden: true }),
     /** 開始時刻（HH:MM形式） */
     startTime: defField("time", { label: "開始時刻", required: true }),
     /** 翌日開始フラグ */
@@ -50,28 +56,4 @@ class OperationResultDetail extends BaseClass {
     }
     this.overTimeWorkMinutes = Math.round(v * MINUTES_PER_HOUR);
   }
-}
-
-/**
- * OperationResult クラスの employees プロパティに適用するカスタムクラス
- */
-export class OperationResultEmployee extends OperationResultDetail {
-  static className = "稼働実績明細（従業員）";
-  static classProps = {
-    /** 従業員ID */
-    employeeId: defField("oneLine", { required: true }),
-    ...OperationResultDetail.classProps,
-  };
-}
-
-/**
- * OperationResult クラスの outsourcers プロパティに適用するカスタムクラス
- */
-export class OperationResultOutsourcer extends OperationResultDetail {
-  static className = "稼働実績明細（外注）";
-  static classProps = {
-    /** 外注先ID */
-    outsourcerId: defField("oneLine", { required: true }),
-    ...OperationResultDetail.classProps,
-  };
 }

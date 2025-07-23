@@ -1,10 +1,7 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
-import {
-  OperationResultEmployee,
-  OperationResultOutsourcer,
-} from "./OperationResultDetail.js";
+import OperationResultDetail from "./OperationResultDetail.js";
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -78,18 +75,18 @@ export default class SiteOperationSchedule extends FireModel {
     /**
      * 配置従業員
      * - この稼働予定に配置される従業員のリスト。
-     * - `OperationResultEmployee` クラスを使用して定義される。
+     * - `OperationResultDetail` クラスを使用して定義される。
      * - `OperationResult` クラスの `employees` フィールドに転用される。
      */
-    employees: defField("array", { customClass: OperationResultEmployee }),
+    employees: defField("array", { customClass: OperationResultDetail }),
 
     /**
      * 配置外注先
      * - この稼働予定に配置される外注先のリスト。
-     * - `OperationResultOutsourcer` クラスを使用して定義される。
+     * - `OperationResultDetail` クラスを使用して定義される。
      * - `OperationResult` クラスの `outsourcers` フィールドに転用される。
      */
-    outsourcers: defField("array", { customClass: OperationResultOutsourcer }),
+    outsourcers: defField("array", { customClass: OperationResultDetail }),
   };
 
   /***************************************************************************
@@ -164,7 +161,7 @@ export default class SiteOperationSchedule extends FireModel {
       employeeIds: {
         configurable: true,
         enumerable: true,
-        get: () => this.employees.map((emp) => emp.employeeId),
+        get: () => this.employees.map((emp) => emp.workerId),
         set: (v) => {},
       },
       /**
@@ -173,10 +170,33 @@ export default class SiteOperationSchedule extends FireModel {
       outsourcerIds: {
         configurable: true,
         enumerable: true,
-        get: () => this.outsourcers.map((out) => out.outsourcerId),
+        get: () => this.outsourcers.map((out) => out.workerId),
         set: (v) => {},
       },
     });
+  }
+
+  addWorker(workerId, isEmployee = true, index = 0) {
+    if (isEmployee) {
+      this._addEmployee(workerId, index);
+    } else {
+      this._addOutsourcer(workerId, index);
+    }
+  }
+
+  changeWorker(oldIndex, newIndex, isEmployee = true) {
+    if (isEmployee) {
+      this._changeEmployee(oldIndex, newIndex);
+    } else {
+      this._changeOutsourcer(oldIndex, newIndex);
+    }
+  }
+  removeWorker(target, isEmployee = true) {
+    if (isEmployee) {
+      this._removeEmployee(target);
+    } else {
+      this._removeOutsourcer(target);
+    }
   }
 
   /**
@@ -188,12 +208,13 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {number} [index=-1] - 挿入位置。-1 の場合は末尾に追加されます。
    * @throws {Error} - 従業員IDが既に存在する場合
    */
-  addEmployee(employeeId, index = -1) {
+  _addEmployee(employeeId, index = -1) {
     if (this.employees.some((emp) => emp.employeeId === employeeId)) {
       throw new Error(`Employee with ID ${employeeId} already exists.`);
     }
-    const newEmployee = new OperationResultEmployee({
-      employeeId,
+    const newEmployee = new OperationResultDetail({
+      workerId: employeeId,
+      isEmployee: true,
       startTime: this.startTime,
       endTime: this.endTime,
       breakMinutes: this.breakMinutes,
@@ -211,7 +232,7 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {number} oldIndex - 変更前のインデックス
    * @param {number} newIndex - 変更後のインデックス
    */
-  changeEmployee(oldIndex, newIndex) {
+  _changeEmployee(oldIndex, newIndex) {
     if (oldIndex < 0 || oldIndex >= this.employees.length) {
       throw new Error(`Invalid old index: ${oldIndex}`);
     }
@@ -230,7 +251,7 @@ export default class SiteOperationSchedule extends FireModel {
    *
    * @param {string|number} target - 従業員のID（文字列）またはインデックス（数値）
    */
-  removeEmployee(target) {
+  _removeEmployee(target) {
     let index = -1;
 
     if (typeof target === "number") {
@@ -239,7 +260,7 @@ export default class SiteOperationSchedule extends FireModel {
         throw new Error(`Invalid index: ${index}`);
       }
     } else if (typeof target === "string") {
-      index = this.employees.findIndex((emp) => emp.employeeId === target);
+      index = this.employees.findIndex((emp) => emp.workerId === target);
       if (index === -1) {
         throw new Error(`Employee with ID "${target}" not found.`);
       }
@@ -260,12 +281,13 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {number} [index=-1] - 挿入位置。-1 の場合は末尾に追加されます。
    * @throws {Error} - 外注先IDが既に存在する場合
    */
-  addOutsourcer(outsourcerId, index = -1) {
-    if (this.outsourcers.some((out) => out.outsourcerId === outsourcerId)) {
+  _addOutsourcer(outsourcerId, index = -1) {
+    if (this.outsourcers.some((out) => out.workerId === outsourcerId)) {
       throw new Error(`Outsourcer with ID ${outsourcerId} already exists.`);
     }
-    const newOutsourcer = new OperationResultOutsourcer({
-      outsourcerId,
+    const newOutsourcer = new OperationResultDetail({
+      workerId: outsourcerId,
+      isEmployee: false,
       startTime: this.startTime,
       endTime: this.endTime,
       breakMinutes: this.breakMinutes,
@@ -283,7 +305,7 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {number} oldIndex - 変更前のインデックス
    * @param {number} newIndex - 変更後のインデックス
    */
-  changeOutsourcer(oldIndex, newIndex) {
+  _changeOutsourcer(oldIndex, newIndex) {
     if (oldIndex < 0 || oldIndex >= this.outsourcers.length) {
       throw new Error(`Invalid old index: ${oldIndex}`);
     }
@@ -302,7 +324,7 @@ export default class SiteOperationSchedule extends FireModel {
    *
    * @param {string|number} target - 外注先のID（文字列）またはインデックス（数値）
    */
-  removeOutsourcer(target) {
+  _removeOutsourcer(target) {
     let index = -1;
 
     if (typeof target === "number") {
@@ -311,7 +333,7 @@ export default class SiteOperationSchedule extends FireModel {
         throw new Error(`Invalid index: ${index}`);
       }
     } else if (typeof target === "string") {
-      index = this.outsourcers.findIndex((out) => out.outsourcerId === target);
+      index = this.outsourcers.findIndex((out) => out.workerId === target);
       if (index === -1) {
         throw new Error(`Outsourcer with ID "${target}" not found.`);
       }
