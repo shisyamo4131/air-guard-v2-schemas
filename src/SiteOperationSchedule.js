@@ -176,11 +176,11 @@ export default class SiteOperationSchedule extends FireModel {
     });
   }
 
-  addWorker(workerId, isEmployee = true, index = 0) {
+  addWorker(workerId, isEmployee = true, amount = 1, index = 0) {
     if (isEmployee) {
       this._addEmployee(workerId, index);
     } else {
-      this._addOutsourcer(workerId, index);
+      this._addOutsourcer(workerId, amount, index);
     }
   }
 
@@ -191,11 +191,11 @@ export default class SiteOperationSchedule extends FireModel {
       this._changeOutsourcer(oldIndex, newIndex);
     }
   }
-  removeWorker(target, isEmployee = true) {
+  removeWorker(workerId, amount = 1, isEmployee = true) {
     if (isEmployee) {
-      this._removeEmployee(target);
+      this._removeEmployee(workerId);
     } else {
-      this._removeOutsourcer(target);
+      this._removeOutsourcer(workerId, amount);
     }
   }
 
@@ -214,6 +214,7 @@ export default class SiteOperationSchedule extends FireModel {
     }
     const newEmployee = new OperationResultDetail({
       workerId: employeeId,
+      amount: 1,
       isEmployee: true,
       startTime: this.startTime,
       endTime: this.endTime,
@@ -233,8 +234,10 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {number} newIndex - 変更後のインデックス
    */
   _changeEmployee(oldIndex, newIndex) {
-    if (oldIndex < 0 || oldIndex >= this.employees.length) {
-      throw new Error(`Invalid old index: ${oldIndex}`);
+    if (newIndex > this.employees.length - 1) {
+      throw new Error(
+        `従業員は外注先の前に配置する必要があります。newIndex: ${newIndex}, employees.length: ${this.employees.length}`
+      );
     }
     if (newIndex < 0 || newIndex >= this.employees.length) {
       throw new Error(`Invalid new index: ${newIndex}`);
@@ -244,30 +247,18 @@ export default class SiteOperationSchedule extends FireModel {
   }
 
   /**
-   * `employeeId` または `index` に対応する従業員を this.employees から削除します。
-   * - 数値の場合はインデックスとして削除します。
-   * - 文字列の場合は employeeId として一致する要素を探して削除します。
+   * `employeeId` に対応する従業員を this.employees から削除します。
    * - 不正な値や該当なしの場合はエラーをスローします。
    *
-   * @param {string|number} target - 従業員のID（文字列）またはインデックス（数値）
+   * @param {string} employeeId - 従業員のID
    */
-  _removeEmployee(target) {
-    let index = -1;
-
-    if (typeof target === "number") {
-      index = target;
-      if (index < 0 || index >= this.employees.length) {
-        throw new Error(`Invalid index: ${index}`);
-      }
-    } else if (typeof target === "string") {
-      index = this.employees.findIndex((emp) => emp.workerId === target);
-      if (index === -1) {
-        throw new Error(`Employee with ID "${target}" not found.`);
-      }
-    } else {
-      throw new Error(`Invalid argument type: ${typeof target}`);
+  _removeEmployee(employeeId) {
+    const index = this.employees.findIndex(
+      (emp) => emp.workerId === employeeId
+    );
+    if (index === -1) {
+      throw new Error(`Employee with ID "${employeeId}" not found.`);
     }
-
     this.employees.splice(index, 1);
   }
 
@@ -281,66 +272,75 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {number} [index=-1] - 挿入位置。-1 の場合は末尾に追加されます。
    * @throws {Error} - 外注先IDが既に存在する場合
    */
-  _addOutsourcer(outsourcerId, index = -1) {
-    if (this.outsourcers.some((out) => out.workerId === outsourcerId)) {
-      throw new Error(`Outsourcer with ID ${outsourcerId} already exists.`);
-    }
-    const newOutsourcer = new OperationResultDetail({
-      workerId: outsourcerId,
-      isEmployee: false,
-      startTime: this.startTime,
-      endTime: this.endTime,
-      breakMinutes: this.breakMinutes,
-      overTimeWorkMinutes: this.overTimeWorkMinutes,
-    });
-    if (index === -1) {
-      this.outsourcers.push(newOutsourcer);
+  _addOutsourcer(outsourcerId, amount = 1, index = -1) {
+    const existOutsourcer = this.outsourcers.find(
+      (out) => out.workerId === outsourcerId
+    );
+    if (existOutsourcer) {
+      existOutsourcer.amount += amount;
     } else {
-      this.outsourcers.splice(index, 0, newOutsourcer);
+      const newOutsourcer = new OperationResultDetail({
+        workerId: outsourcerId,
+        amount,
+        isEmployee: false,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        breakMinutes: this.breakMinutes,
+        overTimeWorkMinutes: this.overTimeWorkMinutes,
+      });
+      if (index === -1) {
+        this.outsourcers.push(newOutsourcer);
+      } else {
+        this.outsourcers.splice(index, 0, newOutsourcer);
+      }
     }
   }
 
   /**
    * 外注先の位置を変更します。
+   * - `oldIndex` と `newIndex` は `employees` の要素数が差し引かれます。
    * @param {number} oldIndex - 変更前のインデックス
    * @param {number} newIndex - 変更後のインデックス
    */
   _changeOutsourcer(oldIndex, newIndex) {
-    if (oldIndex < 0 || oldIndex >= this.outsourcers.length) {
-      throw new Error(`Invalid old index: ${oldIndex}`);
+    if (newIndex <= this.employees.length - 1) {
+      throw new Error(
+        `外注先は従業員の後に配置する必要があります。newIndex: ${newIndex}, employees.length: ${this.employees.length}`
+      );
     }
-    if (newIndex < 0 || newIndex >= this.outsourcers.length) {
-      throw new Error(`Invalid new index: ${newIndex}`);
+    const internalOldIndex = Math.max(0, oldIndex - this.employees.length);
+    const internalNewIndex = Math.max(0, newIndex - this.employees.length);
+    if (internalOldIndex < 0 || internalOldIndex >= this.outsourcers.length) {
+      throw new Error(`Invalid old index: ${internalOldIndex}`);
     }
-    const outsourcer = this.outsourcers.splice(oldIndex, 1)[0];
-    this.outsourcers.splice(newIndex, 0, outsourcer);
+    if (internalNewIndex < 0 || internalNewIndex >= this.outsourcers.length) {
+      throw new Error(`Invalid new index: ${internalNewIndex}`);
+    }
+    const outsourcer = this.outsourcers.splice(internalOldIndex, 1)[0];
+    this.outsourcers.splice(internalNewIndex, 0, outsourcer);
   }
 
   /**
-   * `outsourcerId` または `index` に対応する外注先を this.outsourcers から削除します。
-   * - 数値の場合はインデックスとして削除します。
-   * - 文字列の場合は outsourcerId として一致する要素を探して削除します。
+   * `outsourcerId` に対応する外注先を this.outsourcers から削除します。
+   * - `outsourcers` に該当する要素が存在した場合は `amount` を減らします。
+   * - `amount` が 0 になった場合は要素を削除します。
    * - 不正な値や該当なしの場合はエラーをスローします。
    *
-   * @param {string|number} target - 外注先のID（文字列）またはインデックス（数値）
+   * @param {string} outsourcerId - 外注先のID
    */
-  _removeOutsourcer(target) {
-    let index = -1;
-
-    if (typeof target === "number") {
-      index = target;
-      if (index < 0 || index >= this.outsourcers.length) {
-        throw new Error(`Invalid index: ${index}`);
-      }
-    } else if (typeof target === "string") {
-      index = this.outsourcers.findIndex((out) => out.workerId === target);
-      if (index === -1) {
-        throw new Error(`Outsourcer with ID "${target}" not found.`);
-      }
-    } else {
-      throw new Error(`Invalid argument type: ${typeof target}`);
+  _removeOutsourcer(outsourcerId, amount = 1) {
+    const index = this.outsourcers.findIndex(
+      (out) => out.workerId === outsourcerId
+    );
+    if (index === -1) {
+      throw new Error(`Outsourcer with ID "${outsourcerId}" not found.`);
     }
 
-    this.outsourcers.splice(index, 1);
+    const outsourcer = this.outsourcers[index];
+    if (outsourcer.amount > amount) {
+      outsourcer.amount -= amount;
+    } else {
+      this.outsourcers.splice(index, 1);
+    }
   }
 }
