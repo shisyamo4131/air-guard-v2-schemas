@@ -94,6 +94,19 @@ export default class SiteOperationSchedule extends FireModel {
    ***************************************************************************/
   afterInitialize() {
     Object.defineProperties(this, {
+      /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
+      date: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          if (!this.dateAt) return "";
+          const year = this.dateAt.getFullYear();
+          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
+          const day = String(this.dateAt.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        },
+        set: (v) => {},
+      },
       /**
        * 開始日時（Date オブジェクト）
        * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
