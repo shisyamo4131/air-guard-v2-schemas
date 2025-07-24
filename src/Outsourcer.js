@@ -10,13 +10,15 @@ export default class Outsourcer extends FireModel {
     code: defField("code", { label: "外注先コード" }),
     name: defField("name", { required: true }),
     nameKana: defField("nameKana", { required: true }),
-    abbr: defField("name", { label: "略称", required: true, length: 5 }),
+    displayName: defField("displayName", { label: "略称", required: true }),
+    /** 契約状態 */
+    contractStatus: defField("contractStatus", { required: true }),
     remarks: defField("multipleLine", { label: "備考" }),
   };
-  static tokenFields = ["name", "nameKana", "abbr"];
+  static tokenFields = ["name", "nameKana", "displayName"];
   static headers = [
     { title: "外注先コード", key: "code" },
     { title: "外注先名", key: "name" },
-    { title: "略称", key: "abbr" },
+    { title: "略称", key: "displayName" },
   ];
 }

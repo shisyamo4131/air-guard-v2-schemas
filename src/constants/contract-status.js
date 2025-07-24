@@ -1,5 +1,7 @@
 // prettier-ignore
 export const CONTRACT_STATUS_DEFAULT = "ACTIVE";
+export const CONTRACT_STATUS_ACTIVE = "ACTIVE";
+export const CONTRACT_STATUS_TERMINATED = "TERMINATED";
 
 export const CONTRACT_STATUS = Object.freeze({
   ACTIVE: "契約中",
