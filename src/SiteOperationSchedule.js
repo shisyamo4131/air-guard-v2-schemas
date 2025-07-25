@@ -222,7 +222,7 @@ export default class SiteOperationSchedule extends FireModel {
    * @throws {Error} - 従業員IDが既に存在する場合
    */
   _addEmployee(employeeId, index = -1) {
-    if (this.employees.some((emp) => emp.employeeId === employeeId)) {
+    if (this.employees.some((emp) => emp.workerId === employeeId)) {
       throw new Error(`Employee with ID ${employeeId} already exists.`);
     }
     const newEmployee = new OperationResultDetail({
