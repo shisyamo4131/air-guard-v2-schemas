@@ -186,6 +186,22 @@ export default class SiteOperationSchedule extends FireModel {
         get: () => this.outsourcers.map((out) => out.workerId),
         set: (v) => {},
       },
+      /**
+       * 必要人数（requiredPersonnel）に対して、実際に割り当てられた従業員と外注先の合計が不足しているかどうかを示すアクセサ
+       * - `employees` と `outsourcers` の合計人数が `requiredPersonnel` より少ない場合に `true` を返す。
+       * - `employees` と `outsourcers` の合計人数が `requiredPersonnel` 以上の場合は `false` を返す。
+       * - `requiredPersonnel` が未設定の場合は `false` を返す。
+       */
+      isPersonnelShortage: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          const totalRequired = this.requiredPersonnel || 0;
+          const totalAssigned = this.employees.length + this.outsourcers.length;
+          return totalAssigned < totalRequired;
+        },
+        set: (v) => {},
+      },
     });
   }
 
