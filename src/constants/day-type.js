@@ -2,6 +2,9 @@
 import holiday_jp from "@holiday-jp/holiday_jp";
 
 export const DAY_TYPE_DEFAULT = "WEEKDAY";
+export const DAY_TYPE_WEEKDAY = "WEEKDAY";
+export const DAY_TYPE_SATURDAY = "SATURDAY";
+export const DAY_TYPE_SUNDAY = "SUNDAY";
 
 export const DAY_TYPE = Object.freeze({
   WEEKDAY: "平日",
@@ -29,12 +32,12 @@ export const getDayType = (date) => {
     throw new TypeError("Input must be a Date object");
   }
   if (holiday_jp.isHoliday(date)) {
-    return DAY_TYPE.HOLIDAY;
+    return DAY_TYPE_HOLIDAY;
   } else if (date.getDay() === 0) {
-    return DAY_TYPE.SUNDAY;
+    return DAY_TYPE_SUNDAY;
   } else if (date.getDay() === 6) {
-    return DAY_TYPE.SATURDAY;
+    return DAY_TYPE_SATURDAY;
   } else {
-    return DAY_TYPE.WEEKDAY;
+    return DAY_TYPE_WEEKDAY;
   }
 };
