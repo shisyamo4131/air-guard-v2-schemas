@@ -1,7 +1,11 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
-import { getDayType } from "./constants/index.js";
+import {
+  getDayType,
+  OPERATION_RESULT_DETAIL_STATUS_DRAFT,
+  SITE_OPERATION_SCHEDULE_DRAFT,
+} from "./constants/index.js";
 
 import OperationResultDetail from "./OperationResultDetail.js";
 
@@ -91,7 +95,11 @@ export default class SiteOperationSchedule extends FireModel {
     outsourcers: defField("array", { customClass: OperationResultDetail }),
 
     /** 稼働実績ドキュメントID */
-    // 当該現場稼働ドキュメントから作成された稼働実績のドキュメントID。
+    // 当該現場稼働予定ドキュメントから作成された稼働実績のドキュメントID。
+    // このプロパティに値がセットされている場合、当該現場稼働予定ドキュメントから稼働実績ドキュメントを作成することはできないようにする。
+    // -> 稼働実績ドキュメントの重複を抑制。
+    // 逆に、当該現場稼働予定ドキュメントから、これに対応する稼働実績ドキュメントを削除することは可能で、
+    // その場合はこのプロパティを null に設定する。
     operationResultId: defField("oneLine", { hidden: true }),
   };
 
@@ -382,6 +390,7 @@ export default class SiteOperationSchedule extends FireModel {
   /**
    * 当該現場稼働予定の日付を指定された日付で更新します。
    * - `dateAt` を更新し、`dayType` を再計算します。
+   * - `employees` のステータスを `DRAFT` にリセットします。
    * - 更新処理であるため、`docId` が存在する必要があります。
    * @param {Date} dateAt
    * @return {Promise<void>} - 更新が成功した場合は解決される。
@@ -396,8 +405,15 @@ export default class SiteOperationSchedule extends FireModel {
       if (!this.docId) {
         throw new Error("Cannot reschedule without a document ID");
       }
+      this.status = SITE_OPERATION_SCHEDULE_DRAFT;
       this.dateAt = dateAt;
       this.dayType = getDayType(dateAt);
+      this.employees.forEach(
+        (emp) => (emp.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT)
+      );
+      this.outsourcers.forEach(
+        (out) => (out.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT)
+      );
       await this.update();
     } catch (err) {
       throw new Error(`Failed to reschedule: ${err.message}`);
