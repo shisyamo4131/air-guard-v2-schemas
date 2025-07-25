@@ -1,6 +1,8 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
+import { getDayType } from "./constants/index.js";
+
 import OperationResultDetail from "./OperationResultDetail.js";
 
 export default class SiteOperationSchedule extends FireModel {
@@ -370,6 +372,31 @@ export default class SiteOperationSchedule extends FireModel {
       outsourcer.amount -= amount;
     } else {
       this.outsourcers.splice(index, 1);
+    }
+  }
+
+  /**
+   * 当該現場稼働予定の日付を指定された日付で更新します。
+   * - `dateAt` を更新し、`dayType` を再計算します。
+   * - 更新処理であるため、`docId` が存在する必要があります。
+   * @param {Date} dateAt
+   * @return {Promise<void>} - 更新が成功した場合は解決される。
+   * @throws {Error} - 更新に失敗した場合はエラーをスローします。
+   * @throws {TypeError} - `dateAt` が Date オブジェクトでない場合はエラーをスローします。
+   */
+  async reschedule(dateAt) {
+    try {
+      if (!(dateAt instanceof Date)) {
+        throw new TypeError("dateAt must be a Date object");
+      }
+      if (!this.docId) {
+        throw new Error("Cannot reschedule without a document ID");
+      }
+      this.dateAt = dateAt;
+      this.dayType = getDayType(dateAt);
+      await this.update();
+    } catch (err) {
+      throw new Error(`Failed to reschedule: ${err.message}`);
     }
   }
 }
