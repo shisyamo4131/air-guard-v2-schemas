@@ -89,6 +89,10 @@ export default class SiteOperationSchedule extends FireModel {
      * - `OperationResult` クラスの `outsourcers` フィールドに転用される。
      */
     outsourcers: defField("array", { customClass: OperationResultDetail }),
+
+    /** 稼働実績ドキュメントID */
+    // 当該現場稼働ドキュメントから作成された稼働実績のドキュメントID。
+    operationResultId: defField("oneLine", { hidden: true }),
   };
 
   /***************************************************************************
