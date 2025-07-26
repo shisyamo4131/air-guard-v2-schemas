@@ -3,8 +3,14 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
 import {
   getDayType,
+  OPERATION_RESULT_DETAIL_STATUS_ARRANGED,
   OPERATION_RESULT_DETAIL_STATUS_DRAFT,
-  SITE_OPERATION_SCHEDULE_DRAFT,
+  SITE_OPERATION_SCHEDULE_STATUS_ARRANGED,
+  SITE_OPERATION_SCHEDULE_STATUS_CANCELED,
+  SITE_OPERATION_SCHEDULE_STATUS_CONFIRMED,
+  SITE_OPERATION_SCHEDULE_STATUS_DRAFT,
+  SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED,
+  SITE_OPERATION_SCHEDULE_STATUS_TRANSITIONS,
 } from "./constants/index.js";
 
 import OperationResultDetail from "./OperationResultDetail.js";
@@ -15,7 +21,33 @@ export default class SiteOperationSchedule extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    /** ステータス（初期値: DRAFT） */
+    /**
+     * ステータス（初期値: DRAFT）
+     *
+     * [DRAFT: 下書き]
+     * - 現場の稼働予定がまだ確定していない状態。
+     * - 予定の内容はすべて変更可能。但し、作業員のステータスは `DRAFT` から変更できない。
+     *
+     * [SCHEDULED: 予定確定]
+     * - 現場の稼働予定が確定した状態。登録されている必要人数が確定したことを表す。
+     * - 作業員の状態を `DRAFT` から `ARRANGED` に変更することが可能になる状態。
+     * - `reschedule` メソッドによって `DRAFT` 状態に戻る。
+     *
+     * [ARRANGED: 配置確定]
+     * - 従業員や外注業者の配置が確定した状態。
+     * - 全作業員のステータスが `ARRANGED` にならなければこの状態には遷移できない。
+     *   -> またはこの状態に遷移したら全作業員のステータスを `ARRANGED` にする？
+     *   -> この状態の際に、作業員の追加や変更はできないようにしなければならない？
+     *
+     * [CONFIRMED: 実績確定]
+     * - 全作業員が下番済みであることを条件に、稼働実績ドキュメントが作成された状態。
+     * - 現場稼働予定のみならず、作業員の配置情報なども一切変更不可になる。
+     *
+     * [CANCELED: キャンセル]
+     * - 現場の稼働予定がキャンセルされた状態。
+     * - 配置されていた作業員はすべて初期化されなければならない。
+     * - 当然、この状態である現場稼働予定に対して作業員の追加もできない。
+     */
     status: defField("siteOperationScheduleStatus", { required: true }),
     /** 現場ドキュメントID */
     siteId: defField("siteId", { required: true, hidden: true }),
@@ -219,6 +251,30 @@ export default class SiteOperationSchedule extends FireModel {
     });
   }
 
+  /** Getter to determine the current status */
+  get isDraft() {
+    return this.status === SITE_OPERATION_SCHEDULE_STATUS_DRAFT;
+  }
+  get isScheduled() {
+    return this.status === SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED;
+  }
+  get isArranged() {
+    return this.status === SITE_OPERATION_SCHEDULE_STATUS_ARRANGED;
+  }
+  get isConfirmed() {
+    return this.status === SITE_OPERATION_SCHEDULE_STATUS_CONFIRMED;
+  }
+  get isCanceled() {
+    return this.status === SITE_OPERATION_SCHEDULE_STATUS_CANCELED;
+  }
+
+  /**
+   * 従業員または外注先を追加します。
+   * @param {string} workerId - 従業員または外注先のID
+   * @param {boolean} [isEmployee=true] - 従業員の場合は true、外注先の場合は false
+   * @param {number} [amount=1] - 外注先の場合の人数
+   * @param {number} [index=0] - 挿入位置
+   */
   addWorker(workerId, isEmployee = true, amount = 1, index = 0) {
     if (isEmployee) {
       this._addEmployee(workerId, index);
@@ -227,6 +283,12 @@ export default class SiteOperationSchedule extends FireModel {
     }
   }
 
+  /**
+   * 従業員または外注先の位置を変更します。
+   * @param {number} oldIndex - 変更前のインデックス
+   * @param {number} newIndex - 変更後のインデックス
+   * @param {boolean} [isEmployee=true] - 従業員の場合は true、外注先の場合は false
+   */
   changeWorker(oldIndex, newIndex, isEmployee = true) {
     if (isEmployee) {
       this._changeEmployee(oldIndex, newIndex);
@@ -234,6 +296,13 @@ export default class SiteOperationSchedule extends FireModel {
       this._changeOutsourcer(oldIndex, newIndex);
     }
   }
+
+  /**
+   * 従業員または外注先を削除します。
+   * @param {string} workerId - 従業員または外注先のID
+   * @param {number} [amount=1] - 外注先の場合の人数
+   * @param {boolean} [isEmployee=true] - 従業員の場合は true、外注先の場合は false
+   */
   removeWorker(workerId, amount = 1, isEmployee = true) {
     if (isEmployee) {
       this._removeEmployee(workerId);
@@ -405,18 +474,77 @@ export default class SiteOperationSchedule extends FireModel {
       if (!this.docId) {
         throw new Error("Cannot reschedule without a document ID");
       }
-      this.status = SITE_OPERATION_SCHEDULE_DRAFT;
+
+      await this.toDraft(false);
       this.dateAt = dateAt;
       this.dayType = getDayType(dateAt);
-      this.employees.forEach(
-        (emp) => (emp.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT)
-      );
-      this.outsourcers.forEach(
-        (out) => (out.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT)
-      );
       await this.update();
     } catch (err) {
       throw new Error(`Failed to reschedule: ${err.message}`);
+    }
+  }
+
+  /**
+   * 指定された新しいステータスに遷移可能かどうかを確認します。
+   * @param {string} newStatus
+   * @returns {boolean} - 遷移可能な場合は true、それ以外は false
+   */
+  _canStatusTransitionTo(newStatus) {
+    if (newStatus === this.status) return true;
+    const validTransitions =
+      SITE_OPERATION_SCHEDULE_STATUS_TRANSITIONS[this.status] || [];
+    return validTransitions.includes(newStatus);
+  }
+
+  _statusTransitionTo(newStatus) {
+    if (!this._canStatusTransitionTo(newStatus)) {
+      throw new Error(`Cannot transition from ${this.status} to ${newStatus}`);
+    }
+    this.status = newStatus;
+  }
+
+  async toDraft(update = true) {
+    try {
+      this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_DRAFT);
+      this.employees.forEach((emp) => {
+        emp.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+      });
+      this.outsourcers.forEach((out) => {
+        out.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+      });
+      if (update) await this.update();
+    } catch (error) {
+      throw new Error(`Failed to transition to draft: ${error.message}`);
+    }
+  }
+
+  async toScheduled(update = true) {
+    try {
+      this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED);
+      this.employees.forEach((emp) => {
+        emp.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+      });
+      this.outsourcers.forEach((out) => {
+        out.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+      });
+      if (update) await this.update();
+    } catch (error) {
+      throw new Error(`Failed to transition to scheduled: ${error.message}`);
+    }
+  }
+
+  async toArranged(update = true) {
+    try {
+      this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_ARRANGED);
+      this.employees.forEach((emp) => {
+        emp.status = OPERATION_RESULT_DETAIL_STATUS_ARRANGED;
+      });
+      this.outsourcers.forEach((out) => {
+        out.status = OPERATION_RESULT_DETAIL_STATUS_ARRANGED;
+      });
+      if (update) await this.update();
+    } catch (error) {
+      throw new Error(`Failed to transition to arranged: ${error.message}`);
     }
   }
 }
