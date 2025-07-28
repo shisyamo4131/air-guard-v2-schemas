@@ -267,7 +267,9 @@ export default class SiteOperationSchedule extends FireModel {
   get isCanceled() {
     return this.status === SITE_OPERATION_SCHEDULE_STATUS_CANCELED;
   }
-
+  get workers() {
+    return this.employees.concat(this.outsourcers);
+  }
   /**
    * 従業員または外注先を追加します。
    * @param {string} workerId - 従業員または外注先のID
