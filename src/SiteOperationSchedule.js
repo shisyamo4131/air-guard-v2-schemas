@@ -52,7 +52,20 @@ export default class SiteOperationSchedule extends FireModel {
     /** 現場ドキュメントID */
     siteId: defField("siteId", { required: true, hidden: true }),
     /** 日付（Date オブジェクト） */
-    dateAt: defField("dateAt", { label: "日付", required: true }),
+    dateAt: defField("dateAt", {
+      label: "日付",
+      required: true,
+      component: {
+        name: "air-date-input",
+        attrs: {
+          "onUpdate:modelValue": (item, updater) => {
+            return ($event) => {
+              updater({ dayType: getDayType($event) });
+            };
+          },
+        },
+      },
+    }),
     /**
      * 曜日区分
      * - `SiteOperationSchedule` クラスでは不要なプロパティ。
