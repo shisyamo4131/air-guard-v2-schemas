@@ -5,6 +5,7 @@ export const DAY_TYPE_DEFAULT = "WEEKDAY";
 export const DAY_TYPE_WEEKDAY = "WEEKDAY";
 export const DAY_TYPE_SATURDAY = "SATURDAY";
 export const DAY_TYPE_SUNDAY = "SUNDAY";
+export const DAY_TYPE_HOLIDAY = "HOLIDAY";
 
 export const DAY_TYPE = Object.freeze({
   WEEKDAY: "平日",
