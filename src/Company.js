@@ -46,12 +46,13 @@ export default class Company extends FireModel {
   }
 
   /**
-   * Adds a new SiteOrder to the siteOrder array.
-   * @param {string} siteId - The ID of the site.
-   * @param {string} shiftType - The shift type to associate with the site.
+   * Inserts a new SiteOrder into the siteOrder array.
+   * @param {Object} params - The parameters for the SiteOrder.
+   * @param {string} params.siteId - The ID of the site.
+   * @param {string} params.shiftType - The shift type associated with the site.
    * @param {number} [index=-1] - The position to insert the new SiteOrder. Defaults to the end.
    */
-  addSiteOrder(siteId, shiftType, index = -1) {
+  addSiteOrder({ siteId, shiftType }, index = -1) {
     const newOrder = new SiteOrder({ siteId, shiftType });
     if (this.siteOrder.some((order) => order.key === newOrder.key)) {
       throw new Error(`SiteOrder with key ${newOrder.key} already exists.`);
