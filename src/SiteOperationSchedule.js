@@ -245,6 +245,18 @@ export default class SiteOperationSchedule extends FireModel {
         get: () => this.outsourcers.map((out) => out.workerId),
         set: (v) => {},
       },
+      employeesCount: {
+        configurable: true,
+        enumerable: true,
+        get: () => this.employees.length,
+        set: (v) => {},
+      },
+      outsourcersCount: {
+        configurable: true,
+        enumerable: true,
+        get: () => this.outsourcers.reduce((sum, i) => sum + i.amount, 0),
+        set: (v) => {},
+      },
       /**
        * 必要人数（requiredPersonnel）に対して、実際に割り当てられた従業員と外注先の合計が不足しているかどうかを示すアクセサ
        * - `employees` と `outsourcers` の合計人数が `requiredPersonnel` より少ない場合に `true` を返す。
@@ -256,7 +268,7 @@ export default class SiteOperationSchedule extends FireModel {
         enumerable: true,
         get: () => {
           const totalRequired = this.requiredPersonnel || 0;
-          const totalAssigned = this.employees.length + this.outsourcers.length;
+          const totalAssigned = this.employeesCount + this.outsourcersCount;
           return totalAssigned < totalRequired;
         },
         set: (v) => {},
