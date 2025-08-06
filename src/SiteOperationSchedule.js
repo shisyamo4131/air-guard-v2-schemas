@@ -14,6 +14,7 @@ import {
 } from "./constants/index.js";
 
 import OperationResultDetail from "./OperationResultDetail.js";
+import { runTransaction } from "firebase/firestore";
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -573,5 +574,42 @@ export default class SiteOperationSchedule extends FireModel {
     } catch (error) {
       throw new Error(`Failed to transition to arranged: ${error.message}`);
     }
+  }
+
+  /**
+   * 現在のスケジュールを指定された日付で複製します。
+   * - 各日付ごとに新しい SiteOperationSchedule インスタンスを作成します。
+   * @param {Array<Date|string>} dates - 複製する日付の配列
+   * @returns {Promise<Array<SiteOperationSchedule>>} - 作成されたスケジュールの配列
+   */
+  async duplicate(dates) {
+    if (!Array.isArray(dates) || dates.length === 0) {
+      throw new Error("Dates must be a non-empty array");
+    }
+    if (
+      dates.some((date) => !(date instanceof Date) && typeof date !== "string")
+    ) {
+      throw new TypeError("All dates must be Date objects or date strings");
+    }
+    if (dates.length > 20) {
+      throw new Error("Cannot duplicate more than 20 schedules at once");
+    }
+
+    const newSchedules = dates.map((date) => {
+      return new SiteOperationSchedule({
+        ...this.toObject(),
+        dateAt: new Date(date),
+        status: SITE_OPERATION_SCHEDULE_STATUS_DRAFT,
+      });
+    });
+
+    const firestore = this.constructor.getAdapter().firestore;
+    await runTransaction(firestore, async (transaction) => {
+      await Promise.all(
+        newSchedules.map((schedule) => schedule.create({ transaction }))
+      );
+    });
+
+    return newSchedules;
   }
 }
