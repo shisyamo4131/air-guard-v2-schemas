@@ -297,10 +297,10 @@ export default class SiteOperationSchedule extends FireModel {
     return this.employees.concat(this.outsourcers);
   }
   get isScheduleChangeable() {
-    return this.status === this.isDraft;
+    return this.isDraft;
   }
   get isWorkerChangeable() {
-    return this.status === this.isDraft || this.status === this.isScheduled;
+    return this.isDraft || this.isScheduled;
   }
 
   /**
