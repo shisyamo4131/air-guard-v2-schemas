@@ -1,5 +1,13 @@
 import { BaseClass } from "air-firebase-v2";
 import { defField, MINUTES_PER_HOUR } from "./parts/fieldDefinitions.js";
+import {
+  OPERATION_RESULT_DETAIL_STATUS_ARRANGED,
+  OPERATION_RESULT_DETAIL_STATUS_ARRIVED,
+  OPERATION_RESULT_DETAIL_STATUS_CANCELED,
+  OPERATION_RESULT_DETAIL_STATUS_CONFIRMED,
+  OPERATION_RESULT_DETAIL_STATUS_DRAFT,
+  OPERATION_RESULT_DETAIL_STATUS_LEAVED,
+} from "./constants/operation-result-detail-status.js";
 
 export default class OperationResultDetail extends BaseClass {
   static className = "稼働実績明細";
@@ -95,5 +103,33 @@ export default class OperationResultDetail extends BaseClass {
       return;
     }
     this.overTimeWorkMinutes = Math.round(v * MINUTES_PER_HOUR);
+  }
+
+  get isDraft() {
+    return this.status === OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+  }
+
+  get isArranged() {
+    return this.status === OPERATION_RESULT_DETAIL_STATUS_ARRANGED;
+  }
+
+  get isConfirmed() {
+    return this.status === OPERATION_RESULT_DETAIL_STATUS_CONFIRMED;
+  }
+
+  get isArrived() {
+    return this.status === OPERATION_RESULT_DETAIL_STATUS_ARRIVED;
+  }
+
+  get isCanceled() {
+    return this.status === OPERATION_RESULT_DETAIL_STATUS_CANCELED;
+  }
+
+  get isLeaved() {
+    return this.status === OPERATION_RESULT_DETAIL_STATUS_LEAVED;
+  }
+
+  get isRemovable() {
+    return this.isDraft;
   }
 }
