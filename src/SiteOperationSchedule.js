@@ -296,6 +296,13 @@ export default class SiteOperationSchedule extends FireModel {
   get workers() {
     return this.employees.concat(this.outsourcers);
   }
+  get isScheduleChangeable() {
+    return this.status === this.isDraft;
+  }
+  get isWorkerChangeable() {
+    return this.status === this.isDraft || this.status === this.isScheduled;
+  }
+
   /**
    * 従業員または外注先を追加します。
    * @param {string} workerId - 従業員または外注先のID
