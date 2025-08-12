@@ -147,6 +147,10 @@ export default class SiteOperationSchedule extends FireModel {
     // 逆に、当該現場稼働予定ドキュメントから、これに対応する稼働実績ドキュメントを削除することは可能で、
     // その場合はこのプロパティを null に設定する。
     operationResultId: defField("oneLine", { hidden: true }),
+
+    /** 表示順序 */
+    // 同一勤務区分、同一日における現場稼働予定の表示順序を制御するためのプロパティ。
+    displayOrder: defField("number", { default: 0 }),
   };
 
   /***************************************************************************
@@ -488,34 +492,6 @@ export default class SiteOperationSchedule extends FireModel {
       outsourcer.amount -= amount;
     } else {
       this.outsourcers.splice(index, 1);
-    }
-  }
-
-  /**
-   * 当該現場稼働予定の日付を指定された日付で更新します。
-   * - `dateAt` を更新し、`dayType` を再計算します。
-   * - `employees` のステータスを `DRAFT` にリセットします。
-   * - 更新処理であるため、`docId` が存在する必要があります。
-   * @param {Date} dateAt
-   * @return {Promise<void>} - 更新が成功した場合は解決される。
-   * @throws {Error} - 更新に失敗した場合はエラーをスローします。
-   * @throws {TypeError} - `dateAt` が Date オブジェクトでない場合はエラーをスローします。
-   */
-  async reschedule(dateAt) {
-    try {
-      if (!(dateAt instanceof Date)) {
-        throw new TypeError("dateAt must be a Date object");
-      }
-      if (!this.docId) {
-        throw new Error("Cannot reschedule without a document ID");
-      }
-
-      await this.toDraft(false);
-      this.dateAt = dateAt;
-      this.dayType = getDayType(dateAt);
-      await this.update();
-    } catch (err) {
-      throw new Error(`Failed to reschedule: ${err.message}`);
     }
   }
 
