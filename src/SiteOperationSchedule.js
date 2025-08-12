@@ -120,7 +120,7 @@ export default class SiteOperationSchedule extends FireModel {
     /** 要資格者フラグ */
     qualificationRequired: defField("check", { label: "要資格者" }),
     /** 作業内容 */
-    workDescription: defField("oneLine", { label: "作業内容" }),
+    workDescription: defField("workDescription"),
     /** 備考 */
     remarks: defField("multipleLine", { label: "備考" }),
 

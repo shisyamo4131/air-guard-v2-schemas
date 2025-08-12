@@ -323,6 +323,11 @@ export const fieldDefinitions = {
       },
     },
   },
+  workDescription: {
+    ...generalDefinitions.oneLine,
+    label: "作業内容",
+    length: 20,
+  },
   zipcode: {
     ...generalDefinitions.oneLine,
     default: null,
