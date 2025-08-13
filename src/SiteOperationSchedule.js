@@ -595,4 +595,30 @@ export default class SiteOperationSchedule extends FireModel {
 
     return newSchedules;
   }
+
+  /**
+   * Override create method.
+   * - Automatically assigns a display order based on existing documents.
+   */
+  async create() {
+    try {
+      const existingDocs = await this.fetchDocs({
+        constraints: [
+          ["where", "siteId", "==", this.siteId],
+          ["where", "shiftType", "==", this.shiftType],
+          ["where", "date", "==", this.date],
+          ["orderBy", "displayOrder", "desc"],
+          ["limit", 1],
+        ],
+      });
+      if (existingDocs.length > 0) {
+        this.displayOrder = existingDocs[0].displayOrder + 1;
+      }
+      await super.create();
+    } catch (error) {
+      throw new Error(
+        `Failed to create SiteOperationSchedule: ${error.message}`
+      );
+    }
+  }
 }
