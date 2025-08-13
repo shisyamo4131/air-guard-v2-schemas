@@ -1,5 +1,7 @@
 // prettier-ignore
 export const SHIFT_TYPE_DEFAULT = "DAY";
+export const SHIFT_TYPE_DAY = "DAY";
+export const SHIFT_TYPE_NIGHT = "NIGHT";
 
 export const SHIFT_TYPE = Object.freeze({
   DAY: "日勤",
