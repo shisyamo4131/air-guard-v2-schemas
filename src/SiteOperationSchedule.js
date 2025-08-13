@@ -150,7 +150,7 @@ export default class SiteOperationSchedule extends FireModel {
 
     /** 表示順序 */
     // 同一勤務区分、同一日における現場稼働予定の表示順序を制御するためのプロパティ。
-    displayOrder: defField("number", { default: 0 }),
+    displayOrder: defField("number", { default: 0, hidden: true }),
   };
 
   /***************************************************************************
