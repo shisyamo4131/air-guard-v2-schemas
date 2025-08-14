@@ -579,11 +579,13 @@ export default class SiteOperationSchedule extends FireModel {
     }
 
     const newSchedules = dates.map((date) => {
-      return new SiteOperationSchedule({
+      const newSchedule = new SiteOperationSchedule({
         ...this.toObject(),
+        docId: "",
         dateAt: new Date(date),
-        status: SITE_OPERATION_SCHEDULE_STATUS_DRAFT,
       });
+      newSchedule.toDraft(false);
+      return newSchedule;
     });
 
     const firestore = this.constructor.getAdapter().firestore;
