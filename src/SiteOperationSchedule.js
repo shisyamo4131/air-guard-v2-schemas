@@ -52,7 +52,14 @@ export default class SiteOperationSchedule extends FireModel {
     status: defField("siteOperationScheduleStatus", { required: true }),
     /** 現場ドキュメントID */
     siteId: defField("siteId", { required: true, hidden: true }),
-    /** 日付（Date オブジェクト） */
+    /**
+     * 日付
+     * NOTE: ユーザーが管理上で使用する日付。date プロパティ（YYYY-MM-DD 形式）に変換され、
+     *       取引先への請求基準日として使用される。
+     *       実際の勤務時間帯とは異なるケースがある。
+     *       （例: 2025-12-31 が請求基準日で、勤務開始時刻が 2026-01-01 01:00 など）
+     *       実際の稼働時間帯は `startTime`, `endTime`, `isStartNextDay` プロパティによって計算される。
+     */
     dateAt: defField("dateAt", {
       label: "日付",
       required: true,
@@ -95,6 +102,11 @@ export default class SiteOperationSchedule extends FireModel {
       default: "17:00",
       colsDefinition: { cols: 12, sm: 6 },
     }),
+    /**
+     * 翌日開始フラグ
+     * - 請求基準日である `dateAt` の翌日に実際の勤務が開始される場合に true
+     */
+    isStartNextDay: defField("check", { label: "翌日開始" }),
     /**
      * 規定実働時間（分）
      * - この時間を超えたら残業扱いとする。
@@ -178,22 +190,30 @@ export default class SiteOperationSchedule extends FireModel {
       startAt: {
         configurable: true,
         enumerable: true,
-        get: () => getDateAt(this.dateAt, this.startTime),
+        get: () => {
+          const dateOffset = this.isStartNextDay ? 1 : 0;
+          return getDateAt(this.dateAt, this.startTime, dateOffset);
+        },
         set: (v) => {},
       },
       /**
        * 終了日時（Date オブジェクト）
        * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
+       * - `isSpansNextDay` が true の場合は翌日の同時刻を返す。
        */
       endAt: {
         configurable: true,
         enumerable: true,
-        get: () => getDateAt(this.dateAt, this.endTime),
+        get: () => {
+          const dateOffset =
+            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
+          return getDateAt(this.dateAt, this.endTime, dateOffset);
+        },
         set: (v) => {},
       },
       /**
-       * 翌日フラグ
-       * - `startTime` が `endTime` よりも遅い場合、翌日扱いとする。
+       * 開始日から終了日にかけて日付をまたぐかどうかのフラグ
+       * - `startTime` が `endTime` よりも遅い場合 true
        */
       isSpansNextDay: {
         configurable: true,
@@ -305,6 +325,34 @@ export default class SiteOperationSchedule extends FireModel {
   }
   get isWorkerChangeable() {
     return this.isDraft || this.isScheduled;
+  }
+
+  /**
+   * A process before editing the schedule
+   * - Working result information for all employees and outsourcers is initialized if the schedule is in draft status.
+   * NOTE: Working result information should not be modified if the schedule is not in draft status.
+   * @returns {Promise<void>}
+   */
+  beforeEdit() {
+    return new Promise((resolve) => {
+      if (this.isDraft) {
+        this.employees.forEach((emp) => {
+          emp.startTime = this.startTime;
+          emp.endTime = this.endTime;
+          emp.isStartNextDay = this.isStartNextDay;
+          emp.breakMinutes = this.breakMinutes;
+          emp.overTimeWorkMinutes = this.overTimeWorkMinutes;
+        });
+        this.outsourcers.forEach((out) => {
+          out.startTime = this.startTime;
+          out.endTime = this.endTime;
+          out.isStartNextDay = this.isStartNextDay;
+          out.breakMinutes = this.breakMinutes;
+          out.overTimeWorkMinutes = this.overTimeWorkMinutes;
+        });
+      }
+      resolve();
+    });
   }
 
   /**
