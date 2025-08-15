@@ -610,23 +610,25 @@ export default class SiteOperationSchedule extends FireModel {
   /**
    * 現在のスケジュールを指定された日付で複製します。
    * - 各日付ごとに新しい SiteOperationSchedule インスタンスを作成します。
+   * - 当該インスタンスと同一日付のスケジュールは複製されません。
    * @param {Array<Date|string>} dates - 複製する日付の配列
    * @returns {Promise<Array<SiteOperationSchedule>>} - 作成されたスケジュールの配列
    */
   async duplicate(dates) {
     if (!Array.isArray(dates) || dates.length === 0) {
-      throw new Error("Dates must be a non-empty array");
+      throw new Error("複製する日付を配列で指定してください。");
     }
     if (
       dates.some((date) => !(date instanceof Date) && typeof date !== "string")
     ) {
-      throw new TypeError("All dates must be Date objects or date strings");
+      throw new TypeError("日付の指定が不正です。");
     }
     if (dates.length > 20) {
-      throw new Error("Cannot duplicate more than 20 schedules at once");
+      throw new Error("一度に複製できるスケジュールは20件までです。");
     }
 
-    const newSchedules = dates.map((date) => {
+    const targetDates = dates.filter((date) => date !== this.date);
+    const newSchedules = targetDates.map((date) => {
       const newSchedule = new SiteOperationSchedule({
         ...this.toObject(),
         docId: "",
