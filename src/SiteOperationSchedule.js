@@ -53,14 +53,12 @@ export default class SiteOperationSchedule extends FireModel {
     startTime: defField("time", {
       label: "開始時刻",
       required: true,
-      // default: "08:00",
       colsDefinition: { cols: 12, sm: 6 },
     }),
     /** 終了時刻（HH:MM 形式） */
     endTime: defField("time", {
       label: "終了時刻",
       required: true,
-      // default: "17:00",
       colsDefinition: { cols: 12, sm: 6 },
     }),
     /**

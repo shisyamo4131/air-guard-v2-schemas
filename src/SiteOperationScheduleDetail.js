@@ -1,5 +1,4 @@
 import { BaseClass } from "air-firebase-v2";
-// import { defField, MINUTES_PER_HOUR } from "./parts/fieldDefinitions.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import {
   SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRANGED,
@@ -75,32 +74,6 @@ export default class SiteOperationScheduleDetail extends BaseClass {
     /** OJTフラグ */
     isOjt: defField("check", { label: "OJT" }),
   };
-
-  // get breakHours() {
-  //   return this.breakMinutes / MINUTES_PER_HOUR;
-  // }
-  // set breakHours(v) {
-  //   if (typeof v !== "number") {
-  //     console.warn(
-  //       `[SiteOperationScheduleDetail.js breakHours] Expected a number, got: ${v}`
-  //     );
-  //     return;
-  //   }
-  //   this.breakMinutes = Math.round(v * MINUTES_PER_HOUR);
-  // }
-
-  // get overTimeHours() {
-  //   return this.overTimeWorkMinutes / MINUTES_PER_HOUR;
-  // }
-  // set overTimeHours(v) {
-  //   if (typeof v !== "number") {
-  //     console.warn(
-  //       `[SiteOperationScheduleDetail.js overTimeHours] Expected a number, got: ${v}`
-  //     );
-  //     return;
-  //   }
-  //   this.overTimeWorkMinutes = Math.round(v * MINUTES_PER_HOUR);
-  // }
 
   get isDraft() {
     return this.status === SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
