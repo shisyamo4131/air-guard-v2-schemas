@@ -132,7 +132,8 @@ export default class Agreement extends BaseClass {
     {
       title: "区分",
       key: "type",
-      value: (item) => `${DAY_TYPE[item.dayType]}${SHIFT_TYPE[item.shiftType]}`,
+      value: (item) =>
+        `${DAY_TYPE[item.dayType]}${SHIFT_TYPE[item.shiftType].title}`,
       sortable: false,
     },
     {

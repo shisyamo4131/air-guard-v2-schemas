@@ -1,20 +1,35 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
+// import {
+//   getDayType,
+//   OPERATION_RESULT_DETAIL_STATUS_ARRANGED,
+//   OPERATION_RESULT_DETAIL_STATUS_DRAFT,
+//   SITE_OPERATION_SCHEDULE_STATUS_ARRANGED,
+//   SITE_OPERATION_SCHEDULE_STATUS_CANCELED,
+//   SITE_OPERATION_SCHEDULE_STATUS_CONFIRMED,
+//   SITE_OPERATION_SCHEDULE_STATUS_DRAFT,
+//   SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED,
+//   SITE_OPERATION_SCHEDULE_STATUS_TRANSITIONS,
+// } from "./constants/index.js";
 import { getDateAt } from "./utils/index.js";
+
 import {
-  getDayType,
-  OPERATION_RESULT_DETAIL_STATUS_ARRANGED,
-  OPERATION_RESULT_DETAIL_STATUS_DRAFT,
   SITE_OPERATION_SCHEDULE_STATUS_ARRANGED,
   SITE_OPERATION_SCHEDULE_STATUS_CANCELED,
   SITE_OPERATION_SCHEDULE_STATUS_CONFIRMED,
   SITE_OPERATION_SCHEDULE_STATUS_DRAFT,
   SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED,
   SITE_OPERATION_SCHEDULE_STATUS_TRANSITIONS,
-} from "./constants/index.js";
+} from "./constants/site-operation-schedule-status.js";
+
+import {
+  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRANGED,
+  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT,
+} from "./constants/site-operation-schedule-detail-status.js";
 
 import OperationResultDetail from "./OperationResultDetail.js";
 import { runTransaction } from "firebase/firestore";
+import { getDayType } from "./constants/day-type.js";
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -92,14 +107,14 @@ export default class SiteOperationSchedule extends FireModel {
     startTime: defField("time", {
       label: "開始時刻",
       required: true,
-      default: "08:00",
+      // default: "08:00",
       colsDefinition: { cols: 12, sm: 6 },
     }),
     /** 終了時刻（HH:MM 形式） */
     endTime: defField("time", {
       label: "終了時刻",
       required: true,
-      default: "17:00",
+      // default: "17:00",
       colsDefinition: { cols: 12, sm: 6 },
     }),
     /**
@@ -111,19 +126,19 @@ export default class SiteOperationSchedule extends FireModel {
      * 規定実働時間（分）
      * - この時間を超えたら残業扱いとする。
      */
-    regulationWorkMinutes: defField("regulationWorkMinutes", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
+    // regulationWorkMinutes: defField("regulationWorkMinutes", {
+    //   required: true,
+    //   colsDefinition: { cols: 12, sm: 6 },
+    // }),
     /**
      * 休憩時間（分）
      * - `startTime` と `endTime` の間に取得される休憩時間（分）。
      * - `totalWorkMinutes` の計算に使用される。
      */
-    breakMinutes: defField("breakMinutes", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
+    // breakMinutes: defField("breakMinutes", {
+    //   required: true,
+    //   colsDefinition: { cols: 12, sm: 6 },
+    // }),
     /** 必要人数 */
     requiredPersonnel: defField("number", {
       label: "必要人数",
@@ -226,32 +241,32 @@ export default class SiteOperationSchedule extends FireModel {
        * - `startAt` と `endAt` の差から休憩時間を引いた値。
        * - `startAt` と `endAt` の差が負の場合は 0を返す。
        */
-      totalWorkMinutes: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const start = this.startAt;
-          const end = this.endAt;
-          const breakMinutes = this.breakMinutes || 0;
-          const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
-          return Math.max(0, diff - breakMinutes);
-        },
-        set: (v) => {},
-      },
+      // totalWorkMinutes: {
+      //   configurable: true,
+      //   enumerable: true,
+      //   get: () => {
+      //     const start = this.startAt;
+      //     const end = this.endAt;
+      //     const breakMinutes = this.breakMinutes || 0;
+      //     const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
+      //     return Math.max(0, diff - breakMinutes);
+      //   },
+      //   set: (v) => {},
+      // },
       /**
        * 残業時間（分）
        * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値。
        * - 残業時間は負にならないように 0 を下限とする。
        */
-      overTimeWorkMinutes: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const diff = this.totalWorkMinutes - this.regulationWorkMinutes;
-          return Math.max(0, diff);
-        },
-        set: (v) => {},
-      },
+      // overTimeWorkMinutes: {
+      //   configurable: true,
+      //   enumerable: true,
+      //   get: () => {
+      //     const diff = this.totalWorkMinutes - this.regulationWorkMinutes;
+      //     return Math.max(0, diff);
+      //   },
+      //   set: (v) => {},
+      // },
       /**
        * `employees` プロパティから従業員のIDを取得するためのアクセサ
        */
@@ -340,15 +355,15 @@ export default class SiteOperationSchedule extends FireModel {
           emp.startTime = this.startTime;
           emp.endTime = this.endTime;
           emp.isStartNextDay = this.isStartNextDay;
-          emp.breakMinutes = this.breakMinutes;
-          emp.overTimeWorkMinutes = this.overTimeWorkMinutes;
+          // emp.breakMinutes = this.breakMinutes;
+          // emp.overTimeWorkMinutes = this.overTimeWorkMinutes;
         });
         this.outsourcers.forEach((out) => {
           out.startTime = this.startTime;
           out.endTime = this.endTime;
           out.isStartNextDay = this.isStartNextDay;
-          out.breakMinutes = this.breakMinutes;
-          out.overTimeWorkMinutes = this.overTimeWorkMinutes;
+          // out.breakMinutes = this.breakMinutes;
+          // out.overTimeWorkMinutes = this.overTimeWorkMinutes;
         });
       }
       resolve();
@@ -417,8 +432,8 @@ export default class SiteOperationSchedule extends FireModel {
       isEmployee: true,
       startTime: this.startTime,
       endTime: this.endTime,
-      breakMinutes: this.breakMinutes,
-      overTimeWorkMinutes: this.overTimeWorkMinutes,
+      // breakMinutes: this.breakMinutes,
+      // overTimeWorkMinutes: this.overTimeWorkMinutes,
     });
     if (index === -1) {
       this.employees.push(newEmployee);
@@ -484,8 +499,8 @@ export default class SiteOperationSchedule extends FireModel {
         isEmployee: false,
         startTime: this.startTime,
         endTime: this.endTime,
-        breakMinutes: this.breakMinutes,
-        overTimeWorkMinutes: this.overTimeWorkMinutes,
+        // breakMinutes: this.breakMinutes,
+        // overTimeWorkMinutes: this.overTimeWorkMinutes,
       });
       if (index === -1) {
         this.outsourcers.push(newOutsourcer);
@@ -566,10 +581,10 @@ export default class SiteOperationSchedule extends FireModel {
     try {
       this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_DRAFT);
       this.employees.forEach((emp) => {
-        emp.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
       });
       this.outsourcers.forEach((out) => {
-        out.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
       });
       if (update) await this.update();
     } catch (error) {
@@ -581,10 +596,10 @@ export default class SiteOperationSchedule extends FireModel {
     try {
       this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED);
       this.employees.forEach((emp) => {
-        emp.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
       });
       this.outsourcers.forEach((out) => {
-        out.status = OPERATION_RESULT_DETAIL_STATUS_DRAFT;
+        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
       });
       if (update) await this.update();
     } catch (error) {
@@ -596,10 +611,10 @@ export default class SiteOperationSchedule extends FireModel {
     try {
       this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_ARRANGED);
       this.employees.forEach((emp) => {
-        emp.status = OPERATION_RESULT_DETAIL_STATUS_ARRANGED;
+        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRANGED;
       });
       this.outsourcers.forEach((out) => {
-        out.status = OPERATION_RESULT_DETAIL_STATUS_ARRANGED;
+        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRANGED;
       });
       if (update) await this.update();
     } catch (error) {

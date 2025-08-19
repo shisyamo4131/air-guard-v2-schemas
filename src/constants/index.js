@@ -7,3 +7,4 @@ export * from "./employment-status.js";
 export * from "./gender.js";
 export * from "./operation-result-detail-status.js";
 export * from "./site-operation-schedule-status.js";
+export * from "./site-operation-schedule-detail-status.js";
