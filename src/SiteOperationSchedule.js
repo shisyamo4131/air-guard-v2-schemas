@@ -1,33 +1,7 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-// import {
-//   getDayType,
-//   OPERATION_RESULT_DETAIL_STATUS_ARRANGED,
-//   OPERATION_RESULT_DETAIL_STATUS_DRAFT,
-//   SITE_OPERATION_SCHEDULE_STATUS_ARRANGED,
-//   SITE_OPERATION_SCHEDULE_STATUS_CANCELED,
-//   SITE_OPERATION_SCHEDULE_STATUS_CONFIRMED,
-//   SITE_OPERATION_SCHEDULE_STATUS_DRAFT,
-//   SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED,
-//   SITE_OPERATION_SCHEDULE_STATUS_TRANSITIONS,
-// } from "./constants/index.js";
 import { getDateAt } from "./utils/index.js";
-
-import {
-  SITE_OPERATION_SCHEDULE_STATUS_ARRANGED,
-  SITE_OPERATION_SCHEDULE_STATUS_CANCELED,
-  SITE_OPERATION_SCHEDULE_STATUS_CONFIRMED,
-  SITE_OPERATION_SCHEDULE_STATUS_DRAFT,
-  SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED,
-  SITE_OPERATION_SCHEDULE_STATUS_TRANSITIONS,
-} from "./constants/site-operation-schedule-status.js";
-
-import {
-  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRANGED,
-  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT,
-} from "./constants/site-operation-schedule-detail-status.js";
-
-import OperationResultDetail from "./OperationResultDetail.js";
+import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { runTransaction } from "firebase/firestore";
 import { getDayType } from "./constants/day-type.js";
 
@@ -37,34 +11,6 @@ export default class SiteOperationSchedule extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    /**
-     * ステータス（初期値: DRAFT）
-     *
-     * [DRAFT: 下書き]
-     * - 現場の稼働予定がまだ確定していない状態。
-     * - 予定の内容はすべて変更可能。但し、作業員のステータスは `DRAFT` から変更できない。
-     *
-     * [SCHEDULED: 予定確定]
-     * - 現場の稼働予定が確定した状態。登録されている必要人数が確定したことを表す。
-     * - 作業員の状態を `DRAFT` から `ARRANGED` に変更することが可能になる状態。
-     * - `reschedule` メソッドによって `DRAFT` 状態に戻る。
-     *
-     * [ARRANGED: 配置確定]
-     * - 従業員や外注業者の配置が確定した状態。
-     * - 全作業員のステータスが `ARRANGED` にならなければこの状態には遷移できない。
-     *   -> またはこの状態に遷移したら全作業員のステータスを `ARRANGED` にする？
-     *   -> この状態の際に、作業員の追加や変更はできないようにしなければならない？
-     *
-     * [CONFIRMED: 実績確定]
-     * - 全作業員が下番済みであることを条件に、稼働実績ドキュメントが作成された状態。
-     * - 現場稼働予定のみならず、作業員の配置情報なども一切変更不可になる。
-     *
-     * [CANCELED: キャンセル]
-     * - 現場の稼働予定がキャンセルされた状態。
-     * - 配置されていた作業員はすべて初期化されなければならない。
-     * - 当然、この状態である現場稼働予定に対して作業員の追加もできない。
-     */
-    status: defField("siteOperationScheduleStatus", { required: true }),
     /** 現場ドキュメントID */
     siteId: defField("siteId", { required: true, hidden: true }),
     /**
@@ -122,23 +68,6 @@ export default class SiteOperationSchedule extends FireModel {
      * - 請求基準日である `dateAt` の翌日に実際の勤務が開始される場合に true
      */
     isStartNextDay: defField("check", { label: "翌日開始" }),
-    /**
-     * 規定実働時間（分）
-     * - この時間を超えたら残業扱いとする。
-     */
-    // regulationWorkMinutes: defField("regulationWorkMinutes", {
-    //   required: true,
-    //   colsDefinition: { cols: 12, sm: 6 },
-    // }),
-    /**
-     * 休憩時間（分）
-     * - `startTime` と `endTime` の間に取得される休憩時間（分）。
-     * - `totalWorkMinutes` の計算に使用される。
-     */
-    // breakMinutes: defField("breakMinutes", {
-    //   required: true,
-    //   colsDefinition: { cols: 12, sm: 6 },
-    // }),
     /** 必要人数 */
     requiredPersonnel: defField("number", {
       label: "必要人数",
@@ -154,18 +83,20 @@ export default class SiteOperationSchedule extends FireModel {
     /**
      * 配置従業員
      * - この稼働予定に配置される従業員のリスト。
-     * - `OperationResultDetail` クラスを使用して定義される。
+     * - `SiteOperationScheduleDetail` クラスを使用して定義される。
      * - `OperationResult` クラスの `employees` フィールドに転用される。
      */
-    employees: defField("array", { customClass: OperationResultDetail }),
+    employees: defField("array", { customClass: SiteOperationScheduleDetail }),
 
     /**
      * 配置外注先
      * - この稼働予定に配置される外注先のリスト。
-     * - `OperationResultDetail` クラスを使用して定義される。
+     * - `SiteOperationScheduleDetail` クラスを使用して定義される。
      * - `OperationResult` クラスの `outsourcers` フィールドに転用される。
      */
-    outsourcers: defField("array", { customClass: OperationResultDetail }),
+    outsourcers: defField("array", {
+      customClass: SiteOperationScheduleDetail,
+    }),
 
     /** 稼働実績ドキュメントID */
     // 当該現場稼働予定ドキュメントから作成された稼働実績のドキュメントID。
@@ -237,37 +168,6 @@ export default class SiteOperationSchedule extends FireModel {
         set: (v) => {},
       },
       /**
-       * 総実働時間（分）
-       * - `startAt` と `endAt` の差から休憩時間を引いた値。
-       * - `startAt` と `endAt` の差が負の場合は 0を返す。
-       */
-      // totalWorkMinutes: {
-      //   configurable: true,
-      //   enumerable: true,
-      //   get: () => {
-      //     const start = this.startAt;
-      //     const end = this.endAt;
-      //     const breakMinutes = this.breakMinutes || 0;
-      //     const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
-      //     return Math.max(0, diff - breakMinutes);
-      //   },
-      //   set: (v) => {},
-      // },
-      /**
-       * 残業時間（分）
-       * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値。
-       * - 残業時間は負にならないように 0 を下限とする。
-       */
-      // overTimeWorkMinutes: {
-      //   configurable: true,
-      //   enumerable: true,
-      //   get: () => {
-      //     const diff = this.totalWorkMinutes - this.regulationWorkMinutes;
-      //     return Math.max(0, diff);
-      //   },
-      //   set: (v) => {},
-      // },
-      /**
        * `employees` プロパティから従業員のIDを取得するためのアクセサ
        */
       employeeIds: {
@@ -317,29 +217,8 @@ export default class SiteOperationSchedule extends FireModel {
   }
 
   /** Getter to determine the current status */
-  get isDraft() {
-    return this.status === SITE_OPERATION_SCHEDULE_STATUS_DRAFT;
-  }
-  get isScheduled() {
-    return this.status === SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED;
-  }
-  get isArranged() {
-    return this.status === SITE_OPERATION_SCHEDULE_STATUS_ARRANGED;
-  }
-  get isConfirmed() {
-    return this.status === SITE_OPERATION_SCHEDULE_STATUS_CONFIRMED;
-  }
-  get isCanceled() {
-    return this.status === SITE_OPERATION_SCHEDULE_STATUS_CANCELED;
-  }
   get workers() {
     return this.employees.concat(this.outsourcers);
-  }
-  get isScheduleChangeable() {
-    return this.isDraft;
-  }
-  get isWorkerChangeable() {
-    return this.isDraft || this.isScheduled;
   }
 
   /**
@@ -350,22 +229,18 @@ export default class SiteOperationSchedule extends FireModel {
    */
   beforeEdit() {
     return new Promise((resolve) => {
-      if (this.isDraft) {
-        this.employees.forEach((emp) => {
-          emp.startTime = this.startTime;
-          emp.endTime = this.endTime;
-          emp.isStartNextDay = this.isStartNextDay;
-          // emp.breakMinutes = this.breakMinutes;
-          // emp.overTimeWorkMinutes = this.overTimeWorkMinutes;
-        });
-        this.outsourcers.forEach((out) => {
-          out.startTime = this.startTime;
-          out.endTime = this.endTime;
-          out.isStartNextDay = this.isStartNextDay;
-          // out.breakMinutes = this.breakMinutes;
-          // out.overTimeWorkMinutes = this.overTimeWorkMinutes;
-        });
-      }
+      // if (this.isDraft) {
+      this.employees.forEach((emp) => {
+        emp.startTime = this.startTime;
+        emp.endTime = this.endTime;
+        emp.isStartNextDay = this.isStartNextDay;
+      });
+      this.outsourcers.forEach((out) => {
+        out.startTime = this.startTime;
+        out.endTime = this.endTime;
+        out.isStartNextDay = this.isStartNextDay;
+      });
+      // }
       resolve();
     });
   }
@@ -426,14 +301,12 @@ export default class SiteOperationSchedule extends FireModel {
     if (this.employees.some((emp) => emp.workerId === employeeId)) {
       throw new Error(`Employee with ID ${employeeId} already exists.`);
     }
-    const newEmployee = new OperationResultDetail({
+    const newEmployee = new SiteOperationScheduleDetail({
       workerId: employeeId,
       amount: 1,
       isEmployee: true,
       startTime: this.startTime,
       endTime: this.endTime,
-      // breakMinutes: this.breakMinutes,
-      // overTimeWorkMinutes: this.overTimeWorkMinutes,
     });
     if (index === -1) {
       this.employees.push(newEmployee);
@@ -493,14 +366,12 @@ export default class SiteOperationSchedule extends FireModel {
     if (existOutsourcer) {
       existOutsourcer.amount += amount;
     } else {
-      const newOutsourcer = new OperationResultDetail({
+      const newOutsourcer = new SiteOperationScheduleDetail({
         workerId: outsourcerId,
         amount,
         isEmployee: false,
         startTime: this.startTime,
         endTime: this.endTime,
-        // breakMinutes: this.breakMinutes,
-        // overTimeWorkMinutes: this.overTimeWorkMinutes,
       });
       if (index === -1) {
         this.outsourcers.push(newOutsourcer);
@@ -559,70 +430,6 @@ export default class SiteOperationSchedule extends FireModel {
   }
 
   /**
-   * 指定された新しいステータスに遷移可能かどうかを確認します。
-   * @param {string} newStatus
-   * @returns {boolean} - 遷移可能な場合は true、それ以外は false
-   */
-  _canStatusTransitionTo(newStatus) {
-    if (newStatus === this.status) return true;
-    const validTransitions =
-      SITE_OPERATION_SCHEDULE_STATUS_TRANSITIONS[this.status] || [];
-    return validTransitions.includes(newStatus);
-  }
-
-  _statusTransitionTo(newStatus) {
-    if (!this._canStatusTransitionTo(newStatus)) {
-      throw new Error(`Cannot transition from ${this.status} to ${newStatus}`);
-    }
-    this.status = newStatus;
-  }
-
-  async toDraft(update = true) {
-    try {
-      this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_DRAFT);
-      this.employees.forEach((emp) => {
-        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
-      });
-      this.outsourcers.forEach((out) => {
-        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
-      });
-      if (update) await this.update();
-    } catch (error) {
-      throw new Error(`Failed to transition to draft: ${error.message}`);
-    }
-  }
-
-  async toScheduled(update = true) {
-    try {
-      this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_SCHEDULED);
-      this.employees.forEach((emp) => {
-        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
-      });
-      this.outsourcers.forEach((out) => {
-        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DRAFT;
-      });
-      if (update) await this.update();
-    } catch (error) {
-      throw new Error(`Failed to transition to scheduled: ${error.message}`);
-    }
-  }
-
-  async toArranged(update = true) {
-    try {
-      this._statusTransitionTo(SITE_OPERATION_SCHEDULE_STATUS_ARRANGED);
-      this.employees.forEach((emp) => {
-        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRANGED;
-      });
-      this.outsourcers.forEach((out) => {
-        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRANGED;
-      });
-      if (update) await this.update();
-    } catch (error) {
-      throw new Error(`Failed to transition to arranged: ${error.message}`);
-    }
-  }
-
-  /**
    * 現在のスケジュールを指定された日付で複製します。
    * - 各日付ごとに新しい SiteOperationSchedule インスタンスを作成します。
    * - 当該インスタンスと同一日付のスケジュールは複製されません。
@@ -649,7 +456,6 @@ export default class SiteOperationSchedule extends FireModel {
         docId: "",
         dateAt: new Date(date),
       });
-      newSchedule.toDraft(false);
       return newSchedule;
     });
 
