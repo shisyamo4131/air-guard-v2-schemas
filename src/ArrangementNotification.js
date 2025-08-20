@@ -1,10 +1,13 @@
 import FireModel from "air-firebase-v2";
-import { getDateAt } from "./utils";
+import { getDateAt } from "./utils/index.js";
+import { defField } from "./parts/fieldDefinitions.js";
 
 /**
  * @file ArrangementNotification.js
  * @description ArrangementNotification class
  * - Notifies employees about their work arrangements.
+ * - The `docId` is the unique identifier for each notification document.
+ *  - The document must be overwritten if it already exists.
  */
 export default class ArrangementNotification extends FireModel {
   static className = "配置通知";
@@ -18,6 +21,8 @@ export default class ArrangementNotification extends FireModel {
     employeeId: defField("oneLine", { required: true }),
     /** 配置日 */
     dateAt: defField("dateAt", { label: "配置日", required: true }),
+    /** 現場ID */
+    siteId: defField("oneLine", { required: true }),
     /** 勤務区分 */
     shiftType: defField("shiftType", { required: true }),
     /** 開始時刻（HH:MM 形式） */
@@ -70,6 +75,7 @@ export default class ArrangementNotification extends FireModel {
       /**
        * 開始日時（Date オブジェクト）
        * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
+       * - `isStartNextDay` が true の場合は1日加算。
        */
       startAt: {
         configurable: true,
@@ -83,7 +89,8 @@ export default class ArrangementNotification extends FireModel {
       /**
        * 終了日時（Date オブジェクト）
        * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
-       * - `isSpansNextDay` が true の場合は翌日の同時刻を返す。
+       * - `isStartNextDay` が true の場合は1日加算。
+       * - `isSpansNextDay` が true の場合は1日加算。
        */
       endAt: {
         configurable: true,
@@ -92,6 +99,36 @@ export default class ArrangementNotification extends FireModel {
           const dateOffset =
             (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
           return getDateAt(this.dateAt, this.endTime, dateOffset);
+        },
+        set: (v) => {},
+      },
+      /**
+       * 実際の開始日時（Date オブジェクト）
+       * - `dateAt` を基に、`actualStartTime` を設定した Date オブジェクトを返す。
+       * - `isStartNextDay` が true の場合は1日加算。
+       */
+      actualStartAt: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          const dateOffset = this.isStartNextDay ? 1 : 0;
+          return getDateAt(this.dateAt, this.actualStartTime, dateOffset);
+        },
+        set: (v) => {},
+      },
+      /**
+       * 実際の終了日時（Date オブジェクト）
+       * - `dateAt` を基に、`actualEndTime` を設定した Date オブジェクトを返す。
+       * - `isStartNextDay` が true の場合は1日加算。
+       * - `isSpansNextDay` が true の場合は1日加算。
+       */
+      actualEndAt: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          const dateOffset =
+            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
+          return getDateAt(this.dateAt, this.actualEndTime, dateOffset);
         },
         set: (v) => {},
       },
@@ -127,5 +164,29 @@ export default class ArrangementNotification extends FireModel {
         set: (v) => {},
       },
     });
+  }
+
+  /**
+   * Override `create`.
+   * - Ensures `docId` is fixed to allow recreation of ArrangementNotification documents.
+   */
+  async create({
+    useAutonumber = true,
+    transaction = null,
+    callBack = null,
+    prefix = null,
+  } = {}) {
+    try {
+      const docId = `${this.date}-${this.siteId}-${this.shiftType}-${this.employeeId}`;
+      await super.create({
+        docId,
+        useAutonumber,
+        transaction,
+        callBack,
+        prefix,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

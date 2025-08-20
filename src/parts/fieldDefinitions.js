@@ -22,6 +22,10 @@ import {
   SHIFT_TYPE_DEFAULT,
 } from "../constants/shift-type.js";
 import {
+  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRAY,
+  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT,
+} from "../constants/site-operation-schedule-detail-status.js";
+import {
   SITE_OPERATION_SCHEDULE_STATUS_ARRAY,
   SITE_OPERATION_SCHEDULE_STATUS_DEFAULT,
 } from "../constants/site-operation-schedule-status.js";
@@ -441,6 +445,17 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: OPERATION_RESULT_DETAIL_STATUS_ARRAY,
+      },
+    },
+  },
+  siteOperationScheduleDetailStatus: {
+    ...generalDefinitions.select,
+    default: SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT,
+    label: "ステータス",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRAY,
       },
     },
   },

@@ -4,6 +4,8 @@ import { getDateAt } from "./utils/index.js";
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { runTransaction } from "firebase/firestore";
 import { getDayType } from "./constants/day-type.js";
+import ArrangementNotification from "./ArrangementNotification.js";
+import { SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT } from "./constants/site-operation-schedule-detail-status.js";
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -219,6 +221,23 @@ export default class SiteOperationSchedule extends FireModel {
     return this.employees.concat(this.outsourcers);
   }
 
+  /** Getter for notifications */
+  get notifications() {
+    return this.employees.map((emp) => {
+      return new ArrangementNotification({
+        siteOperationScheduleId: this.docId,
+        employeeId: emp.workerId,
+        dateAt: this.dateAt,
+        siteId: this.siteId,
+        shiftType: this.shiftType,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        isStartNextDay: this.isStartNextDay,
+        actualStartTime: this.startTime,
+        actualEndTime: this.endTime,
+      });
+    });
+  }
   /**
    * A process before editing the schedule
    * - Working result information for all employees and outsourcers is initialized if the schedule is in draft status.
@@ -227,16 +246,17 @@ export default class SiteOperationSchedule extends FireModel {
    */
   beforeEdit() {
     return new Promise((resolve) => {
-      // if (this.isDraft) {
       this.employees.forEach((emp) => {
         emp.startTime = this.startTime;
         emp.endTime = this.endTime;
         emp.isStartNextDay = this.isStartNextDay;
+        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT;
       });
       this.outsourcers.forEach((out) => {
         out.startTime = this.startTime;
         out.endTime = this.endTime;
         out.isStartNextDay = this.isStartNextDay;
+        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT;
       });
       // }
       resolve();
@@ -489,6 +509,65 @@ export default class SiteOperationSchedule extends FireModel {
     } catch (error) {
       throw new Error(
         `Failed to create SiteOperationSchedule: ${error.message}`
+      );
+    }
+  }
+
+  async update() {
+    const firestore = this.constructor.getAdapter().firestore;
+    try {
+      await runTransaction(firestore, async (transaction) => {
+        await this.clearNotification({ transaction });
+        await super.update({ transaction });
+      });
+    } catch (error) {
+      throw new Error(
+        `Failed to update SiteOperationSchedule: ${error.message}`
+      );
+    }
+  }
+
+  async clearNotification({ transaction }) {
+    if (!this.docId) return;
+    const constraints = [
+      ["where", "siteOperationScheduleId", "==", this.docId],
+    ];
+    const notificationInstance = new ArrangementNotification();
+    const existingDocs = await notificationInstance.fetchDocs({
+      constraints,
+    });
+    if (!existingDocs.length) return;
+
+    const deleteNotifications = async (trx) => {
+      await Promise.all(
+        existingDocs.map((doc) => doc.delete({ transaction: trx }))
+      );
+    };
+
+    if (transaction) {
+      await deleteNotifications(transaction);
+    } else {
+      const firestore = this.constructor.getAdapter().firestore;
+      await runTransaction(firestore, deleteNotifications);
+    }
+  }
+
+  /**
+   * Creates `ArrangementNotification` documents for each employee in the schedule.
+   * @returns {Promise<void>}
+   */
+  async notify() {
+    if (!this.docId || this.employees.length === 0) return;
+    const firestore = this.constructor.getAdapter().firestore;
+    try {
+      await runTransaction(firestore, async (transaction) => {
+        await Promise.all(
+          this.notifications.map((notify) => notify.create({ transaction }))
+        );
+      });
+    } catch (error) {
+      throw new Error(
+        `Failed to notify SiteOperationSchedule: ${error.message}`
       );
     }
   }
