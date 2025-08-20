@@ -212,12 +212,15 @@ export default class SiteOperationSchedule extends FireModel {
         },
         set: (v) => {},
       },
+      workers: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          return this.employees.concat(this.outsourcers);
+        },
+        set: (v) => {},
+      },
     });
-  }
-
-  /** Getter to determine the current status */
-  get workers() {
-    return this.employees.concat(this.outsourcers);
   }
 
   /**
