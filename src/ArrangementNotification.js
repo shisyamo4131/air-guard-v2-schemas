@@ -186,7 +186,10 @@ export default class ArrangementNotification extends FireModel {
     prefix = null,
   } = {}) {
     try {
-      const docId = `${this.date}-${this.siteId}-${this.shiftType}-${this.employeeId}`;
+      if (!this.siteOperationScheduleId || !this.employeeId) {
+        throw new Error("siteOperationScheduleId and employeeId are required");
+      }
+      const docId = `${this.siteOperationScheduleId}-${this.employeeId}`;
       await super.create({
         docId,
         useAutonumber,
@@ -199,6 +202,9 @@ export default class ArrangementNotification extends FireModel {
     }
   }
 
+  /**
+   * Change status to `ARRANGED`.
+   */
   async toArranged() {
     try {
       this.actualStartTime = this.startTime;
@@ -213,6 +219,9 @@ export default class ArrangementNotification extends FireModel {
     }
   }
 
+  /**
+   * Change status to `CONFIRMED`.
+   */
   async toConfirmed() {
     try {
       this.confirmedAt = new Date();
@@ -222,6 +231,9 @@ export default class ArrangementNotification extends FireModel {
     }
   }
 
+  /**
+   * Change status to `ARRIVED`.
+   */
   async toArrived() {
     try {
       this.arrivedAt = new Date();
@@ -231,6 +243,9 @@ export default class ArrangementNotification extends FireModel {
     }
   }
 
+  /**
+   * Change status to `LEAVED`.
+   */
   async toLeaved() {
     try {
       this.leavedAt = new Date();

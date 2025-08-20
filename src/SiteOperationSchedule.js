@@ -220,7 +220,9 @@ export default class SiteOperationSchedule extends FireModel {
     return this.employees.concat(this.outsourcers);
   }
 
-  /** Getter for notifications */
+  /**
+   * Returns an array of ArrangementNotification instances for each employee.
+   */
   get notifications() {
     return this.employees.map((emp) => {
       return new ArrangementNotification({
@@ -237,6 +239,7 @@ export default class SiteOperationSchedule extends FireModel {
       });
     });
   }
+
   /**
    * A process before editing the schedule
    * - Working result information for all employees and outsourcers is initialized if the schedule is in draft status.
@@ -524,6 +527,11 @@ export default class SiteOperationSchedule extends FireModel {
     }
   }
 
+  /**
+   * Clears notifications associated with the schedule.
+   * @param {*} param0
+   * @returns
+   */
   async clearNotification({ transaction }) {
     if (!this.docId) return;
     const constraints = [
