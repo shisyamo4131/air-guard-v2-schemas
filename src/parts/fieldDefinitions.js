@@ -21,14 +21,6 @@ import {
   SHIFT_TYPE_ARRAY,
   SHIFT_TYPE_DEFAULT,
 } from "../constants/shift-type.js";
-import {
-  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRAY,
-  SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT,
-} from "../constants/site-operation-schedule-detail-status.js";
-import {
-  SITE_OPERATION_SCHEDULE_STATUS_ARRAY,
-  SITE_OPERATION_SCHEDULE_STATUS_DEFAULT,
-} from "../constants/site-operation-schedule-status.js";
 
 export const DEFAULT_WORKING_MINUTES = 480;
 export const DEFAULT_BREAK_MINUTES = 60;
@@ -448,17 +440,6 @@ export const fieldDefinitions = {
       },
     },
   },
-  siteOperationScheduleDetailStatus: {
-    ...generalDefinitions.select,
-    default: SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT,
-    label: "ステータス",
-    component: {
-      name: generalDefinitions.select.component.name,
-      attrs: {
-        items: SITE_OPERATION_SCHEDULE_DETAIL_STATUS_ARRAY,
-      },
-    },
-  },
   prefCode: {
     ...generalDefinitions.select,
     label: "都道府県",
@@ -478,17 +459,6 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: SHIFT_TYPE_ARRAY,
-      },
-    },
-  },
-  siteOperationScheduleStatus: {
-    ...generalDefinitions.select,
-    default: SITE_OPERATION_SCHEDULE_STATUS_DEFAULT,
-    label: "ステータス",
-    component: {
-      name: generalDefinitions.select.component.name,
-      attrs: {
-        items: SITE_OPERATION_SCHEDULE_STATUS_ARRAY,
       },
     },
   },

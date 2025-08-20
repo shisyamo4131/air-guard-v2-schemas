@@ -1,6 +1,12 @@
 import FireModel from "air-firebase-v2";
 import { getDateAt } from "./utils/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
+import {
+  ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED,
+  ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED,
+  ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED,
+  ARRANGEMENT_NOTIFICATION_STATUS_LEAVED,
+} from "./constants/arrangement-notification-status.js";
 
 /**
  * @file ArrangementNotification.js
@@ -59,6 +65,18 @@ export default class ArrangementNotification extends FireModel {
 
   afterInitialize() {
     Object.defineProperties(this, {
+      status: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          if (!this.confirmedAt)
+            return ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED;
+          if (!this.arrivedAt) return ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED;
+          if (!this.leavedAt) return ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED;
+          return ARRANGEMENT_NOTIFICATION_STATUS_LEAVED;
+        },
+        set: (v) => {},
+      },
       /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
       date: {
         configurable: true,
@@ -142,28 +160,19 @@ export default class ArrangementNotification extends FireModel {
         get: () => this.startTime > this.endTime,
         set: (v) => {},
       },
-      /** 配置確認済みフラグ */
-      isConfirmed: {
-        configurable: true,
-        enumerable: true,
-        get: () => !!this.confirmedAt,
-        set: (v) => {},
-      },
-      /** 上番済みフラグ */
-      isArrived: {
-        configurable: true,
-        enumerable: true,
-        get: () => !!this.arrivedAt,
-        set: (v) => {},
-      },
-      /** 下番済みフラグ */
-      isLeaved: {
-        configurable: true,
-        enumerable: true,
-        get: () => !!this.leavedAt,
-        set: (v) => {},
-      },
     });
+  }
+
+  get isConfirmed() {
+    return !!this.confirmedAt;
+  }
+
+  get isArrived() {
+    return !!this.arrivedAt;
+  }
+
+  get isLeaved() {
+    return !!this.leavedAt;
   }
 
   /**
@@ -187,6 +196,47 @@ export default class ArrangementNotification extends FireModel {
       });
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  async toArranged() {
+    try {
+      this.actualStartTime = this.startTime;
+      this.actualEndTime = this.endTime;
+      this.actualBreakMinutes = 60;
+      this.confirmedAt = null;
+      this.arrivedAt = null;
+      this.leavedAt = null;
+      await this.update();
+    } catch (error) {
+      throw new Error("Failed to set status to ARRANGED", error);
+    }
+  }
+
+  async toConfirmed() {
+    try {
+      this.confirmedAt = new Date();
+      await this.update();
+    } catch (error) {
+      throw new Error("Failed to set status to CONFIRMED", error);
+    }
+  }
+
+  async toArrived() {
+    try {
+      this.arrivedAt = new Date();
+      await this.update();
+    } catch (error) {
+      throw new Error("Failed to set status to ARRIVED", error);
+    }
+  }
+
+  async toLeaved() {
+    try {
+      this.leavedAt = new Date();
+      await this.update();
+    } catch (error) {
+      throw new Error("Failed to set status to LEAVED", error);
     }
   }
 }

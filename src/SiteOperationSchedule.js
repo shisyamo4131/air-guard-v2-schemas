@@ -5,7 +5,6 @@ import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { runTransaction } from "firebase/firestore";
 import { getDayType } from "./constants/day-type.js";
 import ArrangementNotification from "./ArrangementNotification.js";
-import { SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT } from "./constants/site-operation-schedule-detail-status.js";
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -250,13 +249,11 @@ export default class SiteOperationSchedule extends FireModel {
         emp.startTime = this.startTime;
         emp.endTime = this.endTime;
         emp.isStartNextDay = this.isStartNextDay;
-        emp.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT;
       });
       this.outsourcers.forEach((out) => {
         out.startTime = this.startTime;
         out.endTime = this.endTime;
         out.isStartNextDay = this.isStartNextDay;
-        out.status = SITE_OPERATION_SCHEDULE_DETAIL_STATUS_DEFAULT;
       });
       // }
       resolve();
