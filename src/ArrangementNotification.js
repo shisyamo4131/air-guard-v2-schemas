@@ -1,11 +1,12 @@
 import FireModel from "air-firebase-v2";
-import { getDateAt } from "./utils/index.js";
+import { getDateAt, ContextualError } from "./utils/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import {
   ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED,
   ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED,
   ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED,
   ARRANGEMENT_NOTIFICATION_STATUS_LEAVED,
+  ARRANGEMENT_NOTIFICATION_STATUS_TEMPORARY,
 } from "./constants/arrangement-notification-status.js";
 
 /**
@@ -61,22 +62,11 @@ export default class ArrangementNotification extends FireModel {
       default: 60,
       required: true,
     }),
+    status: defField("arrangementNotificationStatus", { required: true }),
   };
 
   afterInitialize() {
     Object.defineProperties(this, {
-      status: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          if (!this.confirmedAt)
-            return ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED;
-          if (!this.arrivedAt) return ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED;
-          if (!this.leavedAt) return ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED;
-          return ARRANGEMENT_NOTIFICATION_STATUS_LEAVED;
-        },
-        set: (v) => {},
-      },
       /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
       date: {
         configurable: true,
@@ -163,49 +153,69 @@ export default class ArrangementNotification extends FireModel {
     });
   }
 
+  get isTemporary() {
+    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_TEMPORARY;
+  }
+
+  get isArranged() {
+    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED;
+  }
+
   get isConfirmed() {
-    return !!this.confirmedAt;
+    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED;
   }
 
   get isArrived() {
-    return !!this.arrivedAt;
+    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED;
   }
 
   get isLeaved() {
-    return !!this.leavedAt;
+    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_LEAVED;
   }
 
   /**
    * Override `create`.
    * - Ensures `docId` is fixed to allow recreation of ArrangementNotification documents.
+   * @param {Object} updateOptions - Options for creating the notification.
+   * @param {boolean} updateOptions.useAutonumber - Whether to use autonumbering.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
    */
-  async create({
-    useAutonumber = true,
-    transaction = null,
-    callBack = null,
-    prefix = null,
-  } = {}) {
+  async create(updateOptions = {}) {
     try {
       if (!this.siteOperationScheduleId || !this.employeeId) {
         throw new Error("siteOperationScheduleId and employeeId are required");
       }
       const docId = `${this.siteOperationScheduleId}-${this.employeeId}`;
-      await super.create({
-        docId,
-        useAutonumber,
-        transaction,
-        callBack,
-        prefix,
-      });
+      await super.create({ ...updateOptions, docId });
     } catch (error) {
       console.error(error);
     }
   }
 
   /**
-   * Change status to `ARRANGED`.
+   * Could not update the arrangement notification directly.
+   * @returns {Promise<void>}
    */
-  async toArranged() {
+  update() {
+    return Promise.reject(new Error("Update method is not implemented"));
+  }
+
+  /**
+   * Change status to `TEMPORARY`.
+   * @param {Object} updateOptions - Options for updating the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
+   */
+  async toTemporary(updateOptions = {}) {
+    const context = {
+      method: "toTemporary",
+      className: "ArrangementNotification",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
     try {
       this.actualStartTime = this.startTime;
       this.actualEndTime = this.endTime;
@@ -213,48 +223,137 @@ export default class ArrangementNotification extends FireModel {
       this.confirmedAt = null;
       this.arrivedAt = null;
       this.leavedAt = null;
-      await this.update();
+      this.status = ARRANGEMENT_NOTIFICATION_STATUS_TEMPORARY;
+      await super.update(updateOptions);
     } catch (error) {
-      throw new Error("Failed to set status to ARRANGED", error);
+      throw new ContextualError("Failed to set status to TEMPORARY", context);
+    }
+  }
+
+  /**
+   * Change status to `ARRANGED`.
+   * @param {Object} updateOptions - Options for updating the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
+   */
+  async toArranged(updateOptions = {}) {
+    const context = {
+      method: "toArranged",
+      className: "ArrangementNotification",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
+    try {
+      this.actualStartTime = this.startTime;
+      this.actualEndTime = this.endTime;
+      this.actualBreakMinutes = 60;
+      this.confirmedAt = null;
+      this.arrivedAt = null;
+      this.leavedAt = null;
+      this.status = ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED;
+      await super.update(updateOptions);
+    } catch (error) {
+      throw new ContextualError(error.message, context);
     }
   }
 
   /**
    * Change status to `CONFIRMED`.
+   * @param {Object} updateOptions - Options for updating the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
    */
-  async toConfirmed() {
+  async toConfirmed(updateOptions = {}) {
+    const context = {
+      method: "toConfirmed",
+      className: "ArrangementNotification",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
     try {
+      this.actualStartTime = this.startTime;
+      this.actualEndTime = this.endTime;
+      this.actualBreakMinutes = 60;
       this.confirmedAt = new Date();
       this.arrivedAt = null;
       this.leavedAt = null;
-      await this.update();
+      this.status = ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED;
+      await super.update(updateOptions);
     } catch (error) {
-      throw new Error("Failed to set status to CONFIRMED", error);
+      throw new ContextualError(error.message, context);
     }
   }
 
   /**
    * Change status to `ARRIVED`.
+   * @param {Object} updateOptions - Options for updating the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
    */
-  async toArrived() {
+  async toArrived(updateOptions = {}) {
+    const context = {
+      method: "toArrived",
+      className: "ArrangementNotification",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
     try {
+      this.actualStartTime = this.startTime;
+      this.actualEndTime = this.endTime;
+      this.actualBreakMinutes = 60;
+      // this.confirmedAt = null; // Do not edit `confirmedAt`
       this.arrivedAt = new Date();
       this.leavedAt = null;
-      await this.update();
+      this.status = ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED;
+      await super.update(updateOptions);
     } catch (error) {
-      throw new Error("Failed to set status to ARRIVED", error);
+      throw new ContextualError(error.message, context);
     }
   }
 
   /**
    * Change status to `LEAVED`.
+   * @param {Object} timeOptions - Options for setting time.
+   * @param {string} timeOptions.startTime - The actual start time.
+   * @param {string} timeOptions.endTime - The actual end time.
+   * @param {number} timeOptions.breakMinutes - The actual break minutes.
+   * @param {Object} updateOptions - Options for updating the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
    */
-  async toLeaved() {
+  async toLeaved(timeOptions = {}, updateOptions = {}) {
+    const { actualStartTime, actualEndTime, actualBreakMinutes } = timeOptions;
+    const context = {
+      method: "toLeaved",
+      className: "ArrangementNotification",
+      arguments: { ...timeOptions, ...updateOptions },
+      state: this.toObject(),
+    };
     try {
+      if (
+        !actualStartTime ||
+        !actualEndTime ||
+        actualBreakMinutes === undefined
+      ) {
+        throw new ContextualError(
+          "startTime, endTime, and breakMinutes are required",
+          context
+        );
+      }
+      this.actualStartTime = actualStartTime;
+      this.actualEndTime = actualEndTime;
+      this.actualBreakMinutes = actualBreakMinutes;
+      // this.confirmedAt = null; // Do not edit `confirmedAt`
+      // this.arrivedAt = null; // Do not edit `arrivedAt`
       this.leavedAt = new Date();
-      await this.update();
+      this.status = ARRANGEMENT_NOTIFICATION_STATUS_LEAVED;
+      await super.update(updateOptions);
     } catch (error) {
-      throw new Error("Failed to set status to LEAVED", error);
+      throw new ContextualError(error.message, context);
     }
   }
 }

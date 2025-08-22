@@ -1,4 +1,8 @@
 import {
+  ARRANGEMENT_NOTIFICATION_STATUS_ARRAY,
+  ARRANGEMENT_NOTIFICATION_STATUS_DEFAULT,
+} from "../constants/arrangement-notification-status.js";
+import {
   BILLING_UNIT_TYPE_ARRAY,
   BILLING_UNIT_TYPE_DEFAULT,
 } from "../constants/billing-unit-type.js";
@@ -374,6 +378,17 @@ export const fieldDefinitions = {
 
   /** select */
   select: generalDefinitions.select,
+  arrangementNotificationStatus: {
+    ...generalDefinitions.select,
+    default: ARRANGEMENT_NOTIFICATION_STATUS_DEFAULT,
+    label: "状態",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: ARRANGEMENT_NOTIFICATION_STATUS_ARRAY,
+      },
+    },
+  },
   billingUnitType: {
     ...generalDefinitions.select,
     default: BILLING_UNIT_TYPE_DEFAULT,

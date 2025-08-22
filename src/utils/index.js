@@ -44,3 +44,5 @@ export function getDateAt(date, time, dateOffset = 0) {
   result.setDate(result.getDate() + dateOffset);
   return result;
 }
+
+export { ContextualError } from "./ContextualError.js";
