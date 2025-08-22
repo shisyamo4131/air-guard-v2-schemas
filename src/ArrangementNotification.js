@@ -225,6 +225,8 @@ export default class ArrangementNotification extends FireModel {
   async toConfirmed() {
     try {
       this.confirmedAt = new Date();
+      this.arrivedAt = null;
+      this.leavedAt = null;
       await this.update();
     } catch (error) {
       throw new Error("Failed to set status to CONFIRMED", error);
@@ -237,6 +239,7 @@ export default class ArrangementNotification extends FireModel {
   async toArrived() {
     try {
       this.arrivedAt = new Date();
+      this.leavedAt = null;
       await this.update();
     } catch (error) {
       throw new Error("Failed to set status to ARRIVED", error);
