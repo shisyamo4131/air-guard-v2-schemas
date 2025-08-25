@@ -1,10 +1,12 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-import { getDateAt } from "./utils/index.js";
+import { getDateAt, ContextualError } from "./utils/index.js";
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { runTransaction } from "firebase/firestore";
 import { getDayType } from "./constants/day-type.js";
 import ArrangementNotification from "./ArrangementNotification.js";
+
+const isDebug = false;
 
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
@@ -223,6 +225,9 @@ export default class SiteOperationSchedule extends FireModel {
     });
   }
 
+  /***************************************************************************
+   * STATES
+   ***************************************************************************/
   /**
    * Returns an array of ArrangementNotification instances for each employee.
    */
@@ -241,6 +246,85 @@ export default class SiteOperationSchedule extends FireModel {
         actualEndTime: this.endTime,
       });
     });
+  }
+
+  /**
+   * Returns whether the notifications should be cleared.
+   * - If the site ID, shift type, or date has changed, the notifications should be cleared.
+   */
+  get _shouldClearNotifications() {
+    const beforeSiteId = this._beforeData.siteId;
+    const beforeShiftType = this._beforeData.shiftType;
+    const beforeDate = this._beforeData.date;
+
+    return (
+      beforeSiteId !== this.siteId ||
+      beforeShiftType !== this.shiftType ||
+      beforeDate !== this.date
+    );
+  }
+
+  /**
+   * Returns whether the employees have changed.
+   * - If the employee IDs have changed, returns true.
+   * - If the employee IDs have not changed, returns false.
+   * - If the employee IDs are the same but the order has changed, returns false.
+   */
+  get _isEmployeesChanged() {
+    const currentEmployeeIds = this.employeeIds || [];
+    const beforeEmployeeIds = this._beforeData.employeeIds || [];
+
+    // ソートして文字列として比較
+    return (
+      currentEmployeeIds.sort().join(",") !== beforeEmployeeIds.sort().join(",")
+    );
+  }
+
+  /**
+   * Returns the employees array that have been removed.
+   */
+  get _removedEmployees() {
+    return this._beforeData.employees.filter(
+      (emp) => !this.employees.some((e) => e.workerId === emp.workerId)
+    );
+  }
+
+  /**
+   * Returns the employees that have been added and should be notified.
+   */
+  get _employeesShouldBeNotified() {
+    const result = this.employees.filter((emp) => !emp.hasNotification);
+    if (isDebug) {
+      console.log("Employees that should be notified:", result);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the notifications that should be created.
+   */
+  get _notificationsShouldBeCreated() {
+    const employeesShouldBeNotified = this._employeesShouldBeNotified;
+    const result = this.notifications.filter((notification) => {
+      return employeesShouldBeNotified.some((emp) => {
+        return emp.workerId === notification.employeeId;
+      });
+    });
+    if (isDebug) {
+      console.log("Notifications that should be created:", result);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the notification IDs that should be deleted.
+   */
+  get _NotificationIdsShouldBeDeleted() {
+    return this._removedEmployees
+      .filter((emp) => emp.hasNotification)
+      .map((emp) => {
+        return `${this.docId}-${emp.workerId}`;
+      });
   }
 
   /**
@@ -302,10 +386,20 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {boolean} [isEmployee=true] - 従業員の場合は true、外注先の場合は false
    */
   removeWorker(workerId, amount = 1, isEmployee = true) {
-    if (isEmployee) {
-      this._removeEmployee(workerId);
-    } else {
-      this._removeOutsourcer(workerId, amount);
+    const context = {
+      method: "removeWorker",
+      className: "SiteOperationSchedule",
+      arguments: { workerId, amount, isEmployee },
+      state: this.toObject(),
+    };
+    try {
+      if (isEmployee) {
+        this._removeEmployee(workerId);
+      } else {
+        this._removeOutsourcer(workerId, amount);
+      }
+    } catch (error) {
+      throw new ContextualError("Failed to remove worker", context);
     }
   }
 
@@ -493,8 +587,19 @@ export default class SiteOperationSchedule extends FireModel {
   /**
    * Override create method.
    * - Automatically assigns a display order based on existing documents.
+   * @param {Object} updateOptions - Options for creating the notification.
+   * @param {boolean} updateOptions.useAutonumber - Whether to use autonumbering.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
    */
-  async create() {
+  async create(updateOptions = {}) {
+    const context = {
+      method: "create",
+      className: "SiteOperationSchedule",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
     try {
       const existingDocs = await this.fetchDocs({
         constraints: [
@@ -508,55 +613,88 @@ export default class SiteOperationSchedule extends FireModel {
       if (existingDocs.length > 0) {
         this.displayOrder = existingDocs[0].displayOrder + 1;
       }
-      await super.create();
+      await super.create(updateOptions);
     } catch (error) {
-      throw new Error(
-        `Failed to create SiteOperationSchedule: ${error.message}`
-      );
+      throw new ContextualError(error.message, context);
     }
   }
 
-  async update() {
-    const firestore = this.constructor.getAdapter().firestore;
+  /**
+   * Override update method.
+   * - Updates and clears notifications if the siteId, shiftType, or date has changed.
+   * - Updates and deletes notifications for removed employees if employee assignments have changed.
+   * - Just updates if no changes detected.
+   * @param {Object} updateOptions - Options for creating the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
+   */
+  async update(updateOptions = {}) {
+    const context = {
+      method: "update",
+      className: "SiteOperationSchedule",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
     try {
-      await runTransaction(firestore, async (transaction) => {
-        await this.clearNotification({ transaction });
-        await super.update({ transaction });
-      });
+      // Update and clear notifications if the siteId, shiftType, or date has changed.
+      if (this._shouldClearNotifications) {
+        await this._clearNotificationsUpdate(updateOptions);
+      }
+      // Update and delete notifications for removed employees if employee assignments have changed.
+      else if (this._isEmployeesChanged) {
+        await this._deleteNotificationsUpdate(updateOptions);
+      }
+      // Just update if no changes detected.
+      else {
+        super.update(updateOptions);
+      }
     } catch (error) {
-      throw new Error(
-        `Failed to update SiteOperationSchedule: ${error.message}`
-      );
+      throw new ContextualError(error.message, context);
     }
   }
 
   /**
    * Clears notifications associated with the schedule.
-   * @param {*} param0
+   * @param {Object} transaction - Firestore transaction object
    * @returns
    */
-  async clearNotification({ transaction }) {
-    if (!this.docId) return;
-    const constraints = [
-      ["where", "siteOperationScheduleId", "==", this.docId],
-    ];
-    const notificationInstance = new ArrangementNotification();
-    const existingDocs = await notificationInstance.fetchDocs({
-      constraints,
-    });
-    if (!existingDocs.length) return;
-
-    const deleteNotifications = async (trx) => {
-      await Promise.all(
-        existingDocs.map((doc) => doc.delete({ transaction: trx }))
-      );
+  async clearNotifications(transaction) {
+    const context = {
+      method: "clearNotifications",
+      className: "SiteOperationSchedule",
+      arguments: { transaction },
+      state: this.toObject(),
     };
+    try {
+      // Throw error if transaction is not provided.
+      if (!transaction) throw new Error("Transaction is required.");
 
-    if (transaction) {
-      await deleteNotifications(transaction);
-    } else {
-      const firestore = this.constructor.getAdapter().firestore;
-      await runTransaction(firestore, deleteNotifications);
+      // Throw error if document ID is not set.
+      if (!this.docId)
+        throw new Error("Document ID is required to clear notifications.");
+
+      // Get existing notifications
+      const existingDocs =
+        await ArrangementNotification.fetchDocsBySiteOperationScheduleId(
+          this.docId
+        );
+      if (!existingDocs.length) return;
+
+      const deleteNotifications = async (trx) => {
+        await Promise.all(
+          existingDocs.map((doc) => doc.delete({ transaction: trx }))
+        );
+      };
+
+      if (transaction) {
+        await deleteNotifications(transaction);
+      } else {
+        const firestore = this.constructor.getAdapter().firestore;
+        await runTransaction(firestore, deleteNotifications);
+      }
+    } catch (error) {
+      throw new ContextualError(error.message, context);
     }
   }
 
@@ -565,18 +703,208 @@ export default class SiteOperationSchedule extends FireModel {
    * @returns {Promise<void>}
    */
   async notify() {
-    if (!this.docId || this.employees.length === 0) return;
-    const firestore = this.constructor.getAdapter().firestore;
+    const context = {
+      method: "notify",
+      className: "SiteOperationSchedule",
+      arguments: {},
+      state: this.toObject(),
+    };
+
+    // for debugging
+    if (isDebug) console.log(`'notify' is called.`);
+
     try {
+      if (this._notificationsShouldBeCreated.length === 0) {
+        if (isDebug) console.log("No new notifications to create.");
+        return;
+      }
+
+      const firestore = this.constructor.getAdapter().firestore;
       await runTransaction(firestore, async (transaction) => {
-        await Promise.all(
-          this.notifications.map((notify) => notify.create({ transaction }))
-        );
+        await this._createPendingNotifications(transaction);
+        this.employees.forEach((emp) => (emp.hasNotification = true));
+        await super.update({ transaction });
       });
+
+      // for debugging
+      if (isDebug) {
+        console.log("All pending notifications created successfully.");
+      }
     } catch (error) {
-      throw new Error(
-        `Failed to notify SiteOperationSchedule: ${error.message}`
+      const beforeStatus = Object.fromEntries(
+        this._beforeData.employees.map(({ workerId, hasNotification }) => {
+          return [workerId, hasNotification];
+        })
       );
+      this.employees.forEach(
+        (emp) => (emp.hasNotification = beforeStatus[emp.workerId])
+      );
+      throw new ContextualError(
+        `Failed to notify SiteOperationSchedule: ${error.message}`,
+        context
+      );
+    }
+  }
+
+  /**
+   * Deletes notifications for employees that have been removed from the schedule.
+   * @param {Object} transaction - Firestore transaction object
+   */
+  async _deleteNotificationsForRemovedEmployees(transaction) {
+    const context = {
+      method: "_deleteNotificationsForRemovedEmployees()",
+      className: "SiteOperationSchedule",
+      arguments: {},
+      state: this.toObject(),
+    };
+
+    // for debugging
+    if (isDebug) console.log(`'${context.method}' is called.`);
+
+    try {
+      // Throw error if Firestore transaction is not provided.
+      if (!transaction) throw new Error("Transaction is required.");
+
+      // Get target notification IDs to be deleted.
+      const targetIds = this._NotificationIdsShouldBeDeleted;
+      if (targetIds.length === 0) {
+        if (isDebug) console.log("No notifications to delete.");
+        return;
+      }
+
+      // Tricky deletion.
+      // Using `ArrangementNotification` instance only set `docId` for deletion.
+      const promises = targetIds.map((id) => {
+        const notification = new ArrangementNotification({ docId: id });
+        return notification.delete({ transaction });
+      });
+
+      await Promise.all(promises);
+
+      // for debugging
+      if (isDebug) {
+        console.log(
+          `${targetIds.length} notifications has been deleted successfully.`
+        );
+        console.table(targetIds);
+      }
+    } catch (error) {
+      throw new ContextualError(error.message, context);
+    }
+  }
+
+  /**
+   * Creates notifications for newly added employees who do not yet have notifications.
+   * @param {Object} transaction - Firestore transaction object
+   */
+  async _createPendingNotifications(transaction) {
+    const context = {
+      method: "_createPendingNotifications()",
+      className: "SiteOperationSchedule",
+      arguments: {},
+      state: this.toObject(),
+    };
+
+    // for debugging.
+    if (isDebug) console.log(`'${context.method}' is called.`);
+
+    try {
+      // Throw error if Firestore transaction is not provided.
+      if (!transaction) throw new Error("Transaction is required.");
+
+      const targets = this._notificationsShouldBeCreated;
+      if (isDebug) {
+        console.log("Creating pending notifications for employees:", targets);
+      }
+
+      if (targets.length === 0) {
+        if (isDebug) console.log("No new notifications to create.");
+        return;
+      }
+
+      const promises = targets.map((notify) => notify.create({ transaction }));
+      await Promise.all(promises);
+
+      if (isDebug) {
+        console.log(
+          `${targets.length} Pending notifications created successfully.`
+        );
+        console.table(targets);
+      }
+    } catch (error) {
+      throw new ContextualError(error.message, context);
+    }
+  }
+
+  /**
+   * Updates the schedule document and clears related notifications.
+   * @param {Object} updateOptions - Options for updating the schedule.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
+   */
+  async _clearNotificationsUpdate(updateOptions) {
+    const context = {
+      method: "clearNotificationsUpdate",
+      className: "SiteOperationSchedule",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
+
+    try {
+      const performTransaction = async (txn) => {
+        await this.clearNotifications(txn);
+        this.employees.forEach((emp) => (emp.hasNotification = false));
+        await super.update({ transaction: txn });
+      };
+
+      if (updateOptions.transaction) {
+        await performTransaction(updateOptions.transaction);
+      } else {
+        const firestore = this.constructor.getAdapter().firestore;
+        await runTransaction(firestore, performTransaction);
+      }
+    } catch (error) {
+      const beforeStatus = Object.fromEntries(
+        this._beforeData.employees.map(({ workerId, hasNotification }) => {
+          return [workerId, hasNotification];
+        })
+      );
+      this.employees.forEach(
+        (emp) => (emp.hasNotification = beforeStatus[emp.workerId])
+      );
+      throw new ContextualError(error.message, context);
+    }
+  }
+
+  /**
+   * Updates the schedule document and deletes notifications of removed employees.
+   * @param {Object} updateOptions - Options for updating the schedule.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
+   */
+  async _deleteNotificationsUpdate(updateOptions) {
+    const context = {
+      method: "deleteNotificationsUpdate",
+      className: "SiteOperationSchedule",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
+
+    try {
+      const performTransaction = async (txn) => {
+        await this._deleteNotificationsForRemovedEmployees(txn);
+        await super.update({ transaction: txn });
+      };
+      if (updateOptions.transaction) {
+        await performTransaction(updateOptions.transaction);
+      } else {
+        const firestore = this.constructor.getAdapter().firestore;
+        await runTransaction(firestore, performTransaction);
+      }
+    } catch (error) {
+      throw new ContextualError(error.message, context);
     }
   }
 }

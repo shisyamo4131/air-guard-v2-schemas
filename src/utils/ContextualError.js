@@ -2,6 +2,7 @@
  * コンテキスト情報付きエラークラス
  * 標準のErrorクラスを拡張し、エラー発生時の詳細情報を保持する
  */
+
 export class ContextualError extends Error {
   /**
    * @param {string} message - エラーメッセージ
@@ -19,6 +20,8 @@ export class ContextualError extends Error {
       timestamp: new Date().toISOString(),
       ...context,
     };
+
+    console.error(this.message, this.context);
   }
 
   /**

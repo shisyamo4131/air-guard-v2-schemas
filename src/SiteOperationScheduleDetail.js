@@ -16,12 +16,11 @@ export default class SiteOperationScheduleDetail extends BaseClass {
     isStartNextDay: defField("check", { label: "翌日開始" }),
     /** 終了時刻（HH:MM形式） */
     endTime: defField("time", { label: "終了時刻", required: true }),
-    /*************************************************************************
-     * NOTE: `regulationWorkMinutes` は 当該オブジェクトを管理する親クラスが保有するものを使用する。
-     *************************************************************************/
     /** 資格者フラグ */
     isQualificated: defField("check", { label: "資格者" }),
     /** OJTフラグ */
     isOjt: defField("check", { label: "OJT" }),
+    /** 配置通知フラグ */
+    hasNotification: defField("check"),
   };
 }

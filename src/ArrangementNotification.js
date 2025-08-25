@@ -356,4 +356,21 @@ export default class ArrangementNotification extends FireModel {
       throw new ContextualError(error.message, context);
     }
   }
+
+  static async fetchDocsBySiteOperationScheduleId(id) {
+    const context = {
+      method: "fetchDocsBySiteOperationScheduleId",
+      className: "ArrangementNotification",
+      arguments: { id },
+    };
+    try {
+      const instance = new this();
+      const constraints = [["where", "siteOperationScheduleId", "==", id]];
+      const result = await instance.fetchDocs({ constraints });
+
+      return result;
+    } catch (error) {
+      throw new ContextualError(error.message, context);
+    }
+  }
 }
