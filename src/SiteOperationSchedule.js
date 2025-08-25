@@ -250,17 +250,19 @@ export default class SiteOperationSchedule extends FireModel {
 
   /**
    * Returns whether the notifications should be cleared.
-   * - If the site ID, shift type, or date has changed, the notifications should be cleared.
+   * - If the site ID, shift type, date, isStartNextDay, startTime, or endTime has changed, the notifications should be cleared.
    */
   get _shouldClearNotifications() {
-    const beforeSiteId = this._beforeData.siteId;
-    const beforeShiftType = this._beforeData.shiftType;
-    const beforeDate = this._beforeData.date;
+    const { siteId, shiftType, date, isStartNextDay, startTime, endTime } =
+      this._beforeData;
 
     return (
-      beforeSiteId !== this.siteId ||
-      beforeShiftType !== this.shiftType ||
-      beforeDate !== this.date
+      siteId !== this.siteId ||
+      shiftType !== this.shiftType ||
+      date !== this.date ||
+      isStartNextDay !== this.isStartNextDay ||
+      startTime !== this.startTime ||
+      endTime !== this.endTime
     );
   }
 
@@ -314,6 +316,18 @@ export default class SiteOperationSchedule extends FireModel {
       console.log("Notifications that should be created:", result);
     }
     return result;
+  }
+
+  /**
+   * Returns whether the notifications should be updated.
+   */
+  get _isNotificationsShouldBeUpdated() {
+    const { startTime, endTime, isStartNextDay } = this._beforeData;
+    return (
+      this.startTime !== startTime ||
+      this.endTime !== endTime ||
+      this.isStartNextDay !== isStartNextDay
+    );
   }
 
   /**
@@ -621,7 +635,7 @@ export default class SiteOperationSchedule extends FireModel {
 
   /**
    * Override update method.
-   * - Updates and clears notifications if the siteId, shiftType, or date has changed.
+   * - Updates and clears notifications if related data have been changed.
    * - Updates and deletes notifications for removed employees if employee assignments have changed.
    * - Just updates if no changes detected.
    * @param {Object} updateOptions - Options for creating the notification.
@@ -637,19 +651,36 @@ export default class SiteOperationSchedule extends FireModel {
       state: this.toObject(),
     };
     try {
-      // Update and clear notifications if the siteId, shiftType, or date has changed.
-      if (this._shouldClearNotifications) {
-        await this._clearNotificationsUpdate(updateOptions);
-      }
-      // Update and delete notifications for removed employees if employee assignments have changed.
-      else if (this._isEmployeesChanged) {
-        await this._deleteNotificationsUpdate(updateOptions);
-      }
-      // Just update if no changes detected.
-      else {
-        super.update(updateOptions);
+      const performTransaction = async (txn) => {
+        // Clear all notifications if related data have been changed.
+        // siteId, shiftType, date, isStartNextDay, startTime, endTime
+        if (this._shouldClearNotifications) {
+          await this.clearNotifications(txn);
+          this.employees.forEach((emp) => (emp.hasNotification = false));
+        } else {
+          // Delete notifications for removed employees if employee assignments have been changed.
+          if (this._isEmployeesChanged) {
+            await this._deleteNotificationsForRemovedEmployees(txn);
+          }
+        }
+        super.update({ transaction: txn });
+      };
+
+      if (updateOptions.transaction) {
+        await performTransaction(updateOptions.transaction);
+      } else {
+        const firestore = this.constructor.getAdapter().firestore;
+        await runTransaction(firestore, performTransaction);
       }
     } catch (error) {
+      const beforeStatus = Object.fromEntries(
+        this._beforeData.employees.map(({ workerId, hasNotification }) => {
+          return [workerId, hasNotification];
+        })
+      );
+      this.employees.forEach(
+        (emp) => (emp.hasNotification = beforeStatus[emp.workerId])
+      );
       throw new ContextualError(error.message, context);
     }
   }
@@ -830,78 +861,6 @@ export default class SiteOperationSchedule extends FireModel {
           `${targets.length} Pending notifications created successfully.`
         );
         console.table(targets);
-      }
-    } catch (error) {
-      throw new ContextualError(error.message, context);
-    }
-  }
-
-  /**
-   * Updates the schedule document and clears related notifications.
-   * @param {Object} updateOptions - Options for updating the schedule.
-   * @param {Object} updateOptions.transaction - The Firestore transaction object.
-   * @param {function} updateOptions.callBack - The callback function.
-   * @param {string} updateOptions.prefix - The prefix.
-   */
-  async _clearNotificationsUpdate(updateOptions) {
-    const context = {
-      method: "clearNotificationsUpdate",
-      className: "SiteOperationSchedule",
-      arguments: updateOptions,
-      state: this.toObject(),
-    };
-
-    try {
-      const performTransaction = async (txn) => {
-        await this.clearNotifications(txn);
-        this.employees.forEach((emp) => (emp.hasNotification = false));
-        await super.update({ transaction: txn });
-      };
-
-      if (updateOptions.transaction) {
-        await performTransaction(updateOptions.transaction);
-      } else {
-        const firestore = this.constructor.getAdapter().firestore;
-        await runTransaction(firestore, performTransaction);
-      }
-    } catch (error) {
-      const beforeStatus = Object.fromEntries(
-        this._beforeData.employees.map(({ workerId, hasNotification }) => {
-          return [workerId, hasNotification];
-        })
-      );
-      this.employees.forEach(
-        (emp) => (emp.hasNotification = beforeStatus[emp.workerId])
-      );
-      throw new ContextualError(error.message, context);
-    }
-  }
-
-  /**
-   * Updates the schedule document and deletes notifications of removed employees.
-   * @param {Object} updateOptions - Options for updating the schedule.
-   * @param {Object} updateOptions.transaction - The Firestore transaction object.
-   * @param {function} updateOptions.callBack - The callback function.
-   * @param {string} updateOptions.prefix - The prefix.
-   */
-  async _deleteNotificationsUpdate(updateOptions) {
-    const context = {
-      method: "deleteNotificationsUpdate",
-      className: "SiteOperationSchedule",
-      arguments: updateOptions,
-      state: this.toObject(),
-    };
-
-    try {
-      const performTransaction = async (txn) => {
-        await this._deleteNotificationsForRemovedEmployees(txn);
-        await super.update({ transaction: txn });
-      };
-      if (updateOptions.transaction) {
-        await performTransaction(updateOptions.transaction);
-      } else {
-        const firestore = this.constructor.getAdapter().firestore;
-        await runTransaction(firestore, performTransaction);
       }
     } catch (error) {
       throw new ContextualError(error.message, context);
