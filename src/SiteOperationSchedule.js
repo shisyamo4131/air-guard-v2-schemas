@@ -229,6 +229,14 @@ export default class SiteOperationSchedule extends FireModel {
    * STATES
    ***************************************************************************/
   /**
+   * Returns whether all employees have been notified.
+   * @returns {boolean} - Whether all employees have been notified.
+   */
+  get notificatedAllEmployees() {
+    return this.employees.every((emp) => emp.hasNotification);
+  }
+
+  /**
    * Returns whether the notifications should be cleared.
    * - Returns true if the `siteId`, `shiftType`, `date`, `isStartNextDay`,
    *   `startTime`, or `endTime` has changed.
@@ -752,6 +760,7 @@ export default class SiteOperationSchedule extends FireModel {
           ...this.toObject(),
           docId: "",
           dateAt: new Date(date),
+          operationResultId: "",
         });
         return instance;
       });
