@@ -229,126 +229,182 @@ export default class SiteOperationSchedule extends FireModel {
    * STATES
    ***************************************************************************/
   /**
-   * Returns an array of ArrangementNotification instances for each employee.
-   */
-  get notifications() {
-    return this.employees.map((emp) => {
-      return new ArrangementNotification({
-        siteOperationScheduleId: this.docId,
-        employeeId: emp.workerId,
-        dateAt: this.dateAt,
-        siteId: this.siteId,
-        shiftType: this.shiftType,
-        startTime: this.startTime,
-        endTime: this.endTime,
-        isStartNextDay: this.isStartNextDay,
-        actualStartTime: this.startTime,
-        actualEndTime: this.endTime,
-      });
-    });
-  }
-
-  /**
    * Returns whether the notifications should be cleared.
-   * - If the site ID, shift type, date, isStartNextDay, startTime, or endTime has changed, the notifications should be cleared.
+   * - Returns true if the `siteId`, `shiftType`, `date`, `isStartNextDay`,
+   *   `startTime`, or `endTime` has changed.
+   * @returns {boolean} - Whether the notifications should be cleared.
    */
   get _shouldClearNotifications() {
-    const { siteId, shiftType, date, isStartNextDay, startTime, endTime } =
-      this._beforeData;
+    try {
+      const { siteId, shiftType, date, isStartNextDay, startTime, endTime } =
+        this._beforeData;
 
-    return (
-      siteId !== this.siteId ||
-      shiftType !== this.shiftType ||
-      date !== this.date ||
-      isStartNextDay !== this.isStartNextDay ||
-      startTime !== this.startTime ||
-      endTime !== this.endTime
-    );
+      return (
+        siteId !== this.siteId ||
+        shiftType !== this.shiftType ||
+        date !== this.date ||
+        isStartNextDay !== this.isStartNextDay ||
+        startTime !== this.startTime ||
+        endTime !== this.endTime
+      );
+    } catch (error) {
+      console.error("Error in _shouldClearNotifications:", error);
+      return false;
+    }
   }
 
   /**
    * Returns whether the employees have changed.
-   * - If the employee IDs have changed, returns true.
-   * - If the employee IDs have not changed, returns false.
-   * - If the employee IDs are the same but the order has changed, returns false.
+   * - Returns true if the employee IDs have changed.
+   * - Returns false if the employee IDs have not changed or
+   *   are the same even if the order has changed.
+   * @returns {boolean} - Whether the employees have changed.
    */
   get _isEmployeesChanged() {
-    const currentEmployeeIds = this.employeeIds || [];
-    const beforeEmployeeIds = this._beforeData.employeeIds || [];
-
-    // ソートして文字列として比較
-    return (
-      currentEmployeeIds.sort().join(",") !== beforeEmployeeIds.sort().join(",")
-    );
+    try {
+      const current = this.employeeIds || [];
+      const before = this._beforeData?.employeeIds || [];
+      return current.sort().join(",") !== before.sort().join(",");
+    } catch (error) {
+      console.error("Error in _isEmployeesChanged:", error);
+      return false;
+    }
   }
 
   /**
-   * Returns the employees array that have been removed.
+   * Returns a filtered array of employees that have been removed.
+   * @returns {Array<SiteOperationScheduleDetail>} - Array of removed employees.
    */
   get _removedEmployees() {
-    return this._beforeData.employees.filter(
-      (emp) => !this.employees.some((e) => e.workerId === emp.workerId)
-    );
+    try {
+      const before = this._beforeData?.employees || [];
+      if (before.length === 0) return [];
+      const current = this.employees || [];
+      const isRemoved = (emp) =>
+        !current.some((e) => e.workerId === emp.workerId);
+      return before.filter(isRemoved);
+    } catch (error) {
+      console.error("Error in _removedEmployees:", error);
+      return [];
+    }
   }
 
   /**
-   * Returns the employees that have been added and should be notified.
+   * Returns a filtered array of employees that have not been notified yet.
+   * - Each element is `SiteOperationScheduleDetail` instance.
+   * @returns {Array<SiteOperationScheduleDetail>} - Array of employees that should be notified.
    */
   get _employeesShouldBeNotified() {
-    const result = this.employees.filter((emp) => !emp.hasNotification);
-    if (isDebug) {
-      console.log("Employees that should be notified:", result);
+    try {
+      if (this.employees.length === 0) return [];
+
+      const result = this.employees.filter((emp) => !emp.hasNotification);
+
+      // for debugging.
+      if (isDebug) {
+        console.log("Employees that should be notified:", result);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error in _employeesShouldBeNotified:", error);
+      return [];
     }
-    return result;
   }
 
   /**
-   * Returns the notifications that should be created.
+   * Returns an array of `ArrangementNotification` instances for each employee
+   * that should be notified (i.e., those who have not been notified yet).
+   * @returns {Array<ArrangementNotification>} - Array of ArrangementNotification instances.
    */
-  get _notificationsShouldBeCreated() {
-    const employeesShouldBeNotified = this._employeesShouldBeNotified;
-    const result = this.notifications.filter((notification) => {
-      return employeesShouldBeNotified.some((emp) => {
-        return emp.workerId === notification.employeeId;
+  get _notificationsShouldBeNotified() {
+    try {
+      const notifications = this._employeesShouldBeNotified.map((emp) => {
+        return new ArrangementNotification({
+          siteOperationScheduleId: this.docId,
+          employeeId: emp.workerId,
+          dateAt: this.dateAt,
+          siteId: this.siteId,
+          shiftType: this.shiftType,
+          startTime: this.startTime,
+          endTime: this.endTime,
+          isStartNextDay: this.isStartNextDay,
+          actualStartTime: this.startTime,
+          actualEndTime: this.endTime,
+        });
       });
-    });
-    if (isDebug) {
-      console.log("Notifications that should be created:", result);
+      if (isDebug) {
+        console.log("Notifications that should be created:", notifications);
+      }
+      return notifications;
+    } catch (error) {
+      console.error("Error in _notificationsShouldBeNotified:", error);
+      return [];
     }
-    return result;
   }
 
   /**
    * Returns whether the notifications should be updated.
+   * - Returns true if the `startTime`, `endTime`, or `isStartNextDay` has changed.
+   * @returns {boolean} - Whether the notifications should be updated.
    */
   get _isNotificationsShouldBeUpdated() {
-    const { startTime, endTime, isStartNextDay } = this._beforeData;
-    return (
-      this.startTime !== startTime ||
-      this.endTime !== endTime ||
-      this.isStartNextDay !== isStartNextDay
-    );
+    try {
+      const { startTime, endTime, isStartNextDay } = this._beforeData;
+      return (
+        this.startTime !== startTime ||
+        this.endTime !== endTime ||
+        this.isStartNextDay !== isStartNextDay
+      );
+    } catch (error) {
+      console.error("Error in _isNotificationsShouldBeUpdated:", error);
+      return false;
+    }
   }
 
   /**
    * Returns the notification IDs that should be deleted.
+   * - Creates a list of notification IDs for removed employees.
+   * - Returns empty array if there are no removed employees or no employees has been notified.
+   * - Return empty array if some error occurs.
+   * @returns {Array<string>} - List of notification IDs to be deleted.
    */
-  get _NotificationIdsShouldBeDeleted() {
-    return this._removedEmployees
-      .filter((emp) => emp.hasNotification)
-      .map((emp) => {
+  get _notificationIdsShouldBeDeleted() {
+    try {
+      // early return if there are no removed employees.
+      if (this._removedEmployees.length === 0) return [];
+
+      // filter out employees that have been notified
+      const notificated = this._removedEmployees.filter(
+        (emp) => emp.hasNotification
+      );
+
+      // early return if there are no notified employees.
+      if (notificated.length === 0) return [];
+
+      // create notification IDs.
+      const ids = notificated.map((emp) => {
         return `${this.docId}-${emp.workerId}`;
       });
+
+      return ids;
+    } catch (error) {
+      console.error("Error in _notificationIdsShouldBeDeleted:", error);
+      return [];
+    }
   }
 
   /**
-   * A process before editing the schedule
-   * - Working result information for all employees and outsourcers is initialized if the schedule is in draft status.
-   * NOTE: Working result information should not be modified if the schedule is not in draft status.
+   * Override `beforeEdit`.
+   * - Synchronize `startTime`, `endTime`, and `isStartNextDay` of all employees
+   *   and outsourcers before create of update `SiteOperationSchedule` document.
+   * - All `SiteOperationScheduleDetail` instances should be synchronized with
+   *   the `SiteOperationSchedule`.
    * @returns {Promise<void>}
    */
   beforeEdit() {
-    return new Promise((resolve) => {
+    // internal method for synchronize to `SiteOperationScheduleDetail`.
+    const syncToDetails = () => {
       this.employees.forEach((emp) => {
         emp.startTime = this.startTime;
         emp.endTime = this.endTime;
@@ -359,243 +415,364 @@ export default class SiteOperationSchedule extends FireModel {
         out.endTime = this.endTime;
         out.isStartNextDay = this.isStartNextDay;
       });
-      // }
-      resolve();
+    };
+
+    return new Promise((resolve, reject) => {
+      try {
+        syncToDetails();
+        resolve();
+      } catch (error) {
+        console.error("Error in beforeEdit:", error);
+        reject(error);
+      }
     });
   }
 
+  /***************************************************************************
+   * PRIVATE METHODS
+   ***************************************************************************/
   /**
-   * 従業員または外注先を追加します。
-   * @param {string} workerId - 従業員または外注先のID
-   * @param {boolean} [isEmployee=true] - 従業員の場合は true、外注先の場合は false
-   * @param {number} [amount=1] - 外注先の場合の人数
-   * @param {number} [index=0] - 挿入位置
+   * Adds a new employee to the `employees` property with the specified ID.
+   * - The element added is an instance of `SiteOperationScheduleDetail`.
+   * - Throws an error if the specified employee ID already exists in the `employees` property.
+   * - `startAt`, `endAt`, and `breakMinutes` are taken from the current instance.
+   * - `employeeId` is required.
+   * @param {string} employeeId - The employee's ID.
+   * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
+   * @returns {SiteOperationScheduleDetail} - The added employee.
+   * @throws {Error} - If the employee ID already exists.
    */
-  addWorker(workerId, isEmployee = true, amount = 1, index = 0) {
-    if (isEmployee) {
-      this._addEmployee(workerId, index);
-    } else {
-      this._addOutsourcer(workerId, amount, index);
-    }
-  }
-
-  /**
-   * 従業員または外注先の位置を変更します。
-   * @param {number} oldIndex - 変更前のインデックス
-   * @param {number} newIndex - 変更後のインデックス
-   * @param {boolean} [isEmployee=true] - 従業員の場合は true、外注先の場合は false
-   */
-  changeWorker(oldIndex, newIndex, isEmployee = true) {
-    if (isEmployee) {
-      this._changeEmployee(oldIndex, newIndex);
-    } else {
-      this._changeOutsourcer(oldIndex, newIndex);
-    }
-  }
-
-  /**
-   * 従業員または外注先を削除します。
-   * @param {string} workerId - 従業員または外注先のID
-   * @param {number} [amount=1] - 外注先の場合の人数
-   * @param {boolean} [isEmployee=true] - 従業員の場合は true、外注先の場合は false
-   */
-  removeWorker(workerId, amount = 1, isEmployee = true) {
-    const context = {
-      method: "removeWorker",
-      className: "SiteOperationSchedule",
-      arguments: { workerId, amount, isEmployee },
-      state: this.toObject(),
-    };
+  _addEmployee(employeeId, index = -1) {
     try {
+      if (this.employees.some((emp) => emp.workerId === employeeId)) {
+        throw new Error(`Employee with ID ${employeeId} already exists.`);
+      }
+      const newEmployee = new SiteOperationScheduleDetail({
+        workerId: employeeId,
+        amount: 1,
+        isEmployee: true,
+        startTime: this.startTime,
+        endTime: this.endTime,
+      });
+      if (index === -1) {
+        this.employees.push(newEmployee);
+      } else {
+        this.employees.splice(index, 0, newEmployee);
+      }
+      return newEmployee;
+    } catch (error) {
+      throw new ContextualError("Failed to add employee", {
+        method: "_addEmployee",
+        className: "SiteOperationSchedule",
+        arguments: { employeeId, index },
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /**
+   * Adds a new outsourcer to the `outsourcers` property with the specified ID.
+   * - The element added is an instance of `SiteOperationScheduleDetail`.
+   * - If the specified outsourcer ID already exists in the `outsourcers` property, increases the amount.
+   * - `startTime`, `endTime`, and `isStartNextDay` are taken from the current instance.
+   * - `outsourcerId` is required.
+   * @param {string} outsourcerId - The outsourcer's ID.
+   * @param {number} [amount=1] - Number of outsourcers.
+   * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
+   */
+  _addOutsourcer(outsourcerId, amount = 1, index = -1) {
+    try {
+      const existOutsourcer = this.outsourcers.find(
+        (out) => out.workerId === outsourcerId
+      );
+      if (existOutsourcer) {
+        existOutsourcer.amount += amount;
+      } else {
+        const newOutsourcer = new SiteOperationScheduleDetail({
+          workerId: outsourcerId,
+          amount,
+          isEmployee: false,
+          startTime: this.startTime,
+          endTime: this.endTime,
+        });
+        if (index === -1) {
+          this.outsourcers.push(newOutsourcer);
+        } else {
+          this.outsourcers.splice(index, 0, newOutsourcer);
+        }
+      }
+    } catch (error) {
+      throw new ContextualError("Failed to add outsourcer", {
+        method: "_addOutsourcer",
+        className: "SiteOperationSchedule",
+        arguments: { outsourcerId, amount, index },
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /**
+   * Changes the position of an employee in the employees array.
+   * @param {number} oldIndex - The original index.
+   * @param {number} newIndex - The new index.
+   */
+  _changeEmployee(oldIndex, newIndex) {
+    try {
+      if (newIndex > this.employees.length - 1) {
+        throw new Error(
+          `Employees must be placed before outsourcers. newIndex: ${newIndex}, employees.length: ${this.employees.length}`
+        );
+      }
+      if (newIndex < 0 || newIndex >= this.employees.length) {
+        throw new Error(`Invalid new index: ${newIndex}`);
+      }
+      const employee = this.employees.splice(oldIndex, 1)[0];
+      this.employees.splice(newIndex, 0, employee);
+    } catch (error) {
+      throw new ContextualError("Failed to change employee position", {
+        method: "_changeEmployee",
+        className: "SiteOperationSchedule",
+        arguments: { oldIndex, newIndex },
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+  /**
+   * Changes the position of an outsourcer in the outsourcers array.
+   * - `oldIndex` and `newIndex` are offset by the number of employees.
+   * @param {number} oldIndex - The original index.
+   * @param {number} newIndex - The new index.
+   */
+  _changeOutsourcer(oldIndex, newIndex) {
+    try {
+      if (newIndex <= this.employees.length - 1) {
+        throw new Error(
+          `Outsourcers must be placed after employees. newIndex: ${newIndex}, employees.length: ${this.employees.length}`
+        );
+      }
+      const internalOldIndex = Math.max(0, oldIndex - this.employees.length);
+      const internalNewIndex = Math.max(0, newIndex - this.employees.length);
+      if (internalOldIndex < 0 || internalOldIndex >= this.outsourcers.length) {
+        throw new Error(`Invalid old index: ${internalOldIndex}`);
+      }
+      if (internalNewIndex < 0 || internalNewIndex >= this.outsourcers.length) {
+        throw new Error(`Invalid new index: ${internalNewIndex}`);
+      }
+      const outsourcer = this.outsourcers.splice(internalOldIndex, 1)[0];
+      this.outsourcers.splice(internalNewIndex, 0, outsourcer);
+    } catch (error) {
+      throw new ContextualError("Failed to change outsourcer position", {
+        method: "_changeOutsourcer",
+        className: "SiteOperationSchedule",
+        arguments: { oldIndex, newIndex },
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /**
+   * Removes the employee corresponding to `employeeId` from this.employees.
+   * @param {string} employeeId - The employee's ID
+   * @throws {Error} - If the employee ID is not found.
+   */
+  _removeEmployee(employeeId) {
+    try {
+      const index = this.employees.findIndex(
+        (emp) => emp.workerId === employeeId
+      );
+      if (index === -1) {
+        throw new Error(`Employee with ID "${employeeId}" not found.`);
+      }
+      this.employees.splice(index, 1);
+    } catch (error) {
+      throw new ContextualError("Failed to remove employee", {
+        method: "_removeEmployee",
+        className: "SiteOperationSchedule",
+        arguments: { employeeId },
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /**
+   * Removes the outsourcer corresponding to `outsourcerId` from this.outsourcers.
+   * - If the matching element exists in `outsourcers`, decreases its `amount`.
+   * - If `amount` becomes 0, removes the element.
+   * - Throws an error for invalid values or if not found.
+   * @param {string} outsourcerId - The ID of the outsourcer.
+   * @param {number} [amount=1] - Number of outsourcers to remove.
+   * @throws {Error} - If the outsourcer ID is not found or if the amount is invalid.
+   */
+  _removeOutsourcer(outsourcerId, amount = 1) {
+    try {
+      const index = this.outsourcers.findIndex(
+        (out) => out.workerId === outsourcerId
+      );
+      if (index === -1) {
+        throw new Error(`Outsourcer with ID "${outsourcerId}" not found.`);
+      }
+
+      const outsourcer = this.outsourcers[index];
+      if (outsourcer.amount > amount) {
+        outsourcer.amount -= amount;
+      } else {
+        this.outsourcers.splice(index, 1);
+      }
+    } catch (error) {
+      throw new ContextualError("Failed to remove outsourcer", {
+        method: "_removeOutsourcer",
+        className: "SiteOperationSchedule",
+        arguments: { outsourcerId, amount },
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /***************************************************************************
+   * METHODS
+   ***************************************************************************/
+  /**
+   * Adds a new worker.
+   * - Calls the appropriate method based on the value of `isEmployee`.
+   * @param {Object} options - Options for adding a worker.
+   * @param {string} options.workerId - The worker ID (employeeId or outsourcerId)
+   * @param {boolean} [options.isEmployee=true] - Whether the worker is an employee
+   * @param {number} [options.amount=1] - Number of workers (for outsourcers)
+   * @param {number} [options.index=0] - Insertion position
+   */
+  addWorker(options) {
+    try {
+      const { workerId, isEmployee = true, amount = 1, index = 0 } = options;
+      if (isEmployee) {
+        this._addEmployee(workerId, index);
+      } else {
+        this._addOutsourcer(workerId, amount, index);
+      }
+    } catch (error) {
+      throw new ContextualError("Failed to add worker", {
+        method: "addWorker",
+        className: "SiteOperationSchedule",
+        arguments: { workerId, isEmployee, amount, index },
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /**
+   * Changes the position of workers.
+   * @param {Object} options - Options for changing worker position.
+   * @param {number} options.oldIndex - The original index.
+   * @param {number} options.newIndex - The new index.
+   * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
+   */
+  changeWorker(options) {
+    try {
+      const { oldIndex, newIndex, isEmployee = true } = options;
+      if (typeof oldIndex !== "number" || typeof newIndex !== "number") {
+        throw new Error(
+          "oldIndex and newIndex are required and must be numbers."
+        );
+      }
+      if (isEmployee) {
+        this._changeEmployee(oldIndex, newIndex);
+      } else {
+        this._changeOutsourcer(oldIndex, newIndex);
+      }
+    } catch (error) {
+      throw new ContextualError("Failed to change worker position", {
+        method: "changeWorker",
+        className: "SiteOperationSchedule",
+        arguments: options,
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /**
+   * Removes an employee or outsourcer from the schedule.
+   * @param {Object} options - Options for removing a worker.
+   * @param {string} options.workerId - The ID of the employee or outsourcer.
+   * @param {number} [options.amount=1] - Number of outsourcers to remove (for outsourcers only).
+   * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
+   */
+  removeWorker(options) {
+    try {
+      const { workerId, amount = 1, isEmployee = true } = options;
       if (isEmployee) {
         this._removeEmployee(workerId);
       } else {
         this._removeOutsourcer(workerId, amount);
       }
     } catch (error) {
-      throw new ContextualError("Failed to remove worker", context);
-    }
-  }
-
-  /**
-   * 引数で受け取った従業員のIDを持つ新しい OperationResultEmployee を employees に追加します。
-   * - `employees` プロパティに既に存在する従業員IDが指定された場合はエラーをスローします。
-   * - `startAt`, `endAt`, `breakMinutes` は現在のインスタンスから取得されます。
-   * - `employeeId` は必須です。
-   * @param {string} employeeId - 従業員のID
-   * @param {number} [index=-1] - 挿入位置。-1 の場合は末尾に追加されます。
-   * @throws {Error} - 従業員IDが既に存在する場合
-   */
-  _addEmployee(employeeId, index = -1) {
-    if (this.employees.some((emp) => emp.workerId === employeeId)) {
-      throw new Error(`Employee with ID ${employeeId} already exists.`);
-    }
-    const newEmployee = new SiteOperationScheduleDetail({
-      workerId: employeeId,
-      amount: 1,
-      isEmployee: true,
-      startTime: this.startTime,
-      endTime: this.endTime,
-    });
-    if (index === -1) {
-      this.employees.push(newEmployee);
-    } else {
-      this.employees.splice(index, 0, newEmployee);
-    }
-  }
-
-  /**
-   * 従業員の位置を変更します。
-   * @param {number} oldIndex - 変更前のインデックス
-   * @param {number} newIndex - 変更後のインデックス
-   */
-  _changeEmployee(oldIndex, newIndex) {
-    if (newIndex > this.employees.length - 1) {
-      throw new Error(
-        `従業員は外注先の前に配置する必要があります。newIndex: ${newIndex}, employees.length: ${this.employees.length}`
-      );
-    }
-    if (newIndex < 0 || newIndex >= this.employees.length) {
-      throw new Error(`Invalid new index: ${newIndex}`);
-    }
-    const employee = this.employees.splice(oldIndex, 1)[0];
-    this.employees.splice(newIndex, 0, employee);
-  }
-
-  /**
-   * `employeeId` に対応する従業員を this.employees から削除します。
-   * - 不正な値や該当なしの場合はエラーをスローします。
-   *
-   * @param {string} employeeId - 従業員のID
-   */
-  _removeEmployee(employeeId) {
-    const index = this.employees.findIndex(
-      (emp) => emp.workerId === employeeId
-    );
-    if (index === -1) {
-      throw new Error(`Employee with ID "${employeeId}" not found.`);
-    }
-    this.employees.splice(index, 1);
-  }
-
-  /**
-   *
-   * 指定された外注先のIDを持つ新しい OperationResultOutsourcer を outsourcers に追加します。
-   * - `outsourcers` プロパティに既に存在する外注先IDが指定された場合はエラーをスローします。
-   * - `startAt`, `endAt`, `breakMinutes` は現在のインスタンスから取得されます。
-   * - `outsourcerId` は必須です。
-   * @param {string} outsourcerId
-   * @param {number} [index=-1] - 挿入位置。-1 の場合は末尾に追加されます。
-   * @throws {Error} - 外注先IDが既に存在する場合
-   */
-  _addOutsourcer(outsourcerId, amount = 1, index = -1) {
-    const existOutsourcer = this.outsourcers.find(
-      (out) => out.workerId === outsourcerId
-    );
-    if (existOutsourcer) {
-      existOutsourcer.amount += amount;
-    } else {
-      const newOutsourcer = new SiteOperationScheduleDetail({
-        workerId: outsourcerId,
-        amount,
-        isEmployee: false,
-        startTime: this.startTime,
-        endTime: this.endTime,
+      throw new ContextualError("Failed to remove worker", {
+        method: "removeWorker",
+        className: "SiteOperationSchedule",
+        arguments: { workerId, amount, isEmployee },
+        state: this.toObject(),
       });
-      if (index === -1) {
-        this.outsourcers.push(newOutsourcer);
-      } else {
-        this.outsourcers.splice(index, 0, newOutsourcer);
-      }
     }
   }
 
   /**
-   * 外注先の位置を変更します。
-   * - `oldIndex` と `newIndex` は `employees` の要素数が差し引かれます。
-   * @param {number} oldIndex - 変更前のインデックス
-   * @param {number} newIndex - 変更後のインデックス
-   */
-  _changeOutsourcer(oldIndex, newIndex) {
-    if (newIndex <= this.employees.length - 1) {
-      throw new Error(
-        `外注先は従業員の後に配置する必要があります。newIndex: ${newIndex}, employees.length: ${this.employees.length}`
-      );
-    }
-    const internalOldIndex = Math.max(0, oldIndex - this.employees.length);
-    const internalNewIndex = Math.max(0, newIndex - this.employees.length);
-    if (internalOldIndex < 0 || internalOldIndex >= this.outsourcers.length) {
-      throw new Error(`Invalid old index: ${internalOldIndex}`);
-    }
-    if (internalNewIndex < 0 || internalNewIndex >= this.outsourcers.length) {
-      throw new Error(`Invalid new index: ${internalNewIndex}`);
-    }
-    const outsourcer = this.outsourcers.splice(internalOldIndex, 1)[0];
-    this.outsourcers.splice(internalNewIndex, 0, outsourcer);
-  }
-
-  /**
-   * `outsourcerId` に対応する外注先を this.outsourcers から削除します。
-   * - `outsourcers` に該当する要素が存在した場合は `amount` を減らします。
-   * - `amount` が 0 になった場合は要素を削除します。
-   * - 不正な値や該当なしの場合はエラーをスローします。
-   *
-   * @param {string} outsourcerId - 外注先のID
-   */
-  _removeOutsourcer(outsourcerId, amount = 1) {
-    const index = this.outsourcers.findIndex(
-      (out) => out.workerId === outsourcerId
-    );
-    if (index === -1) {
-      throw new Error(`Outsourcer with ID "${outsourcerId}" not found.`);
-    }
-
-    const outsourcer = this.outsourcers[index];
-    if (outsourcer.amount > amount) {
-      outsourcer.amount -= amount;
-    } else {
-      this.outsourcers.splice(index, 1);
-    }
-  }
-
-  /**
-   * 現在のスケジュールを指定された日付で複製します。
-   * - 各日付ごとに新しい SiteOperationSchedule インスタンスを作成します。
-   * - 当該インスタンスと同一日付のスケジュールは複製されません。
-   * @param {Array<Date|string>} dates - 複製する日付の配列
-   * @returns {Promise<Array<SiteOperationSchedule>>} - 作成されたスケジュールの配列
+   * Duplicates the current schedule for the specified dates.
+   * - Creates a new SiteOperationSchedule instance for each date.
+   * - Schedules with the same date as this instance are not duplicated.
+   * @param {Array<Date|string>} dates - Array of dates to duplicate for
+   * @returns {Promise<Array<SiteOperationSchedule>>} - Array of created schedules
+   * @throws {Error} - If dates is not an array, is empty, or exceeds 20 items
    */
   async duplicate(dates) {
-    if (!Array.isArray(dates) || dates.length === 0) {
-      throw new Error("複製する日付を配列で指定してください。");
-    }
-    if (
-      dates.some((date) => !(date instanceof Date) && typeof date !== "string")
-    ) {
-      throw new TypeError("日付の指定が不正です。");
-    }
-    if (dates.length > 20) {
-      throw new Error("一度に複製できるスケジュールは20件までです。");
-    }
+    try {
+      if (!this.docId) {
+        throw new Error(
+          "Document must be created or fetched to this instance before duplication."
+        );
+      }
+      if (!Array.isArray(dates) || dates.length === 0) {
+        throw new Error("Please specify the dates to duplicate as an array.");
+      }
+      if (dates.some((d) => !(d instanceof Date) && typeof d !== "string")) {
+        throw new TypeError("Invalid date specification.");
+      }
+      if (dates.length > 20) {
+        throw new Error("You can duplicate up to 20 schedules at a time.");
+      }
 
-    const targetDates = dates.filter((date) => date !== this.date);
-    const newSchedules = targetDates.map((date) => {
-      const newSchedule = new SiteOperationSchedule({
-        ...this.toObject(),
-        docId: "",
-        dateAt: new Date(date),
+      const targetDates = dates.filter((date) => date !== this.date);
+      const newSchedules = targetDates.map((date) => {
+        const instance = new SiteOperationSchedule({
+          ...this.toObject(),
+          docId: "",
+          dateAt: new Date(date),
+        });
+        return instance;
       });
-      return newSchedule;
-    });
 
-    const firestore = this.constructor.getAdapter().firestore;
-    await runTransaction(firestore, async (transaction) => {
-      await Promise.all(
-        newSchedules.map((schedule) => schedule.create({ transaction }))
-      );
-    });
+      const firestore = this.constructor.getAdapter().firestore;
+      await runTransaction(firestore, async (transaction) => {
+        await Promise.all(
+          newSchedules.map((schedule) => schedule.create({ transaction }))
+        );
+      });
 
-    return newSchedules;
+      return newSchedules;
+    } catch (error) {
+      throw new ContextualError("Failed to duplicate schedules", {
+        method: "duplicate",
+        className: "SiteOperationSchedule",
+        arguments: { dates },
+        state: this.toObject(),
+        error,
+      });
+    }
   }
 
   /**
@@ -608,12 +785,6 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {string} updateOptions.prefix - The prefix.
    */
   async create(updateOptions = {}) {
-    const context = {
-      method: "create",
-      className: "SiteOperationSchedule",
-      arguments: updateOptions,
-      state: this.toObject(),
-    };
     try {
       const existingDocs = await this.fetchDocs({
         constraints: [
@@ -629,7 +800,12 @@ export default class SiteOperationSchedule extends FireModel {
       }
       await super.create(updateOptions);
     } catch (error) {
-      throw new ContextualError(error.message, context);
+      throw new ContextualError(error.message, {
+        method: "create",
+        className: "SiteOperationSchedule",
+        arguments: updateOptions,
+        state: this.toObject(),
+      });
     }
   }
 
@@ -644,12 +820,6 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {string} updateOptions.prefix - The prefix.
    */
   async update(updateOptions = {}) {
-    const context = {
-      method: "update",
-      className: "SiteOperationSchedule",
-      arguments: updateOptions,
-      state: this.toObject(),
-    };
     try {
       const performTransaction = async (txn) => {
         // Clear all notifications if related data have been changed.
@@ -674,7 +844,12 @@ export default class SiteOperationSchedule extends FireModel {
       }
     } catch (error) {
       this.restore();
-      throw new ContextualError(error.message, context);
+      throw new ContextualError(error.message, {
+        method: "update",
+        className: "SiteOperationSchedule",
+        arguments: updateOptions,
+        state: this.toObject(),
+      });
     }
   }
 
@@ -684,12 +859,6 @@ export default class SiteOperationSchedule extends FireModel {
    * @returns
    */
   async clearNotifications(transaction) {
-    const context = {
-      method: "clearNotifications",
-      className: "SiteOperationSchedule",
-      arguments: { transaction },
-      state: this.toObject(),
-    };
     try {
       // Throw error if transaction is not provided.
       if (!transaction) throw new Error("Transaction is required.");
@@ -718,7 +887,12 @@ export default class SiteOperationSchedule extends FireModel {
         await runTransaction(firestore, deleteNotifications);
       }
     } catch (error) {
-      throw new ContextualError(error.message, context);
+      throw new ContextualError(error.message, {
+        method: "clearNotifications",
+        className: "SiteOperationSchedule",
+        arguments: { transaction },
+        state: this.toObject(),
+      });
     }
   }
 
@@ -727,18 +901,11 @@ export default class SiteOperationSchedule extends FireModel {
    * @returns {Promise<void>}
    */
   async notify() {
-    const context = {
-      method: "notify",
-      className: "SiteOperationSchedule",
-      arguments: {},
-      state: this.toObject(),
-    };
-
     // for debugging
     if (isDebug) console.log(`'notify' is called.`);
 
     try {
-      if (this._notificationsShouldBeCreated.length === 0) {
+      if (this._notificationsShouldBeNotified.length === 0) {
         if (isDebug) console.log("No new notifications to create.");
         return;
       }
@@ -758,7 +925,12 @@ export default class SiteOperationSchedule extends FireModel {
       this.restore();
       throw new ContextualError(
         `Failed to notify SiteOperationSchedule: ${error.message}`,
-        context
+        {
+          method: "notify",
+          className: "SiteOperationSchedule",
+          arguments: {},
+          state: this.toObject(),
+        }
       );
     }
   }
@@ -768,13 +940,6 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {Object} transaction - Firestore transaction object
    */
   async _deleteNotificationsForRemovedEmployees(transaction) {
-    const context = {
-      method: "_deleteNotificationsForRemovedEmployees()",
-      className: "SiteOperationSchedule",
-      arguments: {},
-      state: this.toObject(),
-    };
-
     // for debugging
     if (isDebug) console.log(`'${context.method}' is called.`);
 
@@ -783,7 +948,7 @@ export default class SiteOperationSchedule extends FireModel {
       if (!transaction) throw new Error("Transaction is required.");
 
       // Get target notification IDs to be deleted.
-      const targetIds = this._NotificationIdsShouldBeDeleted;
+      const targetIds = this._notificationIdsShouldBeDeleted;
       if (targetIds.length === 0) {
         if (isDebug) console.log("No notifications to delete.");
         return;
@@ -806,7 +971,12 @@ export default class SiteOperationSchedule extends FireModel {
         console.table(targetIds);
       }
     } catch (error) {
-      throw new ContextualError(error.message, context);
+      throw new ContextualError(error.message, {
+        method: "_deleteNotificationsForRemovedEmployees()",
+        className: "SiteOperationSchedule",
+        arguments: {},
+        state: this.toObject(),
+      });
     }
   }
 
@@ -815,13 +985,6 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {Object} transaction - Firestore transaction object
    */
   async _createPendingNotifications(transaction) {
-    const context = {
-      method: "_createPendingNotifications()",
-      className: "SiteOperationSchedule",
-      arguments: {},
-      state: this.toObject(),
-    };
-
     // for debugging.
     if (isDebug) console.log(`'${context.method}' is called.`);
 
@@ -829,7 +992,7 @@ export default class SiteOperationSchedule extends FireModel {
       // Throw error if Firestore transaction is not provided.
       if (!transaction) throw new Error("Transaction is required.");
 
-      const targets = this._notificationsShouldBeCreated;
+      const targets = this._notificationsShouldBeNotified;
       if (isDebug) {
         console.log("Creating pending notifications for employees:", targets);
       }
@@ -849,7 +1012,12 @@ export default class SiteOperationSchedule extends FireModel {
         console.table(targets);
       }
     } catch (error) {
-      throw new ContextualError(error.message, context);
+      throw new ContextualError(error.message, {
+        method: "_createPendingNotifications()",
+        className: "SiteOperationSchedule",
+        arguments: {},
+        state: this.toObject(),
+      });
     }
   }
 }
