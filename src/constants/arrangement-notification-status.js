@@ -32,12 +32,16 @@ const DEFINITIONS = Object.freeze({
     color: "#607D8B", // ⚫ 作業完了、離脱済み
   },
 
-  CANCELED: {
-    key: "CANCELED",
-    label: "現着中止",
-    order: 5,
-    color: "#F44336", // 🔴 異常状態、作業中止
-  },
+  /**
+   * 現着中止は作業員ごとのステータスではなく、現場稼働予定や稼働実績のステータスであるため
+   * ここからは削除。
+   */
+  // CANCELED: {
+  //   key: "CANCELED",
+  //   label: "現着中止",
+  //   order: 5,
+  //   color: "#F44336", // 🔴 異常状態、作業中止
+  // },
 });
 
 export const ARRANGEMENT_NOTIFICATION_STATUS_DEFAULT = DEFINITIONS.ARRANGED.key;
@@ -50,8 +54,8 @@ export const ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED =
   DEFINITIONS.CONFIRMED.key;
 export const ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED = DEFINITIONS.ARRIVED.key;
 export const ARRANGEMENT_NOTIFICATION_STATUS_LEAVED = DEFINITIONS.LEAVED.key;
-export const ARRANGEMENT_NOTIFICATION_STATUS_CANCELED =
-  DEFINITIONS.CANCELED.key;
+// export const ARRANGEMENT_NOTIFICATION_STATUS_CANCELED =
+//   DEFINITIONS.CANCELED.key;
 
 /** key-label map */
 export const ARRANGEMENT_NOTIFICATION_STATUS = Object.freeze(

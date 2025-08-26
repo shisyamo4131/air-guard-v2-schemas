@@ -304,7 +304,7 @@ export default class ArrangementNotification extends FireModel {
       this.actualStartTime = this.startTime;
       this.actualEndTime = this.endTime;
       this.actualBreakMinutes = 60;
-      // this.confirmedAt = null; // Do not edit `confirmedAt`
+      this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
       this.arrivedAt = new Date();
       this.leavedAt = null;
       this.status = ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED;
@@ -347,8 +347,8 @@ export default class ArrangementNotification extends FireModel {
       this.actualStartTime = actualStartTime;
       this.actualEndTime = actualEndTime;
       this.actualBreakMinutes = actualBreakMinutes;
-      // this.confirmedAt = null; // Do not edit `confirmedAt`
-      // this.arrivedAt = null; // Do not edit `arrivedAt`
+      this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
+      this.arrivedAt = this.arrivedAt ? this.arrivedAt : new Date();
       this.leavedAt = new Date();
       this.status = ARRANGEMENT_NOTIFICATION_STATUS_LEAVED;
       await super.update(updateOptions);
