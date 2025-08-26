@@ -673,14 +673,7 @@ export default class SiteOperationSchedule extends FireModel {
         await runTransaction(firestore, performTransaction);
       }
     } catch (error) {
-      const beforeStatus = Object.fromEntries(
-        this._beforeData.employees.map(({ workerId, hasNotification }) => {
-          return [workerId, hasNotification];
-        })
-      );
-      this.employees.forEach(
-        (emp) => (emp.hasNotification = beforeStatus[emp.workerId])
-      );
+      this.restore();
       throw new ContextualError(error.message, context);
     }
   }
@@ -762,14 +755,7 @@ export default class SiteOperationSchedule extends FireModel {
         console.log("All pending notifications created successfully.");
       }
     } catch (error) {
-      const beforeStatus = Object.fromEntries(
-        this._beforeData.employees.map(({ workerId, hasNotification }) => {
-          return [workerId, hasNotification];
-        })
-      );
-      this.employees.forEach(
-        (emp) => (emp.hasNotification = beforeStatus[emp.workerId])
-      );
+      this.restore();
       throw new ContextualError(
         `Failed to notify SiteOperationSchedule: ${error.message}`,
         context
