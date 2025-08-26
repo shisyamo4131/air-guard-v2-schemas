@@ -229,6 +229,14 @@ export default class SiteOperationSchedule extends FireModel {
    * STATES
    ***************************************************************************/
   /**
+   * Returns whether the schedule is editable.
+   * @returns {boolean} - Whether the schedule is editable.
+   */
+  get isEditable() {
+    return !this.operationResultId;
+  }
+
+  /**
    * Returns whether all employees have been notified.
    * @returns {boolean} - Whether all employees have been notified.
    */
