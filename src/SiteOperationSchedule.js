@@ -420,6 +420,12 @@ export default class SiteOperationSchedule extends FireModel {
   beforeEdit() {
     // internal method for synchronize to `SiteOperationScheduleDetail`.
     const syncToDetails = () => {
+      const { startTime, endTime, isStartNextDay } = this._beforeData;
+      const isDetailShouldBeSynced =
+        this.startTime !== startTime ||
+        this.endTime !== endTime ||
+        this.isStartNextDay !== isStartNextDay;
+      if (!isDetailShouldBeSynced) return;
       this.employees.forEach((emp) => {
         emp.startTime = this.startTime;
         emp.endTime = this.endTime;
@@ -925,12 +931,11 @@ export default class SiteOperationSchedule extends FireModel {
         if (isDebug) console.log("No new notifications to create.");
         return;
       }
-
       const firestore = this.constructor.getAdapter().firestore;
       await runTransaction(firestore, async (transaction) => {
         await this._createPendingNotifications(transaction);
         this.employees.forEach((emp) => (emp.hasNotification = true));
-        await super.update({ transaction });
+        await this.update({ transaction });
       });
 
       // for debugging
@@ -1003,7 +1008,6 @@ export default class SiteOperationSchedule extends FireModel {
   async _createPendingNotifications(transaction) {
     // for debugging.
     if (isDebug) console.log(`'${context.method}' is called.`);
-
     try {
       // Throw error if Firestore transaction is not provided.
       if (!transaction) throw new Error("Transaction is required.");
