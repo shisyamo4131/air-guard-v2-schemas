@@ -240,7 +240,7 @@ export default class SiteOperationSchedule extends FireModel {
    * Returns whether all employees have been notified.
    * @returns {boolean} - Whether all employees have been notified.
    */
-  get notificatedAllEmployees() {
+  get isNotificatedAllEmployees() {
     return this.employees.every((emp) => emp.hasNotification);
   }
 
@@ -315,7 +315,6 @@ export default class SiteOperationSchedule extends FireModel {
       if (this.employees.length === 0) return [];
 
       const result = this.employees.filter((emp) => !emp.hasNotification);
-
       // for debugging.
       if (isDebug) {
         console.log("Employees that should be notified:", result);
@@ -342,11 +341,11 @@ export default class SiteOperationSchedule extends FireModel {
           dateAt: this.dateAt,
           siteId: this.siteId,
           shiftType: this.shiftType,
-          startTime: this.startTime,
-          endTime: this.endTime,
-          isStartNextDay: this.isStartNextDay,
-          actualStartTime: this.startTime,
-          actualEndTime: this.endTime,
+          startTime: emp.startTime,
+          endTime: emp.endTime,
+          isStartNextDay: emp.isStartNextDay,
+          actualStartTime: emp.startTime,
+          actualEndTime: emp.endTime,
         });
       });
       if (isDebug) {
