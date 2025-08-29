@@ -8,6 +8,13 @@ import ArrangementNotification from "./ArrangementNotification.js";
 
 const isDebug = false;
 
+const logDebugInfo = (message, data) => {
+  if (!isDebug) return;
+  const text = `[SiteOperationSchedule.js] ${message}`;
+  if (data) console.log(text, data);
+  if (!data) console.log(text);
+};
+
 export default class SiteOperationSchedule extends FireModel {
   static className = "現場稼働予定";
   static collectionPath = "SiteOperationSchedules";
@@ -246,23 +253,40 @@ export default class SiteOperationSchedule extends FireModel {
 
   /**
    * Returns whether the notifications should be cleared.
-   * - Returns true if the `siteId`, `shiftType`, `date`, `isStartNextDay`,
-   *   `startTime`, or `endTime` has changed.
-   * @returns {boolean} - Whether the notifications should be cleared.
+   * - Returns an object describing the changes if any of the following properties have changed:
+   *   `siteId`, `shiftType`, `date`, `isStartNextDay`, `startTime`, or `endTime`.
+   * - Returns false if there are no changes.
+   * @returns {Object|boolean} - If changes exist, returns an object with details; otherwise, returns false.
    */
   get _shouldClearNotifications() {
     try {
       const { siteId, shiftType, date, isStartNextDay, startTime, endTime } =
         this._beforeData;
+      const changes = {};
 
-      return (
-        siteId !== this.siteId ||
-        shiftType !== this.shiftType ||
-        date !== this.date ||
-        isStartNextDay !== this.isStartNextDay ||
-        startTime !== this.startTime ||
-        endTime !== this.endTime
-      );
+      if (siteId !== this.siteId) {
+        changes.siteId = { before: siteId, after: this.siteId };
+      }
+      if (shiftType !== this.shiftType) {
+        changes.shiftType = { before: shiftType, after: this.shiftType };
+      }
+      if (date !== this.date) {
+        changes.date = { before: date, after: this.date };
+      }
+      if (isStartNextDay !== this.isStartNextDay) {
+        changes.isStartNextDay = {
+          before: isStartNextDay,
+          after: this.isStartNextDay,
+        };
+      }
+      if (startTime !== this.startTime) {
+        changes.startTime = { before: startTime, after: this.startTime };
+      }
+      if (endTime !== this.endTime) {
+        changes.endTime = { before: endTime, after: this.endTime };
+      }
+
+      return Object.keys(changes).length > 0 ? changes : false;
     } catch (error) {
       console.error("Error in _shouldClearNotifications:", error);
       return false;
@@ -277,14 +301,9 @@ export default class SiteOperationSchedule extends FireModel {
    * @returns {boolean} - Whether the employees have changed.
    */
   get _isEmployeesChanged() {
-    try {
-      const current = this.employeeIds || [];
-      const before = this._beforeData?.employeeIds || [];
-      return current.sort().join(",") !== before.sort().join(",");
-    } catch (error) {
-      console.error("Error in _isEmployeesChanged:", error);
-      return false;
-    }
+    const current = this.employeeIds || [];
+    const before = this._beforeData?.employeeIds || [];
+    return current.sort().join(",") !== before.sort().join(",");
   }
 
   /**
@@ -292,17 +311,12 @@ export default class SiteOperationSchedule extends FireModel {
    * @returns {Array<SiteOperationScheduleDetail>} - Array of removed employees.
    */
   get _removedEmployees() {
-    try {
-      const before = this._beforeData?.employees || [];
-      if (before.length === 0) return [];
-      const current = this.employees || [];
-      const isRemoved = (emp) =>
-        !current.some((e) => e.workerId === emp.workerId);
-      return before.filter(isRemoved);
-    } catch (error) {
-      console.error("Error in _removedEmployees:", error);
-      return [];
-    }
+    const before = this._beforeData?.employees || [];
+    if (before.length === 0) return [];
+    const current = this.employees || [];
+    const isRemoved = (emp) =>
+      !current.some((e) => e.workerId === emp.workerId);
+    return before.filter(isRemoved);
   }
 
   /**
@@ -311,20 +325,9 @@ export default class SiteOperationSchedule extends FireModel {
    * @returns {Array<SiteOperationScheduleDetail>} - Array of employees that should be notified.
    */
   get _employeesShouldBeNotified() {
-    try {
-      if (this.employees.length === 0) return [];
-
-      const result = this.employees.filter((emp) => !emp.hasNotification);
-      // for debugging.
-      if (isDebug) {
-        console.log("Employees that should be notified:", result);
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error in _employeesShouldBeNotified:", error);
-      return [];
-    }
+    if (this.employees.length === 0) return [];
+    const result = this.employees.filter((emp) => !emp.hasNotification);
+    return result;
   }
 
   /**
@@ -333,59 +336,29 @@ export default class SiteOperationSchedule extends FireModel {
    * @returns {Array<ArrangementNotification>} - Array of ArrangementNotification instances.
    */
   get _notificationsShouldBeNotified() {
-    try {
-      const notifications = this._employeesShouldBeNotified.map((emp) => {
-        return new ArrangementNotification({
-          siteOperationScheduleId: this.docId,
-          employeeId: emp.workerId,
-          dateAt: this.dateAt,
-          siteId: this.siteId,
-          shiftType: this.shiftType,
-          startTime: emp.startTime,
-          endTime: emp.endTime,
-          isStartNextDay: emp.isStartNextDay,
-          actualStartTime: emp.startTime,
-          actualEndTime: emp.endTime,
-        });
+    return this._employeesShouldBeNotified.map((emp) => {
+      return new ArrangementNotification({
+        siteOperationScheduleId: this.docId,
+        employeeId: emp.workerId,
+        dateAt: this.dateAt,
+        siteId: this.siteId,
+        shiftType: this.shiftType,
+        startTime: emp.startTime,
+        endTime: emp.endTime,
+        isStartNextDay: emp.isStartNextDay,
+        actualStartTime: emp.startTime,
+        actualEndTime: emp.endTime,
       });
-      if (isDebug) {
-        console.log("Notifications that should be created:", notifications);
-      }
-      return notifications;
-    } catch (error) {
-      console.error("Error in _notificationsShouldBeNotified:", error);
-      return [];
-    }
+    });
   }
 
   /**
-   * Returns whether the notifications should be updated.
-   * - Returns true if the `startTime`, `endTime`, or `isStartNextDay` has changed.
-   * @returns {boolean} - Whether the notifications should be updated.
+   * Returns the employee IDs that have been removed or updated.
+   * @returns {Array<string>} - List of employee IDs that have been removed or updated.
    */
-  get _isNotificationsShouldBeUpdated() {
-    try {
-      const { startTime, endTime, isStartNextDay } = this._beforeData;
-      return (
-        this.startTime !== startTime ||
-        this.endTime !== endTime ||
-        this.isStartNextDay !== isStartNextDay
-      );
-    } catch (error) {
-      console.error("Error in _isNotificationsShouldBeUpdated:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Returns the notification IDs that should be deleted.
-   * - Creates a list of notification IDs for removed employees.
-   * - Returns empty array if there are no removed employees or no employees has been notified.
-   * - Return empty array if some error occurs.
-   * @returns {Array<string>} - List of notification IDs to be deleted.
-   */
-  get _notificationIdsShouldBeDeleted() {
-    try {
+  get _employeeIdsRemovedOrUpdated() {
+    // Create a list of notification IDs for removed employees.
+    const dueToRemoved = () => {
       // early return if there are no removed employees.
       if (this._removedEmployees.length === 0) return [];
 
@@ -399,14 +372,35 @@ export default class SiteOperationSchedule extends FireModel {
 
       // create notification IDs.
       const ids = notificated.map((emp) => {
-        return `${this.docId}-${emp.workerId}`;
+        return emp.workerId;
       });
 
       return ids;
-    } catch (error) {
-      console.error("Error in _notificationIdsShouldBeDeleted:", error);
-      return [];
-    }
+    };
+
+    // Create a list of notification IDs for edited employees.
+    const dueToEdited = () => {
+      const notificatedEmployees = this.employees.filter(
+        (emp) => emp.hasNotification
+      );
+      return notificatedEmployees.reduce((acc, emp) => {
+        const before = this._beforeData.employees.find(
+          ({ workerId }) => workerId === emp.workerId
+        );
+        if (
+          (before && before.startTime !== emp.startTime) ||
+          before.endTime !== emp.endTime ||
+          before.isStartNextDay !== emp.isStartNextDay
+        ) {
+          acc.push(emp.workerId);
+        }
+        return acc;
+      }, []);
+    };
+    const idsDueToRemoved = dueToRemoved();
+    const idsDueToEdited = dueToEdited();
+
+    return Array.from(new Set([...idsDueToRemoved, ...idsDueToEdited]));
   }
 
   /**
@@ -834,7 +828,7 @@ export default class SiteOperationSchedule extends FireModel {
   /**
    * Override update method.
    * - Updates and clears notifications if related data have been changed.
-   * - Updates and deletes notifications for removed employees if employee assignments have changed.
+   * - Updates and deletes notifications for removed or updated employees if employee assignments have changed.
    * - Just updates if no changes detected.
    * @param {Object} updateOptions - Options for creating the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
@@ -842,18 +836,36 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {string} updateOptions.prefix - The prefix.
    */
   async update(updateOptions = {}) {
+    logDebugInfo("'update' is starting.", updateOptions);
     try {
       const performTransaction = async (txn) => {
         // Clear all notifications if related data have been changed.
         // siteId, shiftType, date, isStartNextDay, startTime, endTime
         if (this._shouldClearNotifications) {
+          logDebugInfo(
+            "Some related data to notifications have been changed.",
+            this._shouldClearNotifications
+          );
+          logDebugInfo(
+            "All existing notifications will be cleared.",
+            Object.fromEntries(
+              this.employees.map((emp) => [emp.workerId, emp.hasNotification])
+            )
+          );
           await this.clearNotifications(txn);
           this.employees.forEach((emp) => (emp.hasNotification = false));
         } else {
-          // Delete notifications for removed employees if employee assignments have been changed.
-          if (this._isEmployeesChanged) {
-            await this._deleteNotificationsForRemovedEmployees(txn);
-          }
+          logDebugInfo(
+            "Any related data to notifications have not been changed."
+          );
+          // Delete notifications for updated or removed employees that have been notified.
+          await this._deleteNotifications(txn);
+          const removedOrUpdatedIds = this._employeeIdsRemovedOrUpdated;
+          this.employees.forEach((emp) => {
+            if (removedOrUpdatedIds.some((id) => id === emp.workerId)) {
+              emp.hasNotification = false;
+            }
+          });
         }
         super.update({ transaction: txn });
       };
@@ -872,6 +884,8 @@ export default class SiteOperationSchedule extends FireModel {
         arguments: updateOptions,
         state: this.toObject(),
       });
+    } finally {
+      logDebugInfo("'update' has ended.");
     }
   }
 
@@ -894,7 +908,12 @@ export default class SiteOperationSchedule extends FireModel {
         await ArrangementNotification.fetchDocsBySiteOperationScheduleId(
           this.docId
         );
-      if (!existingDocs.length) return;
+      if (existingDocs.length === 0) {
+        logDebugInfo("No existing notifications found.");
+        return;
+      } else {
+        logDebugInfo(`Existing notifications found:`, existingDocs);
+      }
 
       const deleteNotifications = async (trx) => {
         await Promise.all(
@@ -908,6 +927,8 @@ export default class SiteOperationSchedule extends FireModel {
         const firestore = this.constructor.getAdapter().firestore;
         await runTransaction(firestore, deleteNotifications);
       }
+
+      logDebugInfo("All notifications have been cleared.");
     } catch (error) {
       throw new ContextualError(error.message, {
         method: "clearNotifications",
@@ -960,20 +981,27 @@ export default class SiteOperationSchedule extends FireModel {
    * Deletes notifications for employees that have been removed from the schedule.
    * @param {Object} transaction - Firestore transaction object
    */
-  async _deleteNotificationsForRemovedEmployees(transaction) {
-    // for debugging
-    if (isDebug) console.log(`'${context.method}' is called.`);
+  async _deleteNotifications(transaction) {
+    logDebugInfo(`'_deleteNotifications' is called.`);
 
     try {
       // Throw error if Firestore transaction is not provided.
       if (!transaction) throw new Error("Transaction is required.");
 
-      // Get target notification IDs to be deleted.
-      const targetIds = this._notificationIdsShouldBeDeleted;
-      if (targetIds.length === 0) {
-        if (isDebug) console.log("No notifications to delete.");
+      // Create a list of notification IDs from removed or updated employee IDs.
+      const targetEmployeeIds = this._employeeIdsRemovedOrUpdated;
+
+      if (targetEmployeeIds.length === 0) {
+        logDebugInfo("No employee IDs found to delete notifications for.");
         return;
+      } else {
+        logDebugInfo(
+          "Found employee IDs to delete notifications for:",
+          targetEmployeeIds
+        );
       }
+
+      const targetIds = targetEmployeeIds.map((id) => `${this.docId}-${id}`);
 
       // Tricky deletion.
       // Using `ArrangementNotification` instance only set `docId` for deletion.
@@ -984,16 +1012,12 @@ export default class SiteOperationSchedule extends FireModel {
 
       await Promise.all(promises);
 
-      // for debugging
-      if (isDebug) {
-        console.log(
-          `${targetIds.length} notifications has been deleted successfully.`
-        );
-        console.table(targetIds);
-      }
+      logDebugInfo(
+        `${targetIds.length} notifications has been deleted successfully.`
+      );
     } catch (error) {
       throw new ContextualError(error.message, {
-        method: "_deleteNotificationsForRemovedEmployees()",
+        method: "_deleteNotifications()",
         className: "SiteOperationSchedule",
         arguments: {},
         state: this.toObject(),
@@ -1007,7 +1031,7 @@ export default class SiteOperationSchedule extends FireModel {
    */
   async _createPendingNotifications(transaction) {
     // for debugging.
-    if (isDebug) console.log(`'${context.method}' is called.`);
+    if (isDebug) console.log(`'_createPendingNotifications' is called.`);
     try {
       // Throw error if Firestore transaction is not provided.
       if (!transaction) throw new Error("Transaction is required.");
