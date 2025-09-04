@@ -14,6 +14,7 @@ export default class Employee extends FireModel {
     lastNameKana: defField("lastNameKana", { required: true }),
     firstNameKana: defField("firstNameKana", { required: true }),
     displayName: defField("displayName", { required: true }),
+    title: defField("oneLine", { label: "肩書", required: true }),
 
     /** 性別 */
     gender: defField("gender", { required: true }),
