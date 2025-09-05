@@ -181,7 +181,7 @@ export default class SiteOperationSchedule extends FireModel {
       employeeIds: {
         configurable: true,
         enumerable: true,
-        get: () => this.employees.map((emp) => emp.workerId),
+        get: () => this.employees.map((emp) => emp.employeeId),
         set: (v) => {},
       },
       /**
@@ -190,7 +190,7 @@ export default class SiteOperationSchedule extends FireModel {
       outsourcerIds: {
         configurable: true,
         enumerable: true,
-        get: () => this.outsourcers.map((out) => out.workerId),
+        get: () => this.outsourcers.map((out) => out.outsourcerId),
         set: (v) => {},
       },
       employeesCount: {
@@ -244,11 +244,11 @@ export default class SiteOperationSchedule extends FireModel {
   }
 
   /**
-   * Returns whether all employees have been notified.
-   * @returns {boolean} - Whether all employees have been notified.
+   * Returns whether all workers have been notified.
+   * @returns {boolean} - Whether all workers have been notified.
    */
-  get isNotificatedAllEmployees() {
-    return this.employees.every((emp) => emp.hasNotification);
+  get isNotificatedAllWorkers() {
+    return this.workers.every((worker) => worker.hasNotification);
   }
 
   /**
@@ -307,72 +307,85 @@ export default class SiteOperationSchedule extends FireModel {
   }
 
   /**
-   * Returns a filtered array of employees that have been removed.
-   * @returns {Array<SiteOperationScheduleDetail>} - Array of removed employees.
+   * Returns whether the outsourcers have changed.
+   * - Returns true if the outsourcer IDs have changed.
+   * - Returns false if the outsourcer IDs have not changed or
+   *   are the same even if the order has changed.
+   * @returns {boolean} - Whether the outsourcers have changed.
    */
-  get _removedEmployees() {
-    const before = this._beforeData?.employees || [];
+  get _isOutsourcersChanged() {
+    const current = this.outsourcerIds || [];
+    const before = this._beforeData?.outsourcerIds || [];
+    return current.sort().join(",") !== before.sort().join(",");
+  }
+
+  /**
+   * Returns a filtered array of workers that have been removed.
+   * @returns {Array<SiteOperationScheduleDetail>} - Array of removed workers.
+   */
+  get _removedWorkers() {
+    const before = this._beforeData?.workers || [];
     if (before.length === 0) return [];
-    const current = this.employees || [];
+    const current = this.workers || [];
     const isRemoved = (emp) =>
       !current.some((e) => e.workerId === emp.workerId);
     return before.filter(isRemoved);
   }
 
   /**
-   * Returns a filtered array of employees that have not been notified yet.
+   * Returns a filtered array of workers that have not been notified yet.
    * - Each element is `SiteOperationScheduleDetail` instance.
-   * @returns {Array<SiteOperationScheduleDetail>} - Array of employees that should be notified.
+   * @returns {Array<SiteOperationScheduleDetail>} - Array of workers that should be notified.
    */
-  get _employeesShouldBeNotified() {
-    if (this.employees.length === 0) return [];
-    const result = this.employees.filter((emp) => !emp.hasNotification);
+  get _workersShouldBeNotified() {
+    if (this.workers.length === 0) return [];
+    const result = this.workers.filter((worker) => !worker.hasNotification);
     return result;
   }
 
   /**
-   * Returns an array of `ArrangementNotification` instances for each employee
+   * Returns an array of `ArrangementNotification` instances for each worker
    * that should be notified (i.e., those who have not been notified yet).
    * @returns {Array<ArrangementNotification>} - Array of ArrangementNotification instances.
    */
   get _notificationsShouldBeNotified() {
-    return this._employeesShouldBeNotified.map((emp) => {
+    return this._workersShouldBeNotified.map((worker) => {
       return new ArrangementNotification({
         siteOperationScheduleId: this.docId,
-        employeeId: emp.workerId,
+        workerId: worker.workerId,
         dateAt: this.dateAt,
         siteId: this.siteId,
         shiftType: this.shiftType,
-        startTime: emp.startTime,
-        endTime: emp.endTime,
-        isStartNextDay: emp.isStartNextDay,
-        actualStartTime: emp.startTime,
-        actualEndTime: emp.endTime,
+        startTime: worker.startTime,
+        endTime: worker.endTime,
+        isStartNextDay: worker.isStartNextDay,
+        actualStartTime: worker.startTime,
+        actualEndTime: worker.endTime,
       });
     });
   }
 
   /**
-   * Returns the employee IDs that have been removed or updated.
-   * @returns {Array<string>} - List of employee IDs that have been removed or updated.
+   * Returns the worker IDs that have been removed or updated.
+   * @returns {Array<string>} - List of worker IDs that have been removed or updated.
    */
-  get _employeeIdsRemovedOrUpdated() {
-    // Create a list of notification IDs for removed employees.
+  get _workerIdsRemovedOrUpdated() {
+    // Create a list of notification IDs for removed workers.
     const dueToRemoved = () => {
-      // early return if there are no removed employees.
-      if (this._removedEmployees.length === 0) return [];
+      // early return if there are no removed workers.
+      if (this._removedWorkers.length === 0) return [];
 
-      // filter out employees that have been notified
-      const notificated = this._removedEmployees.filter(
-        (emp) => emp.hasNotification
+      // filter out workers that have been notified
+      const notificated = this._removedWorkers.filter(
+        (worker) => worker.hasNotification
       );
 
-      // early return if there are no notified employees.
+      // early return if there are no notified workers.
       if (notificated.length === 0) return [];
 
       // create notification IDs.
-      const ids = notificated.map((emp) => {
-        return emp.workerId;
+      const ids = notificated.map((worker) => {
+        return worker.workerId;
       });
 
       return ids;
@@ -380,19 +393,19 @@ export default class SiteOperationSchedule extends FireModel {
 
     // Create a list of notification IDs for edited employees.
     const dueToEdited = () => {
-      const notificatedEmployees = this.employees.filter(
-        (emp) => emp.hasNotification
+      const notificatedWorkers = this.workers.filter(
+        (worker) => worker.hasNotification
       );
-      return notificatedEmployees.reduce((acc, emp) => {
-        const before = this._beforeData.employees.find(
-          ({ workerId }) => workerId === emp.workerId
+      return notificatedWorkers.reduce((acc, worker) => {
+        const before = this._beforeData.workers.find(
+          ({ workerId }) => workerId === worker.workerId
         );
         if (
-          (before && before.startTime !== emp.startTime) ||
-          before.endTime !== emp.endTime ||
-          before.isStartNextDay !== emp.isStartNextDay
+          (before && before.startTime !== worker.startTime) ||
+          before.endTime !== worker.endTime ||
+          before.isStartNextDay !== worker.isStartNextDay
         ) {
-          acc.push(emp.workerId);
+          acc.push(worker.workerId);
         }
         return acc;
       }, []);
@@ -463,7 +476,7 @@ export default class SiteOperationSchedule extends FireModel {
         throw new Error(`Employee with ID ${employeeId} already exists.`);
       }
       const newEmployee = new SiteOperationScheduleDetail({
-        workerId: employeeId,
+        id: employeeId,
         amount: 1,
         isEmployee: true,
         startTime: this.startTime,
@@ -496,32 +509,37 @@ export default class SiteOperationSchedule extends FireModel {
    * @param {number} [amount=1] - Number of outsourcers.
    * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
    */
-  _addOutsourcer(outsourcerId, amount = 1, index = -1) {
+  _addOutsourcer(outsourcerId, index = -1) {
     try {
-      const existOutsourcer = this.outsourcers.find(
-        (out) => out.workerId === outsourcerId
-      );
-      if (existOutsourcer) {
-        existOutsourcer.amount += amount;
-      } else {
-        const newOutsourcer = new SiteOperationScheduleDetail({
-          workerId: outsourcerId,
-          amount,
-          isEmployee: false,
-          startTime: this.startTime,
-          endTime: this.endTime,
-        });
-        if (index === -1) {
-          this.outsourcers.push(newOutsourcer);
-        } else {
-          this.outsourcers.splice(index, 0, newOutsourcer);
+      // Get max index number of existing same outsourcers
+      const maxIndex = this.outsourcers.reduce((result, out) => {
+        if (out.outsourcerId === outsourcerId) {
+          return Math.max(result, Number(out.index));
         }
+        return result;
+      }, 0);
+
+      // Create new SiteOperationScheduleDetail instance.
+      const newOutsourcer = new SiteOperationScheduleDetail({
+        id: outsourcerId,
+        index: maxIndex + 1,
+        amount: 1,
+        isEmployee: false,
+        startTime: this.startTime,
+        endTime: this.endTime,
+      });
+
+      if (index === -1) {
+        this.outsourcers.push(newOutsourcer);
+      } else {
+        this.outsourcers.splice(index, 0, newOutsourcer);
       }
+      return newOutsourcer;
     } catch (error) {
       throw new ContextualError("Failed to add outsourcer", {
         method: "_addOutsourcer",
         className: "SiteOperationSchedule",
-        arguments: { outsourcerId, amount, index },
+        arguments: { outsourcerId, index },
         state: this.toObject(),
         error,
       });
@@ -616,14 +634,11 @@ export default class SiteOperationSchedule extends FireModel {
 
   /**
    * Removes the outsourcer corresponding to `outsourcerId` from this.outsourcers.
-   * - If the matching element exists in `outsourcers`, decreases its `amount`.
-   * - If `amount` becomes 0, removes the element.
    * - Throws an error for invalid values or if not found.
    * @param {string} outsourcerId - The ID of the outsourcer.
-   * @param {number} [amount=1] - Number of outsourcers to remove.
-   * @throws {Error} - If the outsourcer ID is not found or if the amount is invalid.
+   * @throws {Error} - If the outsourcer ID is not found.
    */
-  _removeOutsourcer(outsourcerId, amount = 1) {
+  _removeOutsourcer(outsourcerId) {
     try {
       const index = this.outsourcers.findIndex(
         (out) => out.workerId === outsourcerId
@@ -631,18 +646,12 @@ export default class SiteOperationSchedule extends FireModel {
       if (index === -1) {
         throw new Error(`Outsourcer with ID "${outsourcerId}" not found.`);
       }
-
-      const outsourcer = this.outsourcers[index];
-      if (outsourcer.amount > amount) {
-        outsourcer.amount -= amount;
-      } else {
-        this.outsourcers.splice(index, 1);
-      }
+      this.outsourcers.splice(index, 1);
     } catch (error) {
       throw new ContextualError("Failed to remove outsourcer", {
         method: "_removeOutsourcer",
         className: "SiteOperationSchedule",
-        arguments: { outsourcerId, amount },
+        arguments: { outsourcerId },
         state: this.toObject(),
         error,
       });
@@ -656,24 +665,23 @@ export default class SiteOperationSchedule extends FireModel {
    * Adds a new worker.
    * - Calls the appropriate method based on the value of `isEmployee`.
    * @param {Object} options - Options for adding a worker.
-   * @param {string} options.workerId - The worker ID (employeeId or outsourcerId)
+   * @param {string} options.id - The worker ID (employeeId or outsourcerId)
    * @param {boolean} [options.isEmployee=true] - Whether the worker is an employee
-   * @param {number} [options.amount=1] - Number of workers (for outsourcers)
    * @param {number} [options.index=0] - Insertion position
    */
   addWorker(options) {
     try {
-      const { workerId, isEmployee = true, amount = 1, index = 0 } = options;
+      const { id, isEmployee = true, index = 0 } = options;
       if (isEmployee) {
-        this._addEmployee(workerId, index);
+        this._addEmployee(id, index);
       } else {
-        this._addOutsourcer(workerId, amount, index);
+        this._addOutsourcer(id, index);
       }
     } catch (error) {
       throw new ContextualError("Failed to add worker", {
         method: "addWorker",
         className: "SiteOperationSchedule",
-        arguments: { workerId, isEmployee, amount, index },
+        arguments: { workerId, isEmployee, index },
         state: this.toObject(),
         error,
       });
@@ -715,22 +723,21 @@ export default class SiteOperationSchedule extends FireModel {
    * Removes an employee or outsourcer from the schedule.
    * @param {Object} options - Options for removing a worker.
    * @param {string} options.workerId - The ID of the employee or outsourcer.
-   * @param {number} [options.amount=1] - Number of outsourcers to remove (for outsourcers only).
    * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
    */
   removeWorker(options) {
     try {
-      const { workerId, amount = 1, isEmployee = true } = options;
+      const { workerId, isEmployee = true } = options;
       if (isEmployee) {
         this._removeEmployee(workerId);
       } else {
-        this._removeOutsourcer(workerId, amount);
+        this._removeOutsourcer(workerId);
       }
     } catch (error) {
       throw new ContextualError("Failed to remove worker", {
         method: "removeWorker",
         className: "SiteOperationSchedule",
-        arguments: { workerId, amount, isEmployee },
+        arguments: { workerId, isEmployee },
         state: this.toObject(),
       });
     }
@@ -849,21 +856,25 @@ export default class SiteOperationSchedule extends FireModel {
           logDebugInfo(
             "All existing notifications will be cleared.",
             Object.fromEntries(
-              this.employees.map((emp) => [emp.workerId, emp.hasNotification])
+              this.workers.map((worker) => [
+                worker.workerId,
+                worker.hasNotification,
+              ])
             )
           );
           await this.clearNotifications(txn);
           this.employees.forEach((emp) => (emp.hasNotification = false));
+          this.outsourcers.forEach((out) => (out.hasNotification = false));
         } else {
           logDebugInfo(
             "Any related data to notifications have not been changed."
           );
-          // Delete notifications for updated or removed employees that have been notified.
+          // Delete notifications for updated or removed workers that have been notified.
           await this._deleteNotifications(txn);
-          const removedOrUpdatedIds = this._employeeIdsRemovedOrUpdated;
-          this.employees.forEach((emp) => {
-            if (removedOrUpdatedIds.some((id) => id === emp.workerId)) {
-              emp.hasNotification = false;
+          const removedOrUpdatedIds = this._workerIdsRemovedOrUpdated;
+          this.workers.forEach((worker) => {
+            if (removedOrUpdatedIds.some((id) => id === worker.workerId)) {
+              worker.hasNotification = false;
             }
           });
         }
@@ -988,6 +999,7 @@ export default class SiteOperationSchedule extends FireModel {
       await runTransaction(firestore, async (transaction) => {
         await this._createPendingNotifications(transaction);
         this.employees.forEach((emp) => (emp.hasNotification = true));
+        this.outsourcers.forEach((out) => (out.hasNotification = true));
         await this.update({ transaction });
       });
 
@@ -1020,20 +1032,20 @@ export default class SiteOperationSchedule extends FireModel {
       // Throw error if Firestore transaction is not provided.
       if (!transaction) throw new Error("Transaction is required.");
 
-      // Create a list of notification IDs from removed or updated employee IDs.
-      const targetEmployeeIds = this._employeeIdsRemovedOrUpdated;
+      // Create a list of notification IDs from removed or updated worker IDs.
+      const targetWorkerIds = this._workerIdsRemovedOrUpdated;
 
-      if (targetEmployeeIds.length === 0) {
-        logDebugInfo("No employee IDs found to delete notifications for.");
+      if (targetWorkerIds.length === 0) {
+        logDebugInfo("No worker IDs found to delete notifications for.");
         return;
       } else {
         logDebugInfo(
-          "Found employee IDs to delete notifications for:",
-          targetEmployeeIds
+          "Found worker IDs to delete notifications for:",
+          targetWorkerIds
         );
       }
 
-      const targetIds = targetEmployeeIds.map((id) => `${this.docId}-${id}`);
+      const targetIds = targetWorkerIds.map((id) => `${this.docId}-${id}`);
 
       // Tricky deletion.
       // Using `ArrangementNotification` instance only set `docId` for deletion.

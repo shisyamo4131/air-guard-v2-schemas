@@ -24,8 +24,8 @@ export default class ArrangementNotification extends FireModel {
   static classProps = {
     /** 現場稼働予定ID */
     siteOperationScheduleId: defField("oneLine", { required: true }),
-    /** 従業員ID */
-    employeeId: defField("oneLine", { required: true }),
+    /** 作業員ID */
+    workerId: defField("oneLine", { required: true }),
     /** 配置日 */
     dateAt: defField("dateAt", { label: "配置日", required: true }),
     /** 現場ID */
@@ -184,10 +184,10 @@ export default class ArrangementNotification extends FireModel {
    */
   async create(updateOptions = {}) {
     try {
-      if (!this.siteOperationScheduleId || !this.employeeId) {
-        throw new Error("siteOperationScheduleId and employeeId are required");
+      if (!this.siteOperationScheduleId || !this.workerId) {
+        throw new Error("siteOperationScheduleId and workerId are required");
       }
-      const docId = `${this.siteOperationScheduleId}-${this.employeeId}`;
+      const docId = `${this.siteOperationScheduleId}-${this.workerId}`;
       await super.create({ ...updateOptions, docId });
     } catch (error) {
       console.error(error);
