@@ -47,6 +47,7 @@ export default class Company extends FireModel {
 
   /**
    * Inserts a new SiteOrder into the siteOrder array.
+   * Note: Company instance does not be updated by this method.
    * @param {Object} params - The parameters for the SiteOrder.
    * @param {string} params.siteId - The ID of the site.
    * @param {string} params.shiftType - The shift type associated with the site.
@@ -66,17 +67,17 @@ export default class Company extends FireModel {
 
   /**
    * Changes the order of a SiteOrder in the siteOrder array.
+   * Note: Company instance does not be updated by this method.
    * @param {number} oldIndex - The current index of the SiteOrder.
    * @param {number} newIndex - The new index to move the SiteOrder to.
    */
   changeSiteOrder(oldIndex, newIndex) {
-    if (
-      oldIndex < 0 ||
-      oldIndex >= this.siteOrder.length ||
-      newIndex < 0 ||
-      newIndex >= this.siteOrder.length
-    ) {
-      throw new Error("Invalid index for site order change.");
+    const length = this.siteOrder.length;
+    if (oldIndex < 0 || oldIndex >= length) {
+      throw new Error("Invalid oldIndex for site order change.");
+    }
+    if (newIndex < 0 || newIndex >= length) {
+      throw new Error("Invalid newIndex for site order change.");
     }
     const [movedOrder] = this.siteOrder.splice(oldIndex, 1);
     this.siteOrder.splice(newIndex, 0, movedOrder);
@@ -84,13 +85,32 @@ export default class Company extends FireModel {
 
   /**
    * Removes a SiteOrder from the siteOrder array.
-   * @param {string} key - The key of the SiteOrder to remove.
+   * Note: Company instance does not be updated by this method.
+   * @param {string|Object} arg - The key or {siteId, shiftType} of the SiteOrder to remove.
    */
-  removeSiteOrder(key) {
+  removeSiteOrder(arg) {
+    // Determine the key based on the argument type.
+    // If it's a string, use it directly. If it's an object, construct the key.
+    // Throw an error if the argument is invalid.
+    let key = "";
+    if (typeof arg === "string") {
+      key = arg;
+    } else if (typeof arg === "object" && arg.siteId && arg.shiftType) {
+      key = `${arg.siteId}-${arg.shiftType}`;
+    } else {
+      throw new Error(
+        "Invalid argument for removeSiteOrder. Must be a string key or an object with siteId and shiftType."
+      );
+    }
+
+    // Find the index of the SiteOrder with the specified key.
+    // Throw an error if it does not exist.
     const index = this.siteOrder.findIndex((order) => order.key === key);
     if (index === -1) {
       throw new Error(`SiteOrder with key ${key} does not exist.`);
     }
+
+    // Remove the SiteOrder from the array.
     this.siteOrder.splice(index, 1);
   }
 }
