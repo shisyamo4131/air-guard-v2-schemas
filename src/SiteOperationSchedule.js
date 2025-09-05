@@ -830,7 +830,7 @@ export default class SiteOperationSchedule extends FireModel {
    * - Updates and clears notifications if related data have been changed.
    * - Updates and deletes notifications for removed or updated employees if employee assignments have changed.
    * - Just updates if no changes detected.
-   * @param {Object} updateOptions - Options for creating the notification.
+   * @param {Object} updateOptions - Options for updating the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
    * @param {function} updateOptions.callBack - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
@@ -886,6 +886,38 @@ export default class SiteOperationSchedule extends FireModel {
       });
     } finally {
       logDebugInfo("'update' has ended.");
+    }
+  }
+
+  /**
+   * Override delete method.
+   * - Deletes all notifications associated with the schedule before deleting the schedule itself.
+   * @param {Object} updateOptions - Options for deleting the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
+   */
+  async delete(updateOptions = {}) {
+    try {
+      const performTransaction = async (txn) => {
+        await Promise.all([
+          this.clearNotifications(txn),
+          super.delete({ ...updateOptions, transaction: txn }),
+        ]);
+      };
+      if (updateOptions.transaction) {
+        await performTransaction(updateOptions.transaction);
+      } else {
+        const firestore = this.constructor.getAdapter().firestore;
+        await runTransaction(firestore, performTransaction);
+      }
+    } catch (error) {
+      throw new ContextualError(error.message, {
+        method: "delete",
+        className: "SiteOperationSchedule",
+        arguments: updateOptions,
+        state: this.toObject(),
+      });
     }
   }
 
