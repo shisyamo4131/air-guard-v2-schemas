@@ -8,6 +8,7 @@ import {
   ARRANGEMENT_NOTIFICATION_STATUS_LEAVED,
   ARRANGEMENT_NOTIFICATION_STATUS_TEMPORARY,
 } from "./constants/arrangement-notification-status.js";
+import { runTransaction } from "firebase/firestore";
 
 /**
  * @file ArrangementNotification.js
@@ -357,6 +358,11 @@ export default class ArrangementNotification extends FireModel {
     }
   }
 
+  /**
+   * Fetch ArrangementNotification documents by site operation schedule ID.
+   * @param {string} id - The site operation schedule ID.
+   * @returns {Promise<Array>} - The fetched documents.
+   */
   static async fetchDocsBySiteOperationScheduleId(id) {
     const context = {
       method: "fetchDocsBySiteOperationScheduleId",
@@ -364,11 +370,73 @@ export default class ArrangementNotification extends FireModel {
       arguments: { id },
     };
     try {
-      const instance = new this();
+      const instance = new ArrangementNotification();
       const constraints = [["where", "siteOperationScheduleId", "==", id]];
       const result = await instance.fetchDocs({ constraints });
 
       return result;
+    } catch (error) {
+      throw new ContextualError(error.message, context);
+    }
+  }
+
+  /**
+   * Delete multiple ArrangementNotification documents by their IDs.
+   * - If a transaction is provided, the deletions will be performed within that transaction.
+   * - If no transaction is provided, a new transaction will be created for the deletions.
+   * - If the `workerIds` array is empty, the method will return immediately without performing any operations.
+   * @param {Object} options - Options for bulk deletion.
+   * @param {string} options.siteOperationScheduleId - The site operation schedule ID.
+   * @param {Array<string>} [options.workerIds=[]] - An array of worker IDs whose notifications should be deleted.
+   * @param {Object} [transaction] - The Firestore transaction object.
+   * @returns {Promise<void>}
+   */
+  static async bulkDelete(options = {}, transaction) {
+    const context = {
+      method: "bulkDelete",
+      className: "ArrangementNotification",
+      arguments: { ...options, transaction },
+    };
+    try {
+      const { siteOperationScheduleId, workerIds } = options;
+      if (!siteOperationScheduleId) {
+        throw new Error("siteOperationScheduleId is required");
+      }
+
+      if (!Array.isArray(workerIds)) {
+        throw new Error("workerIds must be an array");
+      }
+
+      const performTransaction = async (txn) => {
+        // Delete all notification documents if workerIds is empty.
+        if (workerIds.length === 0) {
+          const fn = ArrangementNotification.fetchDocsBySiteOperationScheduleId;
+          const docs = await fn(siteOperationScheduleId);
+          if (docs.length === 0) return;
+          await Promise.all(
+            docs.map((doc) => doc.delete({ transaction: txn }))
+          );
+        }
+
+        // Delete specific notification documents if workerIds are provided.
+        else {
+          const docIds = workerIds.map(
+            (id) => `${siteOperationScheduleId}-${id}`
+          );
+          const promises = docIds.map((id) => {
+            const instance = new ArrangementNotification({ docId: id });
+            return instance.delete({ transaction: txn });
+          });
+          await Promise.all(promises);
+        }
+      };
+
+      if (transaction) {
+        await performTransaction(transaction);
+      } else {
+        const firestore = this.getAdapter().firestore;
+        await runTransaction(firestore, performTransaction);
+      }
     } catch (error) {
       throw new ContextualError(error.message, context);
     }
