@@ -398,7 +398,7 @@ export default class ArrangementNotification extends FireModel {
       arguments: { ...options, transaction },
     };
     try {
-      const { siteOperationScheduleId, workerIds } = options;
+      const { siteOperationScheduleId, workerIds = [] } = options;
       if (!siteOperationScheduleId) {
         throw new Error("siteOperationScheduleId is required");
       }
