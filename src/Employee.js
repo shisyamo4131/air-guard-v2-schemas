@@ -1,6 +1,10 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
+import {
+  EMPLOYMENT_STATUS_ACTIVE,
+  EMPLOYMENT_STATUS_TERMINATED,
+} from "./constants/employment-status.js";
 
 export default class Employee extends FireModel {
   static className = "従業員";
@@ -98,6 +102,9 @@ export default class Employee extends FireModel {
     { title: "名前", key: "displayName" },
     { title: "状態", key: "employmentStatus" },
   ];
+
+  static STATUS_ACTIVE = EMPLOYMENT_STATUS_ACTIVE;
+  static STATUS_TERMINATED = EMPLOYMENT_STATUS_TERMINATED;
 
   afterInitialize() {
     Object.defineProperties(this, {
