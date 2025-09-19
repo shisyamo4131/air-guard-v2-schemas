@@ -99,8 +99,7 @@ export default class Employee extends FireModel {
 
   static headers = [
     { title: "code", key: "code" },
-    { title: "名前", key: "displayName" },
-    { title: "状態", key: "employmentStatus" },
+    { title: "名前", key: "fullName" },
   ];
 
   static STATUS_ACTIVE = EMPLOYMENT_STATUS_ACTIVE;
