@@ -64,4 +64,26 @@ export default class Site extends FireModel {
       prefecture: defAccessor("prefecture"),
     });
   }
+
+  /**
+   * Returns the applicable agreement based on the given date, dayType, and shiftType.
+   * Filters agreements by dayType and shiftType, sorts them by startDate in descending order,
+   * and returns the first agreement where date is less than or equal to the given date.
+   * If no such agreement exists, returns null.
+   * @param {Object} args - The arguments object.
+   * @param {String} args.date - The date (in YYYY-MM-DD format) to check against agreement start dates.
+   * @param {String} args.dayType - The type of day (e.g., weekday, weekend) to filter agreements.
+   * @param {String} args.shiftType - The type of shift (e.g., morning, evening) to filter agreements.
+   * @returns {Object|null} - The matching agreement object or null if not found.
+   */
+  getAgreement(args = {}) {
+    const { date, dayType, shiftType } = args;
+    if (!date || !dayType || !shiftType) return null;
+    return (
+      this.agreements
+        .filter((agr) => agr.dayType === dayType && agr.shiftType === shiftType)
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .find((agr) => agr.date <= date) || null
+    );
+  }
 }

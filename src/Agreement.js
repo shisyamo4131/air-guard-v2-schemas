@@ -215,6 +215,16 @@ export default class Agreement extends BaseClass {
   afterInitialize() {
     Object.defineProperties(this, {
       /**
+       * 日付文字列（YYYY-MM-DD形式）
+       * - `dateAt` を基に、ISO 形式の文字列から日付部分のみを抽出して返す。
+       */
+      date: {
+        configurable: true,
+        enumerable: true,
+        get: () => this.dateAt.toISOString().split("T")[0],
+        set: (v) => {},
+      },
+      /**
        * 開始日時（Date オブジェクト）
        * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
        */

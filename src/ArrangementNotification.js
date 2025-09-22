@@ -1,4 +1,4 @@
-import FireModel from "air-firebase-v2";
+import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { getDateAt, ContextualError } from "./utils/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import {
@@ -17,31 +17,13 @@ import { runTransaction } from "firebase/firestore";
  * - The `docId` is the unique identifier for each notification document.
  *  - The document must be overwritten if it already exists.
  */
-export default class ArrangementNotification extends FireModel {
+export default class ArrangementNotification extends SiteOperationScheduleDetail {
   static className = "配置通知";
   static collectionPath = "ArrangementNotifications";
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = {
-    /** 現場稼働予定ID */
-    siteOperationScheduleId: defField("oneLine", { required: true }),
-    /** 作業員ID */
-    workerId: defField("oneLine", { required: true }),
-    /** 配置日 */
-    dateAt: defField("dateAt", { label: "配置日", required: true }),
-    /** 現場ID */
-    siteId: defField("oneLine", { required: true }),
-    /** 勤務区分 */
-    shiftType: defField("shiftType", { required: true }),
-    /** 開始時刻（HH:MM 形式） */
-    startTime: defField("time", { label: "開始時刻", required: true }),
-    /** 終了時刻（HH:MM 形式） */
-    endTime: defField("time", { label: "終了時刻", required: true }),
-    /**
-     * 翌日開始フラグ
-     * - 配置日である `dateAt` の翌日に実際の勤務が開始される場合に true
-     */
-    isStartNextDay: defField("check", { label: "翌日開始" }),
+    ...SiteOperationScheduleDetail.classProps,
     /** 配置確認日時 */
     confirmedAt: defField("dateAt", { label: "配置確認日時" }),
     /** 上番日時 */
@@ -67,50 +49,11 @@ export default class ArrangementNotification extends FireModel {
   };
 
   afterInitialize() {
+    // Define computed properties that are defined on SiteOperationScheduleDetail
+    super.afterInitialize();
+
+    // Define additional computed properties specific to ArrangementNotification
     Object.defineProperties(this, {
-      /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
-      date: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          if (!this.dateAt) return "";
-          const year = this.dateAt.getFullYear();
-          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
-          const day = String(this.dateAt.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        },
-        set: (v) => {},
-      },
-      /**
-       * 開始日時（Date オブジェクト）
-       * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
-       */
-      startAt: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const dateOffset = this.isStartNextDay ? 1 : 0;
-          return getDateAt(this.dateAt, this.startTime, dateOffset);
-        },
-        set: (v) => {},
-      },
-      /**
-       * 終了日時（Date オブジェクト）
-       * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
-       * - `isSpansNextDay` が true の場合は1日加算。
-       */
-      endAt: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const dateOffset =
-            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
-          return getDateAt(this.dateAt, this.endTime, dateOffset);
-        },
-        set: (v) => {},
-      },
       /**
        * 実際の開始日時（Date オブジェクト）
        * - `dateAt` を基に、`actualStartTime` を設定した Date オブジェクトを返す。
@@ -141,17 +84,23 @@ export default class ArrangementNotification extends FireModel {
         },
         set: (v) => {},
       },
-      /**
-       * 開始日から終了日にかけて日付をまたぐかどうかのフラグ
-       * - `startTime` が `endTime` よりも遅い場合 true
-       */
-      isSpansNextDay: {
+      totalWorkMinutes: {
         configurable: true,
         enumerable: true,
-        get: () => this.startTime > this.endTime,
+        get: () => {
+          const start = this.actualStartAt;
+          const end = this.actualEndAt;
+          const breakMinutes = this.actualBreakMinutes || 0;
+          const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
+          return Math.max(0, diff - breakMinutes);
+        },
         set: (v) => {},
       },
     });
+
+    // Remove inherited properties that are not needed in ArrangementNotification
+    delete this.hasNotification;
+    delete this.notificationKey;
   }
 
   get isTemporary() {
@@ -184,6 +133,12 @@ export default class ArrangementNotification extends FireModel {
    * @param {string} updateOptions.prefix - The prefix.
    */
   async create(updateOptions = {}) {
+    const context = {
+      method: "create",
+      className: "ArrangementNotification",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
     try {
       if (!this.siteOperationScheduleId || !this.workerId) {
         throw new Error("siteOperationScheduleId and workerId are required");
@@ -191,7 +146,7 @@ export default class ArrangementNotification extends FireModel {
       const docId = `${this.siteOperationScheduleId}-${this.workerId}`;
       await super.create({ ...updateOptions, docId });
     } catch (error) {
-      console.error(error);
+      throw new ContextualError(error.message, context);
     }
   }
 
