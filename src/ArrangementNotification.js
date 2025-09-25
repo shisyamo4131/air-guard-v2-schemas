@@ -2,6 +2,7 @@ import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { getDateAt, ContextualError } from "./utils/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import {
+  ARRANGEMENT_NOTIFICATION_STATUS,
   ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED,
   ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED,
   ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED,
@@ -47,6 +48,8 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
     }),
     status: defField("arrangementNotificationStatus", { required: true }),
   };
+
+  static STATUS = ARRANGEMENT_NOTIFICATION_STATUS;
 
   afterInitialize() {
     // Define computed properties that are defined on SiteOperationScheduleDetail
