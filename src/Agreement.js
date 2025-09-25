@@ -214,6 +214,14 @@ export default class Agreement extends BaseClass {
 
   afterInitialize() {
     Object.defineProperties(this, {
+      key: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          return `${this.date}-${this.shiftType}`;
+        },
+        set: () => {},
+      },
       /**
        * 日付文字列（YYYY-MM-DD形式）
        * - `dateAt` を基に、ISO 形式の文字列から日付部分のみを抽出して返す。
@@ -221,7 +229,13 @@ export default class Agreement extends BaseClass {
       date: {
         configurable: true,
         enumerable: true,
-        get: () => this.dateAt.toISOString().split("T")[0],
+        get: () => {
+          if (!this.dateAt) return "";
+          const year = this.dateAt.getFullYear();
+          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
+          const day = String(this.dateAt.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        },
         set: (v) => {},
       },
       /**

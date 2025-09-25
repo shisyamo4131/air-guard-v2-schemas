@@ -223,6 +223,31 @@ export default class SiteOperationSchedule extends Operation {
     }
   }
 
+  beforeUpdate() {
+    return new Promise((resolve, reject) => {
+      if (!this.isEditable) {
+        reject(
+          new Error(
+            "Could not update this document due to existing OperationResult document."
+          )
+        );
+      }
+      resolve();
+    });
+  }
+
+  beforeDelete() {
+    return new Promise((resolve, reject) => {
+      if (!this.isEditable) {
+        reject(
+          new Error(
+            "Could not delete this document due to existing OperationResult document."
+          )
+        );
+      }
+      resolve();
+    });
+  }
   /**
    * Override create method.
    * - Automatically assigns a display order based on existing documents.
@@ -324,7 +349,7 @@ export default class SiteOperationSchedule extends Operation {
         await runTransaction(firestore, performTransaction);
       }
     } catch (error) {
-      this.restore();
+      this.undo();
       throw new ContextualError(error.message, {
         method: "update",
         className: "SiteOperationSchedule",
@@ -395,7 +420,7 @@ export default class SiteOperationSchedule extends Operation {
         console.log("All pending notifications created successfully.");
       }
     } catch (error) {
-      this.restore();
+      this.undo();
       throw new ContextualError(
         `Failed to notify SiteOperationSchedule: ${error.message}`,
         {
