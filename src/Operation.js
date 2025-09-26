@@ -2,7 +2,7 @@ import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt, ContextualError } from "./utils/index.js";
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
-import { getDayType } from "./constants/day-type.js";
+import { DAY_TYPE_DEFAULT, getDayType } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
 
@@ -35,29 +35,7 @@ export default class Operation extends FireModel {
      *       （例: 2025-12-31 が請求基準日で、勤務開始時刻が 2026-01-01 01:00 など）
      *       実際の稼働時間帯は `startTime`, `endTime`, `isStartNextDay` プロパティによって計算される。
      */
-    dateAt: defField("dateAt", {
-      label: "日付",
-      required: true,
-      component: {
-        name: "air-date-input",
-        attrs: {
-          "onUpdate:modelValue": (item, updater) => {
-            return ($event) => {
-              updater({ dayType: getDayType($event) });
-            };
-          },
-        },
-      },
-    }),
-    /**
-     * 曜日区分
-     * - `SiteOperationSchedule` クラスでは不要なプロパティ。
-     * - `OperationResult` クラスで使用される。
-     */
-    dayType: defField("dayType", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
+    dateAt: defField("dateAt", { label: "日付", required: true }),
     /** 勤務区分 */
     shiftType: defField("shiftType", {
       required: true,
@@ -135,6 +113,16 @@ export default class Operation extends FireModel {
           const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
           const day = String(this.dateAt.getDate()).padStart(2, "0");
           return `${year}-${month}-${day}`;
+        },
+        set: (v) => {},
+      },
+      /** dateAt をもとに曜日区分を返す。 */
+      dayType: {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+          if (!this.dateAt) return DAY_TYPE_DEFAULT;
+          return getDayType(this.dateAt);
         },
         set: (v) => {},
       },
