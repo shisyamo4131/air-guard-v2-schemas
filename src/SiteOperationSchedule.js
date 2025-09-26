@@ -1,24 +1,16 @@
 import Operation from "./Operation.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import { ContextualError } from "./utils/index.js";
-import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { runTransaction } from "firebase/firestore";
 import ArrangementNotification from "./ArrangementNotification.js";
-import OperationResult from "./OperationResult.js";
-
-const isDebug = false;
-
-const logDebugInfo = (message, data) => {
-  if (!isDebug) return;
-  const text = `[SiteOperationSchedule.js] ${message}`;
-  if (data) console.log(text, data);
-  if (!data) console.log(text);
-};
 
 /**
  * @file SiteOperationSchedule.js
  * @description A class representing a site operation schedule.
  * - Inherits from the Operation class.
+ *
+ * @states isEditable Indicates whether the instance is editable.
+ * @states isNotificatedAllWorkers Indicates whether all workers have been notified.
  */
 export default class SiteOperationSchedule extends Operation {
   static className = "現場稼働予定";
@@ -64,6 +56,8 @@ export default class SiteOperationSchedule extends Operation {
   }
 
   /**
+   * [This function is used only `update` method.]
+   *
    * Returns whether the notifications should be cleared.
    * - Returns an object describing the changes if any of the following properties have changed:
    *   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, or `breakMinutes`.
@@ -86,33 +80,8 @@ export default class SiteOperationSchedule extends Operation {
   }
 
   /**
-   * Returns a filtered array of workers that have not been notified yet.
-   * - Each element is `SiteOperationScheduleDetail` instance.
-   * @returns {Array<SiteOperationScheduleDetail>} - Array of workers that should be notified.
-   */
-  get _workersShouldBeNotified() {
-    if (this.workers.length === 0) return [];
-    const result = this.workers.filter((worker) => !worker.hasNotification);
-    return result;
-  }
-
-  /**
-   * Returns an array of `ArrangementNotification` instances for each worker
-   * that should be notified (i.e., those who have not been notified yet).
-   * @returns {Array<ArrangementNotification>} - Array of ArrangementNotification instances.
-   */
-  get _notificationsShouldBeNotified() {
-    return this._workersShouldBeNotified.map((worker) => {
-      return new ArrangementNotification({
-        ...worker,
-        actualStartTime: worker.startTime,
-        actualEndTime: worker.endTime,
-        actualBreakMinutes: worker.breakMinutes,
-      });
-    });
-  }
-
-  /**
+   * [This function is used only `update` method.]
+   *
    * Returns the worker IDs that have been removed or updated.
    * @returns {Array<string>} - List of worker IDs that have been removed or updated.
    */
@@ -167,70 +136,13 @@ export default class SiteOperationSchedule extends Operation {
   /***************************************************************************
    * METHODS
    ***************************************************************************/
-
-  /**
-   * Duplicates the current schedule for the specified dates.
-   * - Creates a new SiteOperationSchedule instance for each date.
-   * - Schedules with the same date as this instance are not duplicated.
-   * @param {Array<Date|string>} dates - Array of dates to duplicate for
-   * @returns {Promise<Array<SiteOperationSchedule>>} - Array of created schedules
-   * @throws {Error} - If dates is not an array, is empty, or exceeds 20 items
-   */
-  async duplicate(dates) {
-    try {
-      if (!this.docId) {
-        throw new Error(
-          "Document must be created or fetched to this instance before duplication."
-        );
-      }
-      if (!Array.isArray(dates) || dates.length === 0) {
-        throw new Error("Please specify the dates to duplicate as an array.");
-      }
-      if (dates.some((d) => !(d instanceof Date) && typeof d !== "string")) {
-        throw new TypeError("Invalid date specification.");
-      }
-      if (dates.length > 20) {
-        throw new Error("You can duplicate up to 20 schedules at a time.");
-      }
-
-      const targetDates = dates.filter((date) => date !== this.date);
-      const newSchedules = targetDates.map((date) => {
-        const instance = new SiteOperationSchedule({
-          ...this.toObject(),
-          docId: "",
-          dateAt: new Date(date),
-          operationResultId: "",
-        });
-        return instance;
-      });
-
-      const firestore = this.constructor.getAdapter().firestore;
-      await runTransaction(firestore, async (transaction) => {
-        await Promise.all(
-          newSchedules.map((schedule) => schedule.create({ transaction }))
-        );
-      });
-
-      return newSchedules;
-    } catch (error) {
-      throw new ContextualError("Failed to duplicate schedules", {
-        method: "duplicate",
-        className: "SiteOperationSchedule",
-        arguments: { dates },
-        state: this.toObject(),
-        error,
-      });
-    }
-  }
-
   beforeUpdate() {
     return new Promise((resolve, reject) => {
-      if (!this.isEditable) {
-        reject(
-          new Error(
-            "Could not update this document due to existing OperationResult document."
-          )
+      if (this._beforeData.operationResultId) {
+        const error = new Error(
+          `Could not update this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
         );
+        reject(error);
       }
       resolve();
     });
@@ -238,16 +150,16 @@ export default class SiteOperationSchedule extends Operation {
 
   beforeDelete() {
     return new Promise((resolve, reject) => {
-      if (!this.isEditable) {
-        reject(
-          new Error(
-            "Could not delete this document due to existing OperationResult document."
-          )
+      if (this._beforeData.operationResultId) {
+        const error = new Error(
+          `Could not delete this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
         );
+        reject(error);
       }
       resolve();
     });
   }
+
   /**
    * Override create method.
    * - Automatically assigns a display order based on existing documents.
@@ -293,53 +205,31 @@ export default class SiteOperationSchedule extends Operation {
    * @param {string} updateOptions.prefix - The prefix.
    */
   async update(updateOptions = {}) {
-    logDebugInfo("'update' is starting.", updateOptions);
     try {
       const performTransaction = async (txn) => {
+        // Prepare arguments for bulk deletion of notifications.
+        const args = { siteOperationScheduleId: this.docId };
+
         // Clear all notifications if related data have been changed.
-        // siteId, shiftType, date, isStartNextDay, startTime, endTime
         if (this._shouldClearNotifications) {
-          logDebugInfo(
-            "Some related data to notifications have been changed.",
-            this._shouldClearNotifications
-          );
-          logDebugInfo(
-            "All existing notifications will be cleared.",
-            Object.fromEntries(
-              this.workers.map((worker) => [
-                worker.workerId,
-                worker.hasNotification,
-              ])
-            )
-          );
-          const fn = ArrangementNotification.bulkDelete;
-          await fn({ siteOperationScheduleId: this.docId }, txn);
           this.employees.forEach((emp) => (emp.hasNotification = false));
           this.outsourcers.forEach((out) => (out.hasNotification = false));
-        } else {
-          logDebugInfo(
-            "Any related data to notifications have not been changed."
-          );
-          // Delete notifications for updated or removed workers that have been notified.
-          const targetWorkerIds = this._workerIdsRemovedOrUpdated;
-          if (targetWorkerIds.length !== 0) {
-            const fn = ArrangementNotification.bulkDelete;
-            await fn(
-              {
-                siteOperationScheduleId: this.docId,
-                workerIds: targetWorkerIds,
-              },
-              txn
-            );
-
-            this.workers.forEach((worker) => {
-              if (targetWorkerIds.some((id) => id === worker.workerId)) {
-                worker.hasNotification = false;
+          await ArrangementNotification.bulkDelete(args, txn);
+        }
+        // Delete notifications for removed or updated workers that have been notified
+        // if related date have not been changed.
+        else {
+          args.workerIds = this._workerIdsRemovedOrUpdated;
+          if (args.workerIds.length !== 0) {
+            this.workers.forEach((w) => {
+              if (args.workerIds.some((id) => id === w.workerId)) {
+                w.hasNotification = false;
               }
             });
+            await ArrangementNotification.bulkDelete(args, txn);
           }
         }
-        await super.update({ transaction: txn });
+        await super.update({ ...updateOptions, transaction: txn });
       };
 
       if (updateOptions.transaction) {
@@ -356,8 +246,6 @@ export default class SiteOperationSchedule extends Operation {
         arguments: updateOptions,
         state: this.toObject(),
       });
-    } finally {
-      logDebugInfo("'update' has ended.");
     }
   }
 
@@ -389,125 +277,6 @@ export default class SiteOperationSchedule extends Operation {
         method: "delete",
         className: "SiteOperationSchedule",
         arguments: updateOptions,
-        state: this.toObject(),
-      });
-    }
-  }
-
-  /**
-   * Creates `ArrangementNotification` documents for each employee in the schedule.
-   * @returns {Promise<void>}
-   */
-  async notify() {
-    // for debugging
-    if (isDebug) console.log(`'notify' is called.`);
-
-    try {
-      if (this._notificationsShouldBeNotified.length === 0) {
-        if (isDebug) console.log("No new notifications to create.");
-        return;
-      }
-      const firestore = this.constructor.getAdapter().firestore;
-      await runTransaction(firestore, async (transaction) => {
-        await this._createPendingNotifications(transaction);
-        this.employees.forEach((emp) => (emp.hasNotification = true));
-        this.outsourcers.forEach((out) => (out.hasNotification = true));
-        await this.update({ transaction });
-      });
-
-      // for debugging
-      if (isDebug) {
-        console.log("All pending notifications created successfully.");
-      }
-    } catch (error) {
-      this.undo();
-      throw new ContextualError(
-        `Failed to notify SiteOperationSchedule: ${error.message}`,
-        {
-          method: "notify",
-          className: "SiteOperationSchedule",
-          arguments: {},
-          state: this.toObject(),
-        }
-      );
-    }
-  }
-
-  /**
-   * Syncs the current SiteOperationSchedule instance to an OperationResult.
-   * @param {Object} agreement - The agreement data to sync.
-   */
-  async syncToOperationResult(agreement) {
-    try {
-      if (!this.docId) {
-        throw new Error(
-          "Document must be created or fetched to this instance before syncing to OperationResult."
-        );
-      }
-      if (!agreement) {
-        throw new Error("Agreement is required.");
-      }
-
-      await runTransaction(
-        this.constructor.getAdapter().firestore,
-        async (transaction) => {
-          const operationResult = new OperationResult({
-            ...agreement,
-            ...this.toObject(),
-            siteOperationScheduleId: this.docId,
-          });
-          const docRef = await operationResult.create({
-            docId: this.docId,
-            transaction,
-          });
-          this.operationResultId = docRef.id;
-          await this.update({ transaction });
-        }
-      );
-    } catch (error) {
-      throw new ContextualError(error.message, {
-        method: "syncToOperationResult()",
-        className: "SiteOperationSchedule",
-        arguments: { agreement },
-        state: this.toObject(),
-      });
-    }
-  }
-  /**
-   * Creates notifications for newly added employees who do not yet have notifications.
-   * @param {Object} transaction - Firestore transaction object
-   */
-  async _createPendingNotifications(transaction) {
-    // for debugging.
-    if (isDebug) console.log(`'_createPendingNotifications' is called.`);
-    try {
-      // Throw error if Firestore transaction is not provided.
-      if (!transaction) throw new Error("Transaction is required.");
-
-      const targets = this._notificationsShouldBeNotified;
-      if (isDebug) {
-        console.log("Creating pending notifications for employees:", targets);
-      }
-
-      if (targets.length === 0) {
-        if (isDebug) console.log("No new notifications to create.");
-        return;
-      }
-
-      const promises = targets.map((notify) => notify.create({ transaction }));
-      await Promise.all(promises);
-
-      if (isDebug) {
-        console.log(
-          `${targets.length} Pending notifications created successfully.`
-        );
-        console.table(targets);
-      }
-    } catch (error) {
-      throw new ContextualError(error.message, {
-        method: "_createPendingNotifications()",
-        className: "SiteOperationSchedule",
-        arguments: {},
         state: this.toObject(),
       });
     }
