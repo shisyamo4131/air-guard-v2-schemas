@@ -7,8 +7,18 @@ import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
 
 /**
- * SiteOperationSchedule と OperationResult の共通ベースクラス
- * - SiteOperationSchedule と OperationResult の双方の依存関係を解消するために用意
+ * @file .src/Operation.js
+ * @description A base class of SiteOperationSchedule and OperationResult.
+ *
+ * @states isEmployeesChanged Indicates whether the employees have changed.
+ * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
+ * @states addedWorkers An array of workers that have been added.
+ * @states removedWorkers An array of workers that have been removed.
+ * @states updatedWorkers An array of workers that have been updated.
+ *
+ * @methods addWorker Adds a new worker (employee or outsourcer).
+ * @methods changeWorker Changes the position of a worker (employee or outsourcer).
+ * @methods removeWorker Removes a worker (employee or outsourcer).
  */
 export default class Operation extends FireModel {
   static className = "稼働ベース";
@@ -231,7 +241,7 @@ export default class Operation extends FireModel {
    *   are the same even if the order has changed.
    * @returns {boolean} - Whether the employees have changed.
    */
-  get _isEmployeesChanged() {
+  get isEmployeesChanged() {
     const current = this.employeeIds || [];
     const before = this._beforeData?.employeeIds || [];
     return current.sort().join(",") !== before.sort().join(",");
@@ -244,23 +254,54 @@ export default class Operation extends FireModel {
    *   are the same even if the order has changed.
    * @returns {boolean} - Whether the outsourcers have changed.
    */
-  get _isOutsourcersChanged() {
+  get isOutsourcersChanged() {
     const current = this.outsourcerIds || [];
     const before = this._beforeData?.outsourcerIds || [];
     return current.sort().join(",") !== before.sort().join(",");
   }
 
   /**
+   * Returns a filtered array of workers that have been added.
+   * @returns {Array<SiteOperationScheduleDetail>} - Array of added workers.
+   */
+  get addedWorkers() {
+    const current = this.workers || [];
+    if (current.length === 0) return [];
+    const before = this._beforeData?.workers || [];
+    const isAdded = (emp) => !before.some((e) => e.workerId === emp.workerId);
+    return current.filter(isAdded);
+  }
+
+  /**
    * Returns a filtered array of workers that have been removed.
+   * Note: The returned elements do not exist in this.workers.
    * @returns {Array<SiteOperationScheduleDetail>} - Array of removed workers.
    */
-  get _removedWorkers() {
+  get removedWorkers() {
     const before = this._beforeData?.workers || [];
     if (before.length === 0) return [];
     const current = this.workers || [];
     const isRemoved = (emp) =>
       !current.some((e) => e.workerId === emp.workerId);
     return before.filter(isRemoved);
+  }
+
+  /**
+   * Returns a filtered array of workers that have been updated.
+   * - Compares `startTime`, `isStartNextDay`, `endTime`, and `breakMinutes` properties.
+   * @returns {Array<SiteOperationScheduleDetail>} - Array of updated workers.
+   */
+  get updatedWorkers() {
+    const before = this._beforeData.workers || [];
+    if (before.length === 0) return [];
+    const current = this.workers || [];
+    const keys = ["startTime", "isStartNextDay", "endTime", "breakMinutes"];
+    const isUpdated = (emp) => {
+      const worker = before.find((e) => e.workerId === emp.workerId);
+      if (!worker) return false;
+      return keys.some((key) => emp[key] !== worker[key]);
+    };
+    return current.filter(isUpdated);
   }
 
   /**

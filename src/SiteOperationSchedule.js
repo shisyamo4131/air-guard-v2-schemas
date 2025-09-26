@@ -9,8 +9,24 @@ import ArrangementNotification from "./ArrangementNotification.js";
  * @description A class representing a site operation schedule.
  * - Inherits from the Operation class.
  *
+ * @states isEmployeesChanged Indicates whether the employees have changed.
+ * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
+ * @states addedWorkers An array of workers that have been added.
+ * @states removedWorkers An array of workers that have been removed.
+ * @states updatedWorkers An array of workers that have been updated.
+ *
  * @states isEditable Indicates whether the instance is editable.
  * @states isNotificatedAllWorkers Indicates whether all workers have been notified.
+ *
+ * @methods addWorker Adds a new worker (employee or outsourcer).
+ * @methods changeWorker Changes the position of a worker (employee or outsourcer).
+ * @methods removeWorker Removes a worker (employee or outsourcer).
+ *
+ * @overrides beforeUpdate Prevents updates if an associated operation result exists.
+ * @overrides create Creates a new document with the display order set.
+ * @overrides update Updates the document. Delete all notifications if related data have been changed.
+ *                   Notifications for removed or updated workers also will be deleted.
+ * @overrides delete Deletes the document with all related notifications.
  */
 export default class SiteOperationSchedule extends Operation {
   static className = "現場稼働予定";
@@ -55,97 +71,16 @@ export default class SiteOperationSchedule extends Operation {
     return this.workers.every((worker) => worker.hasNotification);
   }
 
-  /**
-   * [This function is used only `update` method.]
-   *
-   * Returns whether the notifications should be cleared.
-   * - Returns an object describing the changes if any of the following properties have changed:
-   *   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, or `breakMinutes`.
-   * - Returns false if there are no changes.
-   * @returns {Object|boolean} - If changes exist, returns an object with details; otherwise, returns false.
-   */
-  get _shouldClearNotifications() {
-    const keys1 = ["siteId", "date", "shiftType"];
-    const keys2 = ["startTime", "isStartNextDay", "endTime", "breakMinutes"];
-    const changes = {};
-    for (const key of [...keys1, ...keys2]) {
-      if (this._beforeData?.[key] !== this[key]) {
-        changes[key] = {
-          before: this._beforeData?.[key],
-          after: this[key],
-        };
-      }
-    }
-    return Object.keys(changes).length > 0 ? changes : false;
-  }
-
-  /**
-   * [This function is used only `update` method.]
-   *
-   * Returns the worker IDs that have been removed or updated.
-   * @returns {Array<string>} - List of worker IDs that have been removed or updated.
-   */
-  get _workerIdsRemovedOrUpdated() {
-    // Create a list of notification IDs for removed workers.
-    const dueToRemoved = () => {
-      // early return if there are no removed workers.
-      if (this._removedWorkers.length === 0) return [];
-
-      // filter out workers that have been notified
-      const notificated = this._removedWorkers.filter(
-        (worker) => worker.hasNotification
-      );
-
-      // early return if there are no notified workers.
-      if (notificated.length === 0) return [];
-
-      // create notification IDs.
-      const ids = notificated.map((worker) => {
-        return worker.workerId;
-      });
-
-      return ids;
-    };
-
-    // Create a list of notification IDs for edited employees.
-    const dueToEdited = () => {
-      const notificatedWorkers = this.workers.filter(
-        (worker) => worker.hasNotification
-      );
-      return notificatedWorkers.reduce((acc, worker) => {
-        const before = this._beforeData.workers.find(
-          ({ workerId }) => workerId === worker.workerId
-        );
-        if (
-          (before && before.startTime !== worker.startTime) ||
-          before.endTime !== worker.endTime ||
-          before.breakMinutes !== worker.breakMinutes ||
-          before.isStartNextDay !== worker.isStartNextDay
-        ) {
-          acc.push(worker.workerId);
-        }
-        return acc;
-      }, []);
-    };
-    const idsDueToRemoved = dueToRemoved();
-    const idsDueToEdited = dueToEdited();
-
-    return Array.from(new Set([...idsDueToRemoved, ...idsDueToEdited]));
-  }
-
   /***************************************************************************
    * METHODS
    ***************************************************************************/
-  beforeUpdate() {
-    return new Promise((resolve, reject) => {
-      if (this._beforeData.operationResultId) {
-        const error = new Error(
-          `Could not update this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
-        );
-        reject(error);
-      }
-      resolve();
-    });
+  async beforeUpdate() {
+    await super.beforeUpdate();
+    if (this._beforeData.operationResultId) {
+      throw new Error(
+        `Could not update this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
+      );
+    }
   }
 
   beforeDelete() {
@@ -206,26 +141,49 @@ export default class SiteOperationSchedule extends Operation {
    */
   async update(updateOptions = {}) {
     try {
+      // Returns whether the notifications should be cleared.
+      // - All notifications should be cleared if any of the following properties have changed:
+      //   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, or `breakMinutes`.
+      // - Returns false if there are no changes.
+      const shouldClearNotifications = () => {
+        const keys1 = ["siteId", "date", "shiftType"];
+        const keys2 = ["startTime", "isStartNextDay", "endTime"];
+        const keys3 = ["breakMinutes"];
+        const changes = {};
+        for (const key of [...keys1, ...keys2, ...keys3]) {
+          if (this._beforeData?.[key] !== this[key]) {
+            changes[key] = {
+              before: this._beforeData?.[key],
+              after: this[key],
+            };
+          }
+        }
+        return Object.keys(changes).length > 0 ? changes : false;
+      };
+
+      // Perform the update within a transaction.
+      // - All notifications will be deleted if `shouldClearNotifications` returns not false.
+      // - Notifications for removed or updated workers will be deleted.
       const performTransaction = async (txn) => {
         // Prepare arguments for bulk deletion of notifications.
         const args = { siteOperationScheduleId: this.docId };
 
-        // Clear all notifications if related data have been changed.
-        if (this._shouldClearNotifications) {
+        // Delete all notifications if related data have been changed.
+        if (shouldClearNotifications()) {
           this.employees.forEach((emp) => (emp.hasNotification = false));
           this.outsourcers.forEach((out) => (out.hasNotification = false));
           await ArrangementNotification.bulkDelete(args, txn);
         }
         // Delete notifications for removed or updated workers that have been notified
-        // if related date have not been changed.
         else {
-          args.workerIds = this._workerIdsRemovedOrUpdated;
+          const updatedWorkers = this.updatedWorkers;
+          const removedWorkers = this.removedWorkers;
+          const workerIds = updatedWorkers
+            .map((w) => w.workerId)
+            .concat(removedWorkers.map((w) => w.workerId));
+          args.workerIds = Array.from(new Set(workerIds));
+          updatedWorkers.forEach((w) => (w.hasNotification = false));
           if (args.workerIds.length !== 0) {
-            this.workers.forEach((w) => {
-              if (args.workerIds.some((id) => id === w.workerId)) {
-                w.hasNotification = false;
-              }
-            });
             await ArrangementNotification.bulkDelete(args, txn);
           }
         }
