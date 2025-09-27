@@ -20,9 +20,10 @@ export default class User extends FireModel {
       hidden: true,
     },
     disabled: defField("check", {
-      label: "状態",
+      label: "使用不可",
       default: false,
       required: false,
+      hidden: true,
     }),
   };
 
