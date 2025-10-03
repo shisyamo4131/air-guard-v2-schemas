@@ -4,6 +4,10 @@ import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";
 import { fetchDocsApi } from "./apis/index.js";
 import Agreement from "./Agreement.js";
+import {
+  SITE_STATUS_ACTIVE,
+  SITE_STATUS_TERMINATED,
+} from "./constants/site-status.js";
 
 export default class Site extends FireModel {
   static className = "現場";
@@ -40,6 +44,7 @@ export default class Site extends FireModel {
     }),
     remarks: defField("multipleLine", { label: "備考" }),
     agreements: defField("array", { label: "取極め", customClass: Agreement }),
+    status: defField("siteStatus", { required: true }),
   };
   static tokenFields = ["name", "nameKana"];
   static hasMany = [
@@ -56,6 +61,9 @@ export default class Site extends FireModel {
     { title: "現場名", key: "name", value: "name" },
     { title: "取引先名", key: "customer.name", value: "customer.name" },
   ];
+
+  static STATUS_ACTIVE = SITE_STATUS_ACTIVE;
+  static STATUS_TERMINATED = SITE_STATUS_TERMINATED;
 
   afterInitialize() {
     Object.defineProperties(this, {
