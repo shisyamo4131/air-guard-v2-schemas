@@ -127,7 +127,7 @@ const generalDefinitions = {
       name: "air-time-picker-input",
       attrs: {
         pickerProps: {
-          format: "24hr",
+          // format: "24hr",
         },
       },
     },
