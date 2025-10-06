@@ -49,7 +49,7 @@ export default class Operation extends FireModel {
     /** 勤務区分 */
     shiftType: defField("shiftType", {
       required: true,
-      colsDefinition: { cols: 12, sm: 6 },
+      colsDefinition: { cols: 12 },
     }),
     /** 開始時刻（HH:MM 形式） */
     startTime: defField("time", {
