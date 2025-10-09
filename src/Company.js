@@ -35,6 +35,10 @@ const classProps = {
     customClass: SiteOrder,
     hidden: true,
   }),
+  minuteInterval: defField("number", {
+    label: "時刻選択間隔（分）",
+    default: 15,
+  }),
 };
 
 export default class Company extends FireModel {
