@@ -35,9 +35,22 @@ const classProps = {
     customClass: SiteOrder,
     hidden: true,
   }),
+  /**
+   * Interval in minutes used for VTimePicker's allowed-minutes.
+   */
   minuteInterval: defField("number", {
     label: "時刻選択間隔（分）",
     default: 15,
+    component: {
+      name: "air-number-input",
+      attrs: {
+        controlVariant: "split",
+        min: 1,
+        max: 30,
+        hint: "1〜30分の範囲で指定してください",
+        persistentHint: true,
+      },
+    },
   }),
 };
 
