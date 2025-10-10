@@ -1,161 +1,58 @@
-import FireModel from "air-firebase-v2";
-import { getDateAt } from "./utils/index.js";
+/*****************************************************************************
+ * SiteOperationScheduleDetail ver 1.0.0
+ * - Extends OperationDetail
+ * @props {string} id - Employee or Outsourcer document ID
+ * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
+ * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
+ * @props {number} amount - Number of placements (always fixed at 1)
+ * @props {Date} dateAt - Placement date
+ * @props {string} siteId - Site ID
+ * @props {string} shiftType - `DAY` or `NIGHT`
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {boolean} isStartNextDay - Next day start flag
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
+ * @props {boolean} isQualificated - Qualified flag
+ * @props {boolean} isOjt - OJT flag
+ * @props {string} siteOperationScheduleId - Site Operation Schedule ID
+ * @props {boolean} hasNotification - Notification flag
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
+ * @computed {Date} startAt - Start date and time (Date object)
+ * - Returns a Date object with `startTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * @computed {Date} endAt - End date and time (Date object)
+ * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isSpansNextDay` is true, add 1 day.
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
+ * - `true` if `startTime` is later than `endTime`
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time)
+ * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
+ * @computed {string} workerId - Worker ID
+ * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
+ * @computed {string|null} employeeId - Employee ID (null if not applicable)
+ * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
+ * @computed {string} notificationKey - Notification key
+ * @accessor {number} breakHours - Break time in hours
+ * @accessor {number} overTimeHours - Overtime work in hours
+ * @author shisyamo4131
+ *****************************************************************************/
+import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
 
-/**
- * SiteOperationScheduleDetail（現場稼働予定明細クラス）
- * - SiteOperationSchedule クラスの employees および outsourcers 配列の要素として使用
- * - 同時に、ArrangementNotification クラスのベースクラスになるため、FireModel を継承。
- * - 従業員または外注先のドキュメント ID は id プロパティに格納。
- * - 従業員は重複不可だが、外注先は index で区別して重複登録可能とするため、index プロパティを持ち、
- *   外注先の場合は id と index を ':' で連結した文字列を workerId プロパティとして提供する。
- *   -> 従業員の場合、workerId は id と同じ値
- * - amount プロパティは常に 1 に固定（将来の拡張用に残す）
- * - startTime と endTime は HH:MM 形式の文字列で管理
- * - isEmployee プロパティで従業員か外注先かを区別
- * - employeeId および outsourcerId プロパティでそれぞれの ID を取得可能（該当しない場合は null）
- */
-export default class SiteOperationScheduleDetail extends FireModel {
+const classProps = {
+  ...OperationDetail.classProps,
+  siteOperationScheduleId: defField("oneLine", { required: true }),
+  hasNotification: defField("check"),
+};
+export default class SiteOperationScheduleDetail extends OperationDetail {
   static className = "現場稼働予定明細";
   static collectionPath = "SiteOperationScheduleDetails";
-  static useAutonumber = false;
-  static logicalDelete = false;
-  static classProps = {
-    /** 現場稼働予定ID */
-    siteOperationScheduleId: defField("oneLine", { required: true }),
-    /** 従業員または外注先のドキュメントID */
-    id: defField("oneLine", { default: "" }),
-    /** 外注先の場合の識別用インデックス（従業員の場合は常に0） */
-    index: defField("number", { default: 0 }),
-    /** 従業員フラグ（true: 従業員, false: 外注先） */
-    isEmployee: defField("check", { default: true, required: true }),
-    /** 配置数（常に1に固定） */
-    amount: defField("number", { default: 1, required: true, hidden: true }),
-    /** 配置日 */
-    dateAt: defField("dateAt", { label: "配置日", required: true }),
-    /** 現場ID */
-    siteId: defField("oneLine", { required: true }),
-    /** 勤務区分 */
-    shiftType: defField("shiftType", { required: true }),
-    /** 開始時刻（HH:MM 形式） */
-    startTime: defField("time", { label: "開始時刻", required: true }),
-    /**
-     * 翌日開始フラグ
-     * - 配置日である `dateAt` の翌日に実際の勤務が開始される場合に true
-     */
-    isStartNextDay: defField("check", { label: "翌日開始" }),
-    /** 終了時刻（HH:MM 形式） */
-    endTime: defField("time", { label: "終了時刻", required: true }),
-    /** 休憩時間（分） */
-    breakMinutes: defField("breakMinutes", {
-      default: 60,
-      required: true,
-    }),
-    /** 資格者フラグ */
-    isQualificated: defField("check", { label: "資格者" }),
-    /** OJT フラグ */
-    isOjt: defField("check", { label: "OJT" }),
-    /** 通知フラグ */
-    hasNotification: defField("check"),
-  };
+  static classProps = classProps;
 
   afterInitialize() {
+    super.afterInitialize();
     Object.defineProperties(this, {
-      /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
-      date: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          if (!this.dateAt) return "";
-          const year = this.dateAt.getFullYear();
-          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
-          const day = String(this.dateAt.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        },
-        set: (v) => {},
-      },
-      /**
-       * 開始日時（Date オブジェクト）
-       * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
-       */
-      startAt: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const dateOffset = this.isStartNextDay ? 1 : 0;
-          return getDateAt(this.dateAt, this.startTime, dateOffset);
-        },
-        set: (v) => {},
-      },
-      /**
-       * 終了日時（Date オブジェクト）
-       * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
-       * - `isSpansNextDay` が true の場合は1日加算。
-       */
-      endAt: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const dateOffset =
-            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
-          return getDateAt(this.dateAt, this.endTime, dateOffset);
-        },
-        set: (v) => {},
-      },
-      /**
-       * 開始日から終了日にかけて日付をまたぐかどうかのフラグ
-       * - `startTime` が `endTime` よりも遅い場合 true
-       */
-      isSpansNextDay: {
-        configurable: true,
-        enumerable: true,
-        get: () => this.startTime > this.endTime,
-        set: (v) => {},
-      },
-      totalWorkMinutes: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const start = this.startAt;
-          const end = this.endAt;
-          const breakMinutes = this.breakMinutes || 0;
-          const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
-          return Math.max(0, diff - breakMinutes);
-        },
-        set: (v) => {},
-      },
-      workerId: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.isEmployee ? this.id : `${this.id}:${this.index}`;
-        },
-        set() {
-          // do nothing
-        },
-      },
-      employeeId: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.isEmployee ? this.id : null;
-        },
-        set() {
-          // do nothing
-        },
-      },
-      outsourcerId: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return !this.isEmployee ? this.id : null;
-        },
-        set() {
-          // do nothing
-        },
-      },
       notificationKey: {
         configurable: true,
         enumerable: true,
