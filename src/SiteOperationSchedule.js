@@ -277,4 +277,9 @@ export default class SiteOperationSchedule extends Operation {
       });
     }
   }
+
+  /** Override addWorker for specify siteOperationScheduleId */
+  addWorker(options = {}, index = 0) {
+    super.addWorker({ ...options, siteOperationScheduleId: this.docId }, index);
+  }
 }

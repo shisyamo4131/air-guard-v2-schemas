@@ -255,15 +255,26 @@ export default class Operation extends FireModel {
        * - Throws an error if the specified employee ID already exists in the `employees` property.
        * - `startAt`, `endAt`, and `breakMinutes` are taken from the current instance.
        * - `employeeId` is required.
-       * @param {string} employeeId - The employee's ID.
-       * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
+       * [Note]
+       * Any options other than `id` and `amount` are accepted and used as initial values
+       * for the new instance.
+       * @param {Object} args - arguments.
+       * @param {string} args.id - The employee's ID.
+       * @param {number} args.amount - amount.
+       * @param {number} [index=0] - Insertion position. If -1, adds to the end.
        * @returns {Object} - The added employee object.
        * @throws {Error} - If the employee ID already exists.
        */
       add: {
-        value: function (employeeId, index = -1) {
-          if (this.some((emp) => emp.workerId === employeeId)) {
-            throw new Error(`Employee with ID ${employeeId} already exists.`);
+        value: function (args = {}, index = 0) {
+          const { id } = args;
+          if (!id || typeof id !== "string") {
+            throw new Error(
+              `Employee ID is required and must be a string. id: ${id}`
+            );
+          }
+          if (this.some((emp) => emp.workerId === id)) {
+            throw new Error(`Employee with ID ${id} already exists.`);
           }
           const schema = self.constructor.classProps?.employees?.customClass;
           if (!schema || typeof schema !== "function") {
@@ -271,10 +282,8 @@ export default class Operation extends FireModel {
           }
           const newEmployee = new schema({
             ...self.toObject(),
-            siteOperationScheduleId: self.docId,
-            id: employeeId,
-            amount: 1,
-            isEmployee: true,
+            ...args,
+            isEmployee: true, // Force override to true
           });
           if (index === -1) {
             this.push(newEmployee);
@@ -331,15 +340,26 @@ export default class Operation extends FireModel {
        * - If the specified outsourcer ID already exists in the `outsourcers` property, increases the amount.
        * - `startTime`, `endTime`, and `isStartNextDay` are taken from the current instance.
        * - `outsourcerId` is required.
-       * @param {string} outsourcerId - The outsourcer's ID.
-       * @param {number} [amount=1] - Number of outsourcers.
-       * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
+       * [Note]
+       * Any options other than `id` and `amount` are accepted and used as initial values
+       * for the new instance.
+       * @param {Object} args - arguments.
+       * @param {string} args.id - The outsourcer's ID.
+       * @param {number} args.amount - amount.
+       * @param {number} [index=0] - Insertion position. If -1, adds to the end.
+       * @return {Object} - The added outsourcer object.
+       * @throws {Error} - If the outsourcer ID is not provided.
        */
       add: {
-        value: function (outsourcerId, index = -1) {
-          // Get max index number of existing same outsourcers
+        value: function (args = {}, index = 0) {
+          const { id } = args;
+          if (!id || typeof id !== "string") {
+            throw new Error(
+              `Outsourcer ID is required and must be a string. id: ${id}`
+            );
+          }
           const maxIndex = this.reduce((result, out) => {
-            if (out.outsourcerId === outsourcerId) {
+            if (out.outsourcerId === id) {
               return Math.max(result, Number(out.index));
             }
             return result;
@@ -351,11 +371,9 @@ export default class Operation extends FireModel {
           }
           const newOutsourcer = new schema({
             ...self.toObject(),
-            siteOperationScheduleId: self.docId,
-            id: outsourcerId,
-            index: maxIndex + 1,
-            amount: 1,
-            isEmployee: false,
+            ...args,
+            index: maxIndex + 1, // Always set to the next index
+            isEmployee: false, // Force override to false
           });
 
           if (index === -1) {
@@ -541,15 +559,15 @@ export default class Operation extends FireModel {
    * @param {Object} options - Options for adding a worker.
    * @param {string} options.id - The worker ID (employeeId or outsourcerId)
    * @param {boolean} [options.isEmployee=true] - Whether the worker is an employee
-   * @param {number} [options.index=0] - Insertion position
+   * @param {number} [index=0] - Insertion position. If -1, adds to the end.
    */
-  addWorker(options) {
+  addWorker(options = {}, index = 0) {
     try {
-      const { id, isEmployee = true, index = 0 } = options;
+      const { isEmployee = true } = options;
       if (isEmployee) {
-        this.employees.add(id, index);
+        this.employees.add(options, index);
       } else {
-        this.outsourcers.add(id, index);
+        this.outsourcers.add(options, index);
       }
     } catch (error) {
       throw new ContextualError("Failed to add worker", {
