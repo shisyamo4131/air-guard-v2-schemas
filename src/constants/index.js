@@ -5,6 +5,5 @@ export * from "./day-type.js";
 export * from "./employment-status.js";
 export * from "./gender.js";
 export * from "./prefectures.js";
-export * from "./operation-result-detail-status.js";
 export * from "./shift-type.js";
 export * from "./site-status.js";
