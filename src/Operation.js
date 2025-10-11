@@ -1,108 +1,114 @@
-import FireModel from "air-firebase-v2";
-import { defField } from "./parts/fieldDefinitions.js";
-import { getDateAt, ContextualError } from "./utils/index.js";
-import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
-import { DAY_TYPE_DEFAULT, getDayType } from "./constants/day-type.js";
-import { SHIFT_TYPE } from "./constants/shift-type.js";
-import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
-
-/**
- * @file .src/Operation.js
- * @description A base class of SiteOperationSchedule and OperationResult.
- *
+/*****************************************************************************
+ * Operation Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
+ * - Base class of SiteOperationSchedule and OperationResult
+ * - `dateAt` property indicates the date of operation (placement date)
+ *   used for billing purposes.
+ *   Actual working day may differ from this date.
+ * ---------------------------------------------------------------------------
+ * @props {string} siteId - Site document ID
+ * @props {Date} dateAt - Date of operation (placement date)
+ * @props {string} shiftType - `DAY` or `NIGHT`
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
+ * @props {boolean} isStartNextDay - Next day start flag
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {number} requiredPersonnel - Required number of personnel
+ * @props {boolean} qualificationRequired - Qualification required flag
+ * @props {string} workDescription - Work description
+ * @props {string} remarks - Remarks
+ * @props {Array<OperationDetail>} employees - Assigned employees
+ * - Array of `OperationDetail` instances representing assigned employees
+ * @props {Array<OperationDetail>} outsourcers - Assigned outsourcers
+ * - Array of `OperationDetail` instances representing assigned outsourcers
+ * ---------------------------------------------------------------------------
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
+ * @computed {string} dayType - Day type based on `dateAt`
+ * @computed {Date} startAt - Start date and time (Date object)
+ * - Returns a Date object with `startTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * @computed {Date} endAt - End date and time (Date object)
+ * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isSpansNextDay` is true, add 1 day.
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
+ * - `true` if `startTime` is later than `endTime`
+ * @computed {Array<string>} employeeIds - Array of employee IDs from `employees`
+ * @computed {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers`
+ * @computed {number} employeesCount - Count of assigned employees
+ * @computed {number} outsourcersCount - Count of assigned outsourcers (sum of amounts)
+ * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel
+ * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
+ * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ * ---------------------------------------------------------------------------
  * @states isEmployeesChanged Indicates whether the employees have changed.
  * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
  * @states addedWorkers An array of workers that have been added.
  * @states removedWorkers An array of workers that have been removed.
  * @states updatedWorkers An array of workers that have been updated.
- *
+ * ---------------------------------------------------------------------------
  * @methods addWorker Adds a new worker (employee or outsourcer).
  * @methods changeWorker Changes the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
- */
+ *****************************************************************************/
+import FireModel from "air-firebase-v2";
+import OperationDetail from "./OperationDetail.js";
+import { defField } from "./parts/fieldDefinitions.js";
+import { getDateAt, ContextualError } from "./utils/index.js";
+import { DAY_TYPE_DEFAULT, getDayType } from "./constants/day-type.js";
+import { SHIFT_TYPE } from "./constants/shift-type.js";
+import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
+
+const classProps = {
+  siteId: defField("siteId", {
+    required: true,
+    component: {
+      attrs: {
+        api: () => fetchDocsApi(Site),
+        clearable: true,
+        fetchItemByKeyApi: () => fetchItemByKeyApi(Site),
+      },
+    },
+  }),
+  dateAt: defField("dateAt", { label: "日付", required: true }),
+  shiftType: defField("shiftType", {
+    required: true,
+    colsDefinition: { cols: 12 },
+  }),
+  startTime: defField("time", {
+    label: "開始時刻",
+    required: true,
+    colsDefinition: { cols: 12, sm: 6 },
+  }),
+  endTime: defField("time", {
+    label: "終了時刻",
+    required: true,
+    colsDefinition: { cols: 12, sm: 6 },
+  }),
+  breakMinutes: defField("breakMinutes", {
+    default: 60,
+    required: true,
+  }),
+  isStartNextDay: defField("check", { label: "翌日開始" }),
+  requiredPersonnel: defField("number", {
+    label: "必要人数",
+    required: true,
+  }),
+  qualificationRequired: defField("check", { label: "要資格者" }),
+  workDescription: defField("workDescription"),
+  remarks: defField("multipleLine", { label: "備考" }),
+  employees: defField("array", { customClass: OperationDetail }),
+  outsourcers: defField("array", {
+    customClass: OperationDetail,
+  }),
+};
 export default class Operation extends FireModel {
   static className = "稼働ベース";
   static collectionPath = "Operations";
   static useAutonumber = false;
   static logicalDelete = false;
-  static classProps = {
-    /** 現場ドキュメントID */
-    siteId: defField("siteId", {
-      required: true,
-      component: {
-        attrs: {
-          api: () => fetchDocsApi(Site),
-          clearable: true,
-          fetchItemByKeyApi: () => fetchItemByKeyApi(Site),
-        },
-      },
-    }),
-    /**
-     * 日付
-     * NOTE: ユーザーが管理上で使用する日付。date プロパティ（YYYY-MM-DD 形式）に変換され、
-     *       取引先への請求基準日として使用される。
-     *       実際の勤務時間帯とは異なるケースがある。
-     *       （例: 2025-12-31 が請求基準日で、勤務開始時刻が 2026-01-01 01:00 など）
-     *       実際の稼働時間帯は `startTime`, `endTime`, `isStartNextDay` プロパティによって計算される。
-     */
-    dateAt: defField("dateAt", { label: "日付", required: true }),
-    /** 勤務区分 */
-    shiftType: defField("shiftType", {
-      required: true,
-      colsDefinition: { cols: 12 },
-    }),
-    /** 開始時刻（HH:MM 形式） */
-    startTime: defField("time", {
-      label: "開始時刻",
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /** 終了時刻（HH:MM 形式） */
-    endTime: defField("time", {
-      label: "終了時刻",
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /** 休憩時間（分） */
-    breakMinutes: defField("breakMinutes", {
-      default: 60,
-      required: true,
-    }),
-    /**
-     * 翌日開始フラグ
-     * - 請求基準日である `dateAt` の翌日に実際の勤務が開始される場合に true
-     */
-    isStartNextDay: defField("check", { label: "翌日開始" }),
-    /** 必要人数 */
-    requiredPersonnel: defField("number", {
-      label: "必要人数",
-      required: true,
-    }),
-    /** 要資格者フラグ */
-    qualificationRequired: defField("check", { label: "要資格者" }),
-    /** 作業内容 */
-    workDescription: defField("workDescription"),
-    /** 備考 */
-    remarks: defField("multipleLine", { label: "備考" }),
-
-    /**
-     * 配置従業員
-     * - この稼働予定に配置される従業員のリスト。
-     * - `SiteOperationScheduleDetail` クラスを使用して定義される。
-     * - `OperationResult` クラスの `employees` フィールドに転用される。
-     */
-    employees: defField("array", { customClass: SiteOperationScheduleDetail }),
-
-    /**
-     * 配置外注先
-     * - この稼働予定に配置される外注先のリスト。
-     * - `SiteOperationScheduleDetail` クラスを使用して定義される。
-     * - `OperationResult` クラスの `outsourcers` フィールドに転用される。
-     */
-    outsourcers: defField("array", {
-      customClass: SiteOperationScheduleDetail,
-    }),
-  };
+  static classProps = classProps;
 
   static SHIFT_TYPE = SHIFT_TYPE;
   static SHIFT_TYPE_DAY = SHIFT_TYPE.DAY;
@@ -112,29 +118,30 @@ export default class Operation extends FireModel {
    * AFTER INITIALIZE
    ***************************************************************************/
   afterInitialize() {
+    /** define computed properies */
     Object.defineProperties(this, {
       /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
       date: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           if (!this.dateAt) return "";
           const year = this.dateAt.getFullYear();
           const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
           const day = String(this.dateAt.getDate()).padStart(2, "0");
           return `${year}-${month}-${day}`;
         },
-        set: (v) => {},
+        set(v) {},
       },
       /** dateAt をもとに曜日区分を返す。 */
       dayType: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           if (!this.dateAt) return DAY_TYPE_DEFAULT;
           return getDayType(this.dateAt);
         },
-        set: (v) => {},
+        set(v) {},
       },
       /**
        * 開始日時（Date オブジェクト）
@@ -143,11 +150,11 @@ export default class Operation extends FireModel {
       startAt: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           const dateOffset = this.isStartNextDay ? 1 : 0;
           return getDateAt(this.dateAt, this.startTime, dateOffset);
         },
-        set: (v) => {},
+        set(v) {},
       },
       /**
        * 終了日時（Date オブジェクト）
@@ -157,12 +164,12 @@ export default class Operation extends FireModel {
       endAt: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           const dateOffset =
             (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
           return getDateAt(this.dateAt, this.endTime, dateOffset);
         },
-        set: (v) => {},
+        set(v) {},
       },
       /**
        * 開始日から終了日にかけて日付をまたぐかどうかのフラグ
@@ -171,8 +178,10 @@ export default class Operation extends FireModel {
       isSpansNextDay: {
         configurable: true,
         enumerable: true,
-        get: () => this.startTime > this.endTime,
-        set: (v) => {},
+        get() {
+          return this.startTime > this.endTime;
+        },
+        set(v) {},
       },
       /**
        * `employees` プロパティから従業員のIDを取得するためのアクセサ
@@ -180,8 +189,10 @@ export default class Operation extends FireModel {
       employeeIds: {
         configurable: true,
         enumerable: true,
-        get: () => this.employees.map((emp) => emp.employeeId),
-        set: (v) => {},
+        get() {
+          return this.employees.map((emp) => emp.employeeId);
+        },
+        set(v) {},
       },
       /**
        * `outsourcers` プロパティから外注のIDを取得するためのアクセサ
@@ -189,20 +200,26 @@ export default class Operation extends FireModel {
       outsourcerIds: {
         configurable: true,
         enumerable: true,
-        get: () => this.outsourcers.map((out) => out.outsourcerId),
-        set: (v) => {},
+        get() {
+          return this.outsourcers.map((out) => out.outsourcerId);
+        },
+        set(v) {},
       },
       employeesCount: {
         configurable: true,
         enumerable: true,
-        get: () => this.employees.length,
-        set: (v) => {},
+        get() {
+          return this.employees.length;
+        },
+        set(v) {},
       },
       outsourcersCount: {
         configurable: true,
         enumerable: true,
-        get: () => this.outsourcers.reduce((sum, i) => sum + i.amount, 0),
-        set: (v) => {},
+        get() {
+          return this.outsourcers.reduce((sum, i) => sum + i.amount, 0);
+        },
+        set(v) {},
       },
       /**
        * 必要人数（requiredPersonnel）に対して、実際に割り当てられた従業員と外注先の合計が不足しているかどうかを示すアクセサ
@@ -213,20 +230,193 @@ export default class Operation extends FireModel {
       isPersonnelShortage: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           const totalRequired = this.requiredPersonnel || 0;
           const totalAssigned = this.employeesCount + this.outsourcersCount;
           return totalAssigned < totalRequired;
         },
-        set: (v) => {},
+        set(v) {},
       },
       workers: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           return this.employees.concat(this.outsourcers);
         },
-        set: (v) => {},
+        set(v) {},
+      },
+    });
+
+    const self = this;
+    Object.defineProperties(this.employees, {
+      /**
+       * Adds a new employee to the `employees` property with the specified ID.
+       * - The element added is as an instance specified by `employees.customClass`.
+       * - Throws an error if the specified employee ID already exists in the `employees` property.
+       * - `startAt`, `endAt`, and `breakMinutes` are taken from the current instance.
+       * - `employeeId` is required.
+       * @param {string} employeeId - The employee's ID.
+       * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
+       * @returns {Object} - The added employee object.
+       * @throws {Error} - If the employee ID already exists.
+       */
+      add: {
+        value: function (employeeId, index = -1) {
+          if (this.some((emp) => emp.workerId === employeeId)) {
+            throw new Error(`Employee with ID ${employeeId} already exists.`);
+          }
+          const schema = self.constructor.classProps?.employees?.customClass;
+          if (!schema || typeof schema !== "function") {
+            throw new Error("employees.customClass is not defined.");
+          }
+          const newEmployee = new schema({
+            ...self.toObject(),
+            siteOperationScheduleId: self.docId,
+            id: employeeId,
+            amount: 1,
+            isEmployee: true,
+          });
+          if (index === -1) {
+            this.push(newEmployee);
+          } else {
+            this.splice(index, 0, newEmployee);
+          }
+          return newEmployee;
+        },
+        writable: false,
+        enumerable: false,
+      },
+      /**
+       * Changes the position of an employee in the employees array.
+       * @param {number} oldIndex - The original index.
+       * @param {number} newIndex - The new index.
+       */
+      change: {
+        value: function (oldIndex, newIndex) {
+          if (newIndex > this.length - 1) {
+            throw new Error(
+              `Employees must be placed before outsourcers. newIndex: ${newIndex}, employees.length: ${this.length}`
+            );
+          }
+          if (newIndex < 0 || newIndex >= this.length) {
+            throw new Error(`Invalid new index: ${newIndex}`);
+          }
+          const employee = this.splice(oldIndex, 1)[0];
+          this.splice(newIndex, 0, employee);
+        },
+        writable: false,
+        enumerable: false,
+      },
+      /**
+       * Removes the employee corresponding to `employeeId` from this.employees.
+       * @param {string} employeeId - The employee's ID
+       * @throws {Error} - If the employee ID is not found.
+       */
+      remove: {
+        value: function (employeeId) {
+          const index = this.findIndex((emp) => emp.workerId === employeeId);
+          if (index === -1) {
+            throw new Error(`Employee with ID "${employeeId}" not found.`);
+          }
+          this.splice(index, 1);
+        },
+        writable: false,
+        enumerable: false,
+      },
+    });
+    Object.defineProperties(this.outsourcers, {
+      /**
+       * Adds a new outsourcer to the `outsourcers` property with the specified ID.
+       * - The element added is as an instance specified by `outsourcers.customClass`.
+       * - If the specified outsourcer ID already exists in the `outsourcers` property, increases the amount.
+       * - `startTime`, `endTime`, and `isStartNextDay` are taken from the current instance.
+       * - `outsourcerId` is required.
+       * @param {string} outsourcerId - The outsourcer's ID.
+       * @param {number} [amount=1] - Number of outsourcers.
+       * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
+       */
+      add: {
+        value: function (outsourcerId, index = -1) {
+          // Get max index number of existing same outsourcers
+          const maxIndex = this.reduce((result, out) => {
+            if (out.outsourcerId === outsourcerId) {
+              return Math.max(result, Number(out.index));
+            }
+            return result;
+          }, 0);
+
+          const schema = self.constructor.classProps.outsourcers.customClass;
+          if (!schema || typeof schema !== "function") {
+            throw new Error("outsourcers.customClass is not defined.");
+          }
+          const newOutsourcer = new schema({
+            ...self.toObject(),
+            siteOperationScheduleId: self.docId,
+            id: outsourcerId,
+            index: maxIndex + 1,
+            amount: 1,
+            isEmployee: false,
+          });
+
+          if (index === -1) {
+            this.push(newOutsourcer);
+          } else {
+            this.splice(index, 0, newOutsourcer);
+          }
+          return newOutsourcer;
+        },
+        writable: false,
+        enumerable: false,
+      },
+      /**
+       * Changes the position of an outsourcer in the outsourcers array.
+       * - `oldIndex` and `newIndex` are offset by the number of employees.
+       * @param {number} oldIndex - The original index.
+       * @param {number} newIndex - The new index.
+       */
+      change: {
+        value: function (oldIndex, newIndex) {
+          if (newIndex <= self.employees.length - 1) {
+            throw new Error(
+              `Outsourcers must be placed after employees. newIndex: ${newIndex}, employees.length: ${self.employees.length}`
+            );
+          }
+          const internalOldIndex = Math.max(
+            0,
+            oldIndex - self.employees.length
+          );
+          const internalNewIndex = Math.max(
+            0,
+            newIndex - self.employees.length
+          );
+          if (internalOldIndex < 0 || internalOldIndex >= this.length) {
+            throw new Error(`Invalid old index: ${internalOldIndex}`);
+          }
+          if (internalNewIndex < 0 || internalNewIndex >= this.length) {
+            throw new Error(`Invalid new index: ${internalNewIndex}`);
+          }
+          const outsourcer = this.splice(internalOldIndex, 1)[0];
+          this.splice(internalNewIndex, 0, outsourcer);
+        },
+        writable: false,
+        enumerable: false,
+      },
+      /**
+       * Removes the outsourcer corresponding to `outsourcerId` from this.outsourcers.
+       * - Throws an error for invalid values or if not found.
+       * @param {string} outsourcerId - The ID of the outsourcer.
+       * @throws {Error} - If the outsourcer ID is not found.
+       */
+      remove: {
+        value: function (outsourcerId) {
+          const index = this.findIndex((out) => out.workerId === outsourcerId);
+          if (index === -1) {
+            throw new Error(`Outsourcer with ID "${outsourcerId}" not found.`);
+          }
+          this.splice(index, 1);
+        },
+        writable: false,
+        enumerable: false,
       },
     });
   }
@@ -343,208 +533,6 @@ export default class Operation extends FireModel {
   }
 
   /***************************************************************************
-   * PRIVATE METHODS
-   ***************************************************************************/
-  /**
-   * Adds a new employee to the `employees` property with the specified ID.
-   * - The element added is an instance of `SiteOperationScheduleDetail`.
-   * - Throws an error if the specified employee ID already exists in the `employees` property.
-   * - `startAt`, `endAt`, and `breakMinutes` are taken from the current instance.
-   * - `employeeId` is required.
-   * @param {string} employeeId - The employee's ID.
-   * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
-   * @returns {SiteOperationScheduleDetail} - The added employee.
-   * @throws {Error} - If the employee ID already exists.
-   */
-  _addEmployee(employeeId, index = -1) {
-    try {
-      if (this.employees.some((emp) => emp.workerId === employeeId)) {
-        throw new Error(`Employee with ID ${employeeId} already exists.`);
-      }
-      const newEmployee = new SiteOperationScheduleDetail({
-        ...this.toObject(),
-        siteOperationScheduleId: this.docId,
-        id: employeeId,
-        amount: 1,
-        isEmployee: true,
-      });
-      if (index === -1) {
-        this.employees.push(newEmployee);
-      } else {
-        this.employees.splice(index, 0, newEmployee);
-      }
-      return newEmployee;
-    } catch (error) {
-      throw new ContextualError("Failed to add employee", {
-        method: "_addEmployee",
-        className: "SiteOperationSchedule",
-        arguments: { employeeId, index },
-        state: this.toObject(),
-        error,
-      });
-    }
-  }
-
-  /**
-   * Adds a new outsourcer to the `outsourcers` property with the specified ID.
-   * - The element added is an instance of `SiteOperationScheduleDetail`.
-   * - If the specified outsourcer ID already exists in the `outsourcers` property, increases the amount.
-   * - `startTime`, `endTime`, and `isStartNextDay` are taken from the current instance.
-   * - `outsourcerId` is required.
-   * @param {string} outsourcerId - The outsourcer's ID.
-   * @param {number} [amount=1] - Number of outsourcers.
-   * @param {number} [index=-1] - Insertion position. If -1, adds to the end.
-   */
-  _addOutsourcer(outsourcerId, index = -1) {
-    try {
-      // Get max index number of existing same outsourcers
-      const maxIndex = this.outsourcers.reduce((result, out) => {
-        if (out.outsourcerId === outsourcerId) {
-          return Math.max(result, Number(out.index));
-        }
-        return result;
-      }, 0);
-
-      // Create new SiteOperationScheduleDetail instance.
-      const newOutsourcer = new SiteOperationScheduleDetail({
-        ...this.toObject(),
-        siteOperationScheduleId: this.docId,
-        id: outsourcerId,
-        index: maxIndex + 1,
-        amount: 1,
-        isEmployee: false,
-      });
-
-      if (index === -1) {
-        this.outsourcers.push(newOutsourcer);
-      } else {
-        this.outsourcers.splice(index, 0, newOutsourcer);
-      }
-      return newOutsourcer;
-    } catch (error) {
-      throw new ContextualError("Failed to add outsourcer", {
-        method: "_addOutsourcer",
-        className: "SiteOperationSchedule",
-        arguments: { outsourcerId, index },
-        state: this.toObject(),
-        error,
-      });
-    }
-  }
-
-  /**
-   * Changes the position of an employee in the employees array.
-   * @param {number} oldIndex - The original index.
-   * @param {number} newIndex - The new index.
-   */
-  _changeEmployee(oldIndex, newIndex) {
-    try {
-      if (newIndex > this.employees.length - 1) {
-        throw new Error(
-          `Employees must be placed before outsourcers. newIndex: ${newIndex}, employees.length: ${this.employees.length}`
-        );
-      }
-      if (newIndex < 0 || newIndex >= this.employees.length) {
-        throw new Error(`Invalid new index: ${newIndex}`);
-      }
-      const employee = this.employees.splice(oldIndex, 1)[0];
-      this.employees.splice(newIndex, 0, employee);
-    } catch (error) {
-      throw new ContextualError("Failed to change employee position", {
-        method: "_changeEmployee",
-        className: "SiteOperationSchedule",
-        arguments: { oldIndex, newIndex },
-        state: this.toObject(),
-        error,
-      });
-    }
-  }
-  /**
-   * Changes the position of an outsourcer in the outsourcers array.
-   * - `oldIndex` and `newIndex` are offset by the number of employees.
-   * @param {number} oldIndex - The original index.
-   * @param {number} newIndex - The new index.
-   */
-  _changeOutsourcer(oldIndex, newIndex) {
-    try {
-      if (newIndex <= this.employees.length - 1) {
-        throw new Error(
-          `Outsourcers must be placed after employees. newIndex: ${newIndex}, employees.length: ${this.employees.length}`
-        );
-      }
-      const internalOldIndex = Math.max(0, oldIndex - this.employees.length);
-      const internalNewIndex = Math.max(0, newIndex - this.employees.length);
-      if (internalOldIndex < 0 || internalOldIndex >= this.outsourcers.length) {
-        throw new Error(`Invalid old index: ${internalOldIndex}`);
-      }
-      if (internalNewIndex < 0 || internalNewIndex >= this.outsourcers.length) {
-        throw new Error(`Invalid new index: ${internalNewIndex}`);
-      }
-      const outsourcer = this.outsourcers.splice(internalOldIndex, 1)[0];
-      this.outsourcers.splice(internalNewIndex, 0, outsourcer);
-    } catch (error) {
-      throw new ContextualError("Failed to change outsourcer position", {
-        method: "_changeOutsourcer",
-        className: "SiteOperationSchedule",
-        arguments: { oldIndex, newIndex },
-        state: this.toObject(),
-        error,
-      });
-    }
-  }
-
-  /**
-   * Removes the employee corresponding to `employeeId` from this.employees.
-   * @param {string} employeeId - The employee's ID
-   * @throws {Error} - If the employee ID is not found.
-   */
-  _removeEmployee(employeeId) {
-    try {
-      const index = this.employees.findIndex(
-        (emp) => emp.workerId === employeeId
-      );
-      if (index === -1) {
-        throw new Error(`Employee with ID "${employeeId}" not found.`);
-      }
-      this.employees.splice(index, 1);
-    } catch (error) {
-      throw new ContextualError("Failed to remove employee", {
-        method: "_removeEmployee",
-        className: "SiteOperationSchedule",
-        arguments: { employeeId },
-        state: this.toObject(),
-        error,
-      });
-    }
-  }
-
-  /**
-   * Removes the outsourcer corresponding to `outsourcerId` from this.outsourcers.
-   * - Throws an error for invalid values or if not found.
-   * @param {string} outsourcerId - The ID of the outsourcer.
-   * @throws {Error} - If the outsourcer ID is not found.
-   */
-  _removeOutsourcer(outsourcerId) {
-    try {
-      const index = this.outsourcers.findIndex(
-        (out) => out.workerId === outsourcerId
-      );
-      if (index === -1) {
-        throw new Error(`Outsourcer with ID "${outsourcerId}" not found.`);
-      }
-      this.outsourcers.splice(index, 1);
-    } catch (error) {
-      throw new ContextualError("Failed to remove outsourcer", {
-        method: "_removeOutsourcer",
-        className: "SiteOperationSchedule",
-        arguments: { outsourcerId },
-        state: this.toObject(),
-        error,
-      });
-    }
-  }
-
-  /***************************************************************************
    * METHODS
    ***************************************************************************/
   /**
@@ -559,15 +547,15 @@ export default class Operation extends FireModel {
     try {
       const { id, isEmployee = true, index = 0 } = options;
       if (isEmployee) {
-        this._addEmployee(id, index);
+        this.employees.add(id, index);
       } else {
-        this._addOutsourcer(id, index);
+        this.outsourcers.add(id, index);
       }
     } catch (error) {
       throw new ContextualError("Failed to add worker", {
         method: "addWorker",
         className: "SiteOperationSchedule",
-        arguments: { workerId, isEmployee, index },
+        arguments: options,
         state: this.toObject(),
         error,
       });
@@ -590,9 +578,9 @@ export default class Operation extends FireModel {
         );
       }
       if (isEmployee) {
-        this._changeEmployee(oldIndex, newIndex);
+        this.employees.change(oldIndex, newIndex);
       } else {
-        this._changeOutsourcer(oldIndex, newIndex);
+        this.outsourcers.change(oldIndex, newIndex);
       }
     } catch (error) {
       throw new ContextualError("Failed to change worker position", {
@@ -615,9 +603,9 @@ export default class Operation extends FireModel {
     try {
       const { workerId, isEmployee = true } = options;
       if (isEmployee) {
-        this._removeEmployee(workerId);
+        this.employees.remove(workerId);
       } else {
-        this._removeOutsourcer(workerId);
+        this.outsourcers.remove(workerId);
       }
     } catch (error) {
       throw new ContextualError("Failed to remove worker", {

@@ -1,5 +1,7 @@
 /*****************************************************************************
  * OperationResultDetail Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
  * - Extends OperationDetail
  * @props {string} id - Employee or Outsourcer document ID
  * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
@@ -15,6 +17,7 @@
  * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isQualificated - Qualified flag
  * @props {boolean} isOjt - OJT flag
+ * --------------------------------------------------------------------------
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {Date} startAt - Start date and time (Date object)
  * - Returns a Date object with `startTime` set based on `dateAt`.
@@ -30,13 +33,21 @@
  * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
  * @computed {string|null} employeeId - Employee ID (null if not applicable)
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
+ * --------------------------------------------------------------------------
  * @accessor {number} breakHours - Break time in hours
  * @accessor {number} overTimeHours - Overtime work in hours
- * @author shisyamo4131
  *****************************************************************************/
 import OperationDetail from "./OperationDetail.js";
 
+const headers = [
+  { title: "名前", key: "fullName" },
+  { title: "開始", key: "startTime" },
+  { title: "終了", key: "endTime" },
+  { title: "休憩", key: "breakHours" },
+  { title: "残業", key: "overTimeHours" },
+];
 export default class OperationResultDetail extends OperationDetail {
   static className = "稼働実績明細";
   static classProps = OperationDetail.classProps;
+  static headers = headers;
 }

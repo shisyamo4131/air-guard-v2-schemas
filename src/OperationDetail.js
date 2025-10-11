@@ -1,5 +1,7 @@
 /*****************************************************************************
  * OperationDetail Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
  * - Base class for SiteOperationScheduleDetail and OperationResultDetail
  * - Because of this class is used as a base class for ArrangementNotification,
  *   it extends FireModel (Not BaseModel).
@@ -9,6 +11,7 @@
  * - `startTime` and `endTime` are managed as strings in HH:MM format.
  * - `isEmployee` property distinguishes between Employee and Outsourcer.
  * - `employeeId` and `outsourcerId` properties can be used to get each ID (null if not applicable).
+ * --------------------------------------------------------------------------
  * @props {string} id - Employee or Outsourcer document ID
  * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
  * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
@@ -23,6 +26,7 @@
  * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isQualificated - Qualified flag
  * @props {boolean} isOjt - OJT flag
+ * --------------------------------------------------------------------------
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {Date} startAt - Start date and time (Date object)
  * - Returns a Date object with `startTime` set based on `dateAt`.
@@ -38,9 +42,9 @@
  * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
  * @computed {string|null} employeeId - Employee ID (null if not applicable)
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
+ * --------------------------------------------------------------------------
  * @accessor {number} breakHours - Break time in hours
  * @accessor {number} overTimeHours - Overtime work in hours
- * @author shisyamo4131
  *****************************************************************************/
 import FireModel from "air-firebase-v2";
 import { getDateAt } from "./utils/index.js";
@@ -77,66 +81,53 @@ export default class OperationDetail extends FireModel {
       date: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           if (!this.dateAt) return "";
           const year = this.dateAt.getFullYear();
           const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
           const day = String(this.dateAt.getDate()).padStart(2, "0");
           return `${year}-${month}-${day}`;
         },
-        set: (v) => {},
+        set(v) {},
       },
-      /**
-       * 開始日時（Date オブジェクト）
-       * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
-       */
       startAt: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           const dateOffset = this.isStartNextDay ? 1 : 0;
           return getDateAt(this.dateAt, this.startTime, dateOffset);
         },
-        set: (v) => {},
+        set(v) {},
       },
-      /**
-       * 終了日時（Date オブジェクト）
-       * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
-       * - `isSpansNextDay` が true の場合は1日加算。
-       */
       endAt: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           const dateOffset =
             (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
           return getDateAt(this.dateAt, this.endTime, dateOffset);
         },
-        set: (v) => {},
+        set(v) {},
       },
-      /**
-       * 開始日から終了日にかけて日付をまたぐかどうかのフラグ
-       * - `startTime` が `endTime` よりも遅い場合 true
-       */
       isSpansNextDay: {
         configurable: true,
         enumerable: true,
-        get: () => this.startTime > this.endTime,
-        set: (v) => {},
+        get() {
+          return this.startTime > this.endTime;
+        },
+        set(v) {},
       },
       totalWorkMinutes: {
         configurable: true,
         enumerable: true,
-        get: () => {
+        get() {
           const start = this.startAt;
           const end = this.endAt;
           const breakMinutes = this.breakMinutes || 0;
           const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
           return Math.max(0, diff - breakMinutes);
         },
-        set: (v) => {},
+        set(v) {},
       },
       workerId: {
         configurable: true,

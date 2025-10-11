@@ -1,56 +1,94 @@
-import Operation from "./Operation.js";
-import { defField } from "./parts/fieldDefinitions.js";
-import { ContextualError } from "./utils/index.js";
-import { runTransaction } from "firebase/firestore";
-import ArrangementNotification from "./ArrangementNotification.js";
-
-/**
- * @file SiteOperationSchedule.js
- * @description A class representing a site operation schedule.
- * - Inherits from the Operation class.
+/*****************************************************************************
+ * SiteOperationSchedule Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
+ * - Extends Operation class to represent a site operation schedule.
+ * - Prevents updates or deletions if an associated OperationResult exists.
+ * - Automatically assigns a display order based on existing documents during creation.
+ * - Clears all notifications if related data have been changed during updates.
+ * - Deletes all related notifications before deleting the schedule.
+ * ---------------------------------------------------------------------------
+ * @props {string} siteId - Site document ID
+ * @props {Date} dateAt - Date of operation (placement date)
+ * @props {string} shiftType - `DAY` or `NIGHT`
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
+ * @props {boolean} isStartNextDay - Next day start flag
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {number} requiredPersonnel - Required number of personnel
+ * @props {boolean} qualificationRequired - Qualification required flag
+ * @props {string} workDescription - Work description
+ * @props {string} remarks - Remarks
+ * @props {Array<SiteOperationScheduleDetail>} employees - Assigned employees
+ * - Array of `SiteOperationScheduleDetail` instances representing assigned employees
+ * @props {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
+ * - Array of `SiteOperationScheduleDetail` instances representing assigned outsourcers
  *
+ * [ADDED PROPERTIES]
+ * @props {string|null} operationResultId - Associated OperationResult document ID
+ * - If an OperationResult has been created based on this schedule, this property
+ *   holds the ID of that OperationResult document.
+ * - If this property is set, the schedule cannot be updated or deleted.
+ *   Conversely, if the associated OperationResult is deleted, this property can be set to null.
+ * @props {number} displayOrder - Display order
+ * - Property to control the display order of schedules on the same date and shift type.
+ * - Automatically assigned during creation based on existing documents.
+ * ---------------------------------------------------------------------------
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
+ * @computed {string} dayType - Day type based on `dateAt`
+ * @computed {Date} startAt - Start date and time (Date object)
+ * - Returns a Date object with `startTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * @computed {Date} endAt - End date and time (Date object)
+ * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isSpansNextDay` is true, add 1 day.
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
+ * - `true` if `startTime` is later than `endTime`
+ * @computed {Array<string>} employeeIds - Array of employee IDs from `employees`
+ * @computed {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers`
+ * @computed {number} employeesCount - Count of assigned employees
+ * @computed {number} outsourcersCount - Count of assigned outsourcers (sum of amounts)
+ * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel
+ * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
+ * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ * ---------------------------------------------------------------------------
  * @states isEmployeesChanged Indicates whether the employees have changed.
  * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
  * @states addedWorkers An array of workers that have been added.
  * @states removedWorkers An array of workers that have been removed.
  * @states updatedWorkers An array of workers that have been updated.
- *
  * @states isEditable Indicates whether the instance is editable.
  * @states isNotificatedAllWorkers Indicates whether all workers have been notified.
- *
+ * ---------------------------------------------------------------------------
  * @methods addWorker Adds a new worker (employee or outsourcer).
  * @methods changeWorker Changes the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
- *
- * @overrides beforeUpdate Prevents updates if an associated operation result exists.
- * @overrides create Creates a new document with the display order set.
- * @overrides update Updates the document. Delete all notifications if related data have been changed.
- *                   Notifications for removed or updated workers also will be deleted.
- * @overrides delete Deletes the document with all related notifications.
- */
+ *****************************************************************************/
+import Operation from "./Operation.js";
+import { defField } from "./parts/fieldDefinitions.js";
+import { ContextualError } from "./utils/index.js";
+import { runTransaction } from "firebase/firestore";
+import ArrangementNotification from "./ArrangementNotification.js";
+import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
+
+const classProps = {
+  ...Operation.classProps,
+  /** override employees for change customClass */
+  employees: defField("array", { customClass: SiteOperationScheduleDetail }),
+  /** override outsourcers for change customClass */
+  outsourcers: defField("array", {
+    customClass: SiteOperationScheduleDetail,
+  }),
+  /** Override siteId for set hidden to true */
+  siteId: defField("siteId", { required: true, hidden: true }),
+  operationResultId: defField("oneLine", { hidden: true }),
+  displayOrder: defField("number", { default: 0, hidden: true }),
+};
 export default class SiteOperationSchedule extends Operation {
   static className = "現場稼働予定";
   static collectionPath = "SiteOperationSchedules";
-  static classProps = {
-    ...Operation.classProps,
-    /**
-     * 現場ドキュメントID
-     * - `Operation` にそもそも含まれるが、`SiteOperationSchedule` クラスでは
-     *   `hidden: true` に設定して、管理画面上での編集を不可にする。
-     */
-    siteId: defField("siteId", { required: true, hidden: true }),
-    /** 稼働実績ドキュメントID */
-    // 当該現場稼働予定ドキュメントから作成された稼働実績のドキュメントID。
-    // このプロパティに値がセットされている場合、当該現場稼働予定ドキュメントから稼働実績ドキュメントを作成することはできないようにする。
-    // -> 稼働実績ドキュメントの重複を抑制。
-    // 逆に、当該現場稼働予定ドキュメントから、これに対応する稼働実績ドキュメントを削除することは可能で、
-    // その場合はこのプロパティを null に設定する。
-    operationResultId: defField("oneLine", { hidden: true }),
-
-    /** 表示順序 */
-    // 同一勤務区分、同一日における現場稼働予定の表示順序を制御するためのプロパティ。
-    displayOrder: defField("number", { default: 0, hidden: true }),
-  };
+  static classProps = classProps;
 
   /***************************************************************************
    * STATES

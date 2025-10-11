@@ -1,5 +1,7 @@
 /*****************************************************************************
  * SiteOperationScheduleDetail ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
  * - Extends OperationDetail
  * @props {string} id - Employee or Outsourcer document ID
  * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
@@ -17,6 +19,7 @@
  * @props {boolean} isOjt - OJT flag
  * @props {string} siteOperationScheduleId - Site Operation Schedule ID
  * @props {boolean} hasNotification - Notification flag
+ * ---------------------------------------------------------------------------
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {Date} startAt - Start date and time (Date object)
  * - Returns a Date object with `startTime` set based on `dateAt`.
@@ -33,9 +36,9 @@
  * @computed {string|null} employeeId - Employee ID (null if not applicable)
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
  * @computed {string} notificationKey - Notification key
+ * ---------------------------------------------------------------------------
  * @accessor {number} breakHours - Break time in hours
  * @accessor {number} overTimeHours - Overtime work in hours
- * @author shisyamo4131
  *****************************************************************************/
 import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
