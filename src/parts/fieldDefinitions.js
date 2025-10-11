@@ -16,10 +16,6 @@ import {
   EMPLOYMENT_STATUS_DEFAULT,
 } from "../constants/employment-status.js";
 import { GENDER_ARRAY, GENDER_DEFAULT } from "../constants/gender.js";
-import {
-  OPERATION_RESULT_DETAIL_STATUS_ARRAY,
-  OPERATION_RESULT_DETAIL_STATUS_DEFAULT,
-} from "../constants/operation-result-detail-status.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
 import {
   SHIFT_TYPE_ARRAY,
@@ -445,17 +441,6 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: GENDER_ARRAY,
-      },
-    },
-  },
-  operationResultDetailStatus: {
-    ...generalDefinitions.select,
-    default: OPERATION_RESULT_DETAIL_STATUS_DEFAULT,
-    label: "ステータス",
-    component: {
-      name: generalDefinitions.select.component.name,
-      attrs: {
-        items: OPERATION_RESULT_DETAIL_STATUS_ARRAY,
       },
     },
   },
