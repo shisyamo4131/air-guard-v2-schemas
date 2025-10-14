@@ -97,6 +97,7 @@ export default class Company extends FireModel {
         },
         writable: false,
         enumerable: false,
+        configurable: true,
       },
       /**
        * Changes the order of a SiteOrder in the siteOrder array.
@@ -120,6 +121,7 @@ export default class Company extends FireModel {
         },
         writable: false,
         enumerable: false,
+        configurable: true,
       },
       /**
        * Removes a SiteOrder from the siteOrder array.
@@ -150,6 +152,7 @@ export default class Company extends FireModel {
         },
         writable: false,
         enumerable: false,
+        configurable: true,
       },
     });
   }
