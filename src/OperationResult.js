@@ -4,6 +4,7 @@
  * ---------------------------------------------------------------------------
  * - Extends Operation class to represent the result of an operation.
  * - Prevents deletion if the instance has `siteOperationScheduleId`.
+ * - Synchronized `regulationWorkMinutes` to all employees and outsourcers.
  * ---------------------------------------------------------------------------
  * @props {string} siteId - Site document ID
  * @props {Date} dateAt - Date of operation (placement date)
@@ -29,11 +30,11 @@
  * - Exceeding this time is considered overtime.
  * @props {number} unitPrice - Basic unit price
  * - Unit price for work within regulation work minutes.
- * @props {number} overTimeUnitPrice - Overtime unit price
+ * @props {number} overtimeUnitPrice - Overtime unit price
  * - Unit price for overtime work exceeding regulation work minutes.
  * @props {number} unitPriceQualified - Qualified unit price
  * - Unit price for qualified workers within regulation work minutes.
- * @props {number} overTimeUnitPriceQualified - Qualified overtime unit price
+ * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price
  * - Unit price for qualified workers exceeding regulation work minutes.
  * @props {string} billingUnitType - Billing unit type
  * - Billing unit defined in `BILLING_UNIT_TYPE`.
@@ -60,20 +61,20 @@
  * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
  * @computed {number} amountBase - Number of base workers
  * - Count of workers excluding those marked as qualified or OJT.
- * @computed {number} amountOverTimeMinutesBase - Total overtime minutes for base workers
+ * @computed {number} amountOvertimeMinutes - Total overtime minutes for base workers
  * - Sum of overtime minutes for workers excluding those marked as qualified or OJT.
  * @computed {number} amountQualificated - Number of qualified workers
  * - Count of employees marked as qualified, excluding OJT.
- * @computed {number} amountOverTimeMinutesQualified - Total overtime minutes for qualified workers
+ * @computed {number} amountOvertimeMinutesQualified - Total overtime minutes for qualified workers
  * - Sum of overtime minutes for employees marked as qualified, excluding OJT.
  * @computed {number} salesBase - Total base sales amount
  * - Calculated as `amountBase` multiplied by `unitPrice`.
  * @computed {number} salesOvertimeBase - Total base overtime sales amount
- * - Calculated as `amountOverTimeMinutesBase` multiplied by `overTimeUnitPrice`.
+ * - Calculated as `amountOvertimeMinutes` multiplied by `overtimeUnitPrice`.
  * @computed {number} salesQualificated - Total qualified sales amount
  * - Calculated as `amountQualificated` multiplied by `unitPriceQualified`.
  * @computed {number} salesOvertimeQualified - Total qualified overtime sales amount
- * - Calculated as `amountOverTimeMinutesQualified` multiplied by `overTimeUnitPriceQualified`.
+ * - Calculated as `amountOvertimeMinutesQualified` multiplied by `overtimeUnitPriceQualified`.
  * ---------------------------------------------------------------------------
  * @states isEmployeesChanged Indicates whether the employees have changed.
  * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
@@ -106,7 +107,7 @@ const classProps = {
     required: true,
     colsDefinition: { cols: 12, sm: 6 },
   }),
-  overTimeUnitPrice: defField("price", {
+  overtimeUnitPrice: defField("price", {
     label: "時間外単価",
     required: true,
     colsDefinition: { cols: 12, sm: 6 },
@@ -116,7 +117,7 @@ const classProps = {
     required: true,
     colsDefinition: { cols: 12, sm: 6 },
   }),
-  overTimeUnitPriceQualified: defField("price", {
+  overtimeUnitPriceQualified: defField("price", {
     label: "資格者時間外単価",
     required: true,
     colsDefinition: { cols: 12, sm: 6 },
@@ -137,8 +138,43 @@ export default class OperationResult extends Operation {
     { title: "現場", key: "siteId", value: "siteId" },
   ];
 
-  afterInitialize() {
-    super.afterInitialize();
+  /**
+   * Set the regulationWorkMinutes value to all employees and outsourcers.
+   * This method updates each employee's and outsourcer's regulationWorkMinutes property
+   * to match the current value of the OperationResult instance.
+   *
+   * @private
+   */
+  _setRegulationWorkMinutesToWorkers(value) {
+    this.employees.forEach((emp) => (emp.regulationWorkMinutes = value));
+    this.outsourcers.forEach((out) => (out.regulationWorkMinutes = value));
+  }
+
+  /**
+   * Override `beforeInitialize`.
+   * - Define a trigger for synchronize regulationWorkMinutes to all employees and workers.
+   * - Define computed properties.
+   * @param {*} item
+   */
+  beforeInitialize(item = {}) {
+    super.beforeInitialize(item);
+    /** Trigger for synchronize regulationWorkMinutes */
+    let _regulationWorkMinutes = this.regulationWorkMinutes;
+    Object.defineProperty(this, "regulationWorkMinutes", {
+      configurable: true,
+      enumerable: false,
+      get() {
+        return _regulationWorkMinutes;
+      },
+      set(value) {
+        const oldValue = _regulationWorkMinutes;
+        _regulationWorkMinutes = value;
+        if (oldValue !== value) {
+          this._setRegulationWorkMinutesToWorkers(value);
+        }
+      },
+    });
+    /** Computed properties */
     Object.defineProperties(this, {
       amountBase: {
         configurable: true,
@@ -150,7 +186,7 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
-      amountOverTimeMinutesBase: {
+      amountOvertimeMinutes: {
         configurable: true,
         enumerable: true,
         get() {
@@ -175,7 +211,7 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
-      amountOverTimeMinutesQualified: {
+      amountOvertimeMinutesQualified: {
         configurable: true,
         enumerable: true,
         get() {
@@ -202,7 +238,7 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          return this.amountOverTimeMinutesBase * this.overTimeUnitPrice;
+          return this.amountOvertimeMinutes * this.overtimeUnitPrice;
         },
         set(v) {},
       },
@@ -219,8 +255,8 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           return (
-            this.amountOverTimeMinutesQualified *
-            this.overTimeUnitPriceQualified
+            this.amountOvertimeMinutesQualified *
+            this.overtimeUnitPriceQualified
           );
         },
         set(v) {},
@@ -228,17 +264,25 @@ export default class OperationResult extends Operation {
     });
   }
 
-  beforeDelete() {
-    return new Promise((resolve, reject) => {
-      if (this.siteOperationScheduleId) {
-        reject(
-          new Error(
-            "この稼働実績は現場稼働予定から作成されているため、削除できません。"
-          )
-        );
-        return;
-      }
-      resolve(true);
-    });
+  /**
+   * Override `afterInitialize`.
+   * - Force synchronize `regulationWorkMinutes` to all employees and outsourcers.
+   */
+  afterInitialize() {
+    super.afterInitialize();
+    this._setRegulationWorkMinutesToWorkers(this.regulationWorkMinutes);
+  }
+
+  /**
+   * Override `beforeDelete`.
+   * - Prevents deletion if the instance has `siteOperationScheduleId`.
+   */
+  async beforeDelete() {
+    await super.beforeDelete();
+    if (this.siteOperationScheduleId) {
+      throw new Error(
+        "この稼働実績は現場稼働予定から作成されているため、削除できません。"
+      );
+    }
   }
 }

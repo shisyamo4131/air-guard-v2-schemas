@@ -164,7 +164,7 @@ export const fieldDefinitions = {
       },
     },
   },
-  overTimeWorkMinutes: {
+  overtimeWorkMinutes: {
     ...generalDefinitions.number,
     label: "残業時間（分）",
     default: 0,

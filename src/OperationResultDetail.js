@@ -35,19 +35,55 @@
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
  * --------------------------------------------------------------------------
  * @accessor {number} breakHours - Break time in hours
- * @accessor {number} overTimeHours - Overtime work in hours
+ * @accessor {number} overtimeHours - Overtime work in hours
  *****************************************************************************/
 import OperationDetail from "./OperationDetail.js";
+import { defField } from "./parts/fieldDefinitions.js";
 
+const classProps = {
+  ...OperationDetail.classProps,
+  regulationWorkMinutes: defField("regulationWorkMinutes", {
+    required: true,
+    colsDefinition: { cols: 12, sm: 6 },
+  }),
+};
 const headers = [
   { title: "名前", key: "fullName" },
   { title: "開始", key: "startTime" },
   { title: "終了", key: "endTime" },
   { title: "休憩", key: "breakHours" },
-  { title: "残業", key: "overTimeHours" },
+  { title: "残業", key: "overtimeHours" },
 ];
 export default class OperationResultDetail extends OperationDetail {
   static className = "稼働実績明細";
-  static classProps = OperationDetail.classProps;
+  static classProps = classProps;
   static headers = headers;
+
+  /**
+   * Override `beforeInitialize`.
+   * - Define computed properties.
+   * @param {*} item
+   */
+  beforeInitialize(item = {}) {
+    super.beforeInitialize(item);
+
+    /** Computed properties */
+    Object.defineProperties(this, {
+      /**
+       * overtimeMinutes
+       * - Returns diff
+       */
+      overtimeMinutes: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return Math.max(
+            0,
+            this.totalWorkMinutes - this.regulationWorkMinutes
+          );
+        },
+        set(v) {},
+      },
+    });
+  }
 }

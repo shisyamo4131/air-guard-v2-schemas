@@ -92,7 +92,7 @@ export default class Agreement extends BaseClass {
      * 時間外単価（円/時間）
      * - `regulationWorkMinutes` を超える時間に対して適用される単価。
      */
-    overTimeUnitPrice: defField("price", {
+    overtimeUnitPrice: defField("price", {
       label: "時間外単価",
       required: true,
       colsDefinition: { cols: 12, sm: 6 },
@@ -110,7 +110,7 @@ export default class Agreement extends BaseClass {
      * 資格者時間外単価（円/時間）
      * - 資格者の `regulationWorkMinutes` を超える時間に対して適用される単価。
      */
-    overTimeUnitPriceQualified: defField("price", {
+    overtimeUnitPriceQualified: defField("price", {
       label: "資格者時間外単価",
       required: true,
       colsDefinition: { cols: 12, sm: 6 },
@@ -158,8 +158,8 @@ export default class Agreement extends BaseClass {
     },
     {
       title: "残業時間",
-      key: "overTimeWorkMinutes",
-      value: (item) => `${item.overTimeWorkMinutes}分`,
+      key: "overtimeWorkMinutes",
+      value: (item) => `${item.overtimeWorkMinutes}分`,
       align: "center",
       sortable: false,
     },
@@ -176,8 +176,8 @@ export default class Agreement extends BaseClass {
         },
         {
           title: "時間外",
-          key: "overTimeUnitPrice",
-          value: (item) => item.overTimeUnitPrice.toLocaleString(),
+          key: "overtimeUnitPrice",
+          value: (item) => item.overtimeUnitPrice.toLocaleString(),
           align: "center",
           sortable: false,
         },
@@ -196,8 +196,8 @@ export default class Agreement extends BaseClass {
         },
         {
           title: "時間外",
-          key: "overTimeUnitPriceQualified",
-          value: (item) => item.overTimeUnitPriceQualified.toLocaleString(),
+          key: "overtimeUnitPriceQualified",
+          value: (item) => item.overtimeUnitPriceQualified.toLocaleString(),
           align: "center",
           sortable: false,
         },
@@ -290,7 +290,7 @@ export default class Agreement extends BaseClass {
        * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値。
        * - 残業時間は負にならないように 0 を下限とする。
        */
-      overTimeWorkMinutes: {
+      overtimeWorkMinutes: {
         configurable: true,
         enumerable: true,
         get: () => {

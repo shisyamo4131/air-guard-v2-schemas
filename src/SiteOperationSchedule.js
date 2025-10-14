@@ -112,6 +112,10 @@ export default class SiteOperationSchedule extends Operation {
   /***************************************************************************
    * METHODS
    ***************************************************************************/
+  /**
+   * Override `beforeUpdate`.
+   * - Prevents updates if an associated OperationResult exists.
+   */
   async beforeUpdate() {
     await super.beforeUpdate();
     if (this._beforeData.operationResultId) {
@@ -121,16 +125,17 @@ export default class SiteOperationSchedule extends Operation {
     }
   }
 
-  beforeDelete() {
-    return new Promise((resolve, reject) => {
-      if (this._beforeData.operationResultId) {
-        const error = new Error(
-          `Could not delete this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
-        );
-        reject(error);
-      }
-      resolve();
-    });
+  /**
+   * Override `beforeDelete`.
+   * - Prevents deletions if an associated OperationResult exists.
+   */
+  async beforeDelete() {
+    await super.beforeDelete();
+    if (this._beforeData.operationResultId) {
+      throw new Error(
+        `Could not delete this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
+      );
+    }
   }
 
   /**
