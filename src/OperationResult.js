@@ -6,6 +6,7 @@
  * - Prevents deletion if the instance has `siteOperationScheduleId`.
  * - Synchronized `regulationWorkMinutes` to all employees and outsourcers.
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @props {string} siteId - Site document ID
  * @props {Date} dateAt - Date of operation (placement date)
  * @props {string} shiftType - `DAY` or `NIGHT`
@@ -14,6 +15,9 @@
  * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {number} regulationWorkMinutes - Regulation work minutes
+ * - Indicates the maximum working time treated as regular working hours.
+ * - A new value will be synchronized to all `employees` and `outsourcers`.
  * @props {number} requiredPersonnel - Required number of personnel
  * @props {boolean} qualificationRequired - Qualification required flag
  * @props {string} workDescription - Work description
@@ -23,11 +27,7 @@
  * @props {Array<OperationDetail>} outsourcers - Assigned outsourcers
  * - Array of `OperationDetail` instances representing assigned outsourcers
  *
- * [ADDED PROPERTIES]
- * -- those properties are from Agreements ???
- * @props {number} regulationWorkMinutes - Regulation work minutes (minutes)
- * - Maximum work minutes defined for the unit price (`unitPrice` or `unitPriceQualified`).
- * - Exceeding this time is considered overtime.
+ * [ADDED]
  * @props {number} unitPrice - Basic unit price
  * - Unit price for work within regulation work minutes.
  * @props {number} overtimeUnitPrice - Overtime unit price
@@ -42,6 +42,7 @@
  * - If this OperationResult was created based on a SiteOperationSchedule document,
  *   this property holds the ID of that source document.
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {string} dayType - Day type based on `dateAt`
  * @computed {Date} startAt - Start date and time (Date object)
@@ -59,6 +60,8 @@
  * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
  * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ *
+ * [ADDED]
  * @computed {number} amountBase - Number of base workers
  * - Count of workers excluding those marked as qualified or OJT.
  * @computed {number} amountOvertimeMinutes - Total overtime minutes for base workers
@@ -76,12 +79,14 @@
  * @computed {number} salesOvertimeQualified - Total qualified overtime sales amount
  * - Calculated as `amountOvertimeMinutesQualified` multiplied by `overtimeUnitPriceQualified`.
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @states isEmployeesChanged Indicates whether the employees have changed.
  * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
  * @states addedWorkers An array of workers that have been added.
  * @states removedWorkers An array of workers that have been removed.
  * @states updatedWorkers An array of workers that have been updated.
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @methods addWorker Adds a new worker (employee or outsourcer).
  * @methods changeWorker Changes the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
@@ -89,6 +94,7 @@
 import Operation from "./Operation.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
+import { classProps as unitPriceClassProps } from "./UnitPrice.js";
 
 const classProps = {
   ...Operation.classProps,
@@ -98,31 +104,7 @@ const classProps = {
   outsourcers: defField("array", {
     customClass: OperationResultDetail,
   }),
-  regulationWorkMinutes: defField("regulationWorkMinutes", {
-    required: true,
-    colsDefinition: { cols: 12, sm: 6 },
-  }),
-  unitPrice: defField("price", {
-    label: "基本単価",
-    required: true,
-    colsDefinition: { cols: 12, sm: 6 },
-  }),
-  overtimeUnitPrice: defField("price", {
-    label: "時間外単価",
-    required: true,
-    colsDefinition: { cols: 12, sm: 6 },
-  }),
-  unitPriceQualified: defField("price", {
-    label: "資格者単価",
-    required: true,
-    colsDefinition: { cols: 12, sm: 6 },
-  }),
-  overtimeUnitPriceQualified: defField("price", {
-    label: "資格者時間外単価",
-    required: true,
-    colsDefinition: { cols: 12, sm: 6 },
-  }),
-  billingUnitType: defField("billingUnitType", { required: true }),
+  ...unitPriceClassProps,
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
 };
 
@@ -139,41 +121,13 @@ export default class OperationResult extends Operation {
   ];
 
   /**
-   * Set the regulationWorkMinutes value to all employees and outsourcers.
-   * This method updates each employee's and outsourcer's regulationWorkMinutes property
-   * to match the current value of the OperationResult instance.
-   *
-   * @private
-   */
-  _setRegulationWorkMinutesToWorkers(value) {
-    this.employees.forEach((emp) => (emp.regulationWorkMinutes = value));
-    this.outsourcers.forEach((out) => (out.regulationWorkMinutes = value));
-  }
-
-  /**
-   * Override `beforeInitialize`.
+   * Override `afterInitialize`.
    * - Define a trigger for synchronize regulationWorkMinutes to all employees and workers.
    * - Define computed properties.
-   * @param {*} item
    */
-  beforeInitialize(item = {}) {
-    super.beforeInitialize(item);
-    /** Trigger for synchronize regulationWorkMinutes */
-    let _regulationWorkMinutes = this.regulationWorkMinutes;
-    Object.defineProperty(this, "regulationWorkMinutes", {
-      configurable: true,
-      enumerable: false,
-      get() {
-        return _regulationWorkMinutes;
-      },
-      set(value) {
-        const oldValue = _regulationWorkMinutes;
-        _regulationWorkMinutes = value;
-        if (oldValue !== value) {
-          this._setRegulationWorkMinutesToWorkers(value);
-        }
-      },
-    });
+  afterInitialize() {
+    super.afterInitialize();
+
     /** Computed properties */
     Object.defineProperties(this, {
       amountBase: {
@@ -186,7 +140,27 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
-      amountOvertimeMinutes: {
+      amountQualificated: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.employees.filter(
+            ({ isQualificated, isOjt }) => isQualificated && !isOjt
+          ).length;
+        },
+        set(v) {},
+      },
+      amount: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const base = this.amountBase;
+          const qualificated = this.amountQualificated;
+          return { base, qualificated, total: base + qualificated };
+        },
+        set(v) {},
+      },
+      amountOvertimeMinutesBase: {
         configurable: true,
         enumerable: true,
         get() {
@@ -198,16 +172,6 @@ export default class OperationResult extends Operation {
                 Math.max(wkr.totalWorkMinutes - this.regulationWorkMinutes, 0),
               0
             );
-        },
-        set(v) {},
-      },
-      amountQualificated: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.employees.filter(
-            ({ isQualificated, isOjt }) => isQualificated && !isOjt
-          ).length;
         },
         set(v) {},
       },
@@ -226,19 +190,21 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+      amountOvertimeMinutes: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const base = this.amountOvertimeMinutesBase;
+          const qualificated = this.amountOvertimeMinutesQualified;
+          return { base, qualificated, total: base + qualificated };
+        },
+        set(v) {},
+      },
       salesBase: {
         configurable: true,
         enumerable: true,
         get() {
-          return this.amountBase * this.unitPrice;
-        },
-        set(v) {},
-      },
-      salesOvertimeBase: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.amountOvertimeMinutes * this.overtimeUnitPrice;
+          return this.amountBase * this.unitPriceBase;
         },
         set(v) {},
       },
@@ -247,6 +213,14 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           return this.amountQualificated * this.unitPriceQualified;
+        },
+        set(v) {},
+      },
+      salesOvertimeBase: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.amountOvertimeMinutesBase * this.overtimeUnitPriceBase;
         },
         set(v) {},
       },
@@ -261,16 +235,25 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+      sales: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const base = this.salesBase;
+          const qualificated = this.salesQualificated;
+          const overtimeBase = this.salesOvertimeBase;
+          const overtimeQualificated = this.salesOvertimeQualified;
+          return {
+            base,
+            qualificated,
+            overtimeBase,
+            overtimeQualificated,
+            total: base + qualificated + overtimeBase + overtimeQualificated,
+          };
+        },
+        set(v) {},
+      },
     });
-  }
-
-  /**
-   * Override `afterInitialize`.
-   * - Force synchronize `regulationWorkMinutes` to all employees and outsourcers.
-   */
-  afterInitialize() {
-    super.afterInitialize();
-    this._setRegulationWorkMinutesToWorkers(this.regulationWorkMinutes);
   }
 
   /**

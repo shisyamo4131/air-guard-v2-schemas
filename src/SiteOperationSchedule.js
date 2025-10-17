@@ -8,6 +8,7 @@
  * - Clears all notifications if related data have been changed during updates.
  * - Deletes all related notifications before deleting the schedule.
  * ---------------------------------------------------------------------------
+ * [INHERIT OPERATION CLASS]
  * @props {string} siteId - Site document ID
  * @props {Date} dateAt - Date of operation (placement date)
  * @props {string} shiftType - `DAY` or `NIGHT`
@@ -16,6 +17,9 @@
  * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {number} regulationWorkMinutes - Regulation work minutes
+ * - Indicates the maximum working time treated as regular working hours.
+ * - A new value will be synchronized to all `employees` and `outsourcers`.
  * @props {number} requiredPersonnel - Required number of personnel
  * @props {boolean} qualificationRequired - Qualification required flag
  * @props {string} workDescription - Work description
@@ -25,7 +29,7 @@
  * @props {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
  * - Array of `SiteOperationScheduleDetail` instances representing assigned outsourcers
  *
- * [ADDED PROPERTIES]
+ * [ADDED]
  * @props {string|null} operationResultId - Associated OperationResult document ID
  * - If an OperationResult has been created based on this schedule, this property
  *   holds the ID of that OperationResult document.
@@ -35,6 +39,7 @@
  * - Property to control the display order of schedules on the same date and shift type.
  * - Automatically assigned during creation based on existing documents.
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {string} dayType - Day type based on `dateAt`
  * @computed {Date} startAt - Start date and time (Date object)
@@ -53,14 +58,18 @@
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
  * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @states isEmployeesChanged Indicates whether the employees have changed.
  * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
  * @states addedWorkers An array of workers that have been added.
  * @states removedWorkers An array of workers that have been removed.
  * @states updatedWorkers An array of workers that have been updated.
+ *
+ * [ADDED]
  * @states isEditable Indicates whether the instance is editable.
  * @states isNotificatedAllWorkers Indicates whether all workers have been notified.
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @methods addWorker Adds a new worker (employee or outsourcer).
  * @methods changeWorker Changes the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
@@ -80,11 +89,20 @@ const classProps = {
   outsourcers: defField("array", {
     customClass: SiteOperationScheduleDetail,
   }),
-  /** Override siteId for set hidden to true */
-  siteId: defField("siteId", { required: true, hidden: true }),
   operationResultId: defField("oneLine", { hidden: true }),
   displayOrder: defField("number", { default: 0, hidden: true }),
+  /** Override siteId for set hidden to true */
+  siteId: defField("siteId", { required: true, hidden: true }),
+  /**
+   * Override regulationWorkMinutes to set hidden to true
+   * - `regulationWorkMinutes` is determined by the `Agreement` of the `Site`,
+   *   but the `Agreement` may be unknown when creating a site operation schedule,
+   *   so this property is hidden in this class. The property itself is retained
+   *   for potential future extension.
+   */
+  regulationWorkMinutes: defField("number", { hidden: true }),
 };
+
 export default class SiteOperationSchedule extends Operation {
   static className = "現場稼働予定";
   static collectionPath = "SiteOperationSchedules";
@@ -161,7 +179,7 @@ export default class SiteOperationSchedule extends Operation {
       if (existingDocs.length > 0) {
         this.displayOrder = existingDocs[0].displayOrder + 1;
       }
-      await super.create(updateOptions);
+      return await super.create(updateOptions);
     } catch (error) {
       throw new ContextualError(error.message, {
         method: "create",

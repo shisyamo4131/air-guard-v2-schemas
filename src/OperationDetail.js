@@ -44,27 +44,22 @@
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
  * --------------------------------------------------------------------------
  * @accessor {number} breakHours - Break time in hours
- * @accessor {number} overTimeHours - Overtime work in hours
+ * @accessor {number} overtimeWorkHours - Overtime work in hours
  *****************************************************************************/
 import FireModel from "air-firebase-v2";
-import { getDateAt } from "./utils/index.js";
 import { defField, MINUTES_PER_HOUR } from "./parts/fieldDefinitions.js";
+import {
+  classProps as workingResultClassProps,
+  accessors as workingResultAccessors,
+} from "./WorkingResult.js";
 
 const classProps = {
   id: defField("oneLine", { default: "" }),
   index: defField("number", { default: 0 }),
   isEmployee: defField("check", { default: true, required: true }),
   amount: defField("number", { default: 1, required: true, hidden: true }),
-  dateAt: defField("dateAt", { label: "配置日", required: true }),
   siteId: defField("oneLine", { required: true }),
-  shiftType: defField("shiftType", { required: true }),
-  startTime: defField("time", { label: "開始時刻", required: true }),
-  isStartNextDay: defField("check", { label: "翌日開始" }),
-  endTime: defField("time", { label: "終了時刻", required: true }),
-  breakMinutes: defField("breakMinutes", {
-    default: 60,
-    required: true,
-  }),
+  ...workingResultClassProps, // Inherited from WorkingResult.js
   isQualificated: defField("check", { label: "資格者" }),
   isOjt: defField("check", { label: "OJT" }),
 };
@@ -75,69 +70,23 @@ export default class OperationDetail extends FireModel {
   static logicalDelete = false;
   static classProps = classProps;
 
-  afterInitialize() {
+  /**
+   * Override `afterInitialize`
+   */
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
+
+    /** Define computed properties from WorkingResult.js */
+    workingResultAccessors(this);
+
     Object.defineProperties(this, {
-      /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
-      date: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          if (!this.dateAt) return "";
-          const year = this.dateAt.getFullYear();
-          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
-          const day = String(this.dateAt.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        },
-        set(v) {},
-      },
-      startAt: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const dateOffset = this.isStartNextDay ? 1 : 0;
-          return getDateAt(this.dateAt, this.startTime, dateOffset);
-        },
-        set(v) {},
-      },
-      endAt: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const dateOffset =
-            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
-          return getDateAt(this.dateAt, this.endTime, dateOffset);
-        },
-        set(v) {},
-      },
-      isSpansNextDay: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.startTime > this.endTime;
-        },
-        set(v) {},
-      },
-      totalWorkMinutes: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const start = this.startAt;
-          const end = this.endAt;
-          const breakMinutes = this.breakMinutes || 0;
-          const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
-          return Math.max(0, diff - breakMinutes);
-        },
-        set(v) {},
-      },
       workerId: {
         configurable: true,
         enumerable: true,
         get() {
           return this.isEmployee ? this.id : `${this.id}:${this.index}`;
         },
-        set() {
-          // do nothing
-        },
+        set() {},
       },
       employeeId: {
         configurable: true,
@@ -145,9 +94,7 @@ export default class OperationDetail extends FireModel {
         get() {
           return this.isEmployee ? this.id : null;
         },
-        set() {
-          // do nothing
-        },
+        set() {},
       },
       outsourcerId: {
         configurable: true,
@@ -155,9 +102,7 @@ export default class OperationDetail extends FireModel {
         get() {
           return !this.isEmployee ? this.id : null;
         },
-        set() {
-          // do nothing
-        },
+        set() {},
       },
     });
   }
@@ -181,16 +126,16 @@ export default class OperationDetail extends FireModel {
   /**
    * Accessor for overtime work in hours.
    */
-  get overTimeHours() {
-    return this.overTimeWorkMinutes / MINUTES_PER_HOUR;
+  get overtimeWorkHours() {
+    return this.overtimeWorkMinutes / MINUTES_PER_HOUR;
   }
-  set overTimeHours(v) {
+  set overtimeWorkHours(v) {
     if (typeof v !== "number") {
       console.warn(
-        `[${this.constructor.collectionName}.js overTimeHours] Expected a number, got: ${v}`
+        `[${this.constructor.collectionName}.js overtimeWorkHours] Expected a number, got: ${v}`
       );
       return;
     }
-    this.overTimeWorkMinutes = Math.round(v * MINUTES_PER_HOUR);
+    this.overtimeWorkMinutes = Math.round(v * MINUTES_PER_HOUR);
   }
 }

@@ -1,3 +1,106 @@
+/*****************************************************************************
+ * ArrangementNotification Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
+ * - Model representing arrangement notifications for employees extending SiteOperationScheduleDetail.
+ * - The `docId` is fixed to allow recreation of documents.
+ * ---------------------------------------------------------------------------
+ * [INHERIT]
+ * @props {string} id - Employee or Outsourcer document ID
+ * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
+ * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
+ * @props {number} amount - Number of placements (always fixed at 1)
+ * @props {Date} dateAt - Placement date
+ * @props {string} siteId - Site ID
+ * @props {string} shiftType - `DAY` or `NIGHT`
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {boolean} isStartNextDay - Next day start flag
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
+ * @props {boolean} isQualificated - Qualified flag
+ * @props {boolean} isOjt - OJT flag
+ * @props {string} siteOperationScheduleId - Site Operation Schedule ID
+ *
+ * [REMOVED]
+ * @props {boolean} hasNotification - Notification flag
+ *
+ * [ADDED]
+ * @props {Date} confirmedAt - Confirmation date and time
+ * @props {string} arrivedAt - Arrival time (HH:MM format)
+ * @props {string} leavedAt - Leave time (HH:MM format)
+ * @props {string} actualStartTime - Actual start time (HH:MM format)
+ * @props {string} actualEndTime - Actual end time (HH:MM format)
+ * @props {number} actualBreakMinutes - Actual break time (minutes)
+ * @props {string} status - Arrangement notification status
+ * ---------------------------------------------------------------------------
+ * [INHERIT]
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
+ * @computed {Date} startAt - Start date and time (Date object)
+ * - Returns a Date object with `startTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * @computed {Date} endAt - End date and time (Date object)
+ * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isSpansNextDay` is true, add 1 day.
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
+ * - `true` if `startTime` is later than `endTime`
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time)
+ * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
+ * @computed {string} workerId - Worker ID
+ * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
+ * @computed {string|null} employeeId - Employee ID (null if not applicable)
+ * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
+ *
+ * [REMOVED]
+ * @computed {string} notificationKey - Notification key
+ *
+ * [ADDED]
+ * @computed {Date} actualStartAt - Actual start date and time (Date object)
+ * - Returns a Date object with `actualStartTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * @computed {Date} actualEndAt - Actual end date and time (Date object)
+ * - Returns a Date object with `actualEndTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * - If `isSpansNextDay` is true, add 1 day.
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding actual break time)
+ * - Calculated as the difference between `actualEndAt` and `actualStartAt` minus `actualBreakMinutes`
+ * - Note: Overrides the inherited `totalWorkMinutes`.
+ * ---------------------------------------------------------------------------
+ * [INHERIT]
+ * @accessor {number} breakHours - Break time in hours
+ * @accessor {number} overtimeWorkHours - Overtime work in hours
+ * ---------------------------------------------------------------------------
+ * [ADDED]
+ * @getter {boolean} isTemporary - Temporary status flag
+ * @getter {boolean} isArranged - Arranged status flag
+ * @getter {boolean} isConfirmed - Confirmed status flag
+ * @getter {boolean} isArrived - Arrived status flag
+ * @getter {boolean} isLeaved - Leaved status flag
+ * ---------------------------------------------------------------------------
+ * @method create - Override to fix `docId` for recreation
+ * - Ensures `docId` is set to `${siteOperationScheduleId}-${workerId}`.
+ * - Allows recreation of ArrangementNotification documents.
+ * @method update - Disabled
+ * - Direct updates to ArrangementNotification are not allowed.
+ * - Throws an error if called.
+ * @method toTemporary - Change status to `TEMPORARY`
+ * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, and resets relevant timestamps.
+ * - Updates `status` to `TEMPORARY`.
+ * @method toArranged - Change status to `ARRANGED`
+ * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, and resets relevant timestamps.
+ * - Updates `status` to `ARRANGED`.
+ * @method toConfirmed - Change status to `CONFIRMED`
+ * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, sets `confirmedAt` to current datetime, and resets relevant timestamps.
+ * - Updates `status` to `CONFIRMED`.
+ * @method toArrived - Change status to `ARRIVED`
+ * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, sets `arrivedAt` to current datetime, and retains or sets `confirmedAt`.
+ * - Updates `status` to `ARRIVED`.
+ * @method toLeaved - Change status to `LEAVED`
+ * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, sets `leavedAt` to current datetime, and retains or sets `confirmedAt` and `arrivedAt`.
+ * - Updates `status` to `LEAVED`.
+ * @method fetchDocsBySiteOperationScheduleId (static) - Get documents by `siteOperationScheduleId`.
+ * @method bulkDelete (static) - Bulk delete arrangement notifications by `siteOperationScheduleId`.
+ *****************************************************************************/
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { getDateAt, ContextualError } from "./utils/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -11,49 +114,38 @@ import {
 } from "./constants/arrangement-notification-status.js";
 import { runTransaction } from "firebase/firestore";
 
-/**
- * @file ArrangementNotification.js
- * @description ArrangementNotification class
- * - Notifies employees about their work arrangements.
- * - The `docId` is the unique identifier for each notification document.
- *  - The document must be overwritten if it already exists.
- */
+const classProps = {
+  ...SiteOperationScheduleDetail.classProps,
+  confirmedAt: defField("dateAt", { label: "配置確認日時" }),
+  arrivedAt: defField("time", { label: "上番日時" }),
+  leavedAt: defField("time", { label: "下番日時" }),
+  actualStartTime: defField("time", {
+    label: "実際の開始時刻",
+    required: true,
+  }),
+  actualEndTime: defField("time", {
+    label: "実際の終了時刻",
+    required: true,
+  }),
+  actualBreakMinutes: defField("breakMinutes", {
+    default: 60,
+    required: true,
+  }),
+  status: defField("arrangementNotificationStatus", { required: true }),
+};
+
 export default class ArrangementNotification extends SiteOperationScheduleDetail {
   static className = "配置通知";
   static collectionPath = "ArrangementNotifications";
   static useAutonumber = false;
   static logicalDelete = false;
-  static classProps = {
-    ...SiteOperationScheduleDetail.classProps,
-    /** 配置確認日時 */
-    confirmedAt: defField("dateAt", { label: "配置確認日時" }),
-    /** 上番日時 */
-    arrivedAt: defField("time", { label: "上番日時" }),
-    /** 下番日時 */
-    leavedAt: defField("time", { label: "下番日時" }),
-    /** 実際の開始時刻 */
-    actualStartTime: defField("time", {
-      label: "実際の開始時刻",
-      required: true,
-    }),
-    /** 実際の終了時刻 */
-    actualEndTime: defField("time", {
-      label: "実際の終了時刻",
-      required: true,
-    }),
-    /** 実際の休憩時間（分） */
-    actualBreakMinutes: defField("breakMinutes", {
-      default: 60,
-      required: true,
-    }),
-    status: defField("arrangementNotificationStatus", { required: true }),
-  };
+  static classProps = classProps;
 
   static STATUS = ARRANGEMENT_NOTIFICATION_STATUS;
 
-  afterInitialize() {
+  afterInitialize(item = {}) {
     // Define computed properties that are defined on SiteOperationScheduleDetail
-    super.afterInitialize();
+    super.afterInitialize(item);
 
     // Define additional computed properties specific to ArrangementNotification
     Object.defineProperties(this, {
@@ -147,7 +239,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
         throw new Error("siteOperationScheduleId and workerId are required");
       }
       const docId = `${this.siteOperationScheduleId}-${this.workerId}`;
-      await super.create({ ...updateOptions, docId });
+      return await super.create({ ...updateOptions, docId });
     } catch (error) {
       throw new ContextualError(error.message, context);
     }

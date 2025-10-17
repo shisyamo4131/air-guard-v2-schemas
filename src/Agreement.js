@@ -1,126 +1,76 @@
+/*****************************************************************************
+ * Agreement Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
+ * A class for managing agreement details based on BaseClass.
+ * - Combines properties from WorkingResult and UnitPrice.
+ * ---------------------------------------------------------------------------
+ * [from WorkingResult.js]
+ * @props {Date} dateAt - Effective start date
+ * - The date when this agreement becomes effective.
+ * - This field holds only the date, with the time fixed at midnight.
+ * @props {string} dayType - Day type (`WEEKDAY`, `SATURDAY`, `SUNDAY`, `HOLIDAY`)
+ * @props {string} shiftType - Shift type (`DAY`, `NIGHT`)
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break minutes
+ * @props {boolean} isStartNextDay - Next day start flag
+ * @props {number} regulationWorkMinutes - Regulation work minutes
+ * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
+ * - Exceeding this time is considered overtime.
+ * [from UnitPrice.js]
+ * @props {number} unitPriceBase - Base unit price (JPY)
+ * @props {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
+ * @props {number} unitPriceQualified - Qualified unit price (JPY)
+ * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
+ * @props {string} billingUnitType - Billing unit type
+ * ---------------------------------------------------------------------------
+ * [from WorkingResult.js]
+ * @computed {string} key - Unique key combining `date` and `shiftType`
+ * - A unique identifier for the agreement, combining `date` and `shiftType`.
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
+ * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
+ * @computed {Date} startAt - Start date and time (Date object)
+ * - Returns a Date object with `startTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * @computed {Date} endAt - End date and time (Date object)
+ * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * - If `isSpansNextDay` is true, add 1 day.
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
+ * - `true` if `startTime` is later than `endTime`
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time)
+ * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
+ * @computed {number} overtimeWorkMinutes - Overtime work in minutes
+ * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
+ * - Overtime work is not negative; the minimum is 0.
+ * ---------------------------------------------------------------------------
+ * @accessor {number} startHour - Start hour (0-23)
+ * - Extracted from `startTime`.
+ * @accessor {number} startMinute - Start minute (0-59)
+ * - Extracted from `startTime`.
+ * @accessor {number} endHour - End hour (0-23)
+ * - Extracted from `endTime`.
+ * @accessor {number} endMinute - End minute (0-59)
+ * - Extracted from `endTime`.
+ *****************************************************************************/
 import { BaseClass } from "air-firebase-v2";
-import { defField } from "./parts/fieldDefinitions.js";
+import {
+  classProps as workingResultClassProps,
+  accessors as workingResultAccessors,
+} from "./WorkingResult.js";
+import { classProps as unitPriceClassProps } from "./UnitPrice.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
-import { getDateAt } from "./utils/index.js";
 
+const classProps = {
+  ...workingResultClassProps,
+  ...unitPriceClassProps,
+};
 export default class Agreement extends BaseClass {
   static className = "取極め";
-  static classProps = {
-    /**
-     * 適用開始日
-     * - 本来であれば `from` が妥当だが、SiteOperationSchedule や OperationResultDetail クラスとの
-     *   互換性を保つために `dateAt` とする。
-     * - `dateAt` は、日付のみを保持し、時刻は 0時に固定。
-     */
-    dateAt: defField("dateAt", {
-      label: "適用開始日",
-      required: true,
-      // 既定値は当日日付（時刻は0時）とする
-      default: () => {
-        const date = new Date();
-        date.setHours(0, 0, 0, 0);
-        return date;
-      },
-    }),
-    /**
-     * 曜日区分
-     * - 当該取極めが適用される曜日の区分。
-     * - `DAY_TYPE` で定義された値を使用。
-     * - `WEEKDAY`, `SATURDAY`, `SUNDAY`, `HOLIDAY` のいずれか。
-     */
-    dayType: defField("dayType", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 勤務区分
-     * - 当該取極めが適用される勤務区分。
-     * - `SHIFT_TYPE` で定義された値を使用。
-     * - `DAY`, `NIGHT` のいずれか。
-     */
-    shiftType: defField("shiftType", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 開始時刻（HH:MM形式）
-     */
-    startTime: defField("time", {
-      label: "開始時刻",
-      required: true,
-      default: "08:00",
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 終了時刻（HH:MM形式）
-     */
-    endTime: defField("time", {
-      label: "終了時刻",
-      required: true,
-      default: "17:00",
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 規定実働時間（分）
-     * - `unitPrice`(または `unitPriceQualified`) で定められた単価に対する最大実働時間。
-     * - この時間を超えると、残業扱いとなる。
-     */
-    regulationWorkMinutes: defField("regulationWorkMinutes", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 休憩時間（分）
-     * - `startTime` と `endTime` の間に取得される休憩時間（分）。
-     * - `totalWorkMinutes` の計算に使用される。
-     */
-    breakMinutes: defField("breakMinutes", {
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 基本単価（円）
-     */
-    unitPrice: defField("price", {
-      label: "基本単価",
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 時間外単価（円/時間）
-     * - `regulationWorkMinutes` を超える時間に対して適用される単価。
-     */
-    overtimeUnitPrice: defField("price", {
-      label: "時間外単価",
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 資格者単価（円）
-     * - 資格者の場合に適用される単価。
-     */
-    unitPriceQualified: defField("price", {
-      label: "資格者単価",
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 資格者時間外単価（円/時間）
-     * - 資格者の `regulationWorkMinutes` を超える時間に対して適用される単価。
-     */
-    overtimeUnitPriceQualified: defField("price", {
-      label: "資格者時間外単価",
-      required: true,
-      colsDefinition: { cols: 12, sm: 6 },
-    }),
-    /**
-     * 請求単位
-     * - `BILLING_UNIT_TYPE` で定義された請求単位。
-     */
-    billingUnitType: defField("billingUnitType", { required: true }),
-  };
+  static classProps = classProps;
 
   /** HEADERS */
   static headers = [
@@ -169,15 +119,15 @@ export default class Agreement extends BaseClass {
       children: [
         {
           title: "単価",
-          key: "unitPrice",
-          value: (item) => item.unitPrice.toLocaleString(),
+          key: "unitPriceBase",
+          value: (item) => item.unitPriceBase.toLocaleString(),
           align: "center",
           sortable: false,
         },
         {
           title: "時間外",
-          key: "overtimeUnitPrice",
-          value: (item) => item.overtimeUnitPrice.toLocaleString(),
+          key: "overtimeUnitPriceBase",
+          value: (item) => item.overtimeUnitPriceBase.toLocaleString(),
           align: "center",
           sortable: false,
         },
@@ -212,96 +162,10 @@ export default class Agreement extends BaseClass {
     },
   ];
 
-  afterInitialize() {
-    Object.defineProperties(this, {
-      key: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          return `${this.date}-${this.shiftType}`;
-        },
-        set: () => {},
-      },
-      /**
-       * 日付文字列（YYYY-MM-DD形式）
-       * - `dateAt` を基に、ISO 形式の文字列から日付部分のみを抽出して返す。
-       */
-      date: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          if (!this.dateAt) return "";
-          const year = this.dateAt.getFullYear();
-          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
-          const day = String(this.dateAt.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        },
-        set: (v) => {},
-      },
-      /**
-       * 開始日時（Date オブジェクト）
-       * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
-       */
-      startAt: {
-        configurable: true,
-        enumerable: true,
-        get: () => getDateAt(this.dateAt, this.startTime),
-        set: (v) => {},
-      },
-      /**
-       * 終了日時（Date オブジェクト）
-       * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
-       */
-      endAt: {
-        configurable: true,
-        enumerable: true,
-        get: () => getDateAt(this.dateAt, this.endTime),
-        set: (v) => {},
-      },
-      /**
-       * 日付をまたぐかどうかを表すフラグ
-       * - `startTime` が `endTime` よりも遅い場合、true とする。
-       */
-      isSpansNextDay: {
-        configurable: true,
-        enumerable: true,
-        get: () => this.startTime > this.endTime,
-        set: (v) => {},
-      },
-      /**
-       * 総実働時間（分）
-       * - `startAt` と `endAt` の差から休憩時間を引いた値。
-       * - `startAt` と `endAt` の差が負の場合は 0を返す。
-       */
-      totalWorkMinutes: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          const start = this.startAt;
-          const end = this.endAt;
-          const breakMinutes = this.breakMinutes || 0;
-          const diff = (end - start) / (1000 * 60); // ミリ秒を分に変換
-          return Math.max(0, diff - breakMinutes);
-        },
-        set: (v) => {},
-      },
-      /**
-       * 残業時間（分）
-       * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値。
-       * - 残業時間は負にならないように 0 を下限とする。
-       */
-      overtimeWorkMinutes: {
-        configurable: true,
-        enumerable: true,
-        get: () => {
-          return Math.max(
-            0,
-            this.totalWorkMinutes - this.regulationWorkMinutes
-          );
-        },
-        set: (v) => {},
-      },
-    });
+  beforeInitialize(item = {}) {
+    super.beforeInitialize(item);
+    /** Computed properties */
+    workingResultAccessors(this);
   }
 
   /**

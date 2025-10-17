@@ -2,7 +2,10 @@
  * OperationResultDetail Model ver 1.0.0
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
- * - Extends OperationDetail
+ * - Model representing the details of an operation result.
+ * - Extends OperationDetail.
+ * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @props {string} id - Employee or Outsourcer document ID
  * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
  * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
@@ -18,6 +21,7 @@
  * @props {boolean} isQualificated - Qualified flag
  * @props {boolean} isOjt - OJT flag
  * --------------------------------------------------------------------------
+ * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {Date} startAt - Start date and time (Date object)
  * - Returns a Date object with `startTime` set based on `dateAt`.
@@ -34,6 +38,7 @@
  * @computed {string|null} employeeId - Employee ID (null if not applicable)
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
  * --------------------------------------------------------------------------
+ * [INHERIT]
  * @accessor {number} breakHours - Break time in hours
  * @accessor {number} overtimeHours - Overtime work in hours
  *****************************************************************************/
@@ -58,32 +63,4 @@ export default class OperationResultDetail extends OperationDetail {
   static className = "稼働実績明細";
   static classProps = classProps;
   static headers = headers;
-
-  /**
-   * Override `beforeInitialize`.
-   * - Define computed properties.
-   * @param {*} item
-   */
-  beforeInitialize(item = {}) {
-    super.beforeInitialize(item);
-
-    /** Computed properties */
-    Object.defineProperties(this, {
-      /**
-       * overtimeMinutes
-       * - Returns diff
-       */
-      overtimeMinutes: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return Math.max(
-            0,
-            this.totalWorkMinutes - this.regulationWorkMinutes
-          );
-        },
-        set(v) {},
-      },
-    });
-  }
 }

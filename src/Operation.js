@@ -15,6 +15,9 @@
  * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {number} regulationWorkMinutes - Regulation work minutes
+ * - Indicates the maximum working time treated as regular working hours.
+ * - A new value will be synchronized to all `employees` and `outsourcers`.
  * @props {number} requiredPersonnel - Required number of personnel
  * @props {boolean} qualificationRequired - Qualification required flag
  * @props {string} workDescription - Work description
@@ -31,6 +34,7 @@
  * - If `isStartNextDay` is true, add 1 day.
  * @computed {Date} endAt - End date and time (Date object)
  * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
  * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
  * - `true` if `startTime` is later than `endTime`
@@ -55,10 +59,14 @@
 import FireModel from "air-firebase-v2";
 import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { getDateAt, ContextualError } from "./utils/index.js";
+import { ContextualError } from "./utils/index.js";
 import { DAY_TYPE_DEFAULT, getDayType } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
+import {
+  classProps as workingResultClassProps,
+  accessors as workingResultAccessors,
+} from "./WorkingResult.js";
 
 const classProps = {
   siteId: defField("siteId", {
@@ -71,26 +79,7 @@ const classProps = {
       },
     },
   }),
-  dateAt: defField("dateAt", { label: "日付", required: true }),
-  shiftType: defField("shiftType", {
-    required: true,
-    colsDefinition: { cols: 12 },
-  }),
-  startTime: defField("time", {
-    label: "開始時刻",
-    required: true,
-    colsDefinition: { cols: 12, sm: 6 },
-  }),
-  endTime: defField("time", {
-    label: "終了時刻",
-    required: true,
-    colsDefinition: { cols: 12, sm: 6 },
-  }),
-  breakMinutes: defField("breakMinutes", {
-    default: 60,
-    required: true,
-  }),
-  isStartNextDay: defField("check", { label: "翌日開始" }),
+  ...workingResultClassProps, // Inherited from WorkingResult.js
   requiredPersonnel: defField("number", {
     label: "必要人数",
     required: true,
@@ -102,6 +91,9 @@ const classProps = {
   outsourcers: defField("array", {
     customClass: OperationDetail,
   }),
+  /** Override `dayType` defined in WorkingResult.js to be hidden */
+  // `dayType` should be calculated based on `dateAt` at this class.
+  dayType: defField("dayType", { hidden: true }),
 };
 export default class Operation extends FireModel {
   static className = "稼働ベース";
@@ -114,78 +106,54 @@ export default class Operation extends FireModel {
   static SHIFT_TYPE_DAY = SHIFT_TYPE.DAY;
   static SHIFT_TYPE_NIGHT = SHIFT_TYPE.NIGHT;
 
-  /***************************************************************************
-   * AFTER INITIALIZE
-   ***************************************************************************/
-  afterInitialize() {
+  /**
+   * Override `afterInitialize`.
+   */
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
+
+    /** Define computed properties from WorkingResult.js */
+    workingResultAccessors(this);
+
+    /** Override `dayType` property to computed property */
+    // `dayType` should be calculated based on `dateAt` at this class.
+    Object.defineProperty(this, "dayType", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        if (!this.dateAt) return DAY_TYPE_DEFAULT;
+        return getDayType(this.dateAt);
+      },
+      set(v) {},
+    });
+
+    /**
+     * TRIGGER FOR SYNCHRONIZE REGULATION WORK MINUTES
+     * `regulationWorkMinutes` should be synchronized to all employees and
+     * outsourcers when it is changed.
+     */
+    let _regulationWorkMinutes = this.regulationWorkMinutes;
+    Object.defineProperty(this, "regulationWorkMinutes", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return _regulationWorkMinutes;
+      },
+      set(value) {
+        const oldValue = _regulationWorkMinutes;
+        _regulationWorkMinutes = value;
+        if (oldValue !== value) {
+          this.employees.forEach((emp) => (emp.regulationWorkMinutes = value));
+          this.outsourcers.forEach(
+            (out) => (out.regulationWorkMinutes = value)
+          );
+        }
+      },
+    });
+
     /** define computed properies */
     Object.defineProperties(this, {
-      /** dateAt をもとに YYYY-MM-DD 形式の日付文字列を返す。 */
-      date: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          if (!this.dateAt) return "";
-          const year = this.dateAt.getFullYear();
-          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
-          const day = String(this.dateAt.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        },
-        set(v) {},
-      },
-      /** dateAt をもとに曜日区分を返す。 */
-      dayType: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          if (!this.dateAt) return DAY_TYPE_DEFAULT;
-          return getDayType(this.dateAt);
-        },
-        set(v) {},
-      },
-      /**
-       * 開始日時（Date オブジェクト）
-       * - `dateAt` を基に、`startTime` を設定した Date オブジェクトを返す。
-       */
-      startAt: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const dateOffset = this.isStartNextDay ? 1 : 0;
-          return getDateAt(this.dateAt, this.startTime, dateOffset);
-        },
-        set(v) {},
-      },
-      /**
-       * 終了日時（Date オブジェクト）
-       * - `dateAt` を基に、`endTime` を設定した Date オブジェクトを返す。
-       * - `isSpansNextDay` が true の場合は翌日の同時刻を返す。
-       */
-      endAt: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const dateOffset =
-            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
-          return getDateAt(this.dateAt, this.endTime, dateOffset);
-        },
-        set(v) {},
-      },
-      /**
-       * 開始日から終了日にかけて日付をまたぐかどうかのフラグ
-       * - `startTime` が `endTime` よりも遅い場合 true
-       */
-      isSpansNextDay: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.startTime > this.endTime;
-        },
-        set(v) {},
-      },
-      /**
-       * `employees` プロパティから従業員のIDを取得するためのアクセサ
-       */
+      /** Returns an array of employee IDs */
       employeeIds: {
         configurable: true,
         enumerable: true,
@@ -194,9 +162,7 @@ export default class Operation extends FireModel {
         },
         set(v) {},
       },
-      /**
-       * `outsourcers` プロパティから外注のIDを取得するためのアクセサ
-       */
+      /** Returns an array of outsourcer IDs */
       outsourcerIds: {
         configurable: true,
         enumerable: true,
@@ -205,6 +171,7 @@ export default class Operation extends FireModel {
         },
         set(v) {},
       },
+      /** Returns the count of assigned employees */
       employeesCount: {
         configurable: true,
         enumerable: true,
@@ -213,6 +180,7 @@ export default class Operation extends FireModel {
         },
         set(v) {},
       },
+      /** Returns the count of assigned outsourcers (sum of amounts) */
       outsourcersCount: {
         configurable: true,
         enumerable: true,
@@ -221,12 +189,7 @@ export default class Operation extends FireModel {
         },
         set(v) {},
       },
-      /**
-       * 必要人数（requiredPersonnel）に対して、実際に割り当てられた従業員と外注先の合計が不足しているかどうかを示すアクセサ
-       * - `employees` と `outsourcers` の合計人数が `requiredPersonnel` より少ない場合に `true` を返す。
-       * - `employees` と `outsourcers` の合計人数が `requiredPersonnel` 以上の場合は `false` を返す。
-       * - `requiredPersonnel` が未設定の場合は `false` を返す。
-       */
+      /** Returns whether there is a personnel shortage */
       isPersonnelShortage: {
         configurable: true,
         enumerable: true,
@@ -237,6 +200,7 @@ export default class Operation extends FireModel {
         },
         set(v) {},
       },
+      /** Returns a combined array of employees and outsourcers */
       workers: {
         configurable: true,
         enumerable: true,
@@ -247,6 +211,7 @@ export default class Operation extends FireModel {
       },
     });
 
+    /** Define custom methods for employees and outsourcers */
     const self = this;
     Object.defineProperties(this.employees, {
       /**
@@ -437,6 +402,8 @@ export default class Operation extends FireModel {
         enumerable: false,
       },
     });
+    /** Remove unnecessary properties */
+    delete this.key; // From workingResult.js
   }
 
   /***************************************************************************
@@ -513,14 +480,12 @@ export default class Operation extends FireModel {
   }
 
   /**
-   * Override `beforeEdit`.
+   * Override `beforeUpdate`.
    * - Synchronize `siteId`, `dateAt`, `shiftType`, `startTime`, `isStartNextDay`,
-   *   `endTime`, and `breakMinutes` of all employees and outsourcers before create or update
-   *   `SiteOperationSchedule` document.
-   * - All `SiteOperationScheduleDetail` instances should be synchronized with the `SiteOperationSchedule`.
+   *   `endTime`, and `breakMinutes` of all employees and outsourcers before update.
    * @returns {Promise<void>}
    */
-  beforeEdit() {
+  beforeUpdate() {
     const keys1 = ["siteId", "dateAt", "shiftType"];
     const keys2 = ["startTime", "isStartNextDay", "endTime", "breakMinutes"];
     const syncKeys = [...keys1, ...keys2];
@@ -626,6 +591,7 @@ export default class Operation extends FireModel {
         this.outsourcers.remove(workerId);
       }
     } catch (error) {
+      console.error(error.message);
       throw new ContextualError("Failed to remove worker", {
         method: "removeWorker",
         className: "SiteOperationSchedule",

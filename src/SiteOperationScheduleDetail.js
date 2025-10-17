@@ -2,7 +2,10 @@
  * SiteOperationScheduleDetail ver 1.0.0
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
- * - Extends OperationDetail
+ * - Model representing the details of a site operation schedule.
+ * - Inherits from OperationDetail.
+ * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @props {string} id - Employee or Outsourcer document ID
  * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
  * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
@@ -17,9 +20,12 @@
  * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isQualificated - Qualified flag
  * @props {boolean} isOjt - OJT flag
+ *
+ * [ADDED]
  * @props {string} siteOperationScheduleId - Site Operation Schedule ID
  * @props {boolean} hasNotification - Notification flag
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {Date} startAt - Start date and time (Date object)
  * - Returns a Date object with `startTime` set based on `dateAt`.
@@ -35,10 +41,13 @@
  * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
  * @computed {string|null} employeeId - Employee ID (null if not applicable)
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
+ *
+ * [ADDED]
  * @computed {string} notificationKey - Notification key
  * ---------------------------------------------------------------------------
+ * [INHERIT]
  * @accessor {number} breakHours - Break time in hours
- * @accessor {number} overTimeHours - Overtime work in hours
+ * @accessor {number} overtimeWorkHours - Overtime work in hours
  *****************************************************************************/
 import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -53,8 +62,13 @@ export default class SiteOperationScheduleDetail extends OperationDetail {
   static collectionPath = "SiteOperationScheduleDetails";
   static classProps = classProps;
 
-  afterInitialize() {
-    super.afterInitialize();
+  /**
+   * Override `afterInitialize`
+   */
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
+
+    /** NOTIFICATION KEY */
     Object.defineProperties(this, {
       notificationKey: {
         configurable: true,
@@ -62,9 +76,7 @@ export default class SiteOperationScheduleDetail extends OperationDetail {
         get() {
           return `${this.siteOperationScheduleId}-${this.workerId}`;
         },
-        set() {
-          // do nothing
-        },
+        set() {},
       },
     });
   }
