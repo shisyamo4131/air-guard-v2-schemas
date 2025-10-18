@@ -141,55 +141,44 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          const values = {
+          const createInitialValues = () => ({
             amount: 0,
             regularTimeWorkMinutes: 0,
             overtimeWorkMinutes: 0,
             totalWorkMinutes: 0,
-          };
+          });
+
+          const createCategoryStructure = () => ({
+            ...createInitialValues(),
+            ojt: createInitialValues(),
+          });
+
           const result = {
-            base: {
-              ...values,
-              ojt: { ...values },
-            },
-            qualificated: {
-              ...values,
-              ojt: {
-                ...values,
-              },
-            },
-            total: {
-              ...values,
-              ojt: { ...values },
-            },
+            base: createCategoryStructure(),
+            qualificated: createCategoryStructure(),
+            total: createCategoryStructure(),
           };
-          this.workers.reduce((acc, worker) => {
+
+          // 各カテゴリに値を追加する関数
+          const addToCategory = (categoryObj, worker, isOjt) => {
+            const target = isOjt ? categoryObj.ojt : categoryObj;
+            target.amount += 1;
+            target.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
+            target.overtimeWorkMinutes += worker.overtimeWorkMinutes;
+            target.totalWorkMinutes += worker.totalWorkMinutes;
+          };
+
+          this.workers.forEach((worker) => {
             const category = worker.isQualificated ? "qualificated" : "base";
-            if (!worker.isOjt) {
-              acc[category].amount += 1;
-              acc[category].regularTimeWorkMinutes +=
-                worker.regularTimeWorkMinutes;
-              acc[category].overtimeWorkMinutes += worker.overtimeWorkMinutes;
-              acc[category].totalWorkMinutes += worker.totalWorkMinutes;
-              acc.total.amount += 1;
-              acc.total.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
-              acc.total.overtimeWorkMinutes += worker.overtimeWorkMinutes;
-              acc.total.totalWorkMinutes += worker.totalWorkMinutes;
-            } else {
-              acc[category].ojt.amount += 1;
-              acc[category].ojt.regularTimeWorkMinutes +=
-                worker.regularTimeWorkMinutes;
-              acc[category].ojt.overtimeWorkMinutes +=
-                worker.overtimeWorkMinutes;
-              acc[category].ojt.totalWorkMinutes += worker.totalWorkMinutes;
-              acc.total.ojt.amount += 1;
-              acc.total.ojt.regularTimeWorkMinutes +=
-                worker.regularTimeWorkMinutes;
-              acc.total.ojt.overtimeWorkMinutes += worker.overtimeWorkMinutes;
-              acc.total.ojt.totalWorkMinutes += worker.totalWorkMinutes;
-            }
-            return acc;
-          }, result);
+            const isOjt = worker.isOjt;
+
+            // 該当カテゴリ（base/qualificated）に追加
+            addToCategory(result[category], worker, isOjt);
+
+            // 全体合計に追加
+            addToCategory(result.total, worker, isOjt);
+          });
+
           return result;
         },
         set(v) {},
@@ -198,35 +187,50 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          const values = {
-            amount: 0, // Number of workers or total work minutes if billing-type is `PER_HOUR`
-            overtime: 0, // Total overtime minutes
+          const createInitialValues = () => ({
+            amount: 0,
+            overtime: 0,
             total: 0,
-          };
+          });
+
           const result = {
-            base: { ...values },
-            qualificated: { ...values },
-            total: { ...values },
+            base: createInitialValues(),
+            qualificated: createInitialValues(),
+            total: createInitialValues(),
           };
+
           const stats = this.statistics;
-          for (const key of ["base", "qualificated", "total"]) {
-            const unitPriceKey =
-              key === "base" ? "unitPriceBase" : "unitPriceQualified";
-            const overtimeUnitPriceKey =
-              key === "base"
-                ? "overtimeUnitPriceBase"
-                : "overtimeUnitPriceQualified";
-            if (this.billingUnitType === BILLING_UNIT_TYPE.PER_HOUR) {
-              result[key].amount = stats[key].totalWorkMinutes;
-            } else {
-              result[key].amount = stats[key].amount;
-            }
-            result[key].overtime =
-              (stats[key].overtimeWorkMinutes * this[overtimeUnitPriceKey]) /
-              60;
-            result[key].total =
-              result[key].amount * this[unitPriceKey] + result[key].overtime;
-          }
+          const isPerHour = this.billingUnitType === BILLING_UNIT_TYPE.PER_HOUR;
+
+          // 基本・有資格それぞれの計算
+          ["base", "qualificated"].forEach((category) => {
+            const categoryStats = stats[category];
+            const unitPrice =
+              this[`unitPrice${category === "base" ? "Base" : "Qualified"}`];
+            const overtimeUnitPrice =
+              this[
+                `overtimeUnitPrice${category === "base" ? "Base" : "Qualified"}`
+              ];
+
+            // 作業量の計算（時間単価 or 人数単価）
+            result[category].amount = isPerHour
+              ? categoryStats.totalWorkMinutes
+              : categoryStats.amount;
+
+            // 残業代の計算
+            result[category].overtime =
+              (categoryStats.overtimeWorkMinutes * overtimeUnitPrice) / 60;
+
+            // 合計金額の計算
+            result[category].total =
+              result[category].amount * unitPrice + result[category].overtime;
+
+            // 全体の合計に加算
+            result.total.amount += result[category].amount;
+            result.total.overtime += result[category].overtime;
+            result.total.total += result[category].total;
+          });
+
           return result;
         },
         set(v) {},
