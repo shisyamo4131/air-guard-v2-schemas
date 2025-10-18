@@ -486,13 +486,23 @@ export default class Operation extends FireModel {
    * @returns {Promise<void>}
    */
   beforeUpdate() {
-    const keys1 = ["siteId", "dateAt", "shiftType"];
+    const keys1 = ["siteId", "date", "shiftType"];
     const keys2 = ["startTime", "isStartNextDay", "endTime", "breakMinutes"];
     const syncKeys = [...keys1, ...keys2];
 
     const isDetailShouldBeSynced = syncKeys.some(
       (key) => this[key] !== this._beforeData?.[key]
     );
+
+    // for debug.
+    // syncKeys.forEach((key) => {
+    //   if (this[key] !== this._beforeData?.[key]) {
+    //     console.log(`Operation.beforeUpdate: ${key} changed:`, {
+    //       before: this._beforeData?.[key],
+    //       after: this[key],
+    //     });
+    //   }
+    // });
 
     // If no relevant properties have changed, skip synchronization.
     if (!isDetailShouldBeSynced) return Promise.resolve();

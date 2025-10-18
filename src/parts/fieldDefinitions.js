@@ -121,11 +121,6 @@ const generalDefinitions = {
     label: "時刻",
     component: {
       name: "air-time-picker-input",
-      attrs: {
-        pickerProps: {
-          // format: "24hr",
-        },
-      },
     },
   },
 };
