@@ -28,9 +28,9 @@
  * - Array of `OperationDetail` instances representing assigned outsourcers
  *
  * [ADDED]
- * @props {number} unitPrice - Basic unit price
+ * @props {number} unitPriceBase - Basic unit price
  * - Unit price for work within regulation work minutes.
- * @props {number} overtimeUnitPrice - Overtime unit price
+ * @props {number} overtimeUnitPriceBase - Overtime unit price
  * - Unit price for overtime work exceeding regulation work minutes.
  * @props {number} unitPriceQualified - Qualified unit price
  * - Unit price for qualified workers within regulation work minutes.
@@ -78,6 +78,12 @@
  * - Calculated as `amountQualificated` multiplied by `unitPriceQualified`.
  * @computed {number} salesOvertimeQualified - Total qualified overtime sales amount
  * - Calculated as `amountOvertimeMinutesQualified` multiplied by `overtimeUnitPriceQualified`.
+ *
+ * [ADDED]
+ * @computed {object} statistics - Statistics of workers
+ * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
+ * @computed {object} sales - Sales amounts
+ * - Contains sales amounts for base and qualified workers, including overtime breakdowns.
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @states isEmployeesChanged Indicates whether the employees have changed.
@@ -91,6 +97,7 @@
  * @methods changeWorker Changes the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
  *****************************************************************************/
+import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import Operation from "./Operation.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -130,108 +137,60 @@ export default class OperationResult extends Operation {
 
     /** Computed properties */
     Object.defineProperties(this, {
-      amountBase: {
+      statistics: {
         configurable: true,
         enumerable: true,
         get() {
-          return this.workers.filter(
-            ({ isQualificated, isOjt }) => !isQualificated && !isOjt
-          ).length;
-        },
-        set(v) {},
-      },
-      amountQualificated: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.employees.filter(
-            ({ isQualificated, isOjt }) => isQualificated && !isOjt
-          ).length;
-        },
-        set(v) {},
-      },
-      amount: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const base = this.amountBase;
-          const qualificated = this.amountQualificated;
-          return { base, qualificated, total: base + qualificated };
-        },
-        set(v) {},
-      },
-      amountOvertimeMinutesBase: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.workers
-            .filter(({ isQualificated, isOjt }) => !isQualificated && !isOjt)
-            .reduce(
-              (sum, wkr) =>
-                sum +
-                Math.max(wkr.totalWorkMinutes - this.regulationWorkMinutes, 0),
-              0
-            );
-        },
-        set(v) {},
-      },
-      amountOvertimeMinutesQualified: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.workers
-            .filter(({ isQualificated, isOjt }) => isQualificated && !isOjt)
-            .reduce(
-              (sum, wkr) =>
-                sum +
-                Math.max(wkr.totalWorkMinutes - this.regulationWorkMinutes, 0),
-              0
-            );
-        },
-        set(v) {},
-      },
-      amountOvertimeMinutes: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const base = this.amountOvertimeMinutesBase;
-          const qualificated = this.amountOvertimeMinutesQualified;
-          return { base, qualificated, total: base + qualificated };
-        },
-        set(v) {},
-      },
-      salesBase: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.amountBase * this.unitPriceBase;
-        },
-        set(v) {},
-      },
-      salesQualificated: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.amountQualificated * this.unitPriceQualified;
-        },
-        set(v) {},
-      },
-      salesOvertimeBase: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.amountOvertimeMinutesBase * this.overtimeUnitPriceBase;
-        },
-        set(v) {},
-      },
-      salesOvertimeQualified: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return (
-            this.amountOvertimeMinutesQualified *
-            this.overtimeUnitPriceQualified
-          );
+          const values = {
+            amount: 0,
+            regularTimeWorkMinutes: 0,
+            overtimeWorkMinutes: 0,
+            totalWorkMinutes: 0,
+          };
+          const result = {
+            base: {
+              ...values,
+              ojt: { ...values },
+            },
+            qualificated: {
+              ...values,
+              ojt: {
+                ...values,
+              },
+            },
+            total: {
+              ...values,
+              ojt: { ...values },
+            },
+          };
+          this.workers.reduce((acc, worker) => {
+            const category = worker.isQualificated ? "qualificated" : "base";
+            if (!worker.isOjt) {
+              acc[category].amount += 1;
+              acc[category].regularTimeWorkMinutes +=
+                worker.regularTimeWorkMinutes;
+              acc[category].overtimeWorkMinutes += worker.overtimeWorkMinutes;
+              acc[category].totalWorkMinutes += worker.totalWorkMinutes;
+              acc.total.amount += 1;
+              acc.total.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
+              acc.total.overtimeWorkMinutes += worker.overtimeWorkMinutes;
+              acc.total.totalWorkMinutes += worker.totalWorkMinutes;
+            } else {
+              acc[category].ojt.amount += 1;
+              acc[category].ojt.regularTimeWorkMinutes +=
+                worker.regularTimeWorkMinutes;
+              acc[category].ojt.overtimeWorkMinutes +=
+                worker.overtimeWorkMinutes;
+              acc[category].ojt.totalWorkMinutes += worker.totalWorkMinutes;
+              acc.total.ojt.amount += 1;
+              acc.total.ojt.regularTimeWorkMinutes +=
+                worker.regularTimeWorkMinutes;
+              acc.total.ojt.overtimeWorkMinutes += worker.overtimeWorkMinutes;
+              acc.total.ojt.totalWorkMinutes += worker.totalWorkMinutes;
+            }
+            return acc;
+          }, result);
+          return result;
         },
         set(v) {},
       },
@@ -239,17 +198,36 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          const base = this.salesBase;
-          const qualificated = this.salesQualificated;
-          const overtimeBase = this.salesOvertimeBase;
-          const overtimeQualificated = this.salesOvertimeQualified;
-          return {
-            base,
-            qualificated,
-            overtimeBase,
-            overtimeQualificated,
-            total: base + qualificated + overtimeBase + overtimeQualificated,
+          const values = {
+            amount: 0, // Number of workers or total work minutes if billing-type is `PER_HOUR`
+            overtime: 0, // Total overtime minutes
+            total: 0,
           };
+          const result = {
+            base: { ...values },
+            qualificated: { ...values },
+            total: { ...values },
+          };
+          const stats = this.statistics;
+          for (const key of ["base", "qualificated", "total"]) {
+            const unitPriceKey =
+              key === "base" ? "unitPriceBase" : "unitPriceQualified";
+            const overtimeUnitPriceKey =
+              key === "base"
+                ? "overtimeUnitPriceBase"
+                : "overtimeUnitPriceQualified";
+            if (this.billingUnitType === BILLING_UNIT_TYPE.PER_HOUR) {
+              result[key].amount = stats[key].totalWorkMinutes;
+            } else {
+              result[key].amount = stats[key].amount;
+            }
+            result[key].overtime =
+              (stats[key].overtimeWorkMinutes * this[overtimeUnitPriceKey]) /
+              60;
+            result[key].total =
+              result[key].amount * this[unitPriceKey] + result[key].overtime;
+          }
+          return result;
         },
         set(v) {},
       },

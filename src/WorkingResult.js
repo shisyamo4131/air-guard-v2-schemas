@@ -158,10 +158,24 @@ export function accessors(self) {
       set: (v) => {},
     },
     /**
+     * 規定時間内実働時間（分）
+     * - 実際の`totalWorkMinutes`のうち、契約上の`regulationWorkMinutes`以内として扱われる時間。
+     * - 早退などで実働時間が規定時間を下回る場合は`totalWorkMinutes`と同じ。
+     * - 残業で実働時間が規定時間を上回る場合は`regulationWorkMinutes`と同じ。
+     */
+    regularTimeWorkMinutes: {
+      configurable: true,
+      enumerable: true,
+      get: () => {
+        return Math.min(self.totalWorkMinutes, self.regulationWorkMinutes);
+      },
+      set: (v) => {},
+    }
+    /**
      * 残業時間（分）
      * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値。
      * - 残業時間は負にならないように 0 を下限とする。
-     */
+     */,
     overtimeWorkMinutes: {
       configurable: true,
       enumerable: true,
