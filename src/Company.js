@@ -7,6 +7,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import Agreement from "./Agreement.js";
 import SiteOrder from "./SiteOrder.js";
+import RoundSetting from "./RoundSetting.js";
 
 const classProps = {
   companyName: defField("name", { label: "会社名", required: true }),
@@ -52,6 +53,7 @@ const classProps = {
       },
     },
   }),
+  ...RoundSetting.classProps,
 };
 
 export default class Company extends FireModel {
