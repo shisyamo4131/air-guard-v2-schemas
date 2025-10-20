@@ -59,14 +59,14 @@ import {
   classProps as workingResultClassProps,
   accessors as workingResultAccessors,
 } from "./WorkingResult.js";
-import { classProps as unitPriceClassProps } from "./UnitPrice.js";
+import UnitPrice from "./UnitPrice.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 
 const classProps = {
   ...workingResultClassProps,
-  ...unitPriceClassProps,
+  ...UnitPrice.classProps,
 };
 export default class Agreement extends BaseClass {
   static className = "取極め";

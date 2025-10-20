@@ -101,7 +101,7 @@ import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import Operation from "./Operation.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { classProps as unitPriceClassProps } from "./UnitPrice.js";
+import UnitPrice from "./UnitPrice.js";
 
 const classProps = {
   ...Operation.classProps,
@@ -111,7 +111,7 @@ const classProps = {
   outsourcers: defField("array", {
     customClass: OperationResultDetail,
   }),
-  ...unitPriceClassProps,
+  ...UnitPrice.classProps,
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
 };
 
