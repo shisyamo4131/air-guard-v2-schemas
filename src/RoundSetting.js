@@ -56,7 +56,6 @@ export default class RoundSetting {
   /** Static states */
   static _mode = _DEFINITIONS.ROUND.key;
   static set(value) {
-    console.log("RoundSetting.set:", value);
     this.validate(value);
     this._mode = value;
   }

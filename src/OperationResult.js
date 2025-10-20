@@ -215,10 +215,11 @@ export default class OperationResult extends Operation {
                 `overtimeUnitPrice${category === "base" ? "Base" : "Qualified"}`
               ];
 
-            // 作業量の計算（時間単価 or 人数単価）
-            result[category].amount = isPerHour
-              ? categoryStats.totalWorkMinutes
-              : categoryStats.amount;
+            // 基本料金の計算
+            result[category].amount =
+              (isPerHour
+                ? categoryStats.regularTimeWorkMinutes
+                : categoryStats.amount) * unitPrice;
 
             // 残業代の計算
             result[category].overtime =
@@ -226,7 +227,7 @@ export default class OperationResult extends Operation {
 
             // 合計金額の計算
             result[category].total =
-              result[category].amount * unitPrice + result[category].overtime;
+              result[category].amount + result[category].overtime;
           });
 
           // 全体の合計を計算
