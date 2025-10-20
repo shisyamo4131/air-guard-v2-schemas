@@ -9,10 +9,10 @@
  * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
  * @props {string} shiftType - Shift type (`DAY`, `NIGHT`)
  * @props {string} startTime - Start time (HH:MM format)
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
  * @props {number} regulationWorkMinutes - Regulation work minutes
  * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
  * - Exceeding this time is considered overtime.
@@ -60,18 +60,16 @@ export const classProps = {
     label: "開始時刻",
     required: true,
     default: "08:00",
-    colsDefinition: { cols: 12, sm: 6 },
   }),
+  isStartNextDay: defField("check", { label: "翌日開始" }),
   endTime: defField("time", {
     label: "終了時刻",
     required: true,
     default: "17:00",
-    colsDefinition: { cols: 12, sm: 6 },
   }),
   breakMinutes: defField("breakMinutes", {
     required: true,
   }),
-  isStartNextDay: defField("check", { label: "翌日開始" }),
   regulationWorkMinutes: defField("regulationWorkMinutes", {
     required: true,
   }),
@@ -170,13 +168,12 @@ export function accessors(self) {
         return Math.min(self.totalWorkMinutes, self.regulationWorkMinutes);
       },
       set: (v) => {},
-    }
+    },
     /**
      * 残業時間（分）
      * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値。
      * - 残業時間は負にならないように 0 を下限とする。
-     */,
-    overtimeWorkMinutes: {
+     */ overtimeWorkMinutes: {
       configurable: true,
       enumerable: true,
       get: () => {

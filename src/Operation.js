@@ -11,10 +11,10 @@
  * @props {Date} dateAt - Date of operation (placement date)
  * @props {string} shiftType - `DAY` or `NIGHT`
  * @props {string} startTime - Start time (HH:MM format)
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
  * @props {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
  * @props {number} regulationWorkMinutes - Regulation work minutes
  * - Indicates the maximum working time treated as regular working hours.
  * - A new value will be synchronized to all `employees` and `outsourcers`.
