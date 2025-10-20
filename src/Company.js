@@ -60,6 +60,8 @@ const classProps = {
       name: "air-select",
       attrs: {
         items: RoundSetting.ITEMS,
+        hint: "売上金額や消費税の端数処理をどのように行うかを設定します。",
+        persistentHint: true,
       },
     },
   }),
