@@ -10,6 +10,7 @@ export class ContextualError extends Error {
    * @param {string} context.method - メソッド名
    * @param {Object} context.arguments - 引数情報
    * @param {string} context.className - クラス名
+   * @param {Object} context.error - 元のエラーオブジェクト
    * @param {string} context.timestamp - タイムスタンプ
    * @param {Object} context.state - オブジェクトの状態
    */

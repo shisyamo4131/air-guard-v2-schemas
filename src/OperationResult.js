@@ -97,11 +97,14 @@
  * @methods changeWorker Changes the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
  *****************************************************************************/
+import { ContextualError } from "./utils/ContextualError.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import Operation from "./Operation.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
+import Tax from "./tax.js";
 import UnitPrice from "./UnitPrice.js";
+import RoundSetting from "./RoundSetting.js";
 
 const classProps = {
   ...Operation.classProps,
@@ -224,14 +227,32 @@ export default class OperationResult extends Operation {
             // 合計金額の計算
             result[category].total =
               result[category].amount * unitPrice + result[category].overtime;
-
-            // 全体の合計に加算
-            result.total.amount += result[category].amount;
-            result.total.overtime += result[category].overtime;
-            result.total.total += result[category].total;
           });
 
+          // 全体の合計を計算
+          result.total.amount = result.base.amount + result.qualificated.amount;
+          result.total.overtime =
+            result.base.overtime + result.qualificated.overtime;
+          result.total.total = RoundSetting.apply(
+            result.base.total + result.qualificated.total
+          );
           return result;
+        },
+        set(v) {},
+      },
+      tax: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          try {
+            return Tax.calc(this.sales.total.total, this.date);
+          } catch (error) {
+            throw new ContextualError("Failed to calculate tax", {
+              method: "OperationResult.tax (computed)",
+              arguments: { amount: this.sales.total.total, date: this.date },
+              error,
+            });
+          }
         },
         set(v) {},
       },
