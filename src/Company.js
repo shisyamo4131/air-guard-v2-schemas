@@ -53,7 +53,16 @@ const classProps = {
       },
     },
   }),
-  ...RoundSetting.classProps,
+  roundSetting: defField("select", {
+    label: "端数処理",
+    default: RoundSetting.ROUND,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: RoundSetting.ITEMS,
+      },
+    },
+  }),
 };
 
 export default class Company extends FireModel {

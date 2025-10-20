@@ -4,7 +4,6 @@
  * ---------------------------------------------------------------------------
  * - A class for managing rounding settings.
  * - Provides static states for easy access to rounding modes.
- * - Also implements and provides `classProps` for other classes to use.
  * - Can get current rounding mode via `RoundSetting` directly.
  * ---------------------------------------------------------------------------
  * @props {string} operationResultSales - Rounding mode for operation result sales
@@ -16,11 +15,7 @@
  * ---------------------------------------------------------------------------
  * @method static set(value) - Sets the rounding mode
  * @method static validate(value) - Validates the rounding mode
- ****************************************************************************
  */
-import { BaseClass } from "air-firebase-v2";
-import { defField } from "./parts/fieldDefinitions";
-
 const _DEFINITIONS = Object.freeze({
   FLOOR: { key: "FLOOR", label: "切り捨て", order: 0 },
   ROUND: { key: "ROUND", label: "四捨五入", order: 1 },
@@ -37,36 +32,28 @@ const _ITEMS = _ARRAY.map((item) => ({
   value: item.key,
 }));
 
-const _COMPONENT = { name: "air-select", attrs: { items: _ITEMS } };
-
-export default class RoundSetting extends BaseClass {
-  static className = "端数処理設定クラス";
-  static classProps = {
-    roundOperationResultSales: defField("oneLine", {
-      label: "売上端数処理",
-      default: _DEFINITIONS.ROUND.key,
-      component: _COMPONENT,
-    }),
-    roundOperationResultTax: defField("oneLine", {
-      label: "消費税端数処理",
-      default: _DEFINITIONS.ROUND.key,
-      component: _COMPONENT,
-    }),
-  };
-
+export default class RoundSetting {
   /** Provides all rounding modes */
   static FLOOR = _DEFINITIONS.FLOOR.key;
   static ROUND = _DEFINITIONS.ROUND.key;
   static CEIL = _DEFINITIONS.CEIL.key;
 
+  static ITEMS = _ITEMS;
+
   /** Static states */
   static _value = _DEFINITIONS.ROUND.key;
   static set(value) {
+    console.log("RoundSetting.set:", value);
     this.validate(value);
     this._value = value;
   }
   static [Symbol.toPrimitive]() {
     return this._value;
+  }
+
+  static label(value) {
+    this.validate(value);
+    return _DEFINITIONS[value].label;
   }
 
   static validate(value) {
