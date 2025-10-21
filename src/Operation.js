@@ -282,6 +282,24 @@ export default class Operation extends FireModel {
         enumerable: false,
       },
       /**
+       * Changes the details of an existing employee in the employees array.
+       * @param {Object} newEmployee - The updated employee object.
+       * @throws {Error} - If the employee is not found.
+       */
+      change: {
+        value: function (newEmployee) {
+          const index = this.findIndex(
+            (e) => e.workerId === newEmployee.workerId
+          );
+          if (index < 0) {
+            throw new Error("Worker not found in employees.");
+          }
+          this[index] = newEmployee;
+        },
+        writable: false,
+        enumerable: false,
+      },
+      /**
        * Removes the employee corresponding to `employeeId` from this.employees.
        * @param {string} employeeId - The employee's ID
        * @throws {Error} - If the employee ID is not found.
@@ -385,6 +403,24 @@ export default class Operation extends FireModel {
         enumerable: false,
       },
       /**
+       * Changes the details of an existing outsourcer in the outsourcers array.
+       * @param {Object} newOutsourcer - The updated outsourcer object.
+       * @throws {Error} - If the outsourcer is not found.
+       */
+      change: {
+        value: function (newOutsourcer) {
+          const index = this.findIndex(
+            (e) => e.workerId === newOutsourcer.workerId
+          );
+          if (index < 0) {
+            throw new Error("Worker not found in outsourcers.");
+          }
+          this[index] = newOutsourcer;
+        },
+        writable: false,
+        enumerable: false,
+      },
+      /**
        * Removes the outsourcer corresponding to `outsourcerId` from this.outsourcers.
        * - Throws an error for invalid values or if not found.
        * @param {string} outsourcerId - The ID of the outsourcer.
@@ -437,7 +473,7 @@ export default class Operation extends FireModel {
 
   /**
    * Returns a filtered array of workers that have been added.
-   * @returns {Array<SiteOperationScheduleDetail>} - Array of added workers.
+   * @returns {Array<OperationDetail>} - Array of added workers.
    */
   get addedWorkers() {
     const current = this.workers || [];
@@ -450,7 +486,7 @@ export default class Operation extends FireModel {
   /**
    * Returns a filtered array of workers that have been removed.
    * Note: The returned elements do not exist in this.workers.
-   * @returns {Array<SiteOperationScheduleDetail>} - Array of removed workers.
+   * @returns {Array<OperationDetail>} - Array of removed workers.
    */
   get removedWorkers() {
     const before = this._beforeData?.workers || [];
@@ -464,7 +500,7 @@ export default class Operation extends FireModel {
   /**
    * Returns a filtered array of workers that have been updated.
    * - Compares `startTime`, `isStartNextDay`, `endTime`, and `breakMinutes` properties.
-   * @returns {Array<SiteOperationScheduleDetail>} - Array of updated workers.
+   * @returns {Array<OperationDetail>} - Array of updated workers.
    */
   get updatedWorkers() {
     const before = this._beforeData.workers || [];
@@ -547,7 +583,7 @@ export default class Operation extends FireModel {
     } catch (error) {
       throw new ContextualError("Failed to add worker", {
         method: "addWorker",
-        className: "SiteOperationSchedule",
+        className: "Operation",
         arguments: options,
         state: this.toObject(),
         error,
@@ -578,7 +614,29 @@ export default class Operation extends FireModel {
     } catch (error) {
       throw new ContextualError("Failed to move worker position", {
         method: "moveWorker",
-        className: "SiteOperationSchedule",
+        className: "Operation",
+        arguments: options,
+        state: this.toObject(),
+        error,
+      });
+    }
+  }
+
+  /**
+   * Changes the details of a worker.
+   * @param {Object} newWorker - New worker object
+   */
+  changeWorker(newWorker) {
+    try {
+      if (newWorker.isEmployee) {
+        this.employees.change(newWorker);
+      } else {
+        this.outsourcers.change(newWorker);
+      }
+    } catch (error) {
+      throw new ContextualError("Failed to change worker", {
+        method: "changeWorker",
+        className: "Operation",
         arguments: options,
         state: this.toObject(),
         error,
@@ -604,7 +662,7 @@ export default class Operation extends FireModel {
       console.error(error.message);
       throw new ContextualError("Failed to remove worker", {
         method: "removeWorker",
-        className: "SiteOperationSchedule",
+        className: "Operation",
         arguments: { workerId, isEmployee },
         state: this.toObject(),
       });
