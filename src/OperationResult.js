@@ -62,24 +62,6 @@
  * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
  *
  * [ADDED]
- * @computed {number} amountBase - Number of base workers
- * - Count of workers excluding those marked as qualified or OJT.
- * @computed {number} amountOvertimeMinutes - Total overtime minutes for base workers
- * - Sum of overtime minutes for workers excluding those marked as qualified or OJT.
- * @computed {number} amountQualificated - Number of qualified workers
- * - Count of employees marked as qualified, excluding OJT.
- * @computed {number} amountOvertimeMinutesQualified - Total overtime minutes for qualified workers
- * - Sum of overtime minutes for employees marked as qualified, excluding OJT.
- * @computed {number} salesBase - Total base sales amount
- * - Calculated as `amountBase` multiplied by `unitPrice`.
- * @computed {number} salesOvertimeBase - Total base overtime sales amount
- * - Calculated as `amountOvertimeMinutes` multiplied by `overtimeUnitPrice`.
- * @computed {number} salesQualificated - Total qualified sales amount
- * - Calculated as `amountQualificated` multiplied by `unitPriceQualified`.
- * @computed {number} salesOvertimeQualified - Total qualified overtime sales amount
- * - Calculated as `amountOvertimeMinutesQualified` multiplied by `overtimeUnitPriceQualified`.
- *
- * [ADDED]
  * @computed {object} statistics - Statistics of workers
  * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
  * @computed {object} sales - Sales amounts
@@ -98,12 +80,13 @@
  * @methods removeWorker Removes a worker (employee or outsourcer).
  *****************************************************************************/
 import { ContextualError } from "./utils/ContextualError.js";
-import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import Operation from "./Operation.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import Tax from "./tax.js";
 import UnitPrice from "./UnitPrice.js";
+import OperationStatistics from "./OperationStatistics.js";
+import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
 
 const classProps = {
@@ -116,6 +99,8 @@ const classProps = {
   }),
   ...UnitPrice.classProps,
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
+  /** Add `statistics` from OperationStatistics */
+  ...OperationStatistics.classProps,
 };
 
 export default class OperationResult extends Operation {
@@ -132,112 +117,73 @@ export default class OperationResult extends Operation {
 
   /**
    * Override `afterInitialize`.
-   * - Define a trigger for synchronize regulationWorkMinutes to all employees and workers.
    * - Define computed properties.
+   * - Argument `statistics` is for controlling whether to apply statistics accessors.
    */
-  afterInitialize() {
+  afterInitialize({ statistics = true } = {}) {
     super.afterInitialize();
+
+    if (statistics) OperationStatistics.accessors(this);
 
     /** Computed properties */
     Object.defineProperties(this, {
-      statistics: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const createInitialValues = () => ({
-            amount: 0,
-            regularTimeWorkMinutes: 0,
-            overtimeWorkMinutes: 0,
-            totalWorkMinutes: 0,
-          });
-
-          const createCategoryStructure = () => ({
-            ...createInitialValues(),
-            ojt: createInitialValues(),
-          });
-
-          const result = {
-            base: createCategoryStructure(),
-            qualificated: createCategoryStructure(),
-            total: createCategoryStructure(),
-          };
-
-          // 各カテゴリに値を追加する関数
-          const addToCategory = (categoryObj, worker, isOjt) => {
-            const target = isOjt ? categoryObj.ojt : categoryObj;
-            target.amount += 1;
-            target.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
-            target.overtimeWorkMinutes += worker.overtimeWorkMinutes;
-            target.totalWorkMinutes += worker.totalWorkMinutes;
-          };
-
-          this.workers.forEach((worker) => {
-            const category = worker.isQualificated ? "qualificated" : "base";
-            const isOjt = worker.isOjt;
-
-            // 該当カテゴリ（base/qualificated）に追加
-            addToCategory(result[category], worker, isOjt);
-
-            // 全体合計に追加
-            addToCategory(result.total, worker, isOjt);
-          });
-
-          return result;
-        },
-        set(v) {},
-      },
       sales: {
         configurable: true,
         enumerable: true,
         get() {
           const createInitialValues = () => ({
-            amount: 0,
-            overtime: 0,
+            unitPrice: 0,
+            quantity: 0,
+            regularAmount: 0,
+            overtimeUnitPrice: 0,
+            overtimeMinutes: 0,
+            overtimeAmount: 0,
             total: 0,
           });
 
-          const result = {
-            base: createInitialValues(),
-            qualificated: createInitialValues(),
-            total: createInitialValues(),
-          };
+          const calculateCategorySales = (category) => {
+            const isQualified = category === "qualificated";
+            const categoryStats = this.statistics[category];
+            const unitPrice = isQualified
+              ? this.unitPriceQualified
+              : this.unitPriceBase;
+            const overtimeUnitPrice = isQualified
+              ? this.overtimeUnitPriceQualified
+              : this.overtimeUnitPriceBase;
+            const isPerHour =
+              this.billingUnitType === BILLING_UNIT_TYPE.PER_HOUR;
 
-          const stats = this.statistics;
-          const isPerHour = this.billingUnitType === BILLING_UNIT_TYPE.PER_HOUR;
+            const result = createInitialValues();
 
-          // 基本・有資格それぞれの計算
-          ["base", "qualificated"].forEach((category) => {
-            const categoryStats = stats[category];
-            const unitPrice =
-              this[`unitPrice${category === "base" ? "Base" : "Qualified"}`];
-            const overtimeUnitPrice =
-              this[
-                `overtimeUnitPrice${category === "base" ? "Base" : "Qualified"}`
-              ];
+            // 基本情報の設定
+            result.unitPrice = unitPrice;
+            result.quantity = categoryStats.quantity;
+            result.overtimeUnitPrice = overtimeUnitPrice;
+            result.overtimeMinutes = categoryStats.overtimeWorkMinutes;
 
-            // 基本料金の計算
-            result[category].amount =
+            // 金額計算
+            result.regularAmount =
               (isPerHour
                 ? categoryStats.regularTimeWorkMinutes
-                : categoryStats.amount) * unitPrice;
+                : categoryStats.quantity) * unitPrice;
 
-            // 残業代の計算
-            result[category].overtime =
+            result.overtimeAmount =
               (categoryStats.overtimeWorkMinutes * overtimeUnitPrice) / 60;
+            result.total = result.regularAmount + result.overtimeAmount;
 
-            // 合計金額の計算
-            result[category].total =
-              result[category].amount + result[category].overtime;
-          });
+            return result;
+          };
 
-          // 全体の合計を計算
-          result.total.amount = result.base.amount + result.qualificated.amount;
-          result.total.overtime =
-            result.base.overtime + result.qualificated.overtime;
-          result.total.total = RoundSetting.apply(
-            result.base.total + result.qualificated.total
-          );
-          return result;
+          const base = calculateCategorySales("base");
+          const qualificated = calculateCategorySales("qualificated");
+
+          const total = createInitialValues();
+          total.regularAmount = base.regularAmount + qualificated.regularAmount;
+          total.overtimeAmount =
+            base.overtimeAmount + qualificated.overtimeAmount;
+          total.total = RoundSetting.apply(base.total + qualificated.total);
+
+          return { base, qualificated, total };
         },
         set(v) {},
       },
