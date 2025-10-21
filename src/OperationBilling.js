@@ -65,6 +65,16 @@
  * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
  * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ * @computed {object} statistics - Statistics of workers
+ * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
+ * @computed {object} sales - Sales amounts
+ * - Contains sales amounts for base and qualified workers, including overtime breakdowns.
+ * @computed {number} salesAmount - Total sales amount
+ * - Sum of sales amounts for base and qualified workers.
+ * @computed {number} tax - Calculated tax amount
+ * - Calculated using the `Tax` utility based on `salesAmount` and `date`.
+ * @computed {number} billingAmount - Total billing amount including tax
+ * - Sum of `salesAmount` and `tax`.
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @states isEmployeesChanged Indicates whether the employees have changed.
@@ -85,9 +95,9 @@ export default class OperationBilling extends OperationResult {
 
   /**
    * Override `afterInitialize`.
-   * - Call super method with `statistics` and `sales` disabled.
+   * - Call super method with `statistics` disabled.
    */
   afterInitialize() {
-    super.afterInitialize({ statistics: false, sales: false });
+    super.afterInitialize({ statistics: false });
   }
 }

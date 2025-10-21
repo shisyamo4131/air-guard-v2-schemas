@@ -66,6 +66,12 @@
  * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
  * @computed {object} sales - Sales amounts
  * - Contains sales amounts for base and qualified workers, including overtime breakdowns.
+ * @computed {number} salesAmount - Total sales amount
+ * - Sum of sales amounts for base and qualified workers.
+ * @computed {number} tax - Calculated tax amount
+ * - Calculated using the `Tax` utility based on `salesAmount` and `date`.
+ * @computed {number} billingAmount - Total billing amount including tax
+ * - Sum of `salesAmount` and `tax`.
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @states isEmployeesChanged Indicates whether the employees have changed.
@@ -177,13 +183,16 @@ export default class OperationResult extends Operation {
           const base = calculateCategorySales("base");
           const qualificated = calculateCategorySales("qualificated");
 
-          const total = createInitialValues();
-          total.regularAmount = base.regularAmount + qualificated.regularAmount;
-          total.overtimeAmount =
-            base.overtimeAmount + qualificated.overtimeAmount;
-          total.total = RoundSetting.apply(base.total + qualificated.total);
-
-          return { base, qualificated, total };
+          return { base, qualificated };
+        },
+        set(v) {},
+      },
+      salesAmount: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const amount = this.sales.base.total + this.sales.qualificated.total;
+          return RoundSetting.apply(amount);
         },
         set(v) {},
       },
@@ -192,14 +201,22 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           try {
-            return Tax.calc(this.sales.total.total, this.date);
+            return Tax.calc(this.salesAmount, this.date);
           } catch (error) {
             throw new ContextualError("Failed to calculate tax", {
               method: "OperationResult.tax (computed)",
-              arguments: { amount: this.sales.total.total, date: this.date },
+              arguments: { amount: this.salesAmount, date: this.date },
               error,
             });
           }
+        },
+        set(v) {},
+      },
+      billingAmount: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.salesAmount + this.tax;
         },
         set(v) {},
       },
