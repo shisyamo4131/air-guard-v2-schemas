@@ -123,6 +123,7 @@ const classProps = {
     label: "実際の開始時刻",
     required: true,
   }),
+  actualIsStartNextDay: defField("check", { label: "翌日開始" }),
   actualEndTime: defField("time", {
     label: "実際の終了時刻",
     required: true,
@@ -271,6 +272,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.actualStartTime = this.startTime;
       this.actualEndTime = this.endTime;
       this.actualBreakMinutes = 60;
+      this.actualIsStartNextDay = this.isStartNextDay;
       this.confirmedAt = null;
       this.arrivedAt = null;
       this.leavedAt = null;
@@ -299,6 +301,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.actualStartTime = this.startTime;
       this.actualEndTime = this.endTime;
       this.actualBreakMinutes = 60;
+      this.actualIsStartNextDay = this.isStartNextDay;
       this.confirmedAt = null;
       this.arrivedAt = null;
       this.leavedAt = null;
@@ -327,6 +330,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.actualStartTime = this.startTime;
       this.actualEndTime = this.endTime;
       this.actualBreakMinutes = 60;
+      this.actualIsStartNextDay = this.isStartNextDay;
       this.confirmedAt = new Date();
       this.arrivedAt = null;
       this.leavedAt = null;
@@ -355,6 +359,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.actualStartTime = this.startTime;
       this.actualEndTime = this.endTime;
       this.actualBreakMinutes = 60;
+      this.actualIsStartNextDay = this.isStartNextDay;
       this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
       this.arrivedAt = new Date();
       this.leavedAt = null;
@@ -371,13 +376,19 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
    * @param {string} timeOptions.startTime - The actual start time.
    * @param {string} timeOptions.endTime - The actual end time.
    * @param {number} timeOptions.breakMinutes - The actual break minutes.
+   * @param {boolean} timeOptions.actualIsStartNextDay - The actual flag indicating if the start time is on the next day.
    * @param {Object} updateOptions - Options for updating the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
    * @param {function} updateOptions.callBack - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
    */
   async toLeaved(timeOptions = {}, updateOptions = {}) {
-    const { actualStartTime, actualEndTime, actualBreakMinutes } = timeOptions;
+    const {
+      actualStartTime,
+      actualEndTime,
+      actualBreakMinutes,
+      actualIsStartNextDay,
+    } = timeOptions;
     const context = {
       method: "toLeaved",
       className: "ArrangementNotification",
@@ -398,6 +409,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.actualStartTime = actualStartTime;
       this.actualEndTime = actualEndTime;
       this.actualBreakMinutes = actualBreakMinutes;
+      this.actualIsStartNextDay = actualIsStartNextDay;
       this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
       this.arrivedAt = this.arrivedAt ? this.arrivedAt : new Date();
       this.leavedAt = new Date();
