@@ -76,7 +76,7 @@
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @methods addWorker Adds a new worker (employee or outsourcer).
- * @methods changeWorker Changes the position of a worker (employee or outsourcer).
+ * @methods moveWorker Moves the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
  *****************************************************************************/
 import { ContextualError } from "./utils/ContextualError.js";

@@ -53,7 +53,7 @@
  * @states updatedWorkers An array of workers that have been updated.
  * ---------------------------------------------------------------------------
  * @methods addWorker Adds a new worker (employee or outsourcer).
- * @methods changeWorker Changes the position of a worker (employee or outsourcer).
+ * @methods moveWorker Moves the position of a worker (employee or outsourcer).
  * @methods removeWorker Removes a worker (employee or outsourcer).
  *****************************************************************************/
 import FireModel from "air-firebase-v2";
@@ -261,11 +261,11 @@ export default class Operation extends FireModel {
         enumerable: false,
       },
       /**
-       * Changes the position of an employee in the employees array.
+       * Moves the position of an employee in the employees array.
        * @param {number} oldIndex - The original index.
        * @param {number} newIndex - The new index.
        */
-      change: {
+      move: {
         value: function (oldIndex, newIndex) {
           if (newIndex > this.length - 1) {
             throw new Error(
@@ -352,12 +352,12 @@ export default class Operation extends FireModel {
         enumerable: false,
       },
       /**
-       * Changes the position of an outsourcer in the outsourcers array.
+       * Moves the position of an outsourcer in the outsourcers array.
        * - `oldIndex` and `newIndex` are offset by the number of employees.
        * @param {number} oldIndex - The original index.
        * @param {number} newIndex - The new index.
        */
-      change: {
+      move: {
         value: function (oldIndex, newIndex) {
           if (newIndex <= self.employees.length - 1) {
             throw new Error(
@@ -556,13 +556,13 @@ export default class Operation extends FireModel {
   }
 
   /**
-   * Changes the position of workers.
+   * Moves the position of workers.
    * @param {Object} options - Options for changing worker position.
    * @param {number} options.oldIndex - The original index.
    * @param {number} options.newIndex - The new index.
    * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
    */
-  changeWorker(options) {
+  moveWorker(options) {
     try {
       const { oldIndex, newIndex, isEmployee = true } = options;
       if (typeof oldIndex !== "number" || typeof newIndex !== "number") {
@@ -571,13 +571,13 @@ export default class Operation extends FireModel {
         );
       }
       if (isEmployee) {
-        this.employees.change(oldIndex, newIndex);
+        this.employees.move(oldIndex, newIndex);
       } else {
-        this.outsourcers.change(oldIndex, newIndex);
+        this.outsourcers.move(oldIndex, newIndex);
       }
     } catch (error) {
-      throw new ContextualError("Failed to change worker position", {
-        method: "changeWorker",
+      throw new ContextualError("Failed to move worker position", {
+        method: "moveWorker",
         className: "SiteOperationSchedule",
         arguments: options,
         state: this.toObject(),
