@@ -58,9 +58,10 @@
  *****************************************************************************/
 import FireModel from "air-firebase-v2";
 import OperationDetail from "./OperationDetail.js";
+import Site from "./Site.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import { ContextualError } from "./utils/index.js";
-import { DAY_TYPE_DEFAULT, getDayType } from "./constants/day-type.js";
+import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
 import {
@@ -91,9 +92,6 @@ const classProps = {
   outsourcers: defField("array", {
     customClass: OperationDetail,
   }),
-  /** Override `dayType` defined in WorkingResult.js to be hidden */
-  // `dayType` should be calculated based on `dateAt` at this class.
-  dayType: defField("dayType", { hidden: true }),
 };
 export default class Operation extends FireModel {
   static className = "稼働ベース";
@@ -101,6 +99,10 @@ export default class Operation extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = classProps;
+
+  static DAY_TYPE = DAY_TYPE;
+  static DAY_TYPE_DAY = DAY_TYPE.DAY;
+  static DAY_TYPE_NIGHT = DAY_TYPE.NIGHT;
 
   static SHIFT_TYPE = SHIFT_TYPE;
   static SHIFT_TYPE_DAY = SHIFT_TYPE.DAY;
@@ -114,18 +116,6 @@ export default class Operation extends FireModel {
 
     /** Define computed properties from WorkingResult.js */
     workingResultAccessors(this);
-
-    /** Override `dayType` property to computed property */
-    // `dayType` should be calculated based on `dateAt` at this class.
-    Object.defineProperty(this, "dayType", {
-      configurable: true,
-      enumerable: true,
-      get() {
-        if (!this.dateAt) return DAY_TYPE_DEFAULT;
-        return getDayType(this.dateAt);
-      },
-      set(v) {},
-    });
 
     /**
      * TRIGGER FOR SYNCHRONIZE REGULATION WORK MINUTES
