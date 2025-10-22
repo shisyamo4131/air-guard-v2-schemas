@@ -102,6 +102,7 @@ const generalDefinitions = {
   object: {
     ...defaultDefinition,
     type: Object,
+    component: { name: "air-select" }, // `AirTextField` that is used as default ui component could not handle object type.
   },
   oneLine: {
     ...defaultDefinition,
