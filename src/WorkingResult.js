@@ -38,6 +38,7 @@
  *****************************************************************************/
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
+import { getDayType } from "./constants/day-type.js";
 
 export const classProps = {
   dateAt: defField("dateAt", {
@@ -76,6 +77,18 @@ export const classProps = {
 };
 
 export function accessors(self) {
+  let _dateAt = self.dateAt;
+  Object.defineProperty(self, "dateAt", {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return _dateAt;
+    },
+    set(v) {
+      _dateAt = v;
+      self.dayType = getDayType(v);
+    },
+  });
   Object.defineProperties(self, {
     key: {
       configurable: true,
