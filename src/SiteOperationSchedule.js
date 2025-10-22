@@ -101,6 +101,8 @@ const classProps = {
    *   for potential future extension.
    */
   regulationWorkMinutes: defField("number", { hidden: true }),
+  /** Override `dayType` defined in WorkingResult.js to be hidden */
+  dayType: defField("dayType", { hidden: true }),
 };
 
 export default class SiteOperationSchedule extends Operation {
