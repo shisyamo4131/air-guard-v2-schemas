@@ -6,6 +6,11 @@
  * - `dateAt` property indicates the date of operation (placement date)
  *   used for billing purposes.
  *   Actual working day may differ from this date.
+ * - `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are
+ *   automatically synchronized to all assigned employees and outsourcers
+ *   when they are changed on the Operation instance.
+ * - `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
+ *   They should be synchronized at `SiteOperationSchedule` level instead.
  * ---------------------------------------------------------------------------
  * @props {string} siteId - Site document ID
  * @props {Date} dateAt - Date of operation (placement date)
@@ -117,27 +122,71 @@ export default class Operation extends FireModel {
     /** Define computed properties from WorkingResult.js */
     workingResultAccessors(this);
 
-    /**
-     * TRIGGER FOR SYNCHRONIZE REGULATION WORK MINUTES
-     * `regulationWorkMinutes` should be synchronized to all employees and
-     * outsourcers when it is changed.
-     */
+    /***********************************************************
+     * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
+     * ---------------------------------------------------------
+     * When `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes`
+     * are changed on the Operation instance,
+     * the corresponding properties on all employees and outsourcers
+     * are automatically updated to keep them in sync.
+     * [NOTE]
+     * `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
+     * They should be synchronized at `SiteOperationSchedule` level instead.
+     ***********************************************************/
+    let _siteId = this.siteId;
+    let _dateAt = this.dateAt;
+    let _shiftType = this.shiftType;
     let _regulationWorkMinutes = this.regulationWorkMinutes;
-    Object.defineProperty(this, "regulationWorkMinutes", {
-      configurable: true,
-      enumerable: true,
-      get() {
-        return _regulationWorkMinutes;
+    Object.defineProperties(this, {
+      siteId: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _siteId;
+        },
+        set(v) {
+          _siteId = v;
+          this.employees.forEach((emp) => (emp.siteId = v));
+          this.outsourcers.forEach((out) => (out.siteId = v));
+        },
       },
-      set(value) {
-        const oldValue = _regulationWorkMinutes;
-        _regulationWorkMinutes = value;
-        if (oldValue !== value) {
+      dateAt: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _dateAt;
+        },
+        set(value) {
+          _dateAt = value;
+          this.employees.forEach((emp) => (emp.dateAt = value));
+          this.outsourcers.forEach((out) => (out.dateAt = value));
+        },
+      },
+      shiftType: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _shiftType;
+        },
+        set(value) {
+          _shiftType = value;
+          this.employees.forEach((emp) => (emp.shiftType = value));
+          this.outsourcers.forEach((out) => (out.shiftType = value));
+        },
+      },
+      regulationWorkMinutes: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _regulationWorkMinutes;
+        },
+        set(value) {
+          _regulationWorkMinutes = value;
           this.employees.forEach((emp) => (emp.regulationWorkMinutes = value));
           this.outsourcers.forEach(
             (out) => (out.regulationWorkMinutes = value)
           );
-        }
+        },
       },
     });
 
@@ -496,59 +545,20 @@ export default class Operation extends FireModel {
     const before = this._beforeData.workers || [];
     if (before.length === 0) return [];
     const current = this.workers || [];
-    const keys = ["startTime", "isStartNextDay", "endTime", "breakMinutes"];
+    const keys = [
+      "startTime",
+      "isStartNextDay",
+      "endTime",
+      "breakMinutes",
+      "isQualificated",
+      "isOjt",
+    ];
     const isUpdated = (emp) => {
       const worker = before.find((e) => e.workerId === emp.workerId);
       if (!worker) return false;
       return keys.some((key) => emp[key] !== worker[key]);
     };
     return current.filter(isUpdated);
-  }
-
-  /**
-   * Override `beforeUpdate`.
-   * - Synchronize `siteId`, `dateAt`, `shiftType`, `startTime`, `isStartNextDay`,
-   *   `endTime`, and `breakMinutes` of all employees and outsourcers before update.
-   * @returns {Promise<void>}
-   */
-  beforeUpdate() {
-    const keys1 = ["siteId", "date", "shiftType"];
-    const keys2 = ["startTime", "isStartNextDay", "endTime", "breakMinutes"];
-    const syncKeys = [...keys1, ...keys2];
-
-    const isDetailShouldBeSynced = syncKeys.some(
-      (key) => this[key] !== this._beforeData?.[key]
-    );
-
-    // for debug.
-    // syncKeys.forEach((key) => {
-    //   if (this[key] !== this._beforeData?.[key]) {
-    //     console.log(`Operation.beforeUpdate: ${key} changed:`, {
-    //       before: this._beforeData?.[key],
-    //       after: this[key],
-    //     });
-    //   }
-    // });
-
-    // If no relevant properties have changed, skip synchronization.
-    if (!isDetailShouldBeSynced) return Promise.resolve();
-
-    // Function to synchronize properties of a detail instance.
-    const syncDetail = (detail) => {
-      syncKeys.forEach((key) => (detail[key] = this[key]));
-    };
-
-    // Synchronize all detail instances.
-    return new Promise((resolve, reject) => {
-      try {
-        this.employees.forEach(syncDetail);
-        this.outsourcers.forEach(syncDetail);
-        resolve();
-      } catch (error) {
-        console.error("Error in beforeEdit:", error);
-        reject(error);
-      }
-    });
   }
 
   /***************************************************************************
