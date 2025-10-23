@@ -60,8 +60,14 @@ const classProps = {
   amount: defField("number", { default: 1, required: true, hidden: true }),
   siteId: defField("oneLine", { required: true }),
   ...workingResultClassProps, // Inherited from WorkingResult.js
-  isQualificated: defField("check", { label: "資格者" }),
-  isOjt: defField("check", { label: "OJT" }),
+  isQualificated: defField("check", {
+    label: "資格者",
+    colsDefinition: { cols: 12, sm: 6 },
+  }),
+  isOjt: defField("check", {
+    label: "OJT",
+    colsDefinition: { cols: 12, sm: 6 },
+  }),
 };
 export default class OperationDetail extends FireModel {
   static className = "稼働明細ベース";

@@ -53,7 +53,7 @@ const classProps = {
   }),
 };
 const headers = [
-  { title: "名前", key: "fullName" },
+  { title: "名前", key: "displayName" },
   { title: "開始", key: "startTime" },
   { title: "終了", key: "endTime" },
   { title: "休憩", key: "breakMinutes" },
