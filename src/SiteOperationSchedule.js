@@ -7,6 +7,11 @@
  * - Automatically assigns a display order based on existing documents during creation.
  * - Clears all notifications if related data have been changed during updates.
  * - Deletes all related notifications before deleting the schedule.
+ * - Synchronizes properties specified below to assigned employees and outsourcers:
+ *  `startTime`, `endTime`, `breakMinutes`, `isStartNextDay`
+ *   [NOTE]
+ *   `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are synchronized
+ *   in the parent `Operation` class.
  * ---------------------------------------------------------------------------
  * [INHERIT OPERATION CLASS]
  * @props {string} siteId - Site document ID
@@ -111,6 +116,78 @@ export default class SiteOperationSchedule extends Operation {
   static classProps = classProps;
 
   /***************************************************************************
+   * Override `afterInitialize`
+   ***************************************************************************/
+  afterInitialize() {
+    super.afterInitialize();
+
+    /***********************************************************
+     * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
+     * ---------------------------------------------------------
+     * When `startTime`, `endTime`, `breakMinutes`, and `isStartNextDay`
+     * are changed on the Operation instance,
+     * the corresponding properties on all employees and outsourcers
+     * are automatically updated to keep them in sync.
+     * [NOTE]
+     * `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are
+     * synchronized in the parent `Operation` class.
+     ***********************************************************/
+    let _startTime = this.startTime;
+    let _endTime = this.endTime;
+    let _breakMinutes = this.breakMinutes;
+    let _isStartNextDay = this.isStartNextDay;
+    Object.defineProperties(this, {
+      startTime: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _startTime;
+        },
+        set(v) {
+          _startTime = v;
+          this.employees.forEach((emp) => (emp.startTime = v));
+          this.outsourcers.forEach((out) => (out.startTime = v));
+        },
+      },
+      endTime: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _endTime;
+        },
+        set(v) {
+          _endTime = v;
+          this.employees.forEach((emp) => (emp.endTime = v));
+          this.outsourcers.forEach((out) => (out.endTime = v));
+        },
+      },
+      breakMinutes: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _breakMinutes;
+        },
+        set(v) {
+          _breakMinutes = v;
+          this.employees.forEach((emp) => (emp.breakMinutes = v));
+          this.outsourcers.forEach((out) => (out.breakMinutes = v));
+        },
+      },
+      isStartNextDay: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _isStartNextDay;
+        },
+        set(v) {
+          _isStartNextDay = v;
+          this.employees.forEach((emp) => (emp.isStartNextDay = v));
+          this.outsourcers.forEach((out) => (out.isStartNextDay = v));
+        },
+      },
+    });
+  }
+  /***************************************************************************
    * STATES
    ***************************************************************************/
   /**
@@ -137,12 +214,12 @@ export default class SiteOperationSchedule extends Operation {
    * - Prevents updates if an associated OperationResult exists.
    */
   async beforeUpdate() {
-    await super.beforeUpdate();
     if (this._beforeData.operationResultId) {
       throw new Error(
         `Could not update this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
       );
     }
+    await super.beforeUpdate();
   }
 
   /**
@@ -150,12 +227,12 @@ export default class SiteOperationSchedule extends Operation {
    * - Prevents deletions if an associated OperationResult exists.
    */
   async beforeDelete() {
-    await super.beforeDelete();
     if (this._beforeData.operationResultId) {
       throw new Error(
         `Could not delete this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
       );
     }
+    await super.beforeDelete();
   }
 
   /**
