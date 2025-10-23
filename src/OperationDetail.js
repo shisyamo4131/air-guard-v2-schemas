@@ -104,6 +104,18 @@ export default class OperationDetail extends FireModel {
         },
         set() {},
       },
+      overtimeWorkMinutes: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const totalWork =
+            this.totalWorkMinutes > this.regulationWorkMinutes
+              ? this.totalWorkMinutes - this.regulationWorkMinutes
+              : 0;
+          return totalWork;
+        },
+        set() {},
+      },
     });
   }
 

@@ -56,8 +56,8 @@ const headers = [
   { title: "名前", key: "fullName" },
   { title: "開始", key: "startTime" },
   { title: "終了", key: "endTime" },
-  { title: "休憩", key: "breakHours" },
-  { title: "残業", key: "overtimeHours" },
+  { title: "休憩", key: "breakMinutes" },
+  { title: "残業", key: "overtimeWorkMinutes" },
 ];
 export default class OperationResultDetail extends OperationDetail {
   static className = "稼働実績明細";
