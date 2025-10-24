@@ -65,7 +65,6 @@ import FireModel from "air-firebase-v2";
 import OperationDetail from "./OperationDetail.js";
 import Site from "./Site.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { ContextualError } from "./utils/index.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
@@ -98,6 +97,7 @@ const classProps = {
     customClass: OperationDetail,
   }),
 };
+
 export default class Operation extends FireModel {
   static className = "稼働ベース";
   static collectionPath = "Operations";
@@ -578,21 +578,11 @@ export default class Operation extends FireModel {
    * @param {number} [index=0] - Insertion position. If -1, adds to the end.
    */
   addWorker(options = {}, index = 0) {
-    try {
-      const { isEmployee = true } = options;
-      if (isEmployee) {
-        this.employees.add(options, index);
-      } else {
-        this.outsourcers.add(options, index);
-      }
-    } catch (error) {
-      throw new ContextualError("Failed to add worker", {
-        method: "addWorker",
-        className: "Operation",
-        arguments: options,
-        state: this.toObject(),
-        error,
-      });
+    const { isEmployee = true } = options;
+    if (isEmployee) {
+      this.employees.add(options, index);
+    } else {
+      this.outsourcers.add(options, index);
     }
   }
 
@@ -604,26 +594,16 @@ export default class Operation extends FireModel {
    * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
    */
   moveWorker(options) {
-    try {
-      const { oldIndex, newIndex, isEmployee = true } = options;
-      if (typeof oldIndex !== "number" || typeof newIndex !== "number") {
-        throw new Error(
-          "oldIndex and newIndex are required and must be numbers."
-        );
-      }
-      if (isEmployee) {
-        this.employees.move(oldIndex, newIndex);
-      } else {
-        this.outsourcers.move(oldIndex, newIndex);
-      }
-    } catch (error) {
-      throw new ContextualError("Failed to move worker position", {
-        method: "moveWorker",
-        className: "Operation",
-        arguments: options,
-        state: this.toObject(),
-        error,
-      });
+    const { oldIndex, newIndex, isEmployee = true } = options;
+    if (typeof oldIndex !== "number" || typeof newIndex !== "number") {
+      throw new Error(
+        "oldIndex and newIndex are required and must be numbers."
+      );
+    }
+    if (isEmployee) {
+      this.employees.move(oldIndex, newIndex);
+    } else {
+      this.outsourcers.move(oldIndex, newIndex);
     }
   }
 
@@ -632,20 +612,10 @@ export default class Operation extends FireModel {
    * @param {Object} newWorker - New worker object
    */
   changeWorker(newWorker) {
-    try {
-      if (newWorker.isEmployee) {
-        this.employees.change(newWorker);
-      } else {
-        this.outsourcers.change(newWorker);
-      }
-    } catch (error) {
-      throw new ContextualError("Failed to change worker", {
-        method: "changeWorker",
-        className: "Operation",
-        arguments: options,
-        state: this.toObject(),
-        error,
-      });
+    if (newWorker.isEmployee) {
+      this.employees.change(newWorker);
+    } else {
+      this.outsourcers.change(newWorker);
     }
   }
 
@@ -656,21 +626,11 @@ export default class Operation extends FireModel {
    * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
    */
   removeWorker(options) {
-    try {
-      const { workerId, isEmployee = true } = options;
-      if (isEmployee) {
-        this.employees.remove(workerId);
-      } else {
-        this.outsourcers.remove(workerId);
-      }
-    } catch (error) {
-      console.error(error.message);
-      throw new ContextualError("Failed to remove worker", {
-        method: "removeWorker",
-        className: "Operation",
-        arguments: { workerId, isEmployee },
-        state: this.toObject(),
-      });
+    const { workerId, isEmployee = true } = options;
+    if (isEmployee) {
+      this.employees.remove(workerId);
+    } else {
+      this.outsourcers.remove(workerId);
     }
   }
 }

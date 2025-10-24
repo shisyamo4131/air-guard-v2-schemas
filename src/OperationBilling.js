@@ -93,6 +93,12 @@ import OperationResult from "./OperationResult.js";
 export default class OperationBilling extends OperationResult {
   static className = "稼働請求";
 
+  static headers = [
+    { title: "日付", key: "dateAt" },
+    { title: "現場", key: "siteId", value: "siteId" },
+    { title: "売上金額", key: "salesAmount", value: "salesAmount" },
+  ];
+
   /**
    * Override `afterInitialize`.
    * - Call super method with `statistics` disabled.

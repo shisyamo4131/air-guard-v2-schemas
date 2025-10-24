@@ -3,6 +3,7 @@ export { default as ArrangementNotification } from "./src/ArrangementNotificatio
 export { default as Company } from "./src/Company.js";
 export { default as Customer, CustomerMinimal } from "./src/Customer.js";
 export { default as Employee } from "./src/Employee.js";
+export { default as OperationBilling } from "./src/OperationBilling.js";
 export { default as OperationResult } from "./src/OperationResult.js";
 export { default as OperationResultDetail } from "./src/OperationResultDetail.js";
 export { default as Outsourcer } from "./src/Outsourcer.js";
