@@ -41,6 +41,15 @@
  * @props {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created based on a SiteOperationSchedule document,
  *   this property holds the ID of that source document.
+ * @props {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
+ * @props {number} adjustedQuantityBase - Adjusted quantity for base workers
+ * - Quantity used for billing base workers when `useAdjustedQuantity` is true.
+ * @props {number} adjustedOvertimeBase - Adjusted overtime for base workers
+ * - Overtime used for billing base workers when `useAdjustedQuantity` is true.
+ * @props {number} adjustedQuantityQualified - Adjusted quantity for qualified workers
+ * - Quantity used for billing qualified workers when `useAdjustedQuantity` is true.
+ * @props {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
+ * - Overtime used for billing qualified workers when `useAdjustedQuantity` is true.
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
@@ -91,7 +100,6 @@ import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import Tax from "./tax.js";
 import UnitPrice from "./UnitPrice.js";
-import OperationStatistics from "./OperationStatistics.js";
 import { BILLING_UNIT_TYPE_PER_HOUR } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
 
@@ -105,8 +113,26 @@ const classProps = {
   }),
   ...UnitPrice.classProps,
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
-  /** Add `statistics` from OperationStatistics */
-  ...OperationStatistics.classProps,
+  useAdjustedQuantity: defField("check", {
+    label: "調整数量を使用",
+    default: false,
+  }),
+  adjustedQuantityBase: defField("number", {
+    label: "基本人工（調整）",
+    default: 0,
+  }),
+  adjustedOvertimeBase: defField("number", {
+    label: "基本残業（調整）",
+    default: 0,
+  }),
+  adjustedQuantityQualified: defField("number", {
+    label: "資格人工（調整）",
+    default: 0,
+  }),
+  adjustedOvertimeQualified: defField("number", {
+    label: "資格残業（調整）",
+    default: 0,
+  }),
 };
 
 export default class OperationResult extends Operation {
@@ -124,15 +150,52 @@ export default class OperationResult extends Operation {
   /**
    * Override `afterInitialize`.
    * - Define computed properties.
-   * - Argument `statistics` is for controlling whether to apply statistics accessors.
    */
-  afterInitialize({ statistics = true } = {}) {
+  afterInitialize() {
     super.afterInitialize();
-
-    if (statistics) OperationStatistics.accessors(this);
 
     /** Computed properties */
     Object.defineProperties(this, {
+      statistics: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const initialValues = {
+            quantity: 0,
+            regularTimeWorkMinutes: 0,
+            overtimeWorkMinutes: 0,
+            totalWorkMinutes: 0,
+          };
+          const result = {
+            base: { ...initialValues, ojt: { ...initialValues } },
+            qualified: { ...initialValues, ojt: { ...initialValues } },
+            total: { ...initialValues, ojt: { ...initialValues } },
+          };
+
+          // 各カテゴリに値を追加する関数
+          const addToCategory = (categoryObj, worker, isOjt) => {
+            const target = isOjt ? categoryObj.ojt : categoryObj;
+            target.quantity += 1;
+            target.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
+            target.overtimeWorkMinutes += worker.overtimeWorkMinutes;
+            target.totalWorkMinutes += worker.totalWorkMinutes;
+          };
+
+          this.workers.forEach((worker) => {
+            const category = worker.isQualified ? "qualified" : "base";
+            const isOjt = worker.isOjt;
+
+            // 該当カテゴリ（base/qualified）に追加
+            addToCategory(result[category], worker, isOjt);
+
+            // 全体合計に追加
+            addToCategory(result.total, worker, isOjt);
+          });
+
+          return result;
+        },
+        set(v) {},
+      },
       sales: {
         configurable: true,
         enumerable: true,
@@ -149,13 +212,29 @@ export default class OperationResult extends Operation {
 
           const calculateCategorySales = (category) => {
             const isQualified = category === "qualified";
-            const categoryStats = this.statistics[category];
+            const categoryStats = this.statistics?.[category];
+
+            // 統計データが存在しない場合は警告を出力して初期値を返す
+            if (!categoryStats) {
+              console.warn(
+                `[OperationResult] Statistics data for category '${category}' is missing.`,
+                {
+                  docId: this.docId,
+                  dateAt: this.dateAt,
+                  siteId: this.siteId,
+                  category,
+                  statistics: this.statistics,
+                }
+              );
+              return createInitialValues();
+            }
+
             const unitPrice = isQualified
-              ? this.unitPriceQualified
-              : this.unitPriceBase;
+              ? this.unitPriceQualified || 0
+              : this.unitPriceBase || 0;
             const overtimeUnitPrice = isQualified
-              ? this.overtimeUnitPriceQualified
-              : this.overtimeUnitPriceBase;
+              ? this.overtimeUnitPriceQualified || 0
+              : this.overtimeUnitPriceBase || 0;
             const isPerHour =
               this.billingUnitType === BILLING_UNIT_TYPE_PER_HOUR;
 
@@ -163,17 +242,30 @@ export default class OperationResult extends Operation {
 
             // 基本情報の設定
             result.unitPrice = unitPrice;
-            // result.quantity = categoryStats.quantity;
-            result.quantity = isPerHour
-              ? categoryStats.totalWorkMinutes / 60
-              : categoryStats.quantity;
             result.overtimeUnitPrice = overtimeUnitPrice;
-            result.overtimeMinutes = categoryStats.overtimeWorkMinutes;
 
-            // 金額計算
-            result.regularAmount = result.quantity * unitPrice;
-            result.overtimeAmount =
-              (categoryStats.overtimeWorkMinutes * overtimeUnitPrice) / 60;
+            // 調整値の使用判定
+            if (this.useAdjustedQuantity) {
+              result.quantity = isQualified
+                ? this.adjustedQuantityQualified || 0
+                : this.adjustedQuantityBase || 0;
+              result.overtimeMinutes = isQualified
+                ? this.adjustedOvertimeQualified || 0
+                : this.adjustedOvertimeBase || 0;
+            } else {
+              result.quantity = isPerHour
+                ? (categoryStats.totalWorkMinutes || 0) / 60
+                : categoryStats.quantity || 0;
+              result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
+            }
+
+            // 金額計算（RoundSettingを適用）
+            result.regularAmount = RoundSetting.apply(
+              result.quantity * unitPrice
+            );
+            result.overtimeAmount = RoundSetting.apply(
+              (result.overtimeMinutes * overtimeUnitPrice) / 60
+            );
             result.total = result.regularAmount + result.overtimeAmount;
 
             return result;

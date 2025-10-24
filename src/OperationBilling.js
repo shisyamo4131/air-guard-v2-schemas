@@ -39,13 +39,6 @@
  * @props {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created based on a SiteOperationSchedule document,
  *   this property holds the ID of that source document.
- * @props {object} statistics - Statistics of workers
- * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
- * @props {object} sales - Sales amounts
- * - Contains sales amounts for base and qualified workers, including overtime breakdowns.
- *
- * [NOTE]
- * `statistics` and `sales` are treated as computed properties in OperationResult class.
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
@@ -98,12 +91,4 @@ export default class OperationBilling extends OperationResult {
     { title: "現場", key: "siteId", value: "siteId" },
     { title: "売上金額", key: "salesAmount", value: "salesAmount" },
   ];
-
-  /**
-   * Override `afterInitialize`.
-   * - Call super method with `statistics` disabled.
-   */
-  afterInitialize() {
-    super.afterInitialize({ statistics: false });
-  }
 }
