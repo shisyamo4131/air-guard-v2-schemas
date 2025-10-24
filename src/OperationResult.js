@@ -148,7 +148,7 @@ export default class OperationResult extends Operation {
           });
 
           const calculateCategorySales = (category) => {
-            const isQualified = category === "qualificated";
+            const isQualified = category === "qualified";
             const categoryStats = this.statistics[category];
             const unitPrice = isQualified
               ? this.unitPriceQualified
@@ -181,9 +181,9 @@ export default class OperationResult extends Operation {
           };
 
           const base = calculateCategorySales("base");
-          const qualificated = calculateCategorySales("qualificated");
+          const qualified = calculateCategorySales("qualified");
 
-          return { base, qualificated };
+          return { base, qualified };
         },
         set(v) {},
       },
@@ -191,7 +191,7 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          const amount = this.sales.base.total + this.sales.qualificated.total;
+          const amount = this.sales.base.total + this.sales.qualified.total;
           return RoundSetting.apply(amount);
         },
         set(v) {},

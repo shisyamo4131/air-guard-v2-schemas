@@ -24,7 +24,7 @@
  * - `true` if the actual work starts the day after the placement date `dateAt`
  * @props {string} endTime - End time (HH:MM format)
  * @props {number} breakMinutes - Break time (minutes)
- * @props {boolean} isQualificated - Qualified flag
+ * @props {boolean} isQualified - Qualified flag
  * @props {boolean} isOjt - OJT flag
  * --------------------------------------------------------------------------
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
@@ -60,7 +60,7 @@ const classProps = {
   amount: defField("number", { default: 1, required: true, hidden: true }),
   siteId: defField("oneLine", { required: true }),
   ...workingResultClassProps, // Inherited from WorkingResult.js
-  isQualificated: defField("check", {
+  isQualified: defField("check", {
     label: "資格者",
     colsDefinition: { cols: 12, sm: 6 },
   }),

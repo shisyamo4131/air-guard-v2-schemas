@@ -18,7 +18,7 @@
  * - `true` if the actual work starts the day after the placement date `dateAt`
  * @props {string} endTime - End time (HH:MM format)
  * @props {number} breakMinutes - Break time (minutes)
- * @props {boolean} isQualificated - Qualified flag
+ * @props {boolean} isQualified - Qualified flag
  * @props {boolean} isOjt - OJT flag
  * --------------------------------------------------------------------------
  * [INHERIT]

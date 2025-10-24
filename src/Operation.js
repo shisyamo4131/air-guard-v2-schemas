@@ -555,7 +555,7 @@ export default class Operation extends FireModel {
       "isStartNextDay",
       "endTime",
       "breakMinutes",
-      "isQualificated",
+      "isQualified",
       "isOjt",
     ];
     const isUpdated = (emp) => {

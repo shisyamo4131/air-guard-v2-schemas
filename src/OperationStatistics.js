@@ -38,7 +38,7 @@ class Statistics extends BaseClass {
       default: () => new CategoryStructure(),
       customClass: CategoryStructure,
     }),
-    qualificated: defField("object", {
+    qualified: defField("object", {
       default: () => new CategoryStructure(),
       customClass: CategoryStructure,
     }),
@@ -76,10 +76,10 @@ export default class OperationStatistics extends BaseClass {
           };
 
           self.workers.forEach((worker) => {
-            const category = worker.isQualificated ? "qualificated" : "base";
+            const category = worker.isQualified ? "qualified" : "base";
             const isOjt = worker.isOjt;
 
-            // 該当カテゴリ（base/qualificated）に追加
+            // 該当カテゴリ（base/qualified）に追加
             addToCategory(result[category], worker, isOjt);
 
             // 全体合計に追加
