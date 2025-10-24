@@ -39,6 +39,15 @@
  * @props {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created based on a SiteOperationSchedule document,
  *   this property holds the ID of that source document.
+ * @props {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
+ * @props {number} adjustedQuantityBase - Adjusted quantity for base workers
+ * - Quantity used for billing base workers when `useAdjustedQuantity` is true.
+ * @props {number} adjustedOvertimeBase - Adjusted overtime for base workers
+ * - Overtime used for billing base workers when `useAdjustedQuantity` is true.
+ * @props {number} adjustedQuantityQualified - Adjusted quantity for qualified workers
+ * - Quantity used for billing qualified workers when `useAdjustedQuantity` is true.
+ * @props {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
+ * - Overtime used for billing qualified workers when `useAdjustedQuantity` is true.
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
