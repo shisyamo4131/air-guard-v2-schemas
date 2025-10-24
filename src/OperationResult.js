@@ -92,7 +92,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import Tax from "./tax.js";
 import UnitPrice from "./UnitPrice.js";
 import OperationStatistics from "./OperationStatistics.js";
-import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
+import { BILLING_UNIT_TYPE_PER_HOUR } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
 
 const classProps = {
@@ -157,22 +157,21 @@ export default class OperationResult extends Operation {
               ? this.overtimeUnitPriceQualified
               : this.overtimeUnitPriceBase;
             const isPerHour =
-              this.billingUnitType === BILLING_UNIT_TYPE.PER_HOUR;
+              this.billingUnitType === BILLING_UNIT_TYPE_PER_HOUR;
 
             const result = createInitialValues();
 
             // 基本情報の設定
             result.unitPrice = unitPrice;
-            result.quantity = categoryStats.quantity;
+            // result.quantity = categoryStats.quantity;
+            result.quantity = isPerHour
+              ? categoryStats.totalWorkMinutes / 60
+              : categoryStats.quantity;
             result.overtimeUnitPrice = overtimeUnitPrice;
             result.overtimeMinutes = categoryStats.overtimeWorkMinutes;
 
             // 金額計算
-            result.regularAmount =
-              (isPerHour
-                ? categoryStats.regularTimeWorkMinutes
-                : categoryStats.quantity) * unitPrice;
-
+            result.regularAmount = result.quantity * unitPrice;
             result.overtimeAmount =
               (categoryStats.overtimeWorkMinutes * overtimeUnitPrice) / 60;
             result.total = result.regularAmount + result.overtimeAmount;
