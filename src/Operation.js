@@ -246,7 +246,12 @@ export default class Operation extends FireModel {
         get() {
           return this.employees.concat(this.outsourcers);
         },
-        set(v) {},
+        set(v) {
+          const employees = v.filter((emp) => emp.isEmployee);
+          const outsourcers = v.filter((out) => !out.isEmployee);
+          this.employees = employees;
+          this.outsourcers = outsourcers;
+        },
       },
     });
 
