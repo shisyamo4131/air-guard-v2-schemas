@@ -144,6 +144,10 @@ export default class SiteOperationSchedule extends Operation {
           return _startTime;
         },
         set(v) {
+          if (typeof v !== "string") {
+            throw new Error(`startTime must be a string. startTime: ${v}`);
+          }
+          if (_startTime === v) return;
           _startTime = v;
           this.employees.forEach((emp) => (emp.startTime = v));
           this.outsourcers.forEach((out) => (out.startTime = v));
@@ -156,6 +160,10 @@ export default class SiteOperationSchedule extends Operation {
           return _endTime;
         },
         set(v) {
+          if (typeof v !== "string") {
+            throw new Error(`endTime must be a string. endTime: ${v}`);
+          }
+          if (_endTime === v) return;
           _endTime = v;
           this.employees.forEach((emp) => (emp.endTime = v));
           this.outsourcers.forEach((out) => (out.endTime = v));
@@ -168,6 +176,12 @@ export default class SiteOperationSchedule extends Operation {
           return _breakMinutes;
         },
         set(v) {
+          if (typeof v !== "number" || isNaN(v) || v < 0) {
+            throw new Error(
+              `breakMinutes must be a non-negative number. breakMinutes: ${v}`
+            );
+          }
+          if (_breakMinutes === v) return;
           _breakMinutes = v;
           this.employees.forEach((emp) => (emp.breakMinutes = v));
           this.outsourcers.forEach((out) => (out.breakMinutes = v));
@@ -180,6 +194,12 @@ export default class SiteOperationSchedule extends Operation {
           return _isStartNextDay;
         },
         set(v) {
+          if (typeof v !== "boolean") {
+            throw new Error(
+              `isStartNextDay must be a boolean. isStartNextDay: ${v}`
+            );
+          }
+          if (_isStartNextDay === v) return;
           _isStartNextDay = v;
           this.employees.forEach((emp) => (emp.isStartNextDay = v));
           this.outsourcers.forEach((out) => (out.isStartNextDay = v));

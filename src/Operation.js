@@ -145,6 +145,10 @@ export default class Operation extends FireModel {
           return _siteId;
         },
         set(v) {
+          if (typeof v !== "string") {
+            throw new Error(`siteId must be a string. siteId: ${v}`);
+          }
+          if (_siteId === v) return;
           _siteId = v;
           this.employees.forEach((emp) => (emp.siteId = v));
           this.outsourcers.forEach((out) => (out.siteId = v));
@@ -156,10 +160,16 @@ export default class Operation extends FireModel {
         get() {
           return _dateAt;
         },
-        set(value) {
-          _dateAt = value;
-          this.employees.forEach((emp) => (emp.dateAt = value));
-          this.outsourcers.forEach((out) => (out.dateAt = value));
+        set(v) {
+          if (!(v instanceof Date)) {
+            throw new Error(`dateAt must be a Date object. dateAt: ${v}`);
+          }
+          if (_dateAt && v.getTime() === _dateAt.getTime()) {
+            return;
+          }
+          _dateAt = v;
+          this.employees.forEach((emp) => (emp.dateAt = v));
+          this.outsourcers.forEach((out) => (out.dateAt = v));
         },
       },
       shiftType: {
@@ -168,10 +178,17 @@ export default class Operation extends FireModel {
         get() {
           return _shiftType;
         },
-        set(value) {
-          _shiftType = value;
-          this.employees.forEach((emp) => (emp.shiftType = value));
-          this.outsourcers.forEach((out) => (out.shiftType = value));
+        set(v) {
+          if (typeof v !== "string") {
+            throw new Error(`shiftType must be a string. shiftType: ${v}`);
+          }
+          if (!SHIFT_TYPE[v]) {
+            throw new Error(`Invalid shiftType value. shiftType: ${v}`);
+          }
+          if (_shiftType === v) return;
+          _shiftType = v;
+          this.employees.forEach((emp) => (emp.shiftType = v));
+          this.outsourcers.forEach((out) => (out.shiftType = v));
         },
       },
       regulationWorkMinutes: {
@@ -180,12 +197,16 @@ export default class Operation extends FireModel {
         get() {
           return _regulationWorkMinutes;
         },
-        set(value) {
-          _regulationWorkMinutes = value;
-          this.employees.forEach((emp) => (emp.regulationWorkMinutes = value));
-          this.outsourcers.forEach(
-            (out) => (out.regulationWorkMinutes = value)
-          );
+        set(v) {
+          if (typeof v !== "number" || isNaN(v) || v < 0) {
+            throw new Error(
+              `regulationWorkMinutes must be a non-negative number. regulationWorkMinutes: ${v}`
+            );
+          }
+          if (_regulationWorkMinutes === v) return;
+          _regulationWorkMinutes = v;
+          this.employees.forEach((emp) => (emp.regulationWorkMinutes = v));
+          this.outsourcers.forEach((out) => (out.regulationWorkMinutes = v));
         },
       },
     });
