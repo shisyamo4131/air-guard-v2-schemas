@@ -65,7 +65,7 @@ import FireModel from "air-firebase-v2";
 import OperationDetail from "./OperationDetail.js";
 import Site from "./Site.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { DAY_TYPE } from "./constants/day-type.js";
+import { DAY_TYPE, getDayType } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
 import {
@@ -168,6 +168,7 @@ export default class Operation extends FireModel {
             return;
           }
           _dateAt = v;
+          this.dayType = getDayType(v);
           this.employees.forEach((emp) => (emp.dateAt = v));
           this.outsourcers.forEach((out) => (out.dateAt = v));
         },
