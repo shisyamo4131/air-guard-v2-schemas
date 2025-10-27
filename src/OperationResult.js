@@ -38,6 +38,7 @@
  * - Unit price for qualified workers exceeding regulation work minutes.
  * @props {string} billingUnitType - Billing unit type
  * - Billing unit defined in `BILLING_UNIT_TYPE`.
+ * @props {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
  * @props {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created based on a SiteOperationSchedule document,
  *   this property holds the ID of that source document.
@@ -165,6 +166,7 @@ export default class OperationResult extends Operation {
             regularTimeWorkMinutes: 0,
             overtimeWorkMinutes: 0,
             totalWorkMinutes: 0,
+            breakMinutes: 0,
           };
           const result = {
             base: { ...initialValues, ojt: { ...initialValues } },
@@ -179,6 +181,7 @@ export default class OperationResult extends Operation {
             target.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
             target.overtimeWorkMinutes += worker.overtimeWorkMinutes;
             target.totalWorkMinutes += worker.totalWorkMinutes;
+            target.breakMinutes += worker.breakMinutes;
           };
 
           this.workers.forEach((worker) => {
@@ -253,9 +256,24 @@ export default class OperationResult extends Operation {
                 ? this.adjustedOvertimeQualified || 0
                 : this.adjustedOvertimeBase || 0;
             } else {
-              result.quantity = isPerHour
-                ? (categoryStats.totalWorkMinutes || 0) / 60
-                : categoryStats.quantity || 0;
+              // result.quantity = isPerHour
+              //   ? (categoryStats.totalWorkMinutes || 0) / 60
+              //   : categoryStats.quantity || 0;
+              // result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
+              if (isPerHour) {
+                // 時間単位請求の場合
+                let totalMinutes = categoryStats.totalWorkMinutes || 0;
+
+                // 休憩時間を請求に含める場合は休憩時間を追加
+                if (this.includeBreakInBilling) {
+                  totalMinutes += categoryStats.breakMinutes || 0;
+                }
+
+                result.quantity = totalMinutes / 60;
+              } else {
+                // 日単位請求の場合（休憩時間は関係なし）
+                result.quantity = categoryStats.quantity || 0;
+              }
               result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
             }
 
