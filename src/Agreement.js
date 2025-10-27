@@ -212,6 +212,8 @@ export default class Agreement extends BaseClass {
    * @property {number} overtimeUnitPriceBase - Overtime base unit price
    * @property {number} unitPriceQualified - Qualified unit price
    * @property {number} overtimeUnitPriceQualified - Overtime qualified unit price
+   * @property {string} billingUnitType - Billing unit type
+   * @property {boolean} includeBreakInBilling - Whether to include break time in billing
    */
   get prices() {
     return {
@@ -220,6 +222,8 @@ export default class Agreement extends BaseClass {
       overtimeUnitPriceBase: this.overtimeUnitPriceBase,
       unitPriceQualified: this.unitPriceQualified,
       overtimeUnitPriceQualified: this.overtimeUnitPriceQualified,
+      billingUnitType: this.billingUnitType,
+      includeBreakInBilling: this.includeBreakInBilling,
     };
   }
 }

@@ -9,15 +9,17 @@
  * @props {number} unitPriceQualified - Qualified unit price (JPY)
  * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
  * @props {string} billingUnitType - Billing unit type
+ * @props {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
  *****************************************************************************/
 import { BaseClass } from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
+import {
+  BILLING_UNIT_TYPE_ARRAY,
+  BILLING_UNIT_TYPE_DEFAULT,
+} from "./constants/billing-unit-type.js";
 
 const classProps = {
-  unitPriceBase: defField("price", {
-    label: "基本単価",
-    required: true,
-  }),
+  unitPriceBase: defField("price", { label: "基本単価", required: true }),
   overtimeUnitPriceBase: defField("price", {
     label: "時間外単価",
     required: true,
@@ -30,7 +32,20 @@ const classProps = {
     label: "資格者時間外単価",
     required: true,
   }),
-  billingUnitType: defField("billingUnitType", { required: true }),
+  billingUnitType: defField("select", {
+    default: BILLING_UNIT_TYPE_DEFAULT,
+    label: "請求単位",
+    required: true,
+    component: {
+      attrs: {
+        items: BILLING_UNIT_TYPE_ARRAY,
+      },
+    },
+  }),
+  includeBreakInBilling: defField("check", {
+    label: "請求に休憩時間を含める",
+    default: false,
+  }),
 };
 
 export default class UnitPrice extends BaseClass {

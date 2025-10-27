@@ -3,10 +3,6 @@ import {
   ARRANGEMENT_NOTIFICATION_STATUS_DEFAULT,
 } from "../constants/arrangement-notification-status.js";
 import {
-  BILLING_UNIT_TYPE_ARRAY,
-  BILLING_UNIT_TYPE_DEFAULT,
-} from "../constants/billing-unit-type.js";
-import {
   CONTRACT_STATUS_ARRAY,
   CONTRACT_STATUS_DEFAULT,
 } from "../constants/contract-status.js";
@@ -382,17 +378,6 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: ARRANGEMENT_NOTIFICATION_STATUS_ARRAY,
-      },
-    },
-  },
-  billingUnitType: {
-    ...generalDefinitions.select,
-    default: BILLING_UNIT_TYPE_DEFAULT,
-    label: "請求単位",
-    component: {
-      name: generalDefinitions.select.component.name,
-      attrs: {
-        items: BILLING_UNIT_TYPE_ARRAY,
       },
     },
   },
