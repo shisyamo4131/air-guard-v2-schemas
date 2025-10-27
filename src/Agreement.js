@@ -24,6 +24,7 @@
  * @props {number} unitPriceQualified - Qualified unit price (JPY)
  * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
  * @props {string} billingUnitType - Billing unit type
+ * @props {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
  * ---------------------------------------------------------------------------
  * [from WorkingResult.js]
  * @computed {string} key - Unique key combining `date` and `shiftType`
