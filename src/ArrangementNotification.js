@@ -30,6 +30,7 @@
  * @props {string} arrivedAt - Arrival time (HH:MM format)
  * @props {string} leavedAt - Leave time (HH:MM format)
  * @props {string} actualStartTime - Actual start time (HH:MM format)
+ * @props {boolean} actualIsStartNextDay - Actual next day start flag
  * @props {string} actualEndTime - Actual end time (HH:MM format)
  * @props {number} actualBreakMinutes - Actual break time (minutes)
  * @props {string} status - Arrangement notification status
