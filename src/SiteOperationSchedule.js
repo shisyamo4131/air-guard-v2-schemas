@@ -105,7 +105,7 @@ const classProps = {
    *   so this property is hidden in this class. The property itself is retained
    *   for potential future extension.
    */
-  regulationWorkMinutes: defField("number", { hidden: true }),
+  regulationWorkMinutes: defField("regulationWorkMinutes", { hidden: true }),
   /** Override `dayType` defined in WorkingResult.js to be hidden */
   dayType: defField("dayType", { hidden: true }),
 };
