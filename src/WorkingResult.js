@@ -97,7 +97,7 @@ export function accessors(self) {
       configurable: true,
       enumerable: true,
       get: () => {
-        return `${self.date}-${self.shiftType}`;
+        return `${self.date}-${self.dayType}-${self.shiftType}`;
       },
       set: () => {},
     },
