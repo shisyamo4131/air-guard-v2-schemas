@@ -145,7 +145,7 @@ export default class Operation extends FireModel {
           return _siteId;
         },
         set(v) {
-          if (typeof v !== "string") {
+          if (!!v && typeof v !== "string") {
             throw new Error(`siteId must be a string. siteId: ${v}`);
           }
           if (_siteId === v) return;
