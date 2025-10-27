@@ -85,6 +85,9 @@ export function accessors(self) {
       return _dateAt;
     },
     set(v) {
+      if (_dateAt && v.getTime() === _dateAt.getTime()) {
+        return;
+      }
       _dateAt = v;
       self.dayType = getDayType(v);
     },
