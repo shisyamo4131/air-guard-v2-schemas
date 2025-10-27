@@ -162,8 +162,9 @@ export default class Agreement extends BaseClass {
     },
   ];
 
-  beforeInitialize(item = {}) {
-    super.beforeInitialize(item);
+  afterInitialize() {
+    super.afterInitialize();
+
     /** Computed properties */
     workingResultAccessors(this);
   }
@@ -198,5 +199,27 @@ export default class Agreement extends BaseClass {
    */
   get endMinute() {
     return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
+  }
+
+  /**
+   * Returns an object containing price-related properties.
+   * This accessor is useful for synchronizing price details when creating `OperationResult` instance
+   * from a `SiteOperationSchedule`.
+   * - Includes `regulationWorkMinutes`.
+   * @returns {Object} An object with price-related properties.
+   * @property {number} regulationWorkMinutes - Regulation work minutes
+   * @property {number} unitPriceBase - Base unit price
+   * @property {number} overtimeUnitPriceBase - Overtime base unit price
+   * @property {number} unitPriceQualified - Qualified unit price
+   * @property {number} overtimeUnitPriceQualified - Overtime qualified unit price
+   */
+  get prices() {
+    return {
+      regulationWorkMinutes: this.regulationWorkMinutes,
+      unitPriceBase: this.unitPriceBase,
+      overtimeUnitPriceBase: this.overtimeUnitPriceBase,
+      unitPriceQualified: this.unitPriceQualified,
+      overtimeUnitPriceQualified: this.overtimeUnitPriceQualified,
+    };
   }
 }
