@@ -2,82 +2,118 @@
  * Agreement Model ver 1.0.0
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
- * A class for managing agreement details based on BaseClass.
- * - Combines properties from WorkingResult and UnitPrice.
+ * A class to manage agreement details based on WorkingResult.
  * ---------------------------------------------------------------------------
- * [from WorkingResult.js]
- * @props {Date} dateAt - Effective start date
- * - The date when this agreement becomes effective.
- * - This field holds only the date, with the time fixed at midnight.
- * @props {string} dayType - Day type (`WEEKDAY`, `SATURDAY`, `SUNDAY`, `HOLIDAY`)
- * @props {string} shiftType - Shift type (`DAY`, `NIGHT`)
- * @props {string} startTime - Start time (HH:MM format)
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break minutes
- * @props {boolean} isStartNextDay - Next day start flag
- * @props {number} regulationWorkMinutes - Regulation work minutes
- * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
- * - Exceeding this time is considered overtime.
- *
- * [from UnitPrice.js]
  * @props {number} unitPriceBase - Base unit price (JPY)
  * @props {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
  * @props {number} unitPriceQualified - Qualified unit price (JPY)
  * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
  * @props {string} billingUnitType - Billing unit type
  * @props {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
- *
- * [ORIGINAL]
  * @props {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
  * - The cutoff date for billing, using values defined in the CutoffDate utility class.
  * ---------------------------------------------------------------------------
- * [from WorkingResult.js]
- * @computed {string} key - Unique key combining `date` and `shiftType`
- * - A unique identifier for the agreement, combining `date` and `shiftType`.
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
+ * @getter {Object} prices - Object containing price-related properties (read-only)
+ * - Returns an object with all price-related properties for synchronizing details.
+ * - Useful for creating `OperationResult` instances from `SiteOperationSchedule`.
+ * - Includes: regulationWorkMinutes, unitPriceBase, overtimeUnitPriceBase,
+ *   unitPriceQualified, overtimeUnitPriceQualified, billingUnitType, includeBreakInBilling
+ * ---------------------------------------------------------------------------
+ * @inherited - The following properties are inherited from WorkingResult:
+ * @props {Date} dateAt - Applicable start date (trigger property)
+ * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @props {string} shiftType - Shift type (`DAY`, `NIGHT`)
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {boolean} isStartNextDay - Next day start flag
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
+ * @props {number} regulationWorkMinutes - Regulation work minutes
+ * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
+ * - Exceeding this time is considered overtime.
+ * ---------------------------------------------------------------------------
+ * @inherited - The following computed properties are inherited from WorkingResult:
+ * @computed {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
+ * - A unique identifier for the working result, combining `date`, `dayType`, and `shiftType`.
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
  * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
- * @computed {Date} startAt - Start date and time (Date object)
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
+ * - `true` if `startTime` is later than `endTime`
+ * @computed {Date} startAt - Start date and time (Date object) (read-only)
  * - Returns a Date object with `startTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} endAt - End date and time (Date object)
+ * @computed {Date} endAt - End date and time (Date object) (read-only)
  * - Returns a Date object with `endTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
- * - `true` if `startTime` is later than `endTime`
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time)
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
  * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
- * @computed {number} overtimeWorkMinutes - Overtime work in minutes
+ * - If the difference between `endAt` and `startAt` is negative, returns 0.
+ * - If `startAt` or `endAt` is not set, returns 0.
+ * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
+ * - If actual working time is less than regulation time (e.g., early leave), it equals `totalWorkMinutes`.
+ * - If actual working time exceeds regulation time (overtime), it equals `regulationWorkMinutes`.
+ * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * - Overtime work is not negative; the minimum is 0.
  * ---------------------------------------------------------------------------
- * @accessor {number} startHour - Start hour (0-23)
+ * @inherited - The following getter properties are inherited from WorkingResult:
+ * @getter {number} startHour - Start hour (0-23) (read-only)
  * - Extracted from `startTime`.
- * @accessor {number} startMinute - Start minute (0-59)
+ * @getter {number} startMinute - Start minute (0-59) (read-only)
  * - Extracted from `startTime`.
- * @accessor {number} endHour - End hour (0-23)
+ * @getter {number} endHour - End hour (0-23) (read-only)
  * - Extracted from `endTime`.
- * @accessor {number} endMinute - End minute (0-59)
+ * @getter {number} endMinute - End minute (0-59) (read-only)
  * - Extracted from `endTime`.
+ * ---------------------------------------------------------------------------
+ * @inherited - The following method is inherited from WorkingResult:
+ * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
+ * - Override this method in subclasses to add custom behavior when `dateAt` changes.
+ * - By default, updates `dayType` based on the new `dateAt` value.
+ * - @param {Date} v - The new `dateAt` value
  *****************************************************************************/
-import { BaseClass } from "air-firebase-v2";
-import {
-  classProps as workingResultClassProps,
-  accessors as workingResultAccessors,
-} from "./WorkingResult.js";
-import UnitPrice from "./UnitPrice.js";
+import WorkingResult from "./WorkingResult.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
-import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
+import {
+  BILLING_UNIT_TYPE,
+  BILLING_UNIT_TYPE_ARRAY,
+  BILLING_UNIT_TYPE_DEFAULT,
+} from "./constants/billing-unit-type.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import CutoffDate from "./utils/CutoffDate.js";
 
-/**
- * Class properties combining WorkingResult and UnitPrice, with additional fields
- */
 const classProps = {
-  ...workingResultClassProps,
-  ...UnitPrice.classProps,
+  ...WorkingResult.classProps,
+  unitPriceBase: defField("price", { label: "基本単価", required: true }),
+  overtimeUnitPriceBase: defField("price", {
+    label: "時間外単価",
+    required: true,
+  }),
+  unitPriceQualified: defField("price", {
+    label: "資格者単価",
+    required: true,
+  }),
+  overtimeUnitPriceQualified: defField("price", {
+    label: "資格者時間外単価",
+    required: true,
+  }),
+  billingUnitType: defField("select", {
+    default: BILLING_UNIT_TYPE_DEFAULT,
+    label: "請求単位",
+    required: true,
+    component: {
+      attrs: {
+        items: BILLING_UNIT_TYPE_ARRAY,
+      },
+    },
+  }),
+  includeBreakInBilling: defField("check", {
+    label: "請求に休憩時間を含める",
+    default: false,
+  }),
   cutoffDate: defField("select", {
     label: "締日区分",
     default: CutoffDate.VALUES.END_OF_MONTH,
@@ -89,8 +125,6 @@ const classProps = {
     },
   }),
 };
-
-classProps.dateAt.label = "適用開始日";
 
 /**
  * Table headers for displaying agreement details
@@ -195,52 +229,10 @@ const headers = [
   },
 ];
 
-export default class Agreement extends BaseClass {
+export default class Agreement extends WorkingResult {
   static className = "取極め";
   static classProps = classProps;
   static headers = headers;
-
-  /**
-   * Initializes computed properties after the instance is created.
-   */
-  afterInitialize() {
-    super.afterInitialize();
-
-    /** Computed properties */
-    workingResultAccessors(this);
-  }
-
-  /**
-   * Returns the start hour extracted from `startTime`.
-   * - Returns 0 if `startTime` is not set.
-   */
-  get startHour() {
-    return this.startTime ? Number(this.startTime.split(":")[0]) : 0;
-  }
-
-  /**
-   * Returns the start minute extracted from `startTime`.
-   * - Returns 0 if `startTime` is not set.
-   */
-  get startMinute() {
-    return this.startTime ? Number(this.startTime.split(":")[1]) : 0;
-  }
-
-  /**
-   * Returns the end hour extracted from `endTime`.
-   * - Returns 0 if `endTime` is not set.
-   */
-  get endHour() {
-    return this.endTime ? Number(this.endTime.split(":")[0]) : 0;
-  }
-
-  /**
-   * Returns the end minute extracted from `endTime`.
-   * - Returns 0 if `endTime` is not set.
-   */
-  get endMinute() {
-    return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
-  }
 
   /**
    * Returns an object containing price-related properties.

@@ -13,28 +13,6 @@
  *   `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are synchronized
  *   in the parent `Operation` class.
  * ---------------------------------------------------------------------------
- * [INHERIT OPERATION CLASS]
- * @props {string} siteId - Site document ID
- * @props {Date} dateAt - Date of operation (placement date)
- * @props {string} shiftType - `DAY` or `NIGHT`
- * @props {string} startTime - Start time (HH:MM format)
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {boolean} isStartNextDay - Next day start flag
- * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {number} regulationWorkMinutes - Regulation work minutes
- * - Indicates the maximum working time treated as regular working hours.
- * - A new value will be synchronized to all `employees` and `outsourcers`.
- * @props {number} requiredPersonnel - Required number of personnel
- * @props {boolean} qualificationRequired - Qualification required flag
- * @props {string} workDescription - Work description
- * @props {string} remarks - Remarks
- * @props {Array<SiteOperationScheduleDetail>} employees - Assigned employees
- * - Array of `SiteOperationScheduleDetail` instances representing assigned employees
- * @props {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
- * - Array of `SiteOperationScheduleDetail` instances representing assigned outsourcers
- *
- * [ADDED]
  * @props {string|null} operationResultId - Associated OperationResult document ID
  * - If an OperationResult has been created based on this schedule, this property
  *   holds the ID of that OperationResult document.
@@ -44,40 +22,131 @@
  * - Property to control the display order of schedules on the same date and shift type.
  * - Automatically assigned during creation based on existing documents.
  * ---------------------------------------------------------------------------
- * [INHERIT]
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
- * @computed {string} dayType - Day type based on `dateAt`
- * @computed {Date} startAt - Start date and time (Date object)
+ * @getter {boolean} isEditable - Indicates whether the instance is editable (read-only)
+ * - Returns `false` if `operationResultId` is set, `true` otherwise
+ * @getter {boolean} isNotificatedAllWorkers - Indicates whether all workers have been notified (read-only)
+ * - Returns `true` if all workers in the `workers` array have `hasNotification` set to `true`
+ * ---------------------------------------------------------------------------
+ * @inherited - The following properties are inherited from Operation:
+ * @props {string} siteId - Site document ID (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {number} requiredPersonnel - Required number of personnel
+ * @props {boolean} qualificationRequired - Qualification required flag
+ * @props {string} workDescription - Work description
+ * @props {string} remarks - Remarks
+ * @props {Array<SiteOperationScheduleDetail>} employees - Assigned employees
+ * - Array of `SiteOperationScheduleDetail` instances representing assigned employees
+ * @props {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
+ * - Array of `SiteOperationScheduleDetail` instances representing assigned outsourcers
+ * ---------------------------------------------------------------------------
+ * @inherited - The following properties are inherited from WorkingResult (via Operation):
+ * @props {Date} dateAt - Date of operation (placement date) (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @props {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {string} startTime - Start time (HH:MM format) (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {boolean} isStartNextDay - Next day start flag (trigger property)
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {string} endTime - End time (HH:MM format) (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {number} breakMinutes - Break time (minutes) (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * - Indicates the maximum working time treated as regular working hours.
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * ---------------------------------------------------------------------------
+ * @inherited - The following computed properties are inherited from Operation:
+ * @computed {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
+ * @computed {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
+ * @computed {number} employeesCount - Count of assigned employees (read-only)
+ * @computed {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
+ * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
+ * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
+ * @computed {Array<SiteOperationScheduleDetail>} workers - Combined array of `employees` and `outsourcers`
+ * - Getter: Returns concatenated array of employees and outsourcers
+ * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
+ * ---------------------------------------------------------------------------
+ * @inherited - The following computed properties are inherited from WorkingResult (via Operation):
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
+ * @computed {Date} startAt - Start date and time (Date object) (read-only)
  * - Returns a Date object with `startTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} endAt - End date and time (Date object)
+ * @computed {Date} endAt - End date and time (Date object) (read-only)
  * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
  * - `true` if `startTime` is later than `endTime`
- * @computed {Array<string>} employeeIds - Array of employee IDs from `employees`
- * @computed {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers`
- * @computed {number} employeesCount - Count of assigned employees
- * @computed {number} outsourcersCount - Count of assigned outsourcers (sum of amounts)
- * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel
- * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
- * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
+ * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
+ * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
+ * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * ---------------------------------------------------------------------------
- * [INHERIT]
- * @states isEmployeesChanged Indicates whether the employees have changed.
- * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
- * @states addedWorkers An array of workers that have been added.
- * @states removedWorkers An array of workers that have been removed.
- * @states updatedWorkers An array of workers that have been updated.
- *
- * [ADDED]
- * @states isEditable Indicates whether the instance is editable.
- * @states isNotificatedAllWorkers Indicates whether all workers have been notified.
+ * @inherited - The following getter properties are inherited from Operation:
+ * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
+ * - Returns true if the employee IDs have changed compared to `_beforeData`
+ * @getter {boolean} isOutsourcersChanged - Indicates whether the outsourcers have changed (read-only)
+ * - Returns true if the outsourcer IDs have changed compared to `_beforeData`
+ * @getter {Array<SiteOperationScheduleDetail>} addedWorkers - An array of workers that have been added (read-only)
+ * - Workers that exist in current data but not in `_beforeData`
+ * @getter {Array<SiteOperationScheduleDetail>} removedWorkers - An array of workers that have been removed (read-only)
+ * - Workers that exist in `_beforeData` but not in current data
+ * @getter {Array<SiteOperationScheduleDetail>} updatedWorkers - An array of workers that have been updated (read-only)
+ * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
  * ---------------------------------------------------------------------------
- * [INHERIT]
- * @methods addWorker Adds a new worker (employee or outsourcer).
- * @methods moveWorker Moves the position of a worker (employee or outsourcer).
- * @methods removeWorker Removes a worker (employee or outsourcer).
+ * @inherited - The following getter properties are inherited from WorkingResult (via Operation):
+ * @getter {number} startHour - Start hour (0-23) (read-only)
+ * - Extracted from `startTime`.
+ * @getter {number} startMinute - Start minute (0-59) (read-only)
+ * - Extracted from `startTime`.
+ * @getter {number} endHour - End hour (0-23) (read-only)
+ * - Extracted from `endTime`.
+ * @getter {number} endMinute - End minute (0-59) (read-only)
+ * - Extracted from `endTime`.
+ * ---------------------------------------------------------------------------
+ * @method {function} create - Creates a new SiteOperationSchedule with automatic display order assignment
+ * - Automatically assigns a display order based on existing documents.
+ * - @param {Object} updateOptions - Options for creating the document
+ * @method {function} update - Updates the SiteOperationSchedule and manages related notifications
+ * - Clears all notifications if related data have been changed during updates.
+ * - Updates and deletes notifications for removed or updated employees if employee assignments have changed.
+ * - @param {Object} updateOptions - Options for updating the document
+ * @method {function} delete - Deletes the SiteOperationSchedule and all related notifications
+ * - Deletes all notifications associated with the schedule before deleting the schedule itself.
+ * - @param {Object} updateOptions - Options for deleting the document
+ * @method {function} addWorker - Adds a new worker with automatic siteOperationScheduleId assignment
+ * - Overrides parent method to automatically set `siteOperationScheduleId`
+ * - @param {Object} options - Options for adding a worker
+ * - @param {number} index - Insertion position
+ * ---------------------------------------------------------------------------
+ * @inherited - The following methods are inherited from Operation:
+ * @method {function} moveWorker - Moves the position of a worker (employee or outsourcer)
+ * - @param {Object} options - Options for changing worker position
+ * @method {function} changeWorker - Changes the details of a worker
+ * - @param {Object} newWorker - New worker object
+ * @method {function} removeWorker - Removes a worker (employee or outsourcer)
+ * - @param {Object} options - Options for removing a worker
+ * @method {function} setSiteIdCallback - Callback method called when `siteId` is set
+ * - Override this method in subclasses to add custom behavior when `siteId` changes.
+ * - @param {string} v - The new `siteId` value
+ * @method {function} setShiftTypeCallback - Callback method called when `shiftType` is set
+ * - Override this method in subclasses to add custom behavior when `shiftType` changes.
+ * - @param {string} v - The new `shiftType` value
+ * @method {function} setRegulationWorkMinutesCallback - Callback method called when `regulationWorkMinutes` is set
+ * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
+ * - @param {number} v - The new `regulationWorkMinutes` value
+ * ---------------------------------------------------------------------------
+ * @inherited - The following method is inherited from WorkingResult (via Operation):
+ * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
+ * - Override this method in subclasses to add custom behavior when `dateAt` changes.
+ * - By default, updates `dayType` based on the new `dateAt` value and synchronizes to workers.
+ * - @param {Date} v - The new `dateAt` value
  *****************************************************************************/
 import Operation from "./Operation.js";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -88,27 +157,32 @@ import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 
 const classProps = {
   ...Operation.classProps,
-  /** override employees for change customClass */
+  operationResultId: defField("oneLine", { hidden: true }),
+  displayOrder: defField("number", { default: 0, hidden: true }),
   employees: defField("array", { customClass: SiteOperationScheduleDetail }),
-  /** override outsourcers for change customClass */
   outsourcers: defField("array", {
     customClass: SiteOperationScheduleDetail,
   }),
-  operationResultId: defField("oneLine", { hidden: true }),
-  displayOrder: defField("number", { default: 0, hidden: true }),
-  /** Override siteId for set hidden to true */
-  siteId: defField("siteId", { required: true, hidden: true }),
-  /**
-   * Override regulationWorkMinutes to set hidden to true
-   * - `regulationWorkMinutes` is determined by the `Agreement` of the `Site`,
-   *   but the `Agreement` may be unknown when creating a site operation schedule,
-   *   so this property is hidden in this class. The property itself is retained
-   *   for potential future extension.
-   */
-  regulationWorkMinutes: defField("regulationWorkMinutes", { hidden: true }),
-  /** Override `dayType` defined in WorkingResult.js to be hidden */
   dayType: defField("dayType", { hidden: true }),
+  regulationWorkMinutes: defField("regulationWorkMinutes", { hidden: true }),
 };
+
+/**
+ * Wrapper to define computed properties.
+ * @param {*} obj
+ * @param {*} properties
+ */
+function defineComputedProperties(obj, properties) {
+  const descriptors = {};
+  for (const [key, descriptor] of Object.entries(properties)) {
+    descriptors[key] = {
+      configurable: true,
+      enumerable: true,
+      ...descriptor,
+    };
+  }
+  Object.defineProperties(obj, descriptors);
+}
 
 export default class SiteOperationSchedule extends Operation {
   static className = "現場稼働予定";
@@ -136,10 +210,16 @@ export default class SiteOperationSchedule extends Operation {
     let _endTime = this.endTime;
     let _breakMinutes = this.breakMinutes;
     let _isStartNextDay = this.isStartNextDay;
-    Object.defineProperties(this, {
+    const synchronizeToWorkers = (key, value) => {
+      this.employees.forEach((emp) => {
+        emp[key] = value;
+      });
+      this.outsourcers.forEach((out) => {
+        out[key] = value;
+      });
+    };
+    defineComputedProperties(this, {
       startTime: {
-        configurable: true,
-        enumerable: true,
         get() {
           return _startTime;
         },
@@ -149,13 +229,10 @@ export default class SiteOperationSchedule extends Operation {
           }
           if (_startTime === v) return;
           _startTime = v;
-          this.employees.forEach((emp) => (emp.startTime = v));
-          this.outsourcers.forEach((out) => (out.startTime = v));
+          synchronizeToWorkers("startTime", v);
         },
       },
       endTime: {
-        configurable: true,
-        enumerable: true,
         get() {
           return _endTime;
         },
@@ -165,13 +242,10 @@ export default class SiteOperationSchedule extends Operation {
           }
           if (_endTime === v) return;
           _endTime = v;
-          this.employees.forEach((emp) => (emp.endTime = v));
-          this.outsourcers.forEach((out) => (out.endTime = v));
+          synchronizeToWorkers("endTime", v);
         },
       },
       breakMinutes: {
-        configurable: true,
-        enumerable: true,
         get() {
           return _breakMinutes;
         },
@@ -183,13 +257,10 @@ export default class SiteOperationSchedule extends Operation {
           }
           if (_breakMinutes === v) return;
           _breakMinutes = v;
-          this.employees.forEach((emp) => (emp.breakMinutes = v));
-          this.outsourcers.forEach((out) => (out.breakMinutes = v));
+          synchronizeToWorkers("breakMinutes", v);
         },
       },
       isStartNextDay: {
-        configurable: true,
-        enumerable: true,
         get() {
           return _isStartNextDay;
         },
@@ -201,8 +272,7 @@ export default class SiteOperationSchedule extends Operation {
           }
           if (_isStartNextDay === v) return;
           _isStartNextDay = v;
-          this.employees.forEach((emp) => (emp.isStartNextDay = v));
-          this.outsourcers.forEach((out) => (out.isStartNextDay = v));
+          synchronizeToWorkers("isStartNextDay", v);
         },
       },
     });

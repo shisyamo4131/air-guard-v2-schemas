@@ -3,29 +3,11 @@
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
  * - Model representing arrangement notifications for employees extending SiteOperationScheduleDetail.
- * - The `docId` is fixed to allow recreation of documents.
+ * - The `docId` is fixed to `${siteOperationScheduleId}-${workerId}` to allow recreation of documents.
+ * - Status-based state management with specific transition methods.
+ * - Overrides `totalWorkMinutes` to use actual work times instead of scheduled times.
+ * - Direct updates are disabled; use status transition methods instead.
  * ---------------------------------------------------------------------------
- * [INHERIT]
- * @props {string} id - Employee or Outsourcer document ID
- * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
- * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
- * @props {number} amount - Number of placements (always fixed at 1)
- * @props {Date} dateAt - Placement date
- * @props {string} siteId - Site ID
- * @props {string} shiftType - `DAY` or `NIGHT`
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
- * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {boolean} isQualified - Qualified flag
- * @props {boolean} isOjt - OJT flag
- * @props {string} siteOperationScheduleId - Site Operation Schedule ID
- *
- * [REMOVED]
- * @props {boolean} hasNotification - Notification flag
- *
- * [ADDED]
  * @props {Date} confirmedAt - Confirmation date and time
  * @props {string} arrivedAt - Arrival time (HH:MM format)
  * @props {string} leavedAt - Leave time (HH:MM format)
@@ -35,72 +17,124 @@
  * @props {number} actualBreakMinutes - Actual break time (minutes)
  * @props {string} status - Arrangement notification status
  * ---------------------------------------------------------------------------
- * [INHERIT]
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
- * @computed {Date} startAt - Start date and time (Date object)
- * - Returns a Date object with `startTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} endAt - End date and time (Date object)
- * - Returns a Date object with `endTime` set based on `dateAt`.
- * - If `isSpansNextDay` is true, add 1 day.
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
- * - `true` if `startTime` is later than `endTime`
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time)
- * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
- * @computed {string} workerId - Worker ID
- * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
- * @computed {string|null} employeeId - Employee ID (null if not applicable)
- * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable)
- *
- * [REMOVED]
- * @computed {string} notificationKey - Notification key
- *
- * [ADDED]
- * @computed {Date} actualStartAt - Actual start date and time (Date object)
+ * @computed {Date} actualStartAt - Actual start date and time (Date object) (read-only)
  * - Returns a Date object with `actualStartTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} actualEndAt - Actual end date and time (Date object)
+ * @computed {Date} actualEndAt - Actual end date and time (Date object) (read-only)
  * - Returns a Date object with `actualEndTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding actual break time)
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding actual break time) (read-only)
+ * - **OVERRIDE**: Calculated using actual times instead of scheduled times.
  * - Calculated as the difference between `actualEndAt` and `actualStartAt` minus `actualBreakMinutes`
- * - Note: Overrides the inherited `totalWorkMinutes`.
  * ---------------------------------------------------------------------------
- * [INHERIT]
- * @accessor {number} breakHours - Break time in hours
- * @accessor {number} overtimeWorkHours - Overtime work in hours
+ * @getter {boolean} isTemporary - Temporary status flag (read-only)
+ * - Returns `true` if status is `TEMPORARY`
+ * @getter {boolean} isArranged - Arranged status flag (read-only)
+ * - Returns `true` if status is `ARRANGED`
+ * @getter {boolean} isConfirmed - Confirmed status flag (read-only)
+ * - Returns `true` if status is `CONFIRMED`
+ * @getter {boolean} isArrived - Arrived status flag (read-only)
+ * - Returns `true` if status is `ARRIVED`
+ * @getter {boolean} isLeaved - Leaved status flag (read-only)
+ * - Returns `true` if status is `LEAVED`
  * ---------------------------------------------------------------------------
- * [ADDED]
- * @getter {boolean} isTemporary - Temporary status flag
- * @getter {boolean} isArranged - Arranged status flag
- * @getter {boolean} isConfirmed - Confirmed status flag
- * @getter {boolean} isArrived - Arrived status flag
- * @getter {boolean} isLeaved - Leaved status flag
+ * @inherited - The following properties are inherited from SiteOperationScheduleDetail:
+ * @props {string} siteOperationScheduleId - Site Operation Schedule ID
  * ---------------------------------------------------------------------------
- * @method create - Override to fix `docId` for recreation
+ * @inherited - The following properties are inherited from OperationDetail (via SiteOperationScheduleDetail):
+ * @props {string} id - Employee or Outsourcer document ID
+ * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
+ * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
+ * @props {number} amount - Number of placements (always fixed at 1)
+ * @props {string} siteId - Site ID
+ * @props {boolean} isQualified - Qualified flag
+ * @props {boolean} isOjt - OJT flag
+ * ---------------------------------------------------------------------------
+ * @inherited - The following properties are inherited from WorkingResult (via SiteOperationScheduleDetail):
+ * @props {Date} dateAt - Placement date (trigger property)
+ * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @props {string} shiftType - `DAY` or `NIGHT`
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {boolean} isStartNextDay - Next day start flag
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
+ * @props {number} regulationWorkMinutes - Regulation work minutes
+ * ---------------------------------------------------------------------------
+ * @inherited - The following computed properties are inherited from OperationDetail (via SiteOperationScheduleDetail):
+ * @computed {string} workerId - Worker ID (read-only)
+ * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
+ * @computed {string|null} employeeId - Employee ID (null if not applicable) (read-only)
+ * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable) (read-only)
+ * ---------------------------------------------------------------------------
+ * @inherited - The following computed properties are inherited from WorkingResult (via SiteOperationScheduleDetail):
+ * @computed {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
+ * - `true` if `startTime` is later than `endTime`
+ * @computed {Date} startAt - Start date and time (Date object) (read-only)
+ * - Returns a Date object with `startTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * @computed {Date} endAt - End date and time (Date object) (read-only)
+ * - Returns a Date object with `endTime` set based on `dateAt`.
+ * - If `isStartNextDay` is true, add 1 day.
+ * - If `isSpansNextDay` is true, add 1 day.
+ * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
+ * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
+ * ---------------------------------------------------------------------------
+ * @inherited - The following getter properties are inherited from WorkingResult (via SiteOperationScheduleDetail):
+ * @getter {number} startHour - Start hour (0-23) (read-only)
+ * - Extracted from `startTime`.
+ * @getter {number} startMinute - Start minute (0-59) (read-only)
+ * - Extracted from `startTime`.
+ * @getter {number} endHour - End hour (0-23) (read-only)
+ * - Extracted from `endTime`.
+ * @getter {number} endMinute - End minute (0-59) (read-only)
+ * - Extracted from `endTime`.
+ * ---------------------------------------------------------------------------
+ * @removed - The following properties from SiteOperationScheduleDetail are removed:
+ * @removed {boolean} hasNotification - Notification flag (not needed in ArrangementNotification)
+ * @removed {string} notificationKey - Notification key (not needed in ArrangementNotification)
+ * ---------------------------------------------------------------------------
+ * @method {function} create - Override to fix `docId` for recreation
  * - Ensures `docId` is set to `${siteOperationScheduleId}-${workerId}`.
  * - Allows recreation of ArrangementNotification documents.
- * @method update - Disabled
+ * - @param {Object} updateOptions - Options for creating the document
+ * @method {function} update - Disabled
  * - Direct updates to ArrangementNotification are not allowed.
- * - Throws an error if called.
- * @method toTemporary - Change status to `TEMPORARY`
- * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, and resets relevant timestamps.
- * - Updates `status` to `TEMPORARY`.
- * @method toArranged - Change status to `ARRANGED`
- * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, and resets relevant timestamps.
- * - Updates `status` to `ARRANGED`.
- * @method toConfirmed - Change status to `CONFIRMED`
- * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, sets `confirmedAt` to current datetime, and resets relevant timestamps.
- * - Updates `status` to `CONFIRMED`.
- * @method toArrived - Change status to `ARRIVED`
- * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, sets `arrivedAt` to current datetime, and retains or sets `confirmedAt`.
- * - Updates `status` to `ARRIVED`.
- * @method toLeaved - Change status to `LEAVED`
- * - Sets `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, sets `leavedAt` to current datetime, and retains or sets `confirmedAt` and `arrivedAt`.
- * - Updates `status` to `LEAVED`.
- * @method fetchDocsBySiteOperationScheduleId (static) - Get documents by `siteOperationScheduleId`.
- * @method bulkDelete (static) - Bulk delete arrangement notifications by `siteOperationScheduleId`.
+ * - Throws an error if called. Use status transition methods instead.
+ * @method {function} toTemporary - Change status to `TEMPORARY`
+ * - Sets actual times to scheduled times, resets timestamps, updates status.
+ * - @param {Object} updateOptions - Options for updating the document
+ * @method {function} toArranged - Change status to `ARRANGED`
+ * - Sets actual times to scheduled times, resets timestamps, updates status.
+ * - @param {Object} updateOptions - Options for updating the document
+ * @method {function} toConfirmed - Change status to `CONFIRMED`
+ * - Sets actual times to scheduled times, sets `confirmedAt`, resets other timestamps, updates status.
+ * - @param {Object} updateOptions - Options for updating the document
+ * @method {function} toArrived - Change status to `ARRIVED`
+ * - Sets actual times to scheduled times, sets `arrivedAt`, retains or sets `confirmedAt`, updates status.
+ * - @param {Object} updateOptions - Options for updating the document
+ * @method {function} toLeaved - Change status to `LEAVED`
+ * - Sets actual times from parameters, sets `leavedAt`, retains or sets other timestamps, updates status.
+ * - @param {Object} timeOptions - Time options (actualStartTime, actualEndTime, actualBreakMinutes, actualIsStartNextDay)
+ * - @param {Object} updateOptions - Options for updating the document
+ * @method {function} fetchDocsBySiteOperationScheduleId - Get documents by `siteOperationScheduleId` (static)
+ * - @param {string} id - The site operation schedule ID
+ * - @returns {Promise<Array>} - The fetched documents
+ * @method {function} bulkDelete - Bulk delete arrangement notifications (static)
+ * - @param {Object} options - Deletion options (siteOperationScheduleId, workerIds)
+ * - @param {Object} [transaction] - Optional Firestore transaction object
+ * - @returns {Promise<void>}
+ * ---------------------------------------------------------------------------
+ * @inherited - The following method is inherited from WorkingResult (via SiteOperationScheduleDetail):
+ * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
+ * - Override this method in subclasses to add custom behavior when `dateAt` changes.
+ * - By default, updates `dayType` based on the new `dateAt` value.
+ * - @param {Date} v - The new `dateAt` value
  *****************************************************************************/
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { getDateAt, ContextualError } from "./utils/index.js";

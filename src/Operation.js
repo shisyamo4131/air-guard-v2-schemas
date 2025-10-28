@@ -2,7 +2,7 @@
  * Operation Model ver 1.0.0
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
- * - Base class of SiteOperationSchedule and OperationResult
+ * - Base class of SiteOperationSchedule based on WorkingResult.
  * - `dateAt` property indicates the date of operation (placement date)
  *   used for billing purposes.
  *   Actual working day may differ from this date.
@@ -12,17 +12,8 @@
  * - `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
  *   They should be synchronized at `SiteOperationSchedule` level instead.
  * ---------------------------------------------------------------------------
- * @props {string} siteId - Site document ID
- * @props {Date} dateAt - Date of operation (placement date)
- * @props {string} shiftType - `DAY` or `NIGHT`
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
- * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes
- * - Indicates the maximum working time treated as regular working hours.
- * - A new value will be synchronized to all `employees` and `outsourcers`.
+ * @props {string} siteId - Site document ID (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * @props {number} requiredPersonnel - Required number of personnel
  * @props {boolean} qualificationRequired - Qualification required flag
  * @props {string} workDescription - Work description
@@ -32,59 +23,114 @@
  * @props {Array<OperationDetail>} outsourcers - Assigned outsourcers
  * - Array of `OperationDetail` instances representing assigned outsourcers
  * ---------------------------------------------------------------------------
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
- * @computed {string} dayType - Day type based on `dateAt`
- * @computed {Date} startAt - Start date and time (Date object)
+ * @computed {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
+ * @computed {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
+ * @computed {number} employeesCount - Count of assigned employees (read-only)
+ * @computed {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
+ * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
+ * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
+ * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ * - Getter: Returns concatenated array of employees and outsourcers
+ * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
+ * ---------------------------------------------------------------------------
+ * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
+ * - Returns true if the employee IDs have changed compared to `_beforeData`
+ * @getter {boolean} isOutsourcersChanged - Indicates whether the outsourcers have changed (read-only)
+ * - Returns true if the outsourcer IDs have changed compared to `_beforeData`
+ * @getter {Array<OperationDetail>} addedWorkers - An array of workers that have been added (read-only)
+ * - Workers that exist in current data but not in `_beforeData`
+ * @getter {Array<OperationDetail>} removedWorkers - An array of workers that have been removed (read-only)
+ * - Workers that exist in `_beforeData` but not in current data
+ * @getter {Array<OperationDetail>} updatedWorkers - An array of workers that have been updated (read-only)
+ * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
+ * ---------------------------------------------------------------------------
+ * @inherited - The following properties are inherited from WorkingResult:
+ * @props {Date} dateAt - Date of operation (placement date) (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @props {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @props {string} startTime - Start time (HH:MM format)
+ * @props {boolean} isStartNextDay - Next day start flag
+ * - `true` if the actual work starts the day after the placement date `dateAt`
+ * @props {string} endTime - End time (HH:MM format)
+ * @props {number} breakMinutes - Break time (minutes)
+ * @props {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * - Indicates the maximum working time treated as regular working hours.
+ * - A new value will be synchronized to all `employees` and `outsourcers`.
+ * ---------------------------------------------------------------------------
+ * @inherited - The following computed properties are inherited from WorkingResult:
+ * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * @computed {Date} startAt - Start date and time (Date object) (read-only)
  * - Returns a Date object with `startTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} endAt - End date and time (Date object)
+ * @computed {Date} endAt - End date and time (Date object) (read-only)
  * - Returns a Date object with `endTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date
+ * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
  * - `true` if `startTime` is later than `endTime`
- * @computed {Array<string>} employeeIds - Array of employee IDs from `employees`
- * @computed {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers`
- * @computed {number} employeesCount - Count of assigned employees
- * @computed {number} outsourcersCount - Count of assigned outsourcers (sum of amounts)
- * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel
- * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
- * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
+ * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
+ * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
+ * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * ---------------------------------------------------------------------------
- * @states isEmployeesChanged Indicates whether the employees have changed.
- * @states isOutsourcersChanged Indicates whether the outsourcers have changed.
- * @states addedWorkers An array of workers that have been added.
- * @states removedWorkers An array of workers that have been removed.
- * @states updatedWorkers An array of workers that have been updated.
+ * @inherited - The following getter properties are inherited from WorkingResult:
+ * @getter {number} startHour - Start hour (0-23) (read-only)
+ * - Extracted from `startTime`.
+ * @getter {number} startMinute - Start minute (0-59) (read-only)
+ * - Extracted from `startTime`.
+ * @getter {number} endHour - End hour (0-23) (read-only)
+ * - Extracted from `endTime`.
+ * @getter {number} endMinute - End minute (0-59) (read-only)
+ * - Extracted from `endTime`.
  * ---------------------------------------------------------------------------
- * @methods addWorker Adds a new worker (employee or outsourcer).
- * @methods moveWorker Moves the position of a worker (employee or outsourcer).
- * @methods removeWorker Removes a worker (employee or outsourcer).
+ * @method {function} addWorker - Adds a new worker (employee or outsourcer)
+ * - @param {Object} options - Options for adding a worker
+ * - @param {string} options.id - The worker ID (employeeId or outsourcerId)
+ * - @param {boolean} [options.isEmployee=true] - Whether the worker is an employee
+ * - @param {number} [index=0] - Insertion position. If -1, adds to the end
+ * @method {function} moveWorker - Moves the position of a worker (employee or outsourcer)
+ * - @param {Object} options - Options for changing worker position
+ * - @param {number} options.oldIndex - The original index
+ * - @param {number} options.newIndex - The new index
+ * - @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer
+ * @method {function} changeWorker - Changes the details of a worker
+ * - @param {Object} newWorker - New worker object
+ * @method {function} removeWorker - Removes a worker (employee or outsourcer)
+ * - @param {Object} options - Options for removing a worker
+ * - @param {string} options.workerId - The ID of the employee or outsourcer
+ * - @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer
+ * @method {function} setSiteIdCallback - Callback method called when `siteId` is set
+ * - Override this method in subclasses to add custom behavior when `siteId` changes.
+ * - By default, does nothing.
+ * - @param {string} v - The new `siteId` value
+ * @method {function} setShiftTypeCallback - Callback method called when `shiftType` is set
+ * - Override this method in subclasses to add custom behavior when `shiftType` changes.
+ * - By default, does nothing.
+ * - @param {string} v - The new `shiftType` value
+ * @method {function} setRegulationWorkMinutesCallback - Callback method called when `regulationWorkMinutes` is set
+ * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
+ * - By default, does nothing.
+ * - @param {number} v - The new `regulationWorkMinutes` value
+ * ---------------------------------------------------------------------------
+ * @inherited - The following method is inherited from WorkingResult:
+ * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
+ * - Override this method in subclasses to add custom behavior when `dateAt` changes.
+ * - By default, updates `dayType` based on the new `dateAt` value and synchronizes to workers.
+ * - @param {Date} v - The new `dateAt` value
  *****************************************************************************/
-import FireModel from "air-firebase-v2";
+import WorkingResult from "./WorkingResult.js";
 import OperationDetail from "./OperationDetail.js";
-import Site from "./Site.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { DAY_TYPE, getDayType } from "./constants/day-type.js";
+import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
-import { fetchDocsApi, fetchItemByKeyApi } from "./apis/index.js";
-import {
-  classProps as workingResultClassProps,
-  accessors as workingResultAccessors,
-} from "./WorkingResult.js";
 
 const classProps = {
-  siteId: defField("siteId", {
-    required: true,
-    component: {
-      attrs: {
-        api: () => fetchDocsApi(Site),
-        clearable: true,
-        fetchItemByKeyApi: () => fetchItemByKeyApi(Site),
-      },
-    },
-  }),
-  ...workingResultClassProps, // Inherited from WorkingResult.js
+  siteId: defField("siteId", { required: true }),
+  ...WorkingResult.classProps, // Inherited from WorkingResult.js
   requiredPersonnel: defField("number", {
     label: "必要人数",
     required: true,
@@ -98,7 +144,24 @@ const classProps = {
   }),
 };
 
-export default class Operation extends FireModel {
+/**
+ * Wrapper to define computed properties.
+ * @param {*} obj
+ * @param {*} properties
+ */
+function defineComputedProperties(obj, properties) {
+  const descriptors = {};
+  for (const [key, descriptor] of Object.entries(properties)) {
+    descriptors[key] = {
+      configurable: true,
+      enumerable: true,
+      ...descriptor,
+    };
+  }
+  Object.defineProperties(obj, descriptors);
+}
+
+export default class Operation extends WorkingResult {
   static className = "稼働ベース";
   static collectionPath = "Operations";
   static useAutonumber = false;
@@ -114,13 +177,59 @@ export default class Operation extends FireModel {
   static SHIFT_TYPE_NIGHT = SHIFT_TYPE.NIGHT;
 
   /**
-   * Override `afterInitialize`.
+   * Constructor
+   * @param {*} item
+   */
+  constructor(item = {}) {
+    if (new.target == Operation) {
+      throw new Error(
+        `Operation is an abstract class and cannot be instantiated directly.`
+      );
+    }
+    super(item);
+  }
+
+  /**
+   * setSiteIdCallback
+   * - Callback method called when `siteId` is set.
+   * - Override this method in subclasses to add custom behavior when `siteId` changes.
+   * @param {*} v
+   */
+  setSiteIdCallback(v) {}
+
+  /**
+   * setDateAtCallback
+   * - Callback method called when `dateAt` is set.
+   * - Override this method in subclasses to add custom behavior when `dateAt` changes.
+   * @param {*} v
+   */
+  setDateAtCallback(v) {
+    super.setDateAtCallback(v);
+    this.employees.forEach((emp) => (emp.dateAt = v));
+    this.outsourcers.forEach((out) => (out.dateAt = v));
+  }
+
+  /**
+   * setShiftTypeCallback
+   * - Callback method called when `shiftType` is set.
+   * - Override this method in subclasses to add custom behavior when `shiftType` changes.
+   * @param {*} v
+   */
+  setShiftTypeCallback(v) {}
+
+  /**
+   * setRegulationWorkMinutesCallback
+   * - Callback method called when `regulationWorkMinutes` is set.
+   * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
+   * @param {*} v
+   */
+  setRegulationWorkMinutesCallback(v) {}
+
+  /**
+   * afterInitialize
    */
   afterInitialize(item = {}) {
     super.afterInitialize(item);
-
-    /** Define computed properties from WorkingResult.js */
-    workingResultAccessors(this);
 
     /***********************************************************
      * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
@@ -134,13 +243,10 @@ export default class Operation extends FireModel {
      * They should be synchronized at `SiteOperationSchedule` level instead.
      ***********************************************************/
     let _siteId = this.siteId;
-    let _dateAt = this.dateAt;
     let _shiftType = this.shiftType;
     let _regulationWorkMinutes = this.regulationWorkMinutes;
-    Object.defineProperties(this, {
+    defineComputedProperties(this, {
       siteId: {
-        configurable: true,
-        enumerable: true,
         get() {
           return _siteId;
         },
@@ -152,30 +258,10 @@ export default class Operation extends FireModel {
           _siteId = v;
           this.employees.forEach((emp) => (emp.siteId = v));
           this.outsourcers.forEach((out) => (out.siteId = v));
-        },
-      },
-      dateAt: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return _dateAt;
-        },
-        set(v) {
-          if (!(v instanceof Date)) {
-            throw new Error(`dateAt must be a Date object. dateAt: ${v}`);
-          }
-          if (_dateAt && v.getTime() === _dateAt.getTime()) {
-            return;
-          }
-          _dateAt = v;
-          this.dayType = getDayType(v);
-          this.employees.forEach((emp) => (emp.dateAt = v));
-          this.outsourcers.forEach((out) => (out.dateAt = v));
+          this.setSiteIdCallback(v);
         },
       },
       shiftType: {
-        configurable: true,
-        enumerable: true,
         get() {
           return _shiftType;
         },
@@ -190,11 +276,10 @@ export default class Operation extends FireModel {
           _shiftType = v;
           this.employees.forEach((emp) => (emp.shiftType = v));
           this.outsourcers.forEach((out) => (out.shiftType = v));
+          this.setShiftTypeCallback(v);
         },
       },
       regulationWorkMinutes: {
-        configurable: true,
-        enumerable: true,
         get() {
           return _regulationWorkMinutes;
         },
@@ -208,16 +293,15 @@ export default class Operation extends FireModel {
           _regulationWorkMinutes = v;
           this.employees.forEach((emp) => (emp.regulationWorkMinutes = v));
           this.outsourcers.forEach((out) => (out.regulationWorkMinutes = v));
+          this.setRegulationWorkMinutesCallback(v);
         },
       },
     });
 
     /** define computed properies */
-    Object.defineProperties(this, {
+    defineComputedProperties(this, {
       /** Returns an array of employee IDs */
       employeeIds: {
-        configurable: true,
-        enumerable: true,
         get() {
           return this.employees.map((emp) => emp.employeeId);
         },
@@ -225,8 +309,6 @@ export default class Operation extends FireModel {
       },
       /** Returns an array of outsourcer IDs */
       outsourcerIds: {
-        configurable: true,
-        enumerable: true,
         get() {
           return this.outsourcers.map((out) => out.outsourcerId);
         },
@@ -234,8 +316,6 @@ export default class Operation extends FireModel {
       },
       /** Returns the count of assigned employees */
       employeesCount: {
-        configurable: true,
-        enumerable: true,
         get() {
           return this.employees.length;
         },
@@ -243,8 +323,6 @@ export default class Operation extends FireModel {
       },
       /** Returns the count of assigned outsourcers (sum of amounts) */
       outsourcersCount: {
-        configurable: true,
-        enumerable: true,
         get() {
           return this.outsourcers.reduce((sum, i) => sum + i.amount, 0);
         },
@@ -252,8 +330,6 @@ export default class Operation extends FireModel {
       },
       /** Returns whether there is a personnel shortage */
       isPersonnelShortage: {
-        configurable: true,
-        enumerable: true,
         get() {
           const totalRequired = this.requiredPersonnel || 0;
           const totalAssigned = this.employeesCount + this.outsourcersCount;
@@ -263,8 +339,6 @@ export default class Operation extends FireModel {
       },
       /** Returns a combined array of employees and outsourcers */
       workers: {
-        configurable: true,
-        enumerable: true,
         get() {
           return this.employees.concat(this.outsourcers);
         },
