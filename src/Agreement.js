@@ -90,6 +90,8 @@ const classProps = {
   }),
 };
 
+classProps.dateAt.label = "適用開始日";
+
 /**
  * Table headers for displaying agreement details
  */
