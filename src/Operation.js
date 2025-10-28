@@ -31,6 +31,7 @@
  * - Array of `OperationDetail` instances representing assigned employees
  * @props {Array<OperationDetail>} outsourcers - Assigned outsourcers
  * - Array of `OperationDetail` instances representing assigned outsourcers
+ * @props {Date} billingDateAt - Billing date
  * ---------------------------------------------------------------------------
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
  * @computed {string} dayType - Day type based on `dateAt`
@@ -95,6 +96,16 @@ const classProps = {
   employees: defField("array", { customClass: OperationDetail }),
   outsourcers: defField("array", {
     customClass: OperationDetail,
+  }),
+  billingDateAt: defField("dateAt", {
+    label: "請求日付",
+    required: true,
+    // Default to today's date at midnight
+    default: () => {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      return date;
+    },
   }),
 };
 
