@@ -41,22 +41,9 @@ import { getDateAt } from "./utils/index.js";
 import { getDayType } from "./constants/day-type.js";
 
 export const classProps = {
-  dateAt: defField("dateAt", {
-    label: "適用開始日",
-    required: true,
-    // Default to today's date at midnight
-    default: () => {
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-      return date;
-    },
-  }),
-  dayType: defField("dayType", {
-    required: true,
-  }),
-  shiftType: defField("shiftType", {
-    required: true,
-  }),
+  dateAt: defField("dateAt", { required: true }),
+  dayType: defField("dayType", { required: true }),
+  shiftType: defField("shiftType", { required: true }),
   startTime: defField("time", {
     label: "開始時刻",
     required: true,
@@ -68,12 +55,8 @@ export const classProps = {
     required: true,
     default: "17:00",
   }),
-  breakMinutes: defField("breakMinutes", {
-    required: true,
-  }),
-  regulationWorkMinutes: defField("regulationWorkMinutes", {
-    required: true,
-  }),
+  breakMinutes: defField("breakMinutes", { required: true }),
+  regulationWorkMinutes: defField("regulationWorkMinutes", { required: true }),
 };
 
 export function accessors(self) {
