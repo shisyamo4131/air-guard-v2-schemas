@@ -51,6 +51,7 @@
  * - Quantity used for billing qualified workers when `useAdjustedQuantity` is true.
  * @props {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
  * - Overtime used for billing qualified workers when `useAdjustedQuantity` is true.
+ * @props {Date} billingDateAt - Billing date
  * ---------------------------------------------------------------------------
  * [INHERIT]
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt`
@@ -113,6 +114,17 @@ const classProps = {
     customClass: OperationResultDetail,
   }),
   ...UnitPrice.classProps,
+  cutoffDate: defField("select", {
+    label: "締日区分",
+    default: CutoffDate.VALUES.END_OF_MONTH,
+    required: true,
+    hidden: true,
+    component: {
+      attrs: {
+        items: CutoffDate.OPTIONS,
+      },
+    },
+  }),
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
   useAdjustedQuantity: defField("check", {
     label: "調整数量を使用",
@@ -134,6 +146,7 @@ const classProps = {
     label: "資格残業（調整）",
     default: 0,
   }),
+  billingDateAt: defField("dateAt", { label: "請求日付", required: true }),
 };
 
 export default class OperationResult extends Operation {
