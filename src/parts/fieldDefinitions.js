@@ -65,6 +65,11 @@ const generalDefinitions = {
     ...defaultDefinition,
     type: Object,
     label: "日付",
+    default: () => {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      return date;
+    },
     component: {
       name: "air-date-input",
     },
