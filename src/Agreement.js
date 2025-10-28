@@ -18,6 +18,7 @@
  * @props {number} regulationWorkMinutes - Regulation work minutes
  * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
  * - Exceeding this time is considered overtime.
+ *
  * [from UnitPrice.js]
  * @props {number} unitPriceBase - Base unit price (JPY)
  * @props {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
@@ -25,6 +26,10 @@
  * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
  * @props {string} billingUnitType - Billing unit type
  * @props {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
+ *
+ * [ORIGINAL]
+ * @props {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
+ * - The cutoff date for billing, using values defined in the CutoffDate utility class.
  * ---------------------------------------------------------------------------
  * [from WorkingResult.js]
  * @computed {string} key - Unique key combining `date` and `shiftType`
@@ -64,105 +69,138 @@ import UnitPrice from "./UnitPrice.js";
 import { DAY_TYPE } from "./constants/day-type.js";
 import { SHIFT_TYPE } from "./constants/shift-type.js";
 import { BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
+import { defField } from "./parts/fieldDefinitions.js";
+import CutoffDate from "./utils/CutoffDate.js";
 
+/**
+ * Class properties combining WorkingResult and UnitPrice, with additional fields
+ */
 const classProps = {
   ...workingResultClassProps,
   ...UnitPrice.classProps,
+  cutoffDate: defField("select", {
+    label: "締日区分",
+    default: CutoffDate.VALUES.END_OF_MONTH,
+    required: true,
+    component: {
+      attrs: {
+        items: CutoffDate.OPTIONS,
+      },
+    },
+  }),
 };
+
+/**
+ * Table headers for displaying agreement details
+ */
+const headers = [
+  {
+    title: "適用開始日",
+    key: "dateAt",
+    value: (item) => item.dateAt.toLocaleDateString(),
+  },
+  {
+    title: "締日",
+    key: "cutoffDate",
+    value: (item) => {
+      return CutoffDate.getDisplayText(item.cutoffDate);
+    },
+    align: "center",
+    sortable: false,
+  },
+  {
+    title: "区分",
+    key: "type",
+    value: (item) =>
+      `${DAY_TYPE[item.dayType]}${SHIFT_TYPE[item.shiftType].title}`,
+    align: "center",
+    sortable: false,
+  },
+  {
+    title: "勤務時間",
+    key: "time",
+    value: (item) => `${item.startTime} ～ ${item.endTime}`,
+    align: "center",
+    sortable: false,
+  },
+  {
+    title: "規定実働時間",
+    key: "regulationWorkMinutes",
+    value: (item) => `${item.regulationWorkMinutes}分`,
+    align: "center",
+    sortable: false,
+  },
+  {
+    title: "休憩時間",
+    key: "breakMinutes",
+    value: (item) => `${item.breakMinutes}分`,
+    align: "center",
+    sortable: false,
+  },
+  {
+    title: "残業時間",
+    key: "overtimeWorkMinutes",
+    value: (item) => `${item.overtimeWorkMinutes}分`,
+    align: "center",
+    sortable: false,
+  },
+  {
+    title: "通常",
+    align: "center",
+    children: [
+      {
+        title: "単価",
+        key: "unitPriceBase",
+        value: (item) => item.unitPriceBase.toLocaleString(),
+        align: "center",
+        sortable: false,
+      },
+      {
+        title: "時間外",
+        key: "overtimeUnitPriceBase",
+        value: (item) => item.overtimeUnitPriceBase.toLocaleString(),
+        align: "center",
+        sortable: false,
+      },
+    ],
+  },
+  {
+    title: "資格者",
+    align: "center",
+    children: [
+      {
+        title: "単価",
+        key: "unitPriceQualified",
+        value: (item) => item.unitPriceQualified.toLocaleString(),
+        align: "center",
+        sortable: false,
+      },
+      {
+        title: "時間外",
+        key: "overtimeUnitPriceQualified",
+        value: (item) => item.overtimeUnitPriceQualified.toLocaleString(),
+        align: "center",
+        sortable: false,
+      },
+    ],
+  },
+  {
+    title: "請求単位",
+    key: "billingUnitType",
+    value: (item) => BILLING_UNIT_TYPE[item.billingUnitType],
+    align: "center",
+    sortable: false,
+  },
+];
+
 export default class Agreement extends BaseClass {
   static className = "取極め";
   static classProps = classProps;
+  static headers = headers;
 
-  /** HEADERS */
-  static headers = [
-    {
-      title: "適用開始日",
-      key: "dateAt",
-      value: (item) => item.dateAt.toLocaleDateString(),
-    },
-    {
-      title: "区分",
-      key: "type",
-      value: (item) =>
-        `${DAY_TYPE[item.dayType]}${SHIFT_TYPE[item.shiftType].title}`,
-      sortable: false,
-    },
-    {
-      title: "勤務時間",
-      key: "time",
-      value: (item) => `${item.startTime} ～ ${item.endTime}`,
-      sortable: false,
-    },
-    {
-      title: "規定実働時間",
-      key: "regulationWorkMinutes",
-      value: (item) => `${item.regulationWorkMinutes}分`,
-      align: "center",
-      sortable: false,
-    },
-    {
-      title: "休憩時間",
-      key: "breakMinutes",
-      value: (item) => `${item.breakMinutes}分`,
-      align: "center",
-      sortable: false,
-    },
-    {
-      title: "残業時間",
-      key: "overtimeWorkMinutes",
-      value: (item) => `${item.overtimeWorkMinutes}分`,
-      align: "center",
-      sortable: false,
-    },
-    {
-      title: "通常",
-      align: "center",
-      children: [
-        {
-          title: "単価",
-          key: "unitPriceBase",
-          value: (item) => item.unitPriceBase.toLocaleString(),
-          align: "center",
-          sortable: false,
-        },
-        {
-          title: "時間外",
-          key: "overtimeUnitPriceBase",
-          value: (item) => item.overtimeUnitPriceBase.toLocaleString(),
-          align: "center",
-          sortable: false,
-        },
-      ],
-    },
-    {
-      title: "資格者",
-      align: "center",
-      children: [
-        {
-          title: "単価",
-          key: "unitPriceQualified",
-          value: (item) => item.unitPriceQualified.toLocaleString(),
-          align: "center",
-          sortable: false,
-        },
-        {
-          title: "時間外",
-          key: "overtimeUnitPriceQualified",
-          value: (item) => item.overtimeUnitPriceQualified.toLocaleString(),
-          align: "center",
-          sortable: false,
-        },
-      ],
-    },
-    {
-      title: "請求単位",
-      key: "billingUnitType",
-      value: (item) => BILLING_UNIT_TYPE[item.billingUnitType],
-      align: "center",
-      sortable: false,
-    },
-  ];
-
+  /**
+   * Initializes computed properties after the instance is created.
+   */
   afterInitialize() {
     super.afterInitialize();
 
@@ -171,32 +209,32 @@ export default class Agreement extends BaseClass {
   }
 
   /**
-   * 開始時刻の時間部分を取得します。
-   * - `startTime` が設定されていない場合は 0 を返します。
+   * Returns the start hour extracted from `startTime`.
+   * - Returns 0 if `startTime` is not set.
    */
   get startHour() {
     return this.startTime ? Number(this.startTime.split(":")[0]) : 0;
   }
 
   /**
-   * 終了時刻の時間部分を取得します。
-   * - `endTime` が設定されていない場合は 0 を返します。
+   * Returns the start minute extracted from `startTime`.
+   * - Returns 0 if `startTime` is not set.
    */
   get startMinute() {
     return this.startTime ? Number(this.startTime.split(":")[1]) : 0;
   }
 
   /**
-   * 終了時刻の時間部分を取得します。
-   * - `endTime` が設定されていない場合は 0 を返します。
+   * Returns the end hour extracted from `endTime`.
+   * - Returns 0 if `endTime` is not set.
    */
   get endHour() {
     return this.endTime ? Number(this.endTime.split(":")[0]) : 0;
   }
 
   /**
-   * 終了時刻の分部分を取得します。
-   * - `endTime` が設定されていない場合は 0 を返します。
+   * Returns the end minute extracted from `endTime`.
+   * - Returns 0 if `endTime` is not set.
    */
   get endMinute() {
     return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
