@@ -8,8 +8,8 @@ import {
 } from "../constants/contract-status.js";
 import { DAY_TYPE_ARRAY, DAY_TYPE_DEFAULT } from "../constants/day-type.js";
 import {
-  EMPLOYMENT_STATUS_ARRAY,
-  EMPLOYMENT_STATUS_DEFAULT,
+  VALUES as EMPLOYMENT_STATUS_VALUES,
+  OPTIONS as EMPLOYMENT_STATUS_OPTIONS,
 } from "../constants/employment-status.js";
 import { GENDER_ARRAY, GENDER_DEFAULT } from "../constants/gender.js";
 import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
@@ -18,8 +18,8 @@ import {
   SHIFT_TYPE_DEFAULT,
 } from "../constants/shift-type.js";
 import {
-  SITE_STATUS_ARRAY,
-  SITE_STATUS_DEFAULT,
+  VALUES as SITE_STATUS_VALUES,
+  OPTIONS as SITE_STATUS_OPTIONS,
 } from "../constants/site-status.js";
 
 export const DEFAULT_WORKING_MINUTES = 480;
@@ -411,12 +411,12 @@ export const fieldDefinitions = {
   },
   employmentStatus: {
     ...generalDefinitions.select,
-    default: EMPLOYMENT_STATUS_DEFAULT,
+    default: EMPLOYMENT_STATUS_VALUES.ACTIVE.value,
     label: "雇用状態",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: EMPLOYMENT_STATUS_ARRAY,
+        items: EMPLOYMENT_STATUS_OPTIONS,
       },
     },
   },
@@ -455,12 +455,12 @@ export const fieldDefinitions = {
   },
   siteStatus: {
     ...generalDefinitions.select,
-    default: SITE_STATUS_DEFAULT,
+    default: SITE_STATUS_VALUES.ACTIVE.value,
     label: "状態",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: SITE_STATUS_ARRAY,
+        items: SITE_STATUS_OPTIONS,
       },
     },
   },

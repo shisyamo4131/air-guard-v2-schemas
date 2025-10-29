@@ -66,7 +66,8 @@ export default class Customer extends FireModel {
   static STATUS_ACTIVE = VALUES.ACTIVE.value;
   static STATUS_TERMINATED = VALUES.TERMINATED.value;
 
-  afterInitialize() {
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),

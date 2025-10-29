@@ -1,93 +1,113 @@
+/**
+ * @file src/Employee.js
+ * @author shisyamo4131
+ * @version 1.0.0
+ */
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
-import {
-  EMPLOYMENT_STATUS_ACTIVE,
-  EMPLOYMENT_STATUS_TERMINATED,
-} from "./constants/employment-status.js";
+import { VALUES } from "./constants/employment-status.js";
 
+const classProps = {
+  code: defField("code", { label: "従業員コード" }),
+  lastName: defField("lastName", { required: true }),
+  firstName: defField("firstName", { required: true }),
+  lastNameKana: defField("lastNameKana", { required: true }),
+  firstNameKana: defField("firstNameKana", { required: true }),
+  displayName: defField("displayName", { required: true }),
+  title: defField("oneLine", { label: "肩書", required: true }),
+  gender: defField("gender", { required: true }),
+  dateOfBirth: defField("dateAt", { label: "生年月日", required: true }),
+  zipcode: defField("zipcode", { required: true }),
+  prefCode: defField("prefCode", { required: true }),
+  city: defField("city", { required: true }),
+  address: defField("address", { required: true }),
+  building: defField("building"),
+  location: defField("location", { hidden: true }), // 非表示でOK
+  dateOfHire: defField("dateAt", { label: "入社日", required: true }),
+  employmentStatus: defField("employmentStatus", { required: true }),
+  dateOfTermination: defField("dateAt", {
+    label: "退職日",
+    component: {
+      attrs: {
+        required: (item) => item.employmentStatus === "terminated",
+      },
+    },
+  }),
+  isForeigner: defField("isForeigner"),
+  foreignName: defField("foreignName", {
+    component: {
+      attrs: {
+        required: (item) => item.isForeigner,
+      },
+    },
+  }),
+  nationality: defField("nationality", {
+    component: {
+      attrs: {
+        required: (item) => item.isForeigner,
+      },
+    },
+  }),
+  residenceStatus: {
+    type: String,
+    default: null,
+    label: "在留資格",
+    required: undefined,
+    component: {
+      name: "air-text-field",
+      attrs: {
+        required: (item) => item.isForeigner,
+      },
+    },
+  },
+  periodOfStay: defField("dateAt", {
+    label: "在留期間満了日",
+    component: {
+      attrs: {
+        required: (item) => item.isForeigner,
+      },
+    },
+  }),
+  remarks: defField("multipleLine", { label: "備考" }),
+};
+
+/*****************************************************************************
+ * Employee Model
+ * @props {string} code - Employee code.
+ * @props {string} lastName - Last name.
+ * @props {string} firstName - First name.
+ * @props {string} lastNameKana - Last name in Kana.
+ * @props {string} firstNameKana - First name in Kana.
+ * @props {string} displayName - Display name.
+ * @props {string} title - Job title.
+ * @props {string} gender - Gender.
+ * @props {Date} dateOfBirth - Date of birth.
+ * @props {string} zipcode - Postal code.
+ * @props {string} prefCode - Prefecture code.
+ * @props {string} city - City name.
+ * @props {string} address - Address details.
+ * @props {string} building - Building name.
+ * @props {object} location - Geographical location.
+ * @props {Date} dateOfHire - Date of hire.
+ * @props {string} employmentStatus - Employment status.
+ * @props {Date} dateOfTermination - Date of termination.
+ * @props {boolean} isForeigner - Is the employee a foreigner.
+ * @props {string} foreignName - Foreign name.
+ * @props {string} nationality - Nationality.
+ * @props {string} residenceStatus - Residence status.
+ * @props {Date} periodOfStay - Period of stay expiration date.
+ * @props {string} remarks - Additional remarks.
+ * @computed {string} fullName - Full name combining last and first names (read-only)
+ * @computed {string} fullAddress - Full address combining prefecture, city, and address (read-only)
+ * @computed {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ *****************************************************************************/
 export default class Employee extends FireModel {
   static className = "従業員";
   static collectionPath = "Employees";
   static useAutonumber = false;
   static logicalDelete = true;
-  static classProps = {
-    code: defField("code", { label: "従業員コード" }),
-    lastName: defField("lastName", { required: true }),
-    firstName: defField("firstName", { required: true }),
-    lastNameKana: defField("lastNameKana", { required: true }),
-    firstNameKana: defField("firstNameKana", { required: true }),
-    displayName: defField("displayName", { required: true }),
-    title: defField("oneLine", { label: "肩書", required: true }),
-
-    /** 性別 */
-    gender: defField("gender", { required: true }),
-
-    /** 生年月日 */
-    dateOfBirth: defField("dateAt", { label: "生年月日", required: true }),
-
-    /** 住所: zipcode が更新されると prefCode, city, address は自動更新される */
-    zipcode: defField("zipcode", { required: true }),
-    prefCode: defField("prefCode", { required: true }),
-    city: defField("city", { required: true }),
-    address: defField("address", { required: true }),
-    building: defField("building"),
-    location: defField("location", { hidden: true }), // 非表示でOK
-
-    /** 入社日 */
-    dateOfHire: defField("dateAt", { label: "入社日", required: true }),
-
-    /** 雇用状態 */
-    employmentStatus: defField("employmentStatus", { required: true }),
-
-    /** 退職日 */
-    dateOfTermination: defField("dateAt", {
-      label: "退職日",
-      component: {
-        attrs: {
-          required: (item) => item.employmentStatus === "terminated",
-        },
-      },
-    }),
-
-    /** 外国籍情報 */
-    isForeigner: defField("isForeigner"),
-    foreignName: defField("foreignName", {
-      component: {
-        attrs: {
-          required: (item) => item.isForeigner,
-        },
-      },
-    }),
-    nationality: defField("nationality", {
-      component: {
-        attrs: {
-          required: (item) => item.isForeigner,
-        },
-      },
-    }),
-    residenceStatus: {
-      type: String,
-      default: null,
-      label: "在留資格",
-      required: undefined,
-      component: {
-        name: "air-text-field",
-        attrs: {
-          required: (item) => item.isForeigner,
-        },
-      },
-    },
-    periodOfStay: defField("dateAt", {
-      label: "在留期間満了日",
-      component: {
-        attrs: {
-          required: (item) => item.isForeigner,
-        },
-      },
-    }),
-    remarks: defField("multipleLine", { label: "備考" }),
-  };
+  static classProps = classProps;
   static tokenFields = [
     "lastName",
     "firstName",
@@ -102,10 +122,11 @@ export default class Employee extends FireModel {
     { title: "名前", key: "fullName" },
   ];
 
-  static STATUS_ACTIVE = EMPLOYMENT_STATUS_ACTIVE;
-  static STATUS_TERMINATED = EMPLOYMENT_STATUS_TERMINATED;
+  static STATUS_ACTIVE = VALUES.ACTIVE.value;
+  static STATUS_TERMINATED = VALUES.TERMINATED.value;
 
-  afterInitialize() {
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
     Object.defineProperties(this, {
       fullName: defAccessor("fullName"),
       fullAddress: defAccessor("fullAddress"),

@@ -7,6 +7,8 @@
  *   focused on billing operations rather than general operation results.
  * - All properties, computed values, and methods are inherited from OperationResult.
  * - The `className` is set to "稼働請求" (Operation Billing) to distinguish it from OperationResult.
+ * - The `create` method is overridden to indicate that creation of OperationBilling instances
+ *   is not implemented, as billing records are typically generated through the OperationResult class.
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from OperationResult:
  * @props {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
@@ -177,4 +179,8 @@ export default class OperationBilling extends OperationResult {
     { title: "現場", key: "siteId", value: "siteId" },
     { title: "売上金額", key: "salesAmount", value: "salesAmount" },
   ];
+
+  async create() {
+    return Promise.reject(new Error("[OperationBilling.js] Not implemented."));
+  }
 }
