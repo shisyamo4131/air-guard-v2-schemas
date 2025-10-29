@@ -116,6 +116,10 @@
  * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
  * - By default, does nothing.
  * - @param {number} v - The new `regulationWorkMinutes` value
+ * @method {function} keyDivider - Returns an array dividing the key into siteId, shiftType, and date.
+ * - @param {string} key - The combined key string
+ * - @returns {Array<string>} - Array containing [siteId, shiftType, date]
+ * - @throws {Error} - If the key is invalid.
  * ---------------------------------------------------------------------------
  * @inherited - The following method is inherited from WorkingResult:
  * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
@@ -737,6 +741,36 @@ export default class Operation extends WorkingResult {
       this.employees.remove(workerId);
     } else {
       this.outsourcers.remove(workerId);
+    }
+  }
+
+  /**
+   * Returns an array dividing the key into siteId, shiftType, and date.
+   * @param {Object|string} key
+   * @returns {Array<string>} - [siteId, shiftType, date]
+   * @throws {Error} - If the key is invalid.
+   */
+  keyDevider(key = {}) {
+    if (!key) throw new Error("key is required.");
+
+    switch (typeof key) {
+      case "object":
+        if (!key.siteId || !key.shiftType || !key.date) {
+          throw new Error(
+            "key must contain siteId, shiftType, and date properties."
+          );
+        }
+        return [key.siteId, key.shiftType, key.date];
+      case "string":
+        const [siteId, shiftType, year, month, day] = key.split("-");
+        if (!siteId || !shiftType || !year || !month || !day) {
+          throw new Error(
+            "key must be in the format 'siteId-shiftType-year-month-day'."
+          );
+        }
+        return [siteId, shiftType, `${year}-${month}-${day}`];
+      default:
+        throw new Error("Invalid key type.");
     }
   }
 }
