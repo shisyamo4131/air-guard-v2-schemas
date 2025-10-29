@@ -3,8 +3,8 @@ import {
   ARRANGEMENT_NOTIFICATION_STATUS_DEFAULT,
 } from "../constants/arrangement-notification-status.js";
 import {
-  CONTRACT_STATUS_ARRAY,
-  CONTRACT_STATUS_DEFAULT,
+  VALUES as CONTRACT_STATUS_VALUES,
+  OPTIONS as CONTRACT_STATUS_OPTIONS,
 } from "../constants/contract-status.js";
 import { DAY_TYPE_ARRAY, DAY_TYPE_DEFAULT } from "../constants/day-type.js";
 import {
@@ -386,14 +386,15 @@ export const fieldDefinitions = {
       },
     },
   },
+  // contractStatus -> Used in Customer.js and Outsourcer.js
   contractStatus: {
     ...generalDefinitions.select,
-    default: CONTRACT_STATUS_DEFAULT,
+    default: CONTRACT_STATUS_VALUES.ACTIVE,
     label: "契約状態",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: CONTRACT_STATUS_ARRAY,
+        items: CONTRACT_STATUS_OPTIONS,
       },
     },
   },
