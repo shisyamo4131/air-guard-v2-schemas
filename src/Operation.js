@@ -33,6 +33,7 @@
  * - Getter: Returns concatenated array of employees and outsourcers
  * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
  * ---------------------------------------------------------------------------
+ * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
  * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
  * - Returns true if the employee IDs have changed compared to `_beforeData`
  * @getter {boolean} isOutsourcersChanged - Indicates whether the outsourcers have changed (read-only)
@@ -585,6 +586,15 @@ export default class Operation extends WorkingResult {
   /***************************************************************************
    * STATES
    ***************************************************************************/
+  /**
+   * Returns a string combining siteId, shiftType, and date.
+   * - Indicates where this operation belongs.
+   * @returns {string} - The group key.
+   */
+  get groupKey() {
+    return `${this.siteId}-${this.shiftType}-${this.date}`;
+  }
+
   /**
    * Returns whether the employees have changed.
    * - Returns true if the employee IDs have changed.

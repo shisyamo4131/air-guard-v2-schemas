@@ -107,6 +107,7 @@
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * ---------------------------------------------------------------------------
  * @inherited - The following getter properties are inherited from Operation:
+ * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
  * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
  * - Returns true if the employee IDs have changed compared to `_beforeData`
  * @getter {boolean} isOutsourcersChanged - Indicates whether the outsourcers have changed (read-only)
