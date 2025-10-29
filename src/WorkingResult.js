@@ -142,8 +142,10 @@ export default class WorkingResult extends FireModel {
           if (_dateAt && v.getTime() === _dateAt.getTime()) {
             return;
           }
-          _dateAt = v;
-          this.setDateAtCallback(v);
+          const newDate = new Date(v);
+          newDate.setHours(0, 0, 0, 0); // 時刻部分をクリア
+          _dateAt = newDate;
+          this.setDateAtCallback(newDate);
         },
       },
     });
