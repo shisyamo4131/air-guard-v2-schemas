@@ -1,43 +1,47 @@
+/*****************************************************************************
+ * Customer Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
+ * @props {string} code - Customer code.
+ * @props {string} name - Customer name.
+ * @props {string} nameKana - Customer name in Kana.
+ * @props {string} zipcode - Postal code.
+ * @props {string} prefCode - Prefecture code.
+ * @props {string} city - City name.
+ * @props {string} address - Address details.
+ * @props {string} building - Building name.
+ * @props {object} location - Geographical location.
+ * @props {string} tel - Telephone number.
+ * @props {string} fax - Fax number.
+ * @props {string} contractStatus - Contract status.
+ * @props {string} remarks - Additional remarks.
+ *****************************************************************************/
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
+
+const classProps = {
+  code: defField("code", { label: "取引先コード" }),
+  name: defField("name", { label: "取引先名", required: true }),
+  nameKana: defField("nameKana", { label: "取引先名（カナ）", required: true }),
+  zipcode: defField("zipcode", { required: true }),
+  prefCode: defField("prefCode", { required: true }),
+  city: defField("city", { required: true }),
+  address: defField("address", { required: true }),
+  building: defField("building"),
+  location: defField("location", { hidden: true }),
+  tel: defField("tel", { colsDefinition: { cols: 12, sm: 6 } }),
+  fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
+  contractStatus: defField("contractStatus", { required: true }),
+  remarks: defField("multipleLine", { label: "備考" }),
+};
 
 export default class Customer extends FireModel {
   static className = "取引先";
   static collectionPath = "Customers";
   static useAutonumber = false;
   static logicalDelete = true;
-  static classProps = {
-    /** 取引先コード */
-    code: defField("code", { label: "取引先コード" }),
-    /** 取引先名 */
-    name: defField("name", { label: "取引先名", required: true }),
-    /** 取引先名（カナ） */
-    nameKana: defField("nameKana", {
-      label: "取引先名（カナ）",
-      required: true,
-    }),
-    /** 郵便番号 */
-    zipcode: defField("zipcode", { required: true }),
-    /** 都道府県（CODE） */
-    prefCode: defField("prefCode", { required: true }),
-    /** 市区町村 */
-    city: defField("city", { required: true }),
-    /** 町域名・番地 */
-    address: defField("address", { required: true }),
-    /** 建物名・階数 */
-    building: defField("building"),
-    /** location */
-    location: defField("location", { hidden: true }),
-    /** 電話番号 */
-    tel: defField("tel", { colsDefinition: { cols: 12, sm: 6 } }),
-    /** FAX番号 */
-    fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
-    /** 契約状態 */
-    contractStatus: defField("contractStatus", { required: true }),
-    /** 備考 */
-    remarks: defField("multipleLine", { label: "備考" }),
-  };
+  static classProps = classProps;
   static tokenFields = ["name", "nameKana"];
   static hasMany = [
     {
@@ -53,6 +57,7 @@ export default class Customer extends FireModel {
     { key: "name", title: "取引先名" },
     { key: "fullAddress", title: "所在地" },
   ];
+
   afterInitialize() {
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
