@@ -750,7 +750,7 @@ export default class Operation extends WorkingResult {
    * @returns {Array<string>} - [siteId, shiftType, date]
    * @throws {Error} - If the key is invalid.
    */
-  keyDevider(key = {}) {
+  groupKeyDivider(key = {}) {
     if (!key) throw new Error("key is required.");
 
     switch (typeof key) {
