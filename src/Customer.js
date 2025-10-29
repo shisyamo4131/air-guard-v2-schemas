@@ -15,6 +15,9 @@
  * @props {string} fax - Fax number.
  * @props {string} contractStatus - Contract status.
  * @props {string} remarks - Additional remarks.
+ * ---------------------------------------------------------------------------
+ * @computed {string} fullAddress - Full address combining prefecture, city, and address (read-only)
+ * @computed {string} prefecture - Prefecture name derived from `prefCode` (read-only)
  *****************************************************************************/
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -70,6 +73,13 @@ export default class Customer extends FireModel {
   }
 }
 
+/*****************************************************************************
+ * Customer Minimal Model ver 1.0.0
+ * @author shisyamo4131
+ * ---------------------------------------------------------------------------
+ * A minimal version of the Customer model with non-essential fields removed for
+ * lightweight data handling.
+ *****************************************************************************/
 export class CustomerMinimal extends Customer {
   afterInitialize() {
     super.afterInitialize();
