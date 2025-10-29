@@ -142,10 +142,12 @@
  * @method {function} setRegulationWorkMinutesCallback - Callback method called when `regulationWorkMinutes` is set
  * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
  * - @param {number} v - The new `regulationWorkMinutes` value
- * @method {function} groupKeyDivider - Returns an array dividing the key into siteId, shiftType, and date.
- * - @param {string} key - The combined key string
- * - @returns {Array<string>} - Array containing [siteId, shiftType, date]
- * - @throws {Error} - If the key is invalid.
+ * @static
+ * @method groupKeyDivider
+ * Returns an array dividing the key into siteId, shiftType, and date.
+ * @param {Object|string} key - The combined key string or object
+ * @returns {Array<string>} - Array containing [siteId, shiftType, date]
+ * @throws {Error} - If the key is invalid.
  * ---------------------------------------------------------------------------
  * @inherited - The following method is inherited from WorkingResult (via Operation):
  * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
