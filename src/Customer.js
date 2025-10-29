@@ -19,6 +19,7 @@
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
+import { VALUES } from "./constants/contract-status.js";
 
 const classProps = {
   code: defField("code", { label: "取引先コード" }),
@@ -57,6 +58,9 @@ export default class Customer extends FireModel {
     { key: "name", title: "取引先名" },
     { key: "fullAddress", title: "所在地" },
   ];
+
+  static STATUS_ACTIVE = VALUES.ACTIVE;
+  static STATUS_TERMINATED = VALUES.TERMINATED;
 
   afterInitialize() {
     Object.defineProperties(this, {
