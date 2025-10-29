@@ -1,10 +1,15 @@
-// prettier-ignore
+/**
+ * @file src/constants/contract-status.js
+ * @description Contract status constants and options.
+ * @author shisyamo4131
+ */
+
 export const VALUES = Object.freeze({
-  ACTIVE: "契約中",
-  TERMINATED: "契約終了",
+  ACTIVE: { value: "ACTIVE", title: "契約中" },
+  TERMINATED: { value: "TERMINATED", title: "契約終了" },
 });
 
 export const OPTIONS = [
-  { title: "契約中", value: VALUES.ACTIVE },
-  { title: "契約終了", value: VALUES.TERMINATED },
+  { title: VALUES.ACTIVE.title, value: VALUES.ACTIVE.value },
+  { title: VALUES.TERMINATED.title, value: VALUES.TERMINATED.value },
 ];
