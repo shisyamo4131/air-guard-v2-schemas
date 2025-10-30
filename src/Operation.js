@@ -181,8 +181,8 @@ export default class Operation extends WorkingResult {
   static DAY_TYPE_NIGHT = DAY_TYPE.NIGHT;
 
   static SHIFT_TYPE = SHIFT_TYPE;
-  static SHIFT_TYPE_DAY = SHIFT_TYPE.DAY;
-  static SHIFT_TYPE_NIGHT = SHIFT_TYPE.NIGHT;
+  static SHIFT_TYPE_DAY = SHIFT_TYPE.DAY.value;
+  static SHIFT_TYPE_NIGHT = SHIFT_TYPE.NIGHT.value;
 
   /**
    * Constructor
