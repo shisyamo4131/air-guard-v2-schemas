@@ -150,6 +150,7 @@ import {
 import { runTransaction } from "firebase/firestore";
 
 const classProps = {
+  status: defField("arrangementNotificationStatus", { required: true }),
   ...SiteOperationScheduleDetail.classProps,
   confirmedAt: defField("dateAt", { label: "配置確認日時" }),
   arrivedAt: defField("time", { label: "上番日時" }),
@@ -167,7 +168,6 @@ const classProps = {
     default: 60,
     required: true,
   }),
-  status: defField("arrangementNotificationStatus", { required: true }),
 };
 
 export default class ArrangementNotification extends SiteOperationScheduleDetail {
