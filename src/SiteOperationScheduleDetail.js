@@ -5,20 +5,20 @@
  * - Model representing the details of a site operation schedule.
  * - Inherits from OperationDetail.
  * ---------------------------------------------------------------------------
- * @props {string} siteOperationScheduleId - Site Operation Schedule ID
- * @props {boolean} hasNotification - Notification flag
+ * @prop {string} siteOperationScheduleId - Site Operation Schedule ID
+ * @prop {boolean} hasNotification - Notification flag
  * ---------------------------------------------------------------------------
  * @computed {string} notificationKey - Notification key (read-only)
  * - Concatenation of `siteOperationScheduleId` and `workerId` with '-'
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from OperationDetail:
- * @props {string} id - Employee or Outsourcer document ID
- * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
- * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
- * @props {number} amount - Number of placements (always fixed at 1)
- * @props {string} siteId - Site ID
- * @props {boolean} isQualified - Qualified flag
- * @props {boolean} isOjt - OJT flag
+ * @prop {string} id - Employee or Outsourcer document ID
+ * @prop {number} index - Identifier index for Outsourcer (always 0 for Employee)
+ * @prop {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
+ * @prop {number} amount - Number of placements (always fixed at 1)
+ * @prop {string} siteId - Site ID
+ * @prop {boolean} isQualified - Qualified flag
+ * @prop {boolean} isOjt - OJT flag
  * ---------------------------------------------------------------------------
  * @inherited - The following computed properties are inherited from OperationDetail:
  * @computed {string} workerId - Worker ID (read-only)
@@ -27,14 +27,14 @@
  * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable) (read-only)
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult (via OperationDetail):
- * @props {Date} dateAt - Placement date (trigger property)
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - `DAY` or `NIGHT`
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes
+ * @prop {Date} dateAt - Placement date (trigger property)
+ * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @prop {string} shiftType - `DAY` or `NIGHT`
+ * @prop {string} startTime - Start time (HH:MM format)
+ * @prop {boolean} isStartNextDay - Next day start flag
+ * @prop {string} endTime - End time (HH:MM format)
+ * @prop {number} breakMinutes - Break time (minutes)
+ * @prop {number} regulationWorkMinutes - Regulation work minutes
  * ---------------------------------------------------------------------------
  * @inherited - The following computed properties are inherited from WorkingResult (via OperationDetail):
  * @computed {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
