@@ -1,6 +1,6 @@
 import {
-  ARRANGEMENT_NOTIFICATION_STATUS_ARRAY,
-  ARRANGEMENT_NOTIFICATION_STATUS_DEFAULT,
+  VALUES as ARRANGEMENT_NOTIFICATION_STATUS_VALUES,
+  OPTIONS as ARRANGEMENT_NOTIFICATION_STATUS_OPTIONS,
 } from "../constants/arrangement-notification-status.js";
 import {
   VALUES as CONTRACT_STATUS_VALUES,
@@ -377,12 +377,12 @@ export const fieldDefinitions = {
   select: generalDefinitions.select,
   arrangementNotificationStatus: {
     ...generalDefinitions.select,
-    default: ARRANGEMENT_NOTIFICATION_STATUS_DEFAULT,
+    default: ARRANGEMENT_NOTIFICATION_STATUS_VALUES.TEMPORARY.value,
     label: "状態",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: ARRANGEMENT_NOTIFICATION_STATUS_ARRAY,
+        items: ARRANGEMENT_NOTIFICATION_STATUS_OPTIONS,
       },
     },
   },

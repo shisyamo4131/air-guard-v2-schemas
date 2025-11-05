@@ -140,12 +140,8 @@ import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { getDateAt, ContextualError } from "./utils/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import {
-  ARRANGEMENT_NOTIFICATION_STATUS,
-  ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED,
-  ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED,
-  ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED,
-  ARRANGEMENT_NOTIFICATION_STATUS_LEAVED,
-  ARRANGEMENT_NOTIFICATION_STATUS_TEMPORARY,
+  VALUES,
+  OPTIONS,
 } from "./constants/arrangement-notification-status.js";
 import { runTransaction } from "firebase/firestore";
 
@@ -177,7 +173,13 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
   static logicalDelete = false;
   static classProps = classProps;
 
-  static STATUS = ARRANGEMENT_NOTIFICATION_STATUS;
+  static STATUSES = VALUES;
+  static STATUS_TEMPORARY = VALUES.TEMPORARY.value;
+  static STATUS_ARRANGED = VALUES.ARRANGED.value;
+  static STATUS_CONFIRMED = VALUES.CONFIRMED.value;
+  static STATUS_ARRIVED = VALUES.ARRIVED.value;
+  static STATUS_LEAVED = VALUES.LEAVED.value;
+  static STATUS_OPTIONS = OPTIONS;
 
   afterInitialize(item = {}) {
     // Define computed properties that are defined on SiteOperationScheduleDetail
@@ -235,23 +237,23 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
   }
 
   get isTemporary() {
-    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_TEMPORARY;
+    return this.status === VALUES.TEMPORARY.value;
   }
 
   get isArranged() {
-    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED;
+    return this.status === VALUES.ARRANGED.value;
   }
 
   get isConfirmed() {
-    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED;
+    return this.status === VALUES.CONFIRMED.value;
   }
 
   get isArrived() {
-    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED;
+    return this.status === VALUES.ARRIVED.value;
   }
 
   get isLeaved() {
-    return this.status === ARRANGEMENT_NOTIFICATION_STATUS_LEAVED;
+    return this.status === VALUES.LEAVED.value;
   }
 
   /**
@@ -311,7 +313,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.confirmedAt = null;
       this.arrivedAt = null;
       this.leavedAt = null;
-      this.status = ARRANGEMENT_NOTIFICATION_STATUS_TEMPORARY;
+      this.status = VALUES.TEMPORARY.value;
       await super.update(updateOptions);
     } catch (error) {
       throw new ContextualError("Failed to set status to TEMPORARY", context);
@@ -340,7 +342,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.confirmedAt = null;
       this.arrivedAt = null;
       this.leavedAt = null;
-      this.status = ARRANGEMENT_NOTIFICATION_STATUS_ARRANGED;
+      this.status = VALUES.ARRANGED.value;
       await super.update(updateOptions);
     } catch (error) {
       throw new ContextualError(error.message, context);
@@ -369,7 +371,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.confirmedAt = new Date();
       this.arrivedAt = null;
       this.leavedAt = null;
-      this.status = ARRANGEMENT_NOTIFICATION_STATUS_CONFIRMED;
+      this.status = VALUES.CONFIRMED.value;
       await super.update(updateOptions);
     } catch (error) {
       throw new ContextualError(error.message, context);
@@ -398,7 +400,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
       this.arrivedAt = new Date();
       this.leavedAt = null;
-      this.status = ARRANGEMENT_NOTIFICATION_STATUS_ARRIVED;
+      this.status = VALUES.ARRIVED.value;
       await super.update(updateOptions);
     } catch (error) {
       throw new ContextualError(error.message, context);
@@ -448,7 +450,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
       this.arrivedAt = this.arrivedAt ? this.arrivedAt : new Date();
       this.leavedAt = new Date();
-      this.status = ARRANGEMENT_NOTIFICATION_STATUS_LEAVED;
+      this.status = VALUES.LEAVED.value;
       await super.update(updateOptions);
     } catch (error) {
       throw new ContextualError(error.message, context);
