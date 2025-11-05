@@ -28,8 +28,6 @@
  * - **OVERRIDE**: Calculated using actual times instead of scheduled times.
  * - Calculated as the difference between `actualEndAt` and `actualStartAt` minus `actualBreakMinutes`
  * ---------------------------------------------------------------------------
- * @getter {boolean} isTemporary - Temporary status flag (read-only)
- * - Returns `true` if status is `TEMPORARY`
  * @getter {boolean} isArranged - Arranged status flag (read-only)
  * - Returns `true` if status is `ARRANGED`
  * @getter {boolean} isConfirmed - Confirmed status flag (read-only)
@@ -106,8 +104,6 @@
  * @method {function} update - Disabled
  * - Direct updates to ArrangementNotification are not allowed.
  * - Throws an error if called. Use status transition methods instead.
- * @method {function} toTemporary - Change status to `TEMPORARY`
- * - Sets actual times to scheduled times, resets timestamps, updates status.
  * - @param {Object} updateOptions - Options for updating the document
  * @method {function} toArranged - Change status to `ARRANGED`
  * - Sets actual times to scheduled times, resets timestamps, updates status.
@@ -148,7 +144,7 @@ import { runTransaction } from "firebase/firestore";
 const classProps = {
   status: defField("arrangementNotificationStatus", { required: true }),
   ...SiteOperationScheduleDetail.classProps,
-  confirmedAt: defField("dateAt", { label: "配置確認日時" }),
+  confirmedAt: defField("time", { label: "配置確認日時" }),
   arrivedAt: defField("time", { label: "上番日時" }),
   leavedAt: defField("time", { label: "下番日時" }),
   actualStartTime: defField("time", {
@@ -174,7 +170,6 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
   static classProps = classProps;
 
   static STATUSES = VALUES;
-  static STATUS_TEMPORARY = VALUES.TEMPORARY.value;
   static STATUS_ARRANGED = VALUES.ARRANGED.value;
   static STATUS_CONFIRMED = VALUES.CONFIRMED.value;
   static STATUS_ARRIVED = VALUES.ARRIVED.value;
@@ -236,10 +231,6 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
     delete this.notificationKey;
   }
 
-  get isTemporary() {
-    return this.status === VALUES.TEMPORARY.value;
-  }
-
   get isArranged() {
     return this.status === VALUES.ARRANGED.value;
   }
@@ -289,35 +280,6 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
    */
   update() {
     return Promise.reject(new Error("Update method is not implemented"));
-  }
-
-  /**
-   * Change status to `TEMPORARY`.
-   * @param {Object} updateOptions - Options for updating the notification.
-   * @param {Object} updateOptions.transaction - The Firestore transaction object.
-   * @param {function} updateOptions.callBack - The callback function.
-   * @param {string} updateOptions.prefix - The prefix.
-   */
-  async toTemporary(updateOptions = {}) {
-    const context = {
-      method: "toTemporary",
-      className: "ArrangementNotification",
-      arguments: updateOptions,
-      state: this.toObject(),
-    };
-    try {
-      this.actualStartTime = this.startTime;
-      this.actualEndTime = this.endTime;
-      this.actualBreakMinutes = 60;
-      this.actualIsStartNextDay = this.isStartNextDay;
-      this.confirmedAt = null;
-      this.arrivedAt = null;
-      this.leavedAt = null;
-      this.status = VALUES.TEMPORARY.value;
-      await super.update(updateOptions);
-    } catch (error) {
-      throw new ContextualError("Failed to set status to TEMPORARY", context);
-    }
   }
 
   /**

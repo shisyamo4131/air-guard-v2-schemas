@@ -3,12 +3,6 @@
  */
 
 export const VALUES = Object.freeze({
-  TEMPORARY: {
-    value: "TEMPORARY",
-    label: "仮配置",
-    order: 0,
-    color: undefined,
-  },
   ARRANGED: {
     value: "ARRANGED",
     label: "配置済",
@@ -50,11 +44,6 @@ export const VALUES = Object.freeze({
 });
 
 export const OPTIONS = [
-  {
-    title: VALUES.TEMPORARY.label,
-    value: VALUES.TEMPORARY.value,
-    color: VALUES.TEMPORARY.color,
-  },
   {
     title: VALUES.ARRANGED.label,
     value: VALUES.ARRANGED.value,

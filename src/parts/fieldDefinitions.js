@@ -377,7 +377,7 @@ export const fieldDefinitions = {
   select: generalDefinitions.select,
   arrangementNotificationStatus: {
     ...generalDefinitions.select,
-    default: ARRANGEMENT_NOTIFICATION_STATUS_VALUES.TEMPORARY.value,
+    default: ARRANGEMENT_NOTIFICATION_STATUS_VALUES.ARRANGED.value,
     label: "状態",
     component: {
       name: generalDefinitions.select.component.name,
