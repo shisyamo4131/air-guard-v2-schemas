@@ -1,8 +1,32 @@
-/**
- * @file src/Customer.js
+/*****************************************************************************
+ * Customer ver 1.0.0
  * @author shisyamo4131
- * @version 1.0.0
- */
+ *
+ * @description Customer model.
+ * @hasMany Sites - related sites associated with the customer
+ *
+ * @prop {string} code - customer code
+ * @prop {string} name - customer name
+ * @prop {string} nameKana - customer name in kana
+ * @prop {string} zipcode - postal code
+ * @prop {string} prefCode - prefecture code
+ * @prop {string} city - city name
+ * @prop {string} address - address details
+ * @prop {string} building - building name
+ * @prop {object} location - geographical location
+ * @prop {string} tel - telephone number
+ * @prop {string} fax - fax number
+ * @prop {string} contractStatus - contract status
+ * @prop {string} remarks - additional remarks
+ *
+ * @readonly
+ * @prop {string} fullAddress - full address combining prefecture, city, and address (read-only)
+ * @prop {string} prefecture - prefecture name derived from `prefCode` (read-only)
+ *
+ * @static
+ * @prop {string} STATUS_ACTIVE - constant for active contract status
+ * @prop {string} STATUS_TERMINATED - constant for terminated contract status
+ *****************************************************************************/
 import FireModel from "air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
@@ -24,23 +48,6 @@ const classProps = {
   remarks: defField("multipleLine", { label: "備考" }),
 };
 
-/*****************************************************************************
- * @props {string} code - Customer code.
- * @props {string} name - Customer name.
- * @props {string} nameKana - Customer name in Kana.
- * @props {string} zipcode - Postal code.
- * @props {string} prefCode - Prefecture code.
- * @props {string} city - City name.
- * @props {string} address - Address details.
- * @props {string} building - Building name.
- * @props {object} location - Geographical location.
- * @props {string} tel - Telephone number.
- * @props {string} fax - Fax number.
- * @props {string} contractStatus - Contract status.
- * @props {string} remarks - Additional remarks.
- * @computed {string} fullAddress - Full address combining prefecture, city, and address (read-only)
- * @computed {string} prefecture - Prefecture name derived from `prefCode` (read-only)
- *****************************************************************************/
 export default class Customer extends FireModel {
   static className = "取引先";
   static collectionPath = "Customers";
