@@ -389,7 +389,7 @@ export const fieldDefinitions = {
   // contractStatus -> Used in Customer.js and Outsourcer.js
   contractStatus: {
     ...generalDefinitions.select,
-    default: CONTRACT_STATUS_VALUES.ACTIVE,
+    default: CONTRACT_STATUS_VALUES.ACTIVE.value,
     label: "契約状態",
     component: {
       name: generalDefinitions.select.component.name,
