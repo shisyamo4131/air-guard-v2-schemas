@@ -201,22 +201,6 @@ export default class SiteOperationSchedule extends Operation {
    ***************************************************************************/
   afterInitialize() {
     super.afterInitialize();
-
-    /***********************************************************
-     * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
-     * ---------------------------------------------------------
-     * When `startTime`, `endTime`, `breakMinutes`, and `isStartNextDay`
-     * are changed on the Operation instance,
-     * the corresponding properties on all employees and outsourcers
-     * are automatically updated to keep them in sync.
-     * [NOTE]
-     * `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are
-     * synchronized in the parent `Operation` class.
-     ***********************************************************/
-    let _startTime = this.startTime;
-    let _endTime = this.endTime;
-    let _breakMinutes = this.breakMinutes;
-    let _isStartNextDay = this.isStartNextDay;
     const synchronizeToWorkers = (key, value) => {
       this.employees.forEach((emp) => {
         emp[key] = value;
@@ -225,7 +209,37 @@ export default class SiteOperationSchedule extends Operation {
         out[key] = value;
       });
     };
+
+    /***********************************************************
+     * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
+     * ---------------------------------------------------------
+     * When `docId`, `startTime`, `endTime`, `breakMinutes`, and
+     * `isStartNextDay` are changed on the SiteOperationSchedule
+     * instance, the corresponding properties on all employees
+     * and outsourcers are automatically updated to keep them in sync.
+     * Especially important is that when `docId` changes, the
+     * `siteOperationScheduleId` on all employees and outsourcers
+     * is updated accordingly.
+     * [NOTE]
+     * `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are
+     * synchronized in the parent `Operation` class.
+     ***********************************************************/
+    let _docId = this.docId;
+    let _startTime = this.startTime;
+    let _endTime = this.endTime;
+    let _breakMinutes = this.breakMinutes;
+    let _isStartNextDay = this.isStartNextDay;
     defineComputedProperties(this, {
+      docId: {
+        get() {
+          return _docId;
+        },
+        set(v) {
+          if (_docId === v) return;
+          _docId = v;
+          synchronizeToWorkers("siteOperationScheduleId", v);
+        },
+      },
       startTime: {
         get() {
           return _startTime;
