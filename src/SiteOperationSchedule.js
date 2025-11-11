@@ -338,7 +338,7 @@ export default class SiteOperationSchedule extends Operation {
    * @param {Object} updateOptions - Options for creating the notification.
    * @param {boolean} updateOptions.useAutonumber - Whether to use autonumbering.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
-   * @param {function} updateOptions.callBack - The callback function.
+   * @param {function} updateOptions.callback - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
    */
   async create(updateOptions = {}) {
@@ -373,7 +373,7 @@ export default class SiteOperationSchedule extends Operation {
    * - Just updates if no changes detected.
    * @param {Object} updateOptions - Options for updating the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
-   * @param {function} updateOptions.callBack - The callback function.
+   * @param {function} updateOptions.callback - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
    */
   async update(updateOptions = {}) {
@@ -449,7 +449,7 @@ export default class SiteOperationSchedule extends Operation {
    * - Deletes all notifications associated with the schedule before deleting the schedule itself.
    * @param {Object} updateOptions - Options for deleting the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
-   * @param {function} updateOptions.callBack - The callback function.
+   * @param {function} updateOptions.callback - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
    */
   async delete(updateOptions = {}) {
