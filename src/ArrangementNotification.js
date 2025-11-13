@@ -275,11 +275,36 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
   }
 
   /**
-   * Could not update the arrangement notification directly.
+   * Override `update`.
+   * - Direct updates to ArrangementNotification are not allowed.
+   * - Use status transition methods instead.
+   * @param {Object} updateOptions - Options for updating the notification.
+   * @param {Object} updateOptions.transaction - The Firestore transaction object.
+   * @param {function} updateOptions.callBack - The callback function.
+   * @param {string} updateOptions.prefix - The prefix.
    * @returns {Promise<void>}
    */
-  update() {
-    return Promise.reject(new Error("Update method is not implemented"));
+  async update(updateOptions = {}) {
+    // return Promise.reject(new Error("Update method is not implemented"));
+    const context = {
+      method: "update",
+      className: "ArrangementNotification",
+      arguments: updateOptions,
+      state: this.toObject(),
+    };
+    try {
+      if (this.status === VALUES.ARRANGED.value) {
+        await this.toArranged(updateOptions);
+      } else if (this.status === VALUES.CONFIRMED.value) {
+        await this.toConfirmed(updateOptions);
+      } else if (this.status === VALUES.ARRIVED.value) {
+        await this.toArrived(updateOptions);
+      } else if (this.status === VALUES.LEAVED.value) {
+        await this.toLeaved(updateOptions);
+      }
+    } catch (error) {
+      throw new ContextualError(error.message, context);
+    }
   }
 
   /**
@@ -371,23 +396,12 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
 
   /**
    * Change status to `LEAVED`.
-   * @param {Object} timeOptions - Options for setting time.
-   * @param {string} timeOptions.startTime - The actual start time.
-   * @param {string} timeOptions.endTime - The actual end time.
-   * @param {number} timeOptions.breakMinutes - The actual break minutes.
-   * @param {boolean} timeOptions.actualIsStartNextDay - The actual flag indicating if the start time is on the next day.
    * @param {Object} updateOptions - Options for updating the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
    * @param {function} updateOptions.callBack - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
    */
-  async toLeaved(timeOptions = {}, updateOptions = {}) {
-    const {
-      actualStartTime,
-      actualEndTime,
-      actualBreakMinutes,
-      actualIsStartNextDay,
-    } = timeOptions;
+  async toLeaved(updateOptions = {}, timeOptions = {}) {
     const context = {
       method: "toLeaved",
       className: "ArrangementNotification",
@@ -395,20 +409,6 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       state: this.toObject(),
     };
     try {
-      if (
-        !actualStartTime ||
-        !actualEndTime ||
-        actualBreakMinutes === undefined
-      ) {
-        throw new ContextualError(
-          "startTime, endTime, and breakMinutes are required",
-          context
-        );
-      }
-      this.actualStartTime = actualStartTime;
-      this.actualEndTime = actualEndTime;
-      this.actualBreakMinutes = actualBreakMinutes;
-      this.actualIsStartNextDay = actualIsStartNextDay;
       this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
       this.arrivedAt = this.arrivedAt ? this.arrivedAt : new Date();
       this.leavedAt = new Date();
