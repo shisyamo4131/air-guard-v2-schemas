@@ -13,12 +13,12 @@
  *   `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are synchronized
  *   in the parent `Operation` class.
  * ---------------------------------------------------------------------------
- * @props {string|null} operationResultId - Associated OperationResult document ID
+ * @prop {string|null} operationResultId - Associated OperationResult document ID
  * - If an OperationResult has been created based on this schedule, this property
  *   holds the ID of that OperationResult document.
  * - If this property is set, the schedule cannot be updated or deleted.
  *   Conversely, if the associated OperationResult is deleted, this property can be set to null.
- * @props {number} displayOrder - Display order
+ * @prop {number} displayOrder - Display order
  * - Property to control the display order of schedules on the same date and shift type.
  * - Automatically assigned during creation based on existing documents.
  * ---------------------------------------------------------------------------
@@ -28,33 +28,33 @@
  * - Returns `true` if all workers in the `workers` array have `hasNotification` set to `true`
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from Operation:
- * @props {string} siteId - Site document ID (trigger property)
+ * @prop {string} siteId - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {number} requiredPersonnel - Required number of personnel
- * @props {boolean} qualificationRequired - Qualification required flag
- * @props {string} workDescription - Work description
- * @props {string} remarks - Remarks
- * @props {Array<SiteOperationScheduleDetail>} employees - Assigned employees
+ * @prop {number} requiredPersonnel - Required number of personnel
+ * @prop {boolean} qualificationRequired - Qualification required flag
+ * @prop {string} workDescription - Work description
+ * @prop {string} remarks - Remarks
+ * @prop {Array<SiteOperationScheduleDetail>} employees - Assigned employees
  * - Array of `SiteOperationScheduleDetail` instances representing assigned employees
- * @props {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
+ * @prop {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
  * - Array of `SiteOperationScheduleDetail` instances representing assigned outsourcers
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult (via Operation):
- * @props {Date} dateAt - Date of operation (placement date) (trigger property)
+ * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} startTime - Start time (HH:MM format) (trigger property)
+ * @prop {string} startTime - Start time (HH:MM format) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {boolean} isStartNextDay - Next day start flag (trigger property)
+ * @prop {boolean} isStartNextDay - Next day start flag (trigger property)
  * - `true` if the actual work starts the day after the placement date `dateAt`
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} endTime - End time (HH:MM format) (trigger property)
+ * @prop {string} endTime - End time (HH:MM format) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {number} breakMinutes - Break time (minutes) (trigger property)
+ * @prop {number} breakMinutes - Break time (minutes) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * @prop {number} regulationWorkMinutes - Regulation work minutes (trigger property)
  * - Indicates the maximum working time treated as regular working hours.
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * ---------------------------------------------------------------------------
