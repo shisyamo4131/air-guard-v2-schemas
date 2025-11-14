@@ -196,6 +196,11 @@ export default class SiteOperationSchedule extends Operation {
   static collectionPath = "SiteOperationSchedules";
   static classProps = classProps;
 
+  static headers = [
+    { title: "日付", key: "dateAt" },
+    { title: "現場", key: "siteId", value: "siteId" },
+  ];
+
   /***************************************************************************
    * Override `afterInitialize`
    ***************************************************************************/
