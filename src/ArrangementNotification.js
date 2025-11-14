@@ -8,14 +8,14 @@
  * - Overrides `totalWorkMinutes` to use actual work times instead of scheduled times.
  * - Direct updates are disabled; use status transition methods instead.
  * ---------------------------------------------------------------------------
- * @props {Date} confirmedAt - Confirmation date and time
- * @props {string} arrivedAt - Arrival time (HH:MM format)
- * @props {string} leavedAt - Leave time (HH:MM format)
- * @props {string} actualStartTime - Actual start time (HH:MM format)
- * @props {boolean} actualIsStartNextDay - Actual next day start flag
- * @props {string} actualEndTime - Actual end time (HH:MM format)
- * @props {number} actualBreakMinutes - Actual break time (minutes)
- * @props {string} status - Arrangement notification status
+ * @prop {Date} confirmedAt - Confirmation date and time
+ * @prop {string} arrivedAt - Arrival time (HH:MM format)
+ * @prop {string} leavedAt - Leave time (HH:MM format)
+ * @prop {string} actualStartTime - Actual start time (HH:MM format)
+ * @prop {boolean} actualIsStartNextDay - Actual next day start flag
+ * @prop {string} actualEndTime - Actual end time (HH:MM format)
+ * @prop {number} actualBreakMinutes - Actual break time (minutes)
+ * @prop {string} status - Arrangement notification status
  * ---------------------------------------------------------------------------
  * @computed {Date} actualStartAt - Actual start date and time (Date object) (read-only)
  * - Returns a Date object with `actualStartTime` set based on `dateAt`.
@@ -38,27 +38,27 @@
  * - Returns `true` if status is `LEAVED`
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from SiteOperationScheduleDetail:
- * @props {string} siteOperationScheduleId - Site Operation Schedule ID
+ * @prop {string} siteOperationScheduleId - Site Operation Schedule ID
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from OperationDetail (via SiteOperationScheduleDetail):
- * @props {string} id - Employee or Outsourcer document ID
- * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
- * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
- * @props {number} amount - Number of placements (always fixed at 1)
- * @props {string} siteId - Site ID
- * @props {boolean} isQualified - Qualified flag
- * @props {boolean} isOjt - OJT flag
+ * @prop {string} id - Employee or Outsourcer document ID
+ * @prop {number} index - Identifier index for Outsourcer (always 0 for Employee)
+ * @prop {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
+ * @prop {number} amount - Number of placements (always fixed at 1)
+ * @prop {string} siteId - Site ID
+ * @prop {boolean} isQualified - Qualified flag
+ * @prop {boolean} isOjt - OJT flag
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult (via SiteOperationScheduleDetail):
- * @props {Date} dateAt - Placement date (trigger property)
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - `DAY` or `NIGHT`
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
+ * @prop {Date} dateAt - Placement date (trigger property)
+ * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @prop {string} shiftType - `DAY` or `NIGHT`
+ * @prop {string} startTime - Start time (HH:MM format)
+ * @prop {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes
+ * @prop {string} endTime - End time (HH:MM format)
+ * @prop {number} breakMinutes - Break time (minutes)
+ * @prop {number} regulationWorkMinutes - Regulation work minutes
  * ---------------------------------------------------------------------------
  * @inherited - The following computed properties are inherited from OperationDetail (via SiteOperationScheduleDetail):
  * @computed {string} workerId - Worker ID (read-only)
