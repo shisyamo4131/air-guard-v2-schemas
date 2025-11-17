@@ -12,15 +12,15 @@
  * - `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
  *   They should be synchronized at `SiteOperationSchedule` level instead.
  * ---------------------------------------------------------------------------
- * @props {string} siteId - Site document ID (trigger property)
+ * @prop {string} siteId - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {number} requiredPersonnel - Required number of personnel
- * @props {boolean} qualificationRequired - Qualification required flag
- * @props {string} workDescription - Work description
- * @props {string} remarks - Remarks
- * @props {Array<OperationDetail>} employees - Assigned employees
+ * @prop {number} requiredPersonnel - Required number of personnel
+ * @prop {boolean} qualificationRequired - Qualification required flag
+ * @prop {string} workDescription - Work description
+ * @prop {string} remarks - Remarks
+ * @prop {Array<OperationDetail>} employees - Assigned employees
  * - Array of `OperationDetail` instances representing assigned employees
- * @props {Array<OperationDetail>} outsourcers - Assigned outsourcers
+ * @prop {Array<OperationDetail>} outsourcers - Assigned outsourcers
  * - Array of `OperationDetail` instances representing assigned outsourcers
  * ---------------------------------------------------------------------------
  * @computed {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
@@ -46,17 +46,17 @@
  * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult:
- * @props {Date} dateAt - Date of operation (placement date) (trigger property)
+ * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
+ * @prop {string} startTime - Start time (HH:MM format)
+ * @prop {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * @prop {string} endTime - End time (HH:MM format)
+ * @prop {number} breakMinutes - Break time (minutes)
+ * @prop {number} regulationWorkMinutes - Regulation work minutes (trigger property)
  * - Indicates the maximum working time treated as regular working hours.
  * - A new value will be synchronized to all `employees` and `outsourcers`.
  * ---------------------------------------------------------------------------
