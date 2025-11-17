@@ -3,7 +3,7 @@
  * @author shisyamo4131
  * @version 1.0.0
  */
-import { default as FireModel } from "air-firebase-v2";
+import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { CustomerMinimal } from "./Customer.js";

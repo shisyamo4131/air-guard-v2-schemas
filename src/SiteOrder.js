@@ -9,7 +9,7 @@
  *
  * @property {string} key - A computed property that returns a unique key in the format `${siteId}-${shiftType}` for identifying the site-shift pair.
  */
-import { BaseClass } from "air-firebase-v2";
+import { BaseClass } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 
 /**

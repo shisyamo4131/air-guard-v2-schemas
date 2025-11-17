@@ -58,7 +58,7 @@
  * - By default, updates `dayType` based on the new `dateAt` value.
  * - @param {Date} v - The new `dateAt` value
  *****************************************************************************/
-import FireModel from "air-firebase-v2";
+import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
 import { getDayType } from "./constants/day-type.js";

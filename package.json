@@ -1,22 +1,42 @@
 {
-  "name": "air-guard-v2-schemas",
+  "name": "@shisyamo4131/air-guard-v2-schemas",
   "version": "1.0.0",
   "description": "Schemas for AirGuard V2",
-  "main": "index.js",
   "type": "module",
+  "main": "index.js",
   "exports": {
     ".": "./index.js",
     "./constants": "./src/constants/index.js",
     "./apis": "./src/apis/index.js",
     "./utils": "./src/utils/index.js"
   },
+  "files": [
+    "index.js",
+    "src/**/*.js",
+    "!**/*.test.js",
+    "!**/*.spec.js",
+    "README.md"
+  ],
+  "keywords": [
+    "airguard",
+    "schemas",
+    "firestore",
+    "models"
+  ],
+  "author": "shisyamo4131",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shisyamo4131/air-guard-v2-schemas.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "shisyamo4131",
-  "license": "ISC",
   "peerDependencies": {
-    "air-firebase-v2": "file:../air-firebase-v2"
+    "@shisyamo4131/air-firebase-v2": "^1.0.0"
   },
   "dependencies": {
     "@holiday-jp/holiday_jp": "^2.5.1"

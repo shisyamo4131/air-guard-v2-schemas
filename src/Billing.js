@@ -21,7 +21,7 @@
  * @computed {Array<Object>} itemsSummary - billing items summary for display
  *****************************************************************************/
 
-import FireModel from "air-firebase-v2";
+import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import OperationResult from "./OperationResult.js";
 

@@ -2,7 +2,7 @@
  * Company Model ver 1.0.0
  * @author shisyamo4131
  *****************************************************************************/
-import FireModel from "air-firebase-v2";
+import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import Agreement from "./Agreement.js";

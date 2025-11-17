@@ -27,7 +27,7 @@
  * @prop {string} STATUS_ACTIVE - constant for active contract status
  * @prop {string} STATUS_TERMINATED - constant for terminated contract status
  *****************************************************************************/
-import FireModel from "air-firebase-v2";
+import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { VALUES } from "./constants/contract-status.js";
