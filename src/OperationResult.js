@@ -1,5 +1,5 @@
 /*****************************************************************************
- * OperationResult Model ver 1.0.0
+ * OperationResult Model ver 1.1.0
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
  * - Extends Operation class to represent the result of an operation.
@@ -7,6 +7,8 @@
  * - Prevents deletion if the instance has `siteOperationScheduleId`.
  * - Provides comprehensive billing calculations including statistics, sales amounts, and tax.
  * - Supports both daily and hourly billing with adjusted quantities.
+ * - Automatically updates `billingDateAt` based on `dateAt` and `cutoffDate`.
+ * - Introduces a lock mechanism (`isLocked`) to prevent edits when necessary.
  * ---------------------------------------------------------------------------
  * @prop {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created from a SiteOperationSchedule, this property holds that ID.
@@ -21,6 +23,9 @@
  * @prop {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
  * - Overtime used for billing qualified workers when `useAdjustedQuantity` is true.
  * @prop {Date} billingDateAt - Billing date
+ * - The date used for billing purposes.
+ * @prop {boolean} isLocked - Lock flag
+ * - When set to true, the OperationResult is locked from edits exept for editing as OperationBilling.
  * ---------------------------------------------------------------------------
  * @computed {Object} statistics - Statistics of workers (read-only)
  * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
@@ -38,6 +43,7 @@
  * - Calculated using the `Tax` utility based on `salesAmount` and `date`.
  * @computed {number} billingAmount - Total billing amount including tax (read-only)
  * - Sum of `salesAmount` and `tax`.
+ * @computed {string} billingMonth - Billing month in YYYY-MM format (read-only)
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from Operation:
  * @prop {string} siteId - Site document ID (trigger property)
@@ -60,10 +66,14 @@
  * @prop {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
  * @prop {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
  * - The cutoff date for billing, using values defined in the CutoffDate utility class.
+ * - Used to calculate `billingDateAt`.
+ * - When `cutoffDate` or `dateAt` changes, `billingDateAt` is automatically updated.
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult (via Operation):
  * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * - Used to determine `dayType`.
+ * - When `dateAt` changes, `billingDateAt` is also updated based on `cutoffDate`.
  * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
  * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
@@ -132,6 +142,8 @@
  * @method {function} beforeDelete - Override method to prevent deletion with siteOperationScheduleId
  * - Prevents deletion if the instance has `siteOperationScheduleId`.
  * - Throws an error if deletion is attempted on an instance created from SiteOperationSchedule.
+ * @method {function} refreshBillingDateAt - Refresh billingDateAt based on dateAt and cutoffDate
+ * - Updates `billingDateAt` based on the current `dateAt` and `cutoffDate` values.
  * ---------------------------------------------------------------------------
  * @inherited - The following methods are inherited from Operation:
  * @method {function} addWorker - Adds a new worker (employee or outsourcer)
@@ -213,6 +225,10 @@ const classProps = {
   employees: defField("array", { customClass: OperationResultDetail }),
   outsourcers: defField("array", {
     customClass: OperationResultDetail,
+  }),
+  isLocked: defField("check", {
+    label: "ロック",
+    default: false,
   }),
 };
 
@@ -421,9 +437,27 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+      billingMonth: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.billingDateAt) return null;
+          const jstDate = new Date(
+            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
+          ); /* JST補正 */
+          const year = jstDate.getUTCFullYear();
+          const month = jstDate.getUTCMonth() + 1;
+          return `${year}-${String(month).padStart(2, "0")}`;
+        },
+        set(v) {},
+      },
     });
   }
 
+  /**
+   * Refresh billingDateAt based on dateAt and cutoffDate
+   * @returns {void}
+   */
   refreshBillingDateAt() {
     if (!this.dateAt) {
       this.billingDateAt = null;
@@ -439,6 +473,10 @@ export default class OperationResult extends Operation {
     );
   }
 
+  /**
+   * Override `setDateAtCallback` to refresh billingDateAt
+   * @param {Date} v
+   */
   setDateAtCallback(v) {
     super.setDateAtCallback(v);
     this.refreshBillingDateAt();
@@ -455,5 +493,33 @@ export default class OperationResult extends Operation {
         "この稼働実績は現場稼働予定から作成されているため、削除できません。"
       );
     }
+  }
+
+  /**
+   * Override update method to prevent editing if isLocked is true
+   * @param {*} options
+   * @returns {Promise<void>}
+   */
+  async update(options = {}) {
+    if (this.isLocked) {
+      throw new Error(
+        "[OperationResult] This OperationResult is locked and cannot be edited."
+      );
+    }
+    return super.update(options);
+  }
+
+  /**
+   * Override delete method to prevent deletion if isLocked is true
+   * @param {*} options
+   * @returns {Promise<void>}
+   */
+  async delete(options = {}) {
+    if (this.isLocked) {
+      throw new Error(
+        "[OperationResult] This OperationResult is locked and cannot be deleted."
+      );
+    }
+    return super.delete(options);
   }
 }

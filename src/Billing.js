@@ -9,16 +9,18 @@
  * @prop {string} billingMonth - billing month (YYYY-MM format)
  * @prop {Date} billingDate - billing date
  * @prop {Date} paymentDueDate - payment due date
+ *
+ * @prop {Array} paymentRecords - payment records (not implemented yet)
+ *
  * @prop {string} status - status (DRAFT/CONFIRMED/PAID/CANCELLED)
- * @prop {Array<OperationResult>} items - operation result items (raw data)
+ * @prop {Array<OperationResult>} operationResults - operation result documents.
  * @prop {Object} adjustment - adjustment
  * @prop {string} remarks - remarks
- * @prop {Object} pdfInfo - PDF information
  *
- * @computed {number} subtotal - subtotal (excluding tax)
- * @computed {number} taxAmount - tax amount
- * @computed {number} totalAmount - total amount (including tax)
- * @computed {Array<Object>} itemsSummary - billing items summary for display
+ * @prop {number} subtotal - subtotal (excluding tax) (computed-readonly)
+ * @prop {number} taxAmount - tax amount (computed-readonly)
+ * @prop {number} totalAmount - total amount (including tax) (computed-readonly)
+ * @prop {Array<Object>} itemsSummary - billing items summary for display (computed-readonly)
  *****************************************************************************/
 
 import FireModel from "@shisyamo4131/air-firebase-v2";
@@ -36,29 +38,21 @@ const classProps = {
   customerId: defField("customerId", { required: true }),
   siteId: defField("siteId", { required: true }),
   billingMonth: defField("oneLine", { required: true }),
-  billingDate: defField("date"),
-  paymentDueDate: defField("date"),
+  billingDateAt: defField("date"),
+  paymentDueDateAt: defField("date"),
+
+  // 入金管理用配列（現時点では未使用 将来の拡張用）
+  paymentRecords: defField("array", { default: [] }), // Not implemented yet
+
   status: defField("oneLine", { default: STATUS.DRAFT }),
-
-  // OperationResult の生データを配列で保持
-  items: defField("array", { customClass: OperationResult }),
-
+  operationResults: defField("array", { customClass: OperationResult }),
   adjustment: defField("object", {
     default: {
       amount: 0,
       description: "",
     },
   }),
-
   remarks: defField("multipleLine"),
-
-  pdfInfo: defField("object", {
-    default: {
-      url: null,
-      generatedAt: null,
-      version: 1,
-    },
-  }),
 };
 
 export default class Billing extends FireModel {
@@ -75,13 +69,14 @@ export default class Billing extends FireModel {
     // 小計（税抜）を計算
     Object.defineProperty(this, "subtotal", {
       get() {
-        const itemsTotal = this.items.reduce((sum, item) => {
+        const itemsTotal = this.operationResults.reduce((sum, item) => {
           return sum + (item.salesAmount || 0);
         }, 0);
         return itemsTotal + (this.adjustment?.amount || 0);
       },
       set() {},
       enumerable: true,
+      configurable: true,
     });
 
     // 消費税額を計算
@@ -91,6 +86,7 @@ export default class Billing extends FireModel {
       },
       set() {},
       enumerable: true,
+      configurable: true,
     });
 
     // 合計金額（税込）を計算
@@ -100,12 +96,13 @@ export default class Billing extends FireModel {
       },
       set() {},
       enumerable: true,
+      configurable: true,
     });
 
     // 表示用の明細サマリーを生成
     Object.defineProperty(this, "itemsSummary", {
       get() {
-        return this.items.map((item) => ({
+        return this.operationResults.map((item) => ({
           operationResultId: item.docId,
           workDate: item.dateAt,
           shiftType: item.shiftType,
@@ -134,6 +131,7 @@ export default class Billing extends FireModel {
       },
       set() {},
       enumerable: true,
+      configurable: true,
     });
   }
 

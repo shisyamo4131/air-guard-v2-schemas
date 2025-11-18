@@ -1,8 +1,9 @@
 /*****************************************************************************
- * Customer ver 1.0.0
+ * Customer ver 1.1.0
  * @author shisyamo4131
  *
  * @description Customer model.
+ *
  * @hasMany Sites - related sites associated with the customer
  *
  * @prop {string} code - customer code
@@ -17,6 +18,8 @@
  * @prop {string} tel - telephone number
  * @prop {string} fax - fax number
  * @prop {string} contractStatus - contract status
+ * @prop {number} paymentMonth - payment site in months
+ * @prop {string} paymentDate - payment site date
  * @prop {string} remarks - additional remarks
  *
  * @readonly
@@ -31,6 +34,7 @@ import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { VALUES } from "./constants/contract-status.js";
+import CutoffDate from "./utils/CutoffDate.js";
 
 const classProps = {
   code: defField("code", { label: "取引先コード" }),
@@ -45,6 +49,21 @@ const classProps = {
   tel: defField("tel", { colsDefinition: { cols: 12, sm: 6 } }),
   fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
   contractStatus: defField("contractStatus", { required: true }),
+  paymentMonth: defField("number", {
+    default: 1,
+    label: "入金サイト（月数）",
+    required: true,
+  }),
+  paymentDate: defField("select", {
+    label: "入金サイト（日付）",
+    default: CutoffDate.VALUES.END_OF_MONTH,
+    required: true,
+    component: {
+      attrs: {
+        items: CutoffDate.OPTIONS,
+      },
+    },
+  }),
   remarks: defField("multipleLine", { label: "備考" }),
 };
 

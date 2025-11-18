@@ -11,54 +11,57 @@
  *   is not implemented, as billing records are typically generated through the OperationResult class.
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from OperationResult:
- * @props {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
+ * @prop {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationBilling was created from a SiteOperationSchedule, this property holds that ID.
  * - If this property is set, the instance cannot be deleted.
- * @props {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
- * @props {number} adjustedQuantityBase - Adjusted quantity for base workers
+ * @prop {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
+ * @prop {number} adjustedQuantityBase - Adjusted quantity for base workers
  * - Quantity used for billing base workers when `useAdjustedQuantity` is true.
- * @props {number} adjustedOvertimeBase - Adjusted overtime for base workers
+ * @prop {number} adjustedOvertimeBase - Adjusted overtime for base workers
  * - Overtime used for billing base workers when `useAdjustedQuantity` is true.
- * @props {number} adjustedQuantityQualified - Adjusted quantity for qualified workers
+ * @prop {number} adjustedQuantityQualified - Adjusted quantity for qualified workers
  * - Quantity used for billing qualified workers when `useAdjustedQuantity` is true.
- * @props {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
+ * @prop {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
  * - Overtime used for billing qualified workers when `useAdjustedQuantity` is true.
- * @props {Date} billingDateAt - Billing date
+ * @prop {Date} billingDateAt - Billing date
+ * - The date used for billing purposes.
+ * @prop {boolean} isLocked - Lock flag
+ * - When set to true, the OperationBilling is locked from edits exept for editing as OperationBilling.
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from Operation (via OperationResult):
- * @props {string} siteId - Site document ID (trigger property)
+ * @prop {string} siteId - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {number} requiredPersonnel - Required number of personnel
- * @props {boolean} qualificationRequired - Qualification required flag
- * @props {string} workDescription - Work description
- * @props {string} remarks - Remarks
- * @props {Array<OperationResultDetail>} employees - Assigned employees
+ * @prop {number} requiredPersonnel - Required number of personnel
+ * @prop {boolean} qualificationRequired - Qualification required flag
+ * @prop {string} workDescription - Work description
+ * @prop {string} remarks - Remarks
+ * @prop {Array<OperationResultDetail>} employees - Assigned employees
  * - Array of `OperationResultDetail` instances representing assigned employees
- * @props {Array<OperationResultDetail>} outsourcers - Assigned outsourcers
+ * @prop {Array<OperationResultDetail>} outsourcers - Assigned outsourcers
  * - Array of `OperationResultDetail` instances representing assigned outsourcers
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from Agreement (via OperationResult):
- * @props {number} unitPriceBase - Base unit price (JPY)
- * @props {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
- * @props {number} unitPriceQualified - Qualified unit price (JPY)
- * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
- * @props {string} billingUnitType - Billing unit type
- * @props {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
- * @props {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
+ * @prop {number} unitPriceBase - Base unit price (JPY)
+ * @prop {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
+ * @prop {number} unitPriceQualified - Qualified unit price (JPY)
+ * @prop {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
+ * @prop {string} billingUnitType - Billing unit type
+ * @prop {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
+ * @prop {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
  * - The cutoff date for billing, using values defined in the CutoffDate utility class.
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult (via OperationResult):
- * @props {Date} dateAt - Date of operation (placement date) (trigger property)
+ * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
+ * @prop {string} startTime - Start time (HH:MM format)
+ * @prop {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * @prop {string} endTime - End time (HH:MM format)
+ * @prop {number} breakMinutes - Break time (minutes)
+ * @prop {number} regulationWorkMinutes - Regulation work minutes (trigger property)
  * - Indicates the maximum working time treated as regular working hours.
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * ---------------------------------------------------------------------------
