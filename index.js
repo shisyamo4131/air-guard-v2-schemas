@@ -2,6 +2,7 @@ export { default as Agreement } from "./src/Agreement.js";
 export { default as ArrangementNotification } from "./src/ArrangementNotification.js";
 export { default as Company } from "./src/Company.js";
 export { default as Customer, CustomerMinimal } from "./src/Customer.js";
+export { default as CutoffDate } from "./src/utils/CutoffDate.js";
 export { default as Employee } from "./src/Employee.js";
 export { default as OperationBilling } from "./src/OperationBilling.js";
 export { default as OperationResult } from "./src/OperationResult.js";
