@@ -246,12 +246,7 @@ export default class OperationResult extends Operation {
         set(v) {
           _cutoffDate = v;
           // Update billingDateAt when cutoffDate changes
-          if (this.dateAt) {
-            this.billingDateAt = CutoffDate.calculateBillingDateAt(
-              this.dateAt,
-              this.cutoffDate
-            );
-          }
+          this.refreshBillingDateAt();
         },
       },
       statistics: {
@@ -429,10 +424,24 @@ export default class OperationResult extends Operation {
     });
   }
 
+  refreshBillingDateAt() {
+    if (!this.dateAt) {
+      this.billingDateAt = null;
+      return;
+    }
+    if (this.cutoffDate !== 0 && !this.cutoffDate) {
+      this.billingDateAt = null;
+      return;
+    }
+    this.billingDateAt = CutoffDate.calculateBillingDateAt(
+      this.dateAt,
+      this.cutoffDate
+    );
+  }
+
   setDateAtCallback(v) {
     super.setDateAtCallback(v);
-    if (!this.cutoffDate) return;
-    this.billingDateAt = CutoffDate.calculateBillingDateAt(v, this.cutoffDate);
+    this.refreshBillingDateAt();
   }
 
   /**
