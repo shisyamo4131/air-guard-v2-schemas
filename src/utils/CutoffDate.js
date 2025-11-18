@@ -11,8 +11,8 @@
  * @static {Array} OPTIONS - Options for selection components
  * @static {function} calculateActualCutoffDay - Calculate actual cutoff day for given year/month
  * @static {function} calculateBillingPeriod - Calculate billing period for given date and cutoff
- * @static {function} calculateCutoffDate - Calculate cutoff date as Date object for given sales date
- * @static {function} calculateCutoffDateString - Calculate cutoff date as string (YYYY-MM-DD) for given sales date
+ * @static {function} calculateBillingDateAt - Calculate cutoff date as Date object for given sales date
+ * @static {function} calculateBillingDateAtString - Calculate cutoff date as string (YYYY-MM-DD) for given sales date
  * @static {function} getDisplayText - Get display text for cutoff date value
  * @static {function} isValidCutoffDate - Validate cutoff date value
  *****************************************************************************/
@@ -179,14 +179,14 @@ export default class CutoffDate {
    * @example
    * // For JST 2024-03-15 with 10th cutoff
    * // Input: UTC date representing JST 2024-03-15
-   * const cutoffDate = CutoffDate.calculateCutoffDate(new Date('2024-03-14T15:00:00Z'), CutoffDate.VALUES.DAY_10);
+   * const cutoffDate = CutoffDate.calculateBillingDateAt(new Date('2024-03-14T15:00:00Z'), CutoffDate.VALUES.DAY_10);
    * // Returns: UTC date representing JST 2024-04-10
    *
    * // For JST 2024-03-05 with 10th cutoff
-   * const cutoffDate = CutoffDate.calculateCutoffDate(new Date('2024-03-04T15:00:00Z'), CutoffDate.VALUES.DAY_10);
+   * const cutoffDate = CutoffDate.calculateBillingDateAt(new Date('2024-03-04T15:00:00Z'), CutoffDate.VALUES.DAY_10);
    * // Returns: UTC date representing JST 2024-03-10
    */
-  static calculateCutoffDate(salesDate, cutoffDateValue) {
+  static calculateBillingDateAt(salesDate, cutoffDateValue) {
     // Convert UTC to JST by adding 9 hours to get the JST date
     const jstDate = new Date(salesDate.getTime() + 9 * 60 * 60 * 1000);
     const year = jstDate.getUTCFullYear();
@@ -230,11 +230,11 @@ export default class CutoffDate {
    * @returns {string} Cutoff date in YYYY-MM-DD format (JST)
    * @example
    * // For JST 2024-03-15 with 10th cutoff
-   * const cutoffDateString = CutoffDate.calculateCutoffDateString(new Date('2024-03-14T15:00:00Z'), CutoffDate.VALUES.DAY_10);
+   * const cutoffDateString = CutoffDate.calculateBillingDateAtString(new Date('2024-03-14T15:00:00Z'), CutoffDate.VALUES.DAY_10);
    * // Returns "2024-04-10"
    */
-  static calculateCutoffDateString(salesDate, cutoffDateValue) {
-    const cutoffDate = CutoffDate.calculateCutoffDate(
+  static calculateBillingDateAtString(salesDate, cutoffDateValue) {
+    const cutoffDate = CutoffDate.calculateBillingDateAt(
       salesDate,
       cutoffDateValue
     );

@@ -247,7 +247,7 @@ export default class OperationResult extends Operation {
           _cutoffDate = v;
           // Update billingDateAt when cutoffDate changes
           if (this.dateAt) {
-            this.billingDateAt = CutoffDate.getBillingDateAt(
+            this.billingDateAt = CutoffDate.calculateBillingDateAt(
               this.dateAt,
               this.cutoffDate
             );
@@ -432,7 +432,7 @@ export default class OperationResult extends Operation {
   setDateAtCallback(v) {
     super.setDateAtCallback(v);
     if (!this.cutoffDate) return;
-    this.billingDateAt = CutoffDate.getBillingDateAt(v, this.cutoffDate);
+    this.billingDateAt = CutoffDate.calculateBillingDateAt(v, this.cutoffDate);
   }
 
   /**
