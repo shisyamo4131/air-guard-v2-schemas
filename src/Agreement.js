@@ -240,6 +240,34 @@ export default class Agreement extends WorkingResult {
    * from a `SiteOperationSchedule`.
    * - Includes `regulationWorkMinutes`.
    * @returns {Object} An object with price-related properties.
+   * @property {number} cutoffDate - Cutoff date
+   * @property {number} regulationWorkMinutes - Regulation work minutes
+   * @property {number} unitPriceBase - Base unit price
+   * @property {number} overtimeUnitPriceBase - Overtime base unit price
+   * @property {number} unitPriceQualified - Qualified unit price
+   * @property {number} overtimeUnitPriceQualified - Overtime qualified unit price
+   * @property {string} billingUnitType - Billing unit type
+   * @property {boolean} includeBreakInBilling - Whether to include break time in billing
+   */
+  get billingInfo() {
+    return {
+      cutoffDate: this.cutoffDate,
+      regulationWorkMinutes: this.regulationWorkMinutes,
+      unitPriceBase: this.unitPriceBase,
+      overtimeUnitPriceBase: this.overtimeUnitPriceBase,
+      unitPriceQualified: this.unitPriceQualified,
+      overtimeUnitPriceQualified: this.overtimeUnitPriceQualified,
+      billingUnitType: this.billingUnitType,
+      includeBreakInBilling: this.includeBreakInBilling,
+    };
+  }
+
+  /**
+   * Returns an object containing price-related properties.
+   * This accessor is useful for synchronizing price details when creating `OperationResult` instance
+   * from a `SiteOperationSchedule`.
+   * - Includes `regulationWorkMinutes`.
+   * @returns {Object} An object with price-related properties.
    * @property {number} regulationWorkMinutes - Regulation work minutes
    * @property {number} unitPriceBase - Base unit price
    * @property {number} overtimeUnitPriceBase - Overtime base unit price
@@ -249,6 +277,9 @@ export default class Agreement extends WorkingResult {
    * @property {boolean} includeBreakInBilling - Whether to include break time in billing
    */
   get prices() {
+    console.warn(
+      "`Agreement.prices` is deprecated. Use `Agreement.billingInfo` instead."
+    );
     return {
       regulationWorkMinutes: this.regulationWorkMinutes,
       unitPriceBase: this.unitPriceBase,
