@@ -1,13 +1,13 @@
 /**
- * Utility function to get a Date object at a specific time.
- * This function takes a date and a time string in HH:MM format,
- * and returns a Date object with the specified time set.
+ * Utility function to get a Date object at a specific JST time.
+ * This function takes a date and a JST time string in HH:MM format,
+ * and returns a Date object with the specified JST time set.
  * @param {string|Date} date The date to set the time on. Can be a string or a Date object.
  *                           If not provided, the current date is used.
- * @param {string} time The time to set in HH:MM format.
- *                      If not provided, defaults to 00:00 (midnight).
+ * @param {string} time The JST time to set in HH:MM format.
+ *                      If not provided, defaults to 00:00 (midnight JST).
  * @param {number} [dateOffset=0] Optional offset in days to apply to the date.
- * @returns {Date} A Date object with the specified date and time.
+ * @returns {Date} A Date object with the specified date and JST time.
  * @throws {Error} If the date is not a string or Date, or if the time is not a string in HH:MM format.
  * @throws {Error} If the time format is invalid.
  */
@@ -38,10 +38,10 @@ export function getDateAt(date, time, dateOffset = 0) {
   // If date is not provided, use the current date
   const result = new Date(date || Date.now());
 
-  // Set the hours and minutes
-  result.setHours(hour, minute, 0, 0);
+  // JSTはUTC+9なので、UTC時刻として設定してから9時間引く
+  result.setUTCHours(hour - 9, minute, 0, 0);
+  result.setUTCDate(result.getUTCDate() + dateOffset);
 
-  result.setDate(result.getDate() + dateOffset);
   return result;
 }
 

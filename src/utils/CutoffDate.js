@@ -55,29 +55,34 @@ export default class CutoffDate {
    */
   static calculateActualCutoffDay(year, month, cutoffDateValue) {
     if (cutoffDateValue === CutoffDate.VALUES.END_OF_MONTH) {
-      // Get last day of the month
-      return new Date(year, month + 1, 0).getDate();
+      // Get last day of the month using UTC
+      return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     }
     return cutoffDateValue;
   }
 
   /**
    * Calculate billing period for given date and cutoff setting
-   * @param {Date} targetDate - Target date
+   * @param {Date} targetDate - Target date in UTC (representing a JST date)
    * @param {number} cutoffDateValue - Cutoff date value from VALUES
    * @returns {Object} Billing period object
-   * @property {Date} periodStart - Period start date
-   * @property {Date} periodEnd - Period end date
+   * @property {Date} periodStart - Period start date in UTC (representing JST date)
+   * @property {Date} periodEnd - Period end date in UTC (representing JST date)
    * @property {string} periodLabel - Period label (YYYY-MM format)
    * @example
-   * // Calculate billing period for March 15, 2024 with 10th cutoff
-   * const period = CutoffDate.calculateBillingPeriod(new Date(2024, 2, 15), CutoffDate.VALUES.DAY_10);
-   * // Returns period from March 11 to April 10
+   * // For JST 2025-01-20 with 15th cutoff
+   * // Input: UTC date representing JST 2025-01-20
+   * const period = CutoffDate.calculateBillingPeriod(new Date('2025-01-19T15:00:00Z'), 15);
+   * // Returns:
+   * // periodStart: UTC date representing JST 2025-01-16
+   * // periodEnd: UTC date representing JST 2025-02-15
    */
   static calculateBillingPeriod(targetDate, cutoffDateValue) {
-    const year = targetDate.getFullYear();
-    const month = targetDate.getMonth();
-    const day = targetDate.getDate();
+    // Convert UTC to JST by adding 9 hours to get the JST date
+    const jstDate = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
+    const year = jstDate.getUTCFullYear();
+    const month = jstDate.getUTCMonth();
+    const day = jstDate.getUTCDate();
 
     // Calculate cutoff day for current month
     const currentCutoffDay = CutoffDate.calculateActualCutoffDay(
@@ -90,7 +95,6 @@ export default class CutoffDate {
 
     if (day <= currentCutoffDay) {
       // Target date is within current month's billing period
-      // Period: Previous month's cutoff + 1 to current month's cutoff
       const prevMonth = month - 1;
       const prevYear = prevMonth < 0 ? year - 1 : year;
       const normalizedPrevMonth = prevMonth < 0 ? 11 : prevMonth;
@@ -101,12 +105,19 @@ export default class CutoffDate {
         cutoffDateValue
       );
 
-      periodStart = new Date(prevYear, normalizedPrevMonth, prevCutoffDay + 1);
-      periodEnd = new Date(year, month, currentCutoffDay);
+      // Create dates in UTC representing JST dates (subtract 9 hours)
+      const startJst = Date.UTC(
+        prevYear,
+        normalizedPrevMonth,
+        prevCutoffDay + 1
+      );
+      const endJst = Date.UTC(year, month, currentCutoffDay);
+
+      periodStart = new Date(startJst - 9 * 60 * 60 * 1000);
+      periodEnd = new Date(endJst - 9 * 60 * 60 * 1000);
       periodLabel = `${year}-${String(month + 1).padStart(2, "0")}`;
     } else {
       // Target date is within next month's billing period
-      // Period: Current month's cutoff + 1 to next month's cutoff
       const nextMonth = month + 1;
       const nextYear = nextMonth > 11 ? year + 1 : year;
       const normalizedNextMonth = nextMonth > 11 ? 0 : nextMonth;
@@ -117,8 +128,12 @@ export default class CutoffDate {
         cutoffDateValue
       );
 
-      periodStart = new Date(year, month, currentCutoffDay + 1);
-      periodEnd = new Date(nextYear, normalizedNextMonth, nextCutoffDay);
+      // Create dates in UTC representing JST dates (subtract 9 hours)
+      const startJst = Date.UTC(year, month, currentCutoffDay + 1);
+      const endJst = Date.UTC(nextYear, normalizedNextMonth, nextCutoffDay);
+
+      periodStart = new Date(startJst - 9 * 60 * 60 * 1000);
+      periodEnd = new Date(endJst - 9 * 60 * 60 * 1000);
       periodLabel = `${nextYear}-${String(normalizedNextMonth + 1).padStart(
         2,
         "0"
@@ -158,22 +173,25 @@ export default class CutoffDate {
 
   /**
    * Calculate the cutoff date as Date object for given sales date and cutoff setting
-   * @param {Date} salesDate - Sales date
+   * @param {Date} salesDate - Sales date in UTC (representing a JST date)
    * @param {number} cutoffDateValue - Cutoff date value from VALUES
-   * @returns {Date} Cutoff date as Date object
+   * @returns {Date} Cutoff date in UTC (representing a JST date)
    * @example
-   * // Sales on March 15, 2024 with 10th cutoff
-   * const cutoffDate = CutoffDate.calculateCutoffDate(new Date(2024, 2, 15), CutoffDate.VALUES.DAY_10);
-   * // Returns Date object for 2024-04-10
+   * // For JST 2024-03-15 with 10th cutoff
+   * // Input: UTC date representing JST 2024-03-15
+   * const cutoffDate = CutoffDate.calculateCutoffDate(new Date('2024-03-14T15:00:00Z'), CutoffDate.VALUES.DAY_10);
+   * // Returns: UTC date representing JST 2024-04-10
    *
-   * // Sales on March 5, 2024 with 10th cutoff
-   * const cutoffDate = CutoffDate.calculateCutoffDate(new Date(2024, 2, 5), CutoffDate.VALUES.DAY_10);
-   * // Returns Date object for 2024-03-10
+   * // For JST 2024-03-05 with 10th cutoff
+   * const cutoffDate = CutoffDate.calculateCutoffDate(new Date('2024-03-04T15:00:00Z'), CutoffDate.VALUES.DAY_10);
+   * // Returns: UTC date representing JST 2024-03-10
    */
   static calculateCutoffDate(salesDate, cutoffDateValue) {
-    const year = salesDate.getFullYear();
-    const month = salesDate.getMonth();
-    const day = salesDate.getDate();
+    // Convert UTC to JST by adding 9 hours to get the JST date
+    const jstDate = new Date(salesDate.getTime() + 9 * 60 * 60 * 1000);
+    const year = jstDate.getUTCFullYear();
+    const month = jstDate.getUTCMonth();
+    const day = jstDate.getUTCDate();
 
     // Calculate cutoff day for current month
     const currentCutoffDay = CutoffDate.calculateActualCutoffDay(
@@ -185,7 +203,8 @@ export default class CutoffDate {
     if (day <= currentCutoffDay) {
       // Sales date is within current month's billing period
       // Cutoff date is current month's cutoff day
-      return new Date(year, month, currentCutoffDay);
+      const cutoffJst = Date.UTC(year, month, currentCutoffDay);
+      return new Date(cutoffJst - 9 * 60 * 60 * 1000);
     } else {
       // Sales date is within next month's billing period
       // Cutoff date is next month's cutoff day
@@ -199,18 +218,19 @@ export default class CutoffDate {
         cutoffDateValue
       );
 
-      return new Date(nextYear, normalizedNextMonth, nextCutoffDay);
+      const cutoffJst = Date.UTC(nextYear, normalizedNextMonth, nextCutoffDay);
+      return new Date(cutoffJst - 9 * 60 * 60 * 1000);
     }
   }
 
   /**
    * Calculate the cutoff date string (YYYY-MM-DD) for given sales date and cutoff setting
-   * @param {Date} salesDate - Sales date
+   * @param {Date} salesDate - Sales date in UTC (representing a JST date)
    * @param {number} cutoffDateValue - Cutoff date value from VALUES
-   * @returns {string} Cutoff date in YYYY-MM-DD format
+   * @returns {string} Cutoff date in YYYY-MM-DD format (JST)
    * @example
-   * // Sales on March 15, 2024 with 10th cutoff
-   * const cutoffDateString = CutoffDate.calculateCutoffDateString(new Date(2024, 2, 15), CutoffDate.VALUES.DAY_10);
+   * // For JST 2024-03-15 with 10th cutoff
+   * const cutoffDateString = CutoffDate.calculateCutoffDateString(new Date('2024-03-14T15:00:00Z'), CutoffDate.VALUES.DAY_10);
    * // Returns "2024-04-10"
    */
   static calculateCutoffDateString(salesDate, cutoffDateValue) {
@@ -218,6 +238,11 @@ export default class CutoffDate {
       salesDate,
       cutoffDateValue
     );
-    return cutoffDate.toISOString().split("T")[0];
+    // Convert UTC back to JST for string representation
+    const jstDate = new Date(cutoffDate.getTime() + 9 * 60 * 60 * 1000);
+    const year = jstDate.getUTCFullYear();
+    const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(jstDate.getUTCDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 }

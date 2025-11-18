@@ -170,9 +170,11 @@ export default class WorkingResult extends FireModel {
       date: {
         get: () => {
           if (!this.dateAt) return "";
-          const year = this.dateAt.getFullYear();
-          const month = String(this.dateAt.getMonth() + 1).padStart(2, "0"); // 月は0始まり
-          const day = String(this.dateAt.getDate()).padStart(2, "0");
+          // UTC時刻に9時間(JST)を加算してJST日付を取得
+          const jstDate = new Date(this.dateAt.getTime() + 9 * 60 * 60 * 1000);
+          const year = jstDate.getUTCFullYear();
+          const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
+          const day = String(jstDate.getUTCDate()).padStart(2, "0");
           return `${year}-${month}-${day}`;
         },
         set: (v) => {},
