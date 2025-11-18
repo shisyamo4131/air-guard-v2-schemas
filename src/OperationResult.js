@@ -188,6 +188,7 @@ import CutoffDate from "./utils/CutoffDate.js";
 const classProps = {
   ...Operation.classProps,
   ...Agreement.classProps,
+  // Override Agreement's `cutoffDate` field to be hidden.
   cutoffDate: defField("select", {
     label: "締日区分",
     default: CutoffDate.VALUES.END_OF_MONTH,
