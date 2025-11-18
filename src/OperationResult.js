@@ -8,19 +8,19 @@
  * - Provides comprehensive billing calculations including statistics, sales amounts, and tax.
  * - Supports both daily and hourly billing with adjusted quantities.
  * ---------------------------------------------------------------------------
- * @props {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
+ * @prop {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created from a SiteOperationSchedule, this property holds that ID.
  * - If this property is set, the instance cannot be deleted.
- * @props {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
- * @props {number} adjustedQuantityBase - Adjusted quantity for base workers
+ * @prop {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
+ * @prop {number} adjustedQuantityBase - Adjusted quantity for base workers
  * - Quantity used for billing base workers when `useAdjustedQuantity` is true.
- * @props {number} adjustedOvertimeBase - Adjusted overtime for base workers
+ * @prop {number} adjustedOvertimeBase - Adjusted overtime for base workers
  * - Overtime used for billing base workers when `useAdjustedQuantity` is true.
- * @props {number} adjustedQuantityQualified - Adjusted quantity for qualified workers
+ * @prop {number} adjustedQuantityQualified - Adjusted quantity for qualified workers
  * - Quantity used for billing qualified workers when `useAdjustedQuantity` is true.
- * @props {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
+ * @prop {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
  * - Overtime used for billing qualified workers when `useAdjustedQuantity` is true.
- * @props {Date} billingDateAt - Billing date
+ * @prop {Date} billingDateAt - Billing date
  * ---------------------------------------------------------------------------
  * @computed {Object} statistics - Statistics of workers (read-only)
  * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
@@ -40,39 +40,39 @@
  * - Sum of `salesAmount` and `tax`.
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from Operation:
- * @props {string} siteId - Site document ID (trigger property)
+ * @prop {string} siteId - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {number} requiredPersonnel - Required number of personnel
- * @props {boolean} qualificationRequired - Qualification required flag
- * @props {string} workDescription - Work description
- * @props {string} remarks - Remarks
- * @props {Array<OperationResultDetail>} employees - Assigned employees
+ * @prop {number} requiredPersonnel - Required number of personnel
+ * @prop {boolean} qualificationRequired - Qualification required flag
+ * @prop {string} workDescription - Work description
+ * @prop {string} remarks - Remarks
+ * @prop {Array<OperationResultDetail>} employees - Assigned employees
  * - Array of `OperationResultDetail` instances representing assigned employees
- * @props {Array<OperationResultDetail>} outsourcers - Assigned outsourcers
+ * @prop {Array<OperationResultDetail>} outsourcers - Assigned outsourcers
  * - Array of `OperationResultDetail` instances representing assigned outsourcers
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from Agreement (via Operation):
- * @props {number} unitPriceBase - Base unit price (JPY)
- * @props {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
- * @props {number} unitPriceQualified - Qualified unit price (JPY)
- * @props {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
- * @props {string} billingUnitType - Billing unit type
- * @props {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
- * @props {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
+ * @prop {number} unitPriceBase - Base unit price (JPY)
+ * @prop {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
+ * @prop {number} unitPriceQualified - Qualified unit price (JPY)
+ * @prop {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
+ * @prop {string} billingUnitType - Billing unit type
+ * @prop {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
+ * @prop {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
  * - The cutoff date for billing, using values defined in the CutoffDate utility class.
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult (via Operation):
- * @props {Date} dateAt - Date of operation (placement date) (trigger property)
+ * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
+ * @prop {string} startTime - Start time (HH:MM format)
+ * @prop {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * @prop {string} endTime - End time (HH:MM format)
+ * @prop {number} breakMinutes - Break time (minutes)
+ * @prop {number} regulationWorkMinutes - Regulation work minutes (trigger property)
  * - Indicates the maximum working time treated as regular working hours.
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * ---------------------------------------------------------------------------
@@ -188,18 +188,6 @@ import CutoffDate from "./utils/CutoffDate.js";
 const classProps = {
   ...Operation.classProps,
   ...Agreement.classProps,
-  // Override Agreement's `cutoffDate` field to be hidden.
-  cutoffDate: defField("select", {
-    label: "締日区分",
-    default: CutoffDate.VALUES.END_OF_MONTH,
-    required: true,
-    hidden: true,
-    component: {
-      attrs: {
-        items: CutoffDate.OPTIONS,
-      },
-    },
-  }),
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
   useAdjustedQuantity: defField("check", {
     label: "調整数量を使用",
@@ -247,7 +235,25 @@ export default class OperationResult extends Operation {
     super.afterInitialize();
 
     /** Computed properties */
+    let _cutoffDate = this.cutoffDate;
     Object.defineProperties(this, {
+      cutoffDate: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _cutoffDate;
+        },
+        set(v) {
+          _cutoffDate = v;
+          // Update billingDateAt when cutoffDate changes
+          if (this.dateAt) {
+            this.billingDateAt = CutoffDate.getBillingDateAt(
+              this.dateAt,
+              this.cutoffDate
+            );
+          }
+        },
+      },
       statistics: {
         configurable: true,
         enumerable: true,
@@ -421,6 +427,12 @@ export default class OperationResult extends Operation {
         set(v) {},
       },
     });
+  }
+
+  setDateAtCallback(v) {
+    super.setDateAtCallback(v);
+    if (!this.cutoffDate) return;
+    this.billingDateAt = CutoffDate.getBillingDateAt(v, this.cutoffDate);
   }
 
   /**
