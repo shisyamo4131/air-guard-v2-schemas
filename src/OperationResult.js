@@ -308,27 +308,9 @@ export default class OperationResult extends Operation {
               return createInitialValues();
             }
 
-            // agreementがfalsyの場合は初期値を返す
-            if (!this.agreement) {
-              return createInitialValues();
-            }
-
-            const unitPrice = isQualified
-              ? this.agreement.unitPriceQualified || 0
-              : this.agreement.unitPriceBase || 0;
-            const overtimeUnitPrice = isQualified
-              ? this.agreement.overtimeUnitPriceQualified || 0
-              : this.agreement.overtimeUnitPriceBase || 0;
-            const isPerHour =
-              this.agreement.billingUnitType === BILLING_UNIT_TYPE_PER_HOUR;
-
             const result = createInitialValues();
 
-            // 基本情報の設定
-            result.unitPrice = unitPrice;
-            result.overtimeUnitPrice = overtimeUnitPrice;
-
-            // 調整値の使用判定
+            // agreementの有無に関わらず数量と残業時間を計算
             if (this.useAdjustedQuantity) {
               result.quantity = isQualified
                 ? this.adjustedQuantityQualified || 0
@@ -337,12 +319,16 @@ export default class OperationResult extends Operation {
                 ? this.adjustedOvertimeQualified || 0
                 : this.adjustedOvertimeBase || 0;
             } else {
+              // agreementがある場合のみbillingUnitTypeとincludeBreakInBillingを使用
+              const isPerHour =
+                this.agreement?.billingUnitType === BILLING_UNIT_TYPE_PER_HOUR;
+
               if (isPerHour) {
                 // 時間単位請求の場合
                 let totalMinutes = categoryStats.totalWorkMinutes || 0;
 
                 // 休憩時間を請求に含める場合は休憩時間を追加
-                if (this.agreement.includeBreakInBilling) {
+                if (this.agreement?.includeBreakInBilling) {
                   totalMinutes += categoryStats.breakMinutes || 0;
                 }
 
@@ -354,14 +340,24 @@ export default class OperationResult extends Operation {
               result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
             }
 
-            // 金額計算(RoundSettingを適用)
-            result.regularAmount = RoundSetting.apply(
-              result.quantity * unitPrice
-            );
-            result.overtimeAmount = RoundSetting.apply(
-              (result.overtimeMinutes * overtimeUnitPrice) / 60
-            );
-            result.total = result.regularAmount + result.overtimeAmount;
+            // agreementがある場合のみ単価と金額を計算
+            if (this.agreement) {
+              result.unitPrice = isQualified
+                ? this.agreement.unitPriceQualified || 0
+                : this.agreement.unitPriceBase || 0;
+              result.overtimeUnitPrice = isQualified
+                ? this.agreement.overtimeUnitPriceQualified || 0
+                : this.agreement.overtimeUnitPriceBase || 0;
+
+              // 金額計算(RoundSettingを適用)
+              result.regularAmount = RoundSetting.apply(
+                result.quantity * result.unitPrice
+              );
+              result.overtimeAmount = RoundSetting.apply(
+                (result.overtimeMinutes * result.overtimeUnitPrice) / 60
+              );
+              result.total = result.regularAmount + result.overtimeAmount;
+            }
 
             return result;
           };
@@ -435,7 +431,7 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           if (this.hasAgreement) return true;
-          return !this.hasAgreement && !this.useAdjustedQuantity;
+          return this.useAdjustedQuantity;
         },
         set(v) {},
       },
