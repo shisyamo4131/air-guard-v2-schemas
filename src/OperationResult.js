@@ -205,12 +205,14 @@ const classProps = {
     customClass: OperationResultDetail,
   }),
   isLocked: defField("check", {
-    label: "ロック",
+    label: "実績確定",
     default: false,
   }),
-
-  /** add */
   agreement: defField("object", { label: "取極め", customClass: Agreement }),
+  ignoreEmptyAgreement: defField("check", {
+    label: "取極めなしを無視",
+    default: false,
+  }),
 };
 
 export default class OperationResult extends Operation {
@@ -431,7 +433,7 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           if (this.hasAgreement) return true;
-          return this.useAdjustedQuantity;
+          return this.ignoreEmptyAgreement;
         },
         set(v) {},
       },
@@ -468,19 +470,6 @@ export default class OperationResult extends Operation {
   setDateAtCallback(v) {
     super.setDateAtCallback(v);
     this.refreshBillingDateAt();
-  }
-
-  /**
-   * Override `beforeDelete`.
-   * - Prevents deletion if the instance has `siteOperationScheduleId`.
-   */
-  async beforeDelete() {
-    await super.beforeDelete();
-    if (this.siteOperationScheduleId) {
-      throw new Error(
-        "この稼働実績は現場稼働予定から作成されているため、削除できません。"
-      );
-    }
   }
 
   /**
