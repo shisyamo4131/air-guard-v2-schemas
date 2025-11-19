@@ -245,7 +245,6 @@ export default class OperationResult extends Operation {
     super.afterInitialize();
 
     /** Computed properties */
-    let _agreement = this.agreement;
     Object.defineProperties(this, {
       statistics: {
         configurable: true,
@@ -430,18 +429,6 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
-
-      agreement: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return _agreement;
-        },
-        set(v) {
-          _agreement = v;
-          this.refreshBillingDateAt();
-        },
-      },
       hasAgreement: {
         configurable: true,
         enumerable: true,
@@ -463,6 +450,25 @@ export default class OperationResult extends Operation {
           return false;
         },
         set(v) {},
+      },
+    });
+
+    /** Triggers */
+    let _agreement = this.agreement;
+    Object.defineProperties(this, {
+      agreement: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _agreement;
+        },
+        set(v) {
+          const oldKey = _agreement ? _agreement.key : null;
+          const newKey = v ? v.key : null;
+          if (oldKey === newKey) return;
+          _agreement = v;
+          this.refreshBillingDateAt();
+        },
       },
     });
   }
