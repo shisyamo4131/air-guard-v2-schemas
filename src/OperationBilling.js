@@ -56,6 +56,10 @@
  * @prop {boolean} isLocked - Lock flag
  * - When set to true, the OperationResult is locked from edits exept for editing as OperationBilling.
  * @prop {Agreement|null} agreement - Associated Agreement object
+ * - The Agreement instance associated with this OperationResult for pricing and billing information.
+ * - When set, it influences billing calculations such as unit prices and billing dates.
+ * @prop {boolean} allowEmptyAgreement - Flag to ignore missing Agreement
+ * - When set to true, allows the OperationResult to be valid even if no Agreement is associated.
  *
  * @readonly
  * @prop {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)

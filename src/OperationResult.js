@@ -56,7 +56,10 @@
  * @prop {boolean} isLocked - Lock flag
  * - When set to true, the OperationResult is locked from edits exept for editing as OperationBilling.
  * @prop {Agreement|null} agreement - Associated Agreement object
- *
+ * - The Agreement instance associated with this OperationResult for pricing and billing information.
+ * - When set, it influences billing calculations such as unit prices and billing dates.
+ * @prop {boolean} allowEmptyAgreement - Flag to ignore missing Agreement
+ * - When set to true, allows the OperationResult to be valid even if no Agreement is associated.
  * @readonly
  * @prop {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
  * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
@@ -209,7 +212,7 @@ const classProps = {
     default: false,
   }),
   agreement: defField("object", { label: "取極め", customClass: Agreement }),
-  ignoreEmptyAgreement: defField("check", {
+  allowEmptyAgreement: defField("check", {
     label: "取極めなしを無視",
     default: false,
   }),
@@ -444,7 +447,7 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           if (this.hasAgreement) return true;
-          return this.ignoreEmptyAgreement;
+          return this.allowEmptyAgreement;
         },
         set(v) {},
       },
@@ -484,14 +487,14 @@ export default class OperationResult extends Operation {
   }
 
   /**
-   * Override create method to validate billingDateAt when ignoreEmptyAgreement is true
+   * Override create method to validate billingDateAt when allowEmptyAgreement is true
    * @param {*} options
    * @returns {Promise<DocumentReference>}
    */
   async create(options = {}) {
-    if (this.ignoreEmptyAgreement && !this.billingDateAt) {
+    if (this.allowEmptyAgreement && !this.billingDateAt) {
       throw new Error(
-        "[OperationResult] Billing date is required when 'ignoreEmptyAgreement' is true."
+        "[OperationResult] Billing date is required when 'allowEmptyAgreement' is true."
       );
     }
     return await super.create(options);
@@ -499,7 +502,7 @@ export default class OperationResult extends Operation {
 
   /**
    * Override update method to prevent editing if isLocked is true
-   * - Also validate billingDateAt when ignoreEmptyAgreement is true
+   * - Also validate billingDateAt when allowEmptyAgreement is true
    * @param {*} options
    * @returns {Promise<void>}
    */
@@ -509,9 +512,9 @@ export default class OperationResult extends Operation {
         "[OperationResult] This OperationResult is locked and cannot be edited."
       );
     }
-    if (this.ignoreEmptyAgreement && !this.billingDateAt) {
+    if (this.allowEmptyAgreement && !this.billingDateAt) {
       throw new Error(
-        "[OperationResult] Billing date is required when 'ignoreEmptyAgreement' is true."
+        "[OperationResult] Billing date is required when 'allowEmptyAgreement' is true."
       );
     }
     return await super.update(options);
