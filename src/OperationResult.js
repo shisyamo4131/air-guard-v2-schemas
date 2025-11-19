@@ -16,7 +16,7 @@
  * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * - Used to determine `dayType`.
- * - When `dateAt` changes, `billingDateAt` is also updated based on `cutoffDate`.
+ * - When `dateAt` changes, `billingDateAt` is also updated based on `agreement.cutoffDate`.
  * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
  * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
@@ -103,18 +103,6 @@
  * @prop {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
  *
- * @inherited - The following properties are inherited from Agreement (via Operation):
- * @prop {number} unitPriceBase - Base unit price (JPY)
- * @prop {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
- * @prop {number} unitPriceQualified - Qualified unit price (JPY)
- * @prop {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
- * @prop {string} billingUnitType - Billing unit type
- * @prop {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
- * @prop {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
- * - The cutoff date for billing, using values defined in the CutoffDate utility class.
- * - Used to calculate `billingDateAt`.
- * - When `cutoffDate` or `dateAt` changes, `billingDateAt` is automatically updated.
- *
  * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
  * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
  * - Returns true if the employee IDs have changed compared to `_beforeData`
@@ -190,7 +178,6 @@ import CutoffDate from "./utils/CutoffDate.js";
 
 const classProps = {
   ...Operation.classProps,
-  ...Agreement.classProps,
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
   useAdjustedQuantity: defField("check", {
     label: "調整数量を使用",
@@ -245,20 +232,7 @@ export default class OperationResult extends Operation {
     super.afterInitialize();
 
     /** Computed properties */
-    let _cutoffDate = this.cutoffDate;
     Object.defineProperties(this, {
-      cutoffDate: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return _cutoffDate;
-        },
-        set(v) {
-          _cutoffDate = v;
-          // Update billingDateAt when cutoffDate changes
-          this.refreshBillingDateAt();
-        },
-      },
       statistics: {
         configurable: true,
         enumerable: true,
@@ -334,14 +308,19 @@ export default class OperationResult extends Operation {
               return createInitialValues();
             }
 
+            // agreementがfalsyの場合は初期値を返す
+            if (!this.agreement) {
+              return createInitialValues();
+            }
+
             const unitPrice = isQualified
-              ? this.unitPriceQualified || 0
-              : this.unitPriceBase || 0;
+              ? this.agreement.unitPriceQualified || 0
+              : this.agreement.unitPriceBase || 0;
             const overtimeUnitPrice = isQualified
-              ? this.overtimeUnitPriceQualified || 0
-              : this.overtimeUnitPriceBase || 0;
+              ? this.agreement.overtimeUnitPriceQualified || 0
+              : this.agreement.overtimeUnitPriceBase || 0;
             const isPerHour =
-              this.billingUnitType === BILLING_UNIT_TYPE_PER_HOUR;
+              this.agreement.billingUnitType === BILLING_UNIT_TYPE_PER_HOUR;
 
             const result = createInitialValues();
 
@@ -358,28 +337,24 @@ export default class OperationResult extends Operation {
                 ? this.adjustedOvertimeQualified || 0
                 : this.adjustedOvertimeBase || 0;
             } else {
-              // result.quantity = isPerHour
-              //   ? (categoryStats.totalWorkMinutes || 0) / 60
-              //   : categoryStats.quantity || 0;
-              // result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
               if (isPerHour) {
                 // 時間単位請求の場合
                 let totalMinutes = categoryStats.totalWorkMinutes || 0;
 
                 // 休憩時間を請求に含める場合は休憩時間を追加
-                if (this.includeBreakInBilling) {
+                if (this.agreement.includeBreakInBilling) {
                   totalMinutes += categoryStats.breakMinutes || 0;
                 }
 
                 result.quantity = totalMinutes / 60;
               } else {
-                // 日単位請求の場合（休憩時間は関係なし）
+                // 日単位請求の場合(休憩時間は関係なし)
                 result.quantity = categoryStats.quantity || 0;
               }
               result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
             }
 
-            // 金額計算（RoundSettingを適用）
+            // 金額計算(RoundSettingを適用)
             result.regularAmount = RoundSetting.apply(
               result.quantity * unitPrice
             );
@@ -476,13 +451,17 @@ export default class OperationResult extends Operation {
       this.billingDateAt = null;
       return;
     }
-    if (this.cutoffDate !== 0 && !this.cutoffDate) {
+    if (!this.agreement) {
+      this.billingDateAt = null;
+      return;
+    }
+    if (this.agreement.cutoffDate !== 0 && !this.agreement.cutoffDate) {
       this.billingDateAt = null;
       return;
     }
     this.billingDateAt = CutoffDate.calculateBillingDateAt(
       this.dateAt,
-      this.cutoffDate
+      this.agreement.cutoffDate
     );
   }
 
