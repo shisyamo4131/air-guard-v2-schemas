@@ -505,11 +505,6 @@ export default class OperationResult extends Operation {
    * @returns {Promise<DocumentReference>}
    */
   async create(options = {}) {
-    if (this.allowEmptyAgreement && !this.billingDateAt) {
-      throw new Error(
-        "[OperationResult] Billing date is required when 'allowEmptyAgreement' is true."
-      );
-    }
     return await super.create(options);
   }
 
@@ -523,11 +518,6 @@ export default class OperationResult extends Operation {
     if (this.isLocked) {
       throw new Error(
         "[OperationResult] This OperationResult is locked and cannot be edited."
-      );
-    }
-    if (this.allowEmptyAgreement && !this.billingDateAt) {
-      throw new Error(
-        "[OperationResult] Billing date is required when 'allowEmptyAgreement' is true."
       );
     }
     return await super.update(options);
