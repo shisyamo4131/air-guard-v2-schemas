@@ -16,7 +16,7 @@
  * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * - Used to determine `dayType`.
- * - When `dateAt` changes, `billingDateAt` is also updated based on `cutoffDate`.
+ * - When `dateAt` changes, `billingDateAt` is also updated based on `agreement.cutoffDate`.
  * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
  * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
@@ -102,18 +102,6 @@
  * @prop {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
  * @prop {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
- *
- * @inherited - The following properties are inherited from Agreement (via Operation):
- * @prop {number} unitPriceBase - Base unit price (JPY)
- * @prop {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
- * @prop {number} unitPriceQualified - Qualified unit price (JPY)
- * @prop {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
- * @prop {string} billingUnitType - Billing unit type
- * @prop {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
- * @prop {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
- * - The cutoff date for billing, using values defined in the CutoffDate utility class.
- * - Used to calculate `billingDateAt`.
- * - When `cutoffDate` or `dateAt` changes, `billingDateAt` is automatically updated.
  *
  * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
  * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
