@@ -234,6 +234,7 @@ export default class OperationResult extends Operation {
     super.afterInitialize();
 
     /** Computed properties */
+    let _agreement = this.agreement;
     Object.defineProperties(this, {
       statistics: {
         configurable: true,
@@ -419,7 +420,17 @@ export default class OperationResult extends Operation {
         set(v) {},
       },
 
-      /** add */
+      agreement: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _agreement;
+        },
+        set(v) {
+          _agreement = v;
+          this.refreshBillingDateAt();
+        },
+      },
       hasAgreement: {
         configurable: true,
         enumerable: true,
@@ -473,7 +484,22 @@ export default class OperationResult extends Operation {
   }
 
   /**
+   * Override create method to validate billingDateAt when ignoreEmptyAgreement is true
+   * @param {*} options
+   * @returns {Promise<DocumentReference>}
+   */
+  async create(options = {}) {
+    if (this.ignoreEmptyAgreement && !this.billingDateAt) {
+      throw new Error(
+        "[OperationResult] Billing date is required when 'ignoreEmptyAgreement' is true."
+      );
+    }
+    return await super.create(options);
+  }
+
+  /**
    * Override update method to prevent editing if isLocked is true
+   * - Also validate billingDateAt when ignoreEmptyAgreement is true
    * @param {*} options
    * @returns {Promise<void>}
    */
@@ -483,7 +509,12 @@ export default class OperationResult extends Operation {
         "[OperationResult] This OperationResult is locked and cannot be edited."
       );
     }
-    return super.update(options);
+    if (this.ignoreEmptyAgreement && !this.billingDateAt) {
+      throw new Error(
+        "[OperationResult] Billing date is required when 'ignoreEmptyAgreement' is true."
+      );
+    }
+    return await super.update(options);
   }
 
   /**
@@ -497,6 +528,6 @@ export default class OperationResult extends Operation {
         "[OperationResult] This OperationResult is locked and cannot be deleted."
       );
     }
-    return super.delete(options);
+    return await super.delete(options);
   }
 }
