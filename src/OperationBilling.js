@@ -80,9 +80,12 @@
  * @prop {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * @prop {boolean} hasAgreement - Indicates if an Agreement is associated (read-only)
- * @prop {boolean} isValid - Indicates if the OperationResult is valid (read-only)
- * - Valid if either an Agreement is associated or adjusted quantities are not used.
- * - If `hasAgreement` is true, always valid.
+ * - `true` if `agreement` is set, otherwise `false`.
+ * @prop {string|false} isInvalid - Validation status (read-only)
+ * - Returns false if valid.
+ * - Returns reason code string if invalid:
+ *   - `EMPTY_BILLING_DATE`: Billing date is missing.
+ *   - `EMPTY_AGREEMENT`: Agreement is missing and `allowEmptyAgreement` is false.
  * @prop {Object} statistics - Statistics of workers (read-only)
  * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
  * - Structure: { base: {...}, qualified: {...}, total: {...} }

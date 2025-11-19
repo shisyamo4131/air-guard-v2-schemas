@@ -79,9 +79,12 @@
  * @prop {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * @prop {boolean} hasAgreement - Indicates if an Agreement is associated (read-only)
- * @prop {boolean} isValid - Indicates if the OperationResult is valid (read-only)
- * - Valid if either an Agreement is associated or adjusted quantities are not used.
- * - If `hasAgreement` is true, always valid.
+ * - `true` if `agreement` is set, otherwise `false`.
+ * @prop {string|false} isInvalid - Validation status (read-only)
+ * - Returns false if valid.
+ * - Returns reason code string if invalid:
+ *   - `EMPTY_BILLING_DATE`: Billing date is missing.
+ *   - `EMPTY_AGREEMENT`: Agreement is missing and `allowEmptyAgreement` is false.
  * @prop {Object} statistics - Statistics of workers (read-only)
  * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
  * - Structure: { base: {...}, qualified: {...}, total: {...} }
@@ -216,6 +219,11 @@ const classProps = {
     label: "取極めなしを無視",
     default: false,
   }),
+};
+
+const INVALID_REASON = {
+  EMPTY_BILLING_DATE: "EMPTY_BILLING_DATE",
+  EMPTY_AGREEMENT: "EMPTY_AGREEMENT",
 };
 
 export default class OperationResult extends Operation {
@@ -442,12 +450,17 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
-      isValid: {
+      isInvalid: {
         configurable: true,
         enumerable: true,
         get() {
-          if (this.hasAgreement) return true;
-          return this.allowEmptyAgreement;
+          if (!this.agreement && !this.allowEmptyAgreement) {
+            return INVALID_REASON.EMPTY_AGREEMENT;
+          }
+          if (!this.billingDateAt) {
+            return INVALID_REASON.EMPTY_BILLING_DATE;
+          }
+          return false;
         },
         set(v) {},
       },
