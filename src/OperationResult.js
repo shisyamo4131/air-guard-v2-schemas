@@ -216,7 +216,7 @@ const classProps = {
   }),
   agreement: defField("object", { label: "取極め", customClass: Agreement }),
   allowEmptyAgreement: defField("check", {
-    label: "取極めなしを無視",
+    label: "取極めなしを許容",
     default: false,
   }),
 };
