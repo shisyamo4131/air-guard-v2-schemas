@@ -230,10 +230,12 @@ export default class OperationBilling extends OperationResult {
     if (typeof value !== "boolean") {
       throw new Error("Invalid value provided to toggleLock method");
     }
-    const firestore = this.getAdapter().firestore;
-    const colPath = this.getCollectionPath();
-    const colRef = collection(firestore, colPath);
-    const docRef = doc(colRef, docId);
-    await updateDoc(docRef, { isLocked: value });
+    const instance = new OperationBilling();
+    const doc = await instance.fetchDoc({ docId });
+    if (!doc) {
+      throw new Error(`OperationResult document with ID ${docId} not found`);
+    }
+    doc.isLocked = value;
+    await doc.update();
   }
 }
