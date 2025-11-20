@@ -574,7 +574,7 @@ export default class OperationResult extends Operation {
     }
 
     // Sync customerId if siteId changed
-    if (this.siteId === this._beforeData.siteId) return;
+    if (this.siteId === this._beforeData.siteId && this.customerId) return;
     await this._syncCustomerId();
   }
 
