@@ -102,6 +102,8 @@
  * - Calculated using the `Tax` utility based on `salesAmount` and `date`.
  * @prop {number} billingAmount - Total billing amount including tax (read-only)
  * - Sum of `salesAmount` and `tax`.
+ * @prop {string|null} billingDate - Billing date in YYYY-MM-DD format (read-only)
+ * - Returns a string in the format YYYY-MM-DD based on `billingDateAt`.
  * @prop {string} billingMonth - Billing month in YYYY-MM format (read-only)
  * @prop {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
  * @prop {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)

@@ -101,6 +101,8 @@
  * - Calculated using the `Tax` utility based on `salesAmount` and `date`.
  * @prop {number} billingAmount - Total billing amount including tax (read-only)
  * - Sum of `salesAmount` and `tax`.
+ * @prop {string|null} billingDate - Billing date in YYYY-MM-DD format (read-only)
+ * - Returns a string in the format YYYY-MM-DD based on `billingDateAt`.
  * @prop {string} billingMonth - Billing month in YYYY-MM format (read-only)
  * @prop {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
  * @prop {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
@@ -412,6 +414,23 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           return this.salesAmount + this.tax;
+        },
+        set(v) {},
+      },
+      billingDate: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.billingDateAt) return null;
+          const jstDate = new Date(
+            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
+          ); /* JST補正 */
+          const year = jstDate.getUTCFullYear();
+          const month = jstDate.getUTCMonth() + 1;
+          const day = jstDate.getUTCDate();
+          return `${year}-${String(month).padStart(2, "0")}-${String(
+            day
+          ).padStart(2, "0")}`;
         },
         set(v) {},
       },
