@@ -1,7 +1,10 @@
 /**
  * @file src/Site.js
  * @author shisyamo4131
- * @version 1.0.0
+ * @version 1.1.0
+ * @update 2025-11-20 version 0.2.0-bata
+ *                    - Prevent changing customer reference on update.
+ *                    - Move `customer` property to the top of classProps for better visibility.
  */
 import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -12,6 +15,16 @@ import Agreement from "./Agreement.js";
 import { VALUES } from "./constants/site-status.js";
 
 const classProps = {
+  customer: defField("customer", {
+    required: true,
+    customClass: CustomerMinimal,
+    component: {
+      attrs: {
+        api: () => fetchDocsApi(CustomerMinimal),
+        noFilter: true,
+      },
+    },
+  }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
     label: "現場名",
@@ -29,16 +42,6 @@ const classProps = {
   address: defField("address", { required: true }),
   building: defField("building"),
   location: defField("location"),
-  customer: defField("customer", {
-    required: true,
-    customClass: CustomerMinimal,
-    component: {
-      attrs: {
-        api: () => fetchDocsApi(CustomerMinimal),
-        noFilter: true,
-      },
-    },
-  }),
   remarks: defField("multipleLine", { label: "備考" }),
   agreements: defField("array", { label: "取極め", customClass: Agreement }),
   status: defField("siteStatus", { required: true }),
@@ -114,6 +117,19 @@ export default class Site extends FireModel {
 
   static STATUS_ACTIVE = VALUES.ACTIVE.value;
   static STATUS_TERMINATED = VALUES.TERMINATED.value;
+
+  /**
+   * Override beforeUpdate to prevent changing customer reference.
+   * @returns {Promise<void>}
+   */
+  async beforeUpdate() {
+    await super.beforeUpdate();
+    if (this.customer.docId !== this._beforeData.customer.docId) {
+      return Promise.reject(
+        new Error("Not allowed to change customer reference.")
+      );
+    }
+  }
 
   afterInitialize(item = {}) {
     super.afterInitialize(item);
