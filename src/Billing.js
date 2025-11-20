@@ -6,9 +6,8 @@
  *
  * @prop {string} customerId - customer document id
  * @prop {string} siteId - site document id
- * @prop {string} billingMonth - billing month (YYYY-MM format)
- * @prop {Date} billingDate - billing date
- * @prop {Date} paymentDueDate - payment due date
+ * @prop {Date} billingDateAt - billing date
+ * @prop {Date} paymentDueDateAt - payment due date
  *
  * @prop {Array} paymentRecords - payment records (not implemented yet)
  *
@@ -17,6 +16,10 @@
  * @prop {Object} adjustment - adjustment
  * @prop {string} remarks - remarks
  *
+ * @prop {string} billingMonth - billing month (YYYY-MM format) (read-only)
+ * @prop {Date} billingDate - billing date (YYYY-MM-DD format) (read-only)
+ * @prop {string} paymentDueMonth - payment due month (YYYY-MM format) (read-only)
+ * @prop {Date} paymentDueDate - payment due date (YYYY-MM-DD format) (read-only)
  * @prop {number} subtotal - subtotal (excluding tax) (computed-readonly)
  * @prop {number} taxAmount - tax amount (computed-readonly)
  * @prop {number} totalAmount - total amount (including tax) (computed-readonly)
@@ -37,8 +40,7 @@ const STATUS = {
 const classProps = {
   customerId: defField("customerId", { required: true }),
   siteId: defField("siteId", { required: true }),
-  billingMonth: defField("oneLine", { required: true }),
-  billingDateAt: defField("dateAt"),
+  billingDateAt: defField("dateAt", { required: true }),
   paymentDueDateAt: defField("dateAt"),
 
   // 入金管理用配列（現時点では未使用 将来の拡張用）
@@ -65,6 +67,75 @@ export default class Billing extends FireModel {
 
   afterInitialize(item = {}) {
     super.afterInitialize(item);
+
+    // billingDate (YYYY-MM-DD) と billingMonth (YYYY-MM) の計算用プロパティを定義
+    Object.defineProperties(this, {
+      billingDate: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.billingDateAt) return null;
+          const jstDate = new Date(
+            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
+          ); /* JST補正 */
+          const year = jstDate.getUTCFullYear();
+          const month = jstDate.getUTCMonth() + 1;
+          const day = jstDate.getUTCDate();
+          return `${year}-${String(month).padStart(2, "0")}-${String(
+            day
+          ).padStart(2, "0")}`;
+        },
+        set(v) {},
+      },
+      billingMonth: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.billingDateAt) return null;
+          const jstDate = new Date(
+            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
+          ); /* JST補正 */
+          const year = jstDate.getUTCFullYear();
+          const month = jstDate.getUTCMonth() + 1;
+          return `${year}-${String(month).padStart(2, "0")}`;
+        },
+        set(v) {},
+      },
+    });
+
+    Object.defineProperties(this, {
+      paymentDueDate: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.paymentDueDateAt) return null;
+          const jstDate = new Date(
+            this.paymentDueDateAt.getTime() + 9 * 60 * 60 * 1000
+          ); /* JST補正 */
+          const year = jstDate.getUTCFullYear();
+          const month = jstDate.getUTCMonth() + 1;
+          const day = jstDate.getUTCDate();
+          return `${year}-${String(month).padStart(2, "0")}-${String(
+            day
+          ).padStart(2, "0")}`;
+        },
+        set(v) {},
+      },
+      paymentDueMonth: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.paymentDueDateAt) return null;
+          const jstDate = new Date(
+            this.paymentDueDateAt.getTime() + 9 * 60 * 60 * 1000
+          ); /* JST補正 */
+          const year = jstDate.getUTCFullYear();
+          const month = jstDate.getUTCMonth() + 1;
+          return `${year}-${String(month).padStart(2, "0")}`;
+        },
+        set(v) {},
+      },
+    });
 
     // 小計（税抜）を計算
     Object.defineProperty(this, "subtotal", {
