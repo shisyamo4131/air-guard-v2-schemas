@@ -170,12 +170,20 @@
  * - @param {Object|string} key - The combined key string or object
  * - @returns {Array<string>} - Array containing [siteId, shiftType, date]
  * - @throws {Error} - If the key is invalid.
+ * @method toggleLock - Toggle the lock status of an OperationResult document
+ * - @param {string} docId - Document ID
+ * - @param {boolean} value - Lock status value
+ * - @returns {Promise<void>}
  *
- * @override create - Override create method to indicate not implemented
+ * @override
+ * @method create - Override create method to indicate not implemented
  * - Creation of OperationBilling instances is not implemented, as billing records are typically
  *   generated through the OperationResult class.
+ * @method update - Override update method to allow editing even when isLocked is true
+ * @method delete - Override delete method to allow deletion even when isLocked is true
  *****************************************************************************/
 import OperationResult from "./OperationResult.js";
+import Operation from "./Operation.js";
 
 export default class OperationBilling extends OperationResult {
   static className = "稼働請求";
@@ -188,5 +196,44 @@ export default class OperationBilling extends OperationResult {
 
   async create() {
     return Promise.reject(new Error("[OperationBilling.js] Not implemented."));
+  }
+
+  /**
+   * Override update method to allow editing even when isLocked is true
+   * @param {*} options
+   * @returns {Promise<void>}
+   */
+  async update(options = {}) {
+    // isLockedのチェックをスキップして、親クラス(Operation)のupdateを直接呼び出す
+    return await Operation.prototype.update.call(this, options);
+  }
+
+  /**
+   * Override delete method to allow deletion even when isLocked is true
+   * @param {*} options
+   * @returns {Promise<void>}
+   */
+  async delete(options = {}) {
+    // isLockedのチェックをスキップして、親クラス(Operation)のdeleteを直接呼び出す
+    return await Operation.prototype.delete.call(this, options);
+  }
+
+  /**
+   * Toggle the lock status of an OperationResult document
+   * @param {string} docId - Document ID
+   * @param {boolean} value - Lock status value
+   */
+  static async toggleLock(docId, value) {
+    if (!docId || typeof docId !== "string") {
+      throw new Error("Invalid docId provided to toggleLock method");
+    }
+    if (typeof value !== "boolean") {
+      throw new Error("Invalid value provided to toggleLock method");
+    }
+    const firestore = this.getAdapter().firestore;
+    const colPath = this.getCollectionPath();
+    const colRef = collection(firestore, colPath);
+    const docRef = doc(colRef, docId);
+    await updateDoc(docRef, { isLocked: value });
   }
 }
