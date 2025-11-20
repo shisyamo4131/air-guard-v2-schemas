@@ -38,8 +38,8 @@ const classProps = {
   customerId: defField("customerId", { required: true }),
   siteId: defField("siteId", { required: true }),
   billingMonth: defField("oneLine", { required: true }),
-  billingDateAt: defField("date"),
-  paymentDueDateAt: defField("date"),
+  billingDateAt: defField("dateAt"),
+  paymentDueDateAt: defField("dateAt"),
 
   // 入金管理用配列（現時点では未使用 将来の拡張用）
   paymentRecords: defField("array", { default: [] }), // Not implemented yet

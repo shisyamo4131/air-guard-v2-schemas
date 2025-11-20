@@ -210,6 +210,18 @@ export const fieldDefinitions = {
     label: "市区町村",
     length: 10,
   },
+  customerId: {
+    ...generalDefinitions.oneLine,
+    label: "取引先",
+    component: {
+      name: "air-autocomplete-api",
+      attrs: {
+        itemValue: "docId",
+        itemTitle: "name",
+        noFilter: true,
+      },
+    },
+  },
   displayName: {
     ...generalDefinitions.oneLine,
     label: "表示名",
