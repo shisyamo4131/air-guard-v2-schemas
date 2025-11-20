@@ -205,7 +205,7 @@ const classProps = {
     label: "資格残業（調整）",
     default: 0,
   }),
-  billingDateAt: defField("dateAt", { label: "請求日付" }),
+  billingDateAt: defField("dateAt", { label: "請求締日" }),
   employees: defField("array", { customClass: OperationResultDetail }),
   outsourcers: defField("array", {
     customClass: OperationResultDetail,
