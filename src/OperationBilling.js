@@ -41,7 +41,6 @@
  * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
  * @prop {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created from a SiteOperationSchedule, this property holds that ID.
- * - If this property is set, the instance cannot be deleted.
  * @prop {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
  * @prop {number} adjustedQuantityBase - Adjusted quantity for base workers
  * - Quantity used for billing base workers when `useAdjustedQuantity` is true.
@@ -132,9 +131,6 @@
  * @getter {number} endMinute - End minute (0-59) (read-only)
  * - Extracted from `endTime`.
  *
- * @method beforeDelete - Override method to prevent deletion with siteOperationScheduleId
- * - Prevents deletion if the instance has `siteOperationScheduleId`.
- * - Throws an error if deletion is attempted on an instance created from SiteOperationSchedule.
  * @method refreshBillingDateAt - Refresh billingDateAt based on dateAt and cutoffDate
  * - Updates `billingDateAt` based on the current `dateAt` and `cutoffDate` values.
  * @method addWorker - Adds a new worker (employee or outsourcer)

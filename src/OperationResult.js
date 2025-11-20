@@ -5,7 +5,6 @@
  *
  * - Extends Operation class to represent the result of an operation.
  * - Also incorporates Agreement class properties for pricing and billing information.
- * - Prevents deletion if the instance has `siteOperationScheduleId`.
  * - Provides comprehensive billing calculations including statistics, sales amounts, and tax.
  * - Supports both daily and hourly billing with adjusted quantities.
  * - Automatically updates `billingDateAt` based on `dateAt` and `cutoffDate`.
@@ -41,7 +40,6 @@
  * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
  * @prop {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
  * - If this OperationResult was created from a SiteOperationSchedule, this property holds that ID.
- * - If this property is set, the instance cannot be deleted.
  * @prop {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
  * @prop {number} adjustedQuantityBase - Adjusted quantity for base workers
  * - Quantity used for billing base workers when `useAdjustedQuantity` is true.
@@ -131,9 +129,6 @@
  * @getter {number} endMinute - End minute (0-59) (read-only)
  * - Extracted from `endTime`.
  *
- * @method beforeDelete - Override method to prevent deletion with siteOperationScheduleId
- * - Prevents deletion if the instance has `siteOperationScheduleId`.
- * - Throws an error if deletion is attempted on an instance created from SiteOperationSchedule.
  * @method refreshBillingDateAt - Refresh billingDateAt based on dateAt and cutoffDate
  * - Updates `billingDateAt` based on the current `dateAt` and `cutoffDate` values.
  * @method addWorker - Adds a new worker (employee or outsourcer)
@@ -172,7 +167,11 @@
  * - @returns {Array<string>} - Array containing [siteId, shiftType, date]
  * - @throws {Error} - If the key is invalid.
  *
- * @override setDateAtCallback - Updates `billingDateAt` based on the new `dateAt` value.
+ * @override
+ * @method setDateAtCallback - Updates `billingDateAt` based on the new `dateAt` value.
+ * @method beforeCreate - Override to sync customerId from siteId
+ * @method beforeUpdate - Override to sync customerId from siteId when siteId changes
+ * @method beforeDelete - Override to prevent deletion if isLocked is true
  *****************************************************************************/
 import Operation from "./Operation.js";
 import Agreement from "./Agreement.js";
@@ -183,6 +182,7 @@ import Tax from "./tax.js";
 import { BILLING_UNIT_TYPE_PER_HOUR } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
 import CutoffDate from "./utils/CutoffDate.js";
+import Site from "./Site.js";
 
 const classProps = {
   ...Operation.classProps,
@@ -221,6 +221,13 @@ const classProps = {
     label: "取極めなしを許容",
     default: false,
   }),
+
+  /**
+   * siteId から自動同期されるプロパティ
+   * - 従属する取引先の変更を不可としているため、ドキュメントの更新時に取得するだけで問題ない。
+   * - 但し、siteId が変更された時は再取得する必要がある。
+   */
+  customerId: defField("customerId", { required: true, hidden: true }),
 };
 
 const INVALID_REASON = {
@@ -525,40 +532,65 @@ export default class OperationResult extends Operation {
   }
 
   /**
-   * Override create method to validate billingDateAt when allowEmptyAgreement is true
-   * @param {*} options
-   * @returns {Promise<DocumentReference>}
+   * Synchronize customerId from siteId
+   * @returns {Promise<void>}
+   * @throws {Error} If the specified siteId does not exist
    */
-  async create(options = {}) {
-    return await super.create(options);
+  async _syncCustomerId() {
+    if (!this.siteId) return;
+    const siteInstance = new Site();
+    const siteExists = await siteInstance.fetch({ docId: this.siteId });
+    if (!siteExists) {
+      throw new Error(
+        `[OperationResult] The specified siteId (${this.siteId}) does not exist.`
+      );
+    }
+    this.customerId = siteInstance.customerId;
   }
 
   /**
-   * Override update method to prevent editing if isLocked is true
-   * - Also validate billingDateAt when allowEmptyAgreement is true
-   * @param {*} options
+   * Override beforeCreate to sync customerId
    * @returns {Promise<void>}
    */
-  async update(options = {}) {
+  async beforeCreate() {
+    await super.beforeCreate();
+
+    // Sync customerId
+    await this._syncCustomerId();
+  }
+
+  /**
+   * Override beforeUpdate to sync customerId if siteId changed
+   * @returns {Promise<void>}
+   */
+  async beforeUpdate() {
+    await super.beforeUpdate();
+
+    // Prevent editing if isLocked is true
     if (this.isLocked) {
       throw new Error(
         "[OperationResult] This OperationResult is locked and cannot be edited."
       );
     }
-    return await super.update(options);
+
+    // Sync customerId if siteId changed
+    if (this.siteId === this._beforeData.siteId) return;
+    await this._syncCustomerId();
   }
 
   /**
-   * Override delete method to prevent deletion if isLocked is true
-   * @param {*} options
+   * Override beforeDelete to prevent deletion if isLocked is true
    * @returns {Promise<void>}
+   * @throws {Error} If isLocked is true
    */
-  async delete(options = {}) {
+  async beforeDelete() {
+    await super.beforeDelete();
+
+    // Prevent deletion if isLocked is true
     if (this.isLocked) {
       throw new Error(
         "[OperationResult] This OperationResult is locked and cannot be deleted."
       );
     }
-    return await super.delete(options);
   }
 }
