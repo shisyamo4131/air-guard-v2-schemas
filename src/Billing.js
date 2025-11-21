@@ -153,7 +153,9 @@ export default class Billing extends FireModel {
     // 消費税額を計算
     Object.defineProperty(this, "taxAmount", {
       get() {
-        return Math.floor(this.subtotal * 0.1); // 10% 切り捨て
+        return this.operationResults.reduce((sum, item) => {
+          return sum + (item.tax || 0);
+        }, 0);
       },
       set() {},
       enumerable: true,
