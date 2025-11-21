@@ -451,7 +451,7 @@ export default class SiteOperationSchedule extends Operation {
       } else {
         // const firestore = this.constructor.getAdapter().firestore;
         // await runTransaction(firestore, performTransaction);
-        await this.runTransaction(performTransaction);
+        await this.constructor.runTransaction(performTransaction);
       }
     } catch (error) {
       this.undo();
@@ -486,7 +486,7 @@ export default class SiteOperationSchedule extends Operation {
       } else {
         // const firestore = this.constructor.getAdapter().firestore;
         // await runTransaction(firestore, performTransaction);
-        await this.runTransaction(performTransaction);
+        await this.constructor.runTransaction(performTransaction);
       }
     } catch (error) {
       throw new ContextualError(error.message, {
