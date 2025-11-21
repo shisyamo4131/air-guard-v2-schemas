@@ -158,7 +158,7 @@
 import Operation from "./Operation.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import { ContextualError } from "./utils/index.js";
-import { runTransaction } from "firebase/firestore";
+// import { runTransaction } from "firebase/firestore";
 import ArrangementNotification from "./ArrangementNotification.js";
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 
@@ -449,8 +449,9 @@ export default class SiteOperationSchedule extends Operation {
       if (updateOptions.transaction) {
         await performTransaction(updateOptions.transaction);
       } else {
-        const firestore = this.constructor.getAdapter().firestore;
-        await runTransaction(firestore, performTransaction);
+        // const firestore = this.constructor.getAdapter().firestore;
+        // await runTransaction(firestore, performTransaction);
+        await this.runTransaction(performTransaction);
       }
     } catch (error) {
       this.undo();
@@ -483,8 +484,9 @@ export default class SiteOperationSchedule extends Operation {
       if (updateOptions.transaction) {
         await performTransaction(updateOptions.transaction);
       } else {
-        const firestore = this.constructor.getAdapter().firestore;
-        await runTransaction(firestore, performTransaction);
+        // const firestore = this.constructor.getAdapter().firestore;
+        // await runTransaction(firestore, performTransaction);
+        await this.runTransaction(performTransaction);
       }
     } catch (error) {
       throw new ContextualError(error.message, {
