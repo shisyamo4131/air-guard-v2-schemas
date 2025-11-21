@@ -466,14 +466,6 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       arguments: { ...options, transaction },
     };
     try {
-      console.log("[bulkDelete] this:", this);
-      console.log("[bulkDelete] this.type:", this.type);
-      console.log("[bulkDelete] this.getAdapter:", this.getAdapter);
-      console.log("[bulkDelete] this.getAdapter():", this.getAdapter?.());
-      console.log("[bulkDelete] FireModel:", FireModel); // FireModelをインポートして確認
-      console.log("[bulkDelete] BaseClass:", BaseClass);
-      console.log("[bulkDelete] BaseClass.type:", BaseClass.type);
-
       // サーバー側での実行を禁止
       console.log(this);
       if (this.type === "SERVER") {
