@@ -139,7 +139,6 @@ import {
   VALUES,
   OPTIONS,
 } from "./constants/arrangement-notification-status.js";
-import { runTransaction } from "firebase/firestore";
 
 const classProps = {
   status: defField("arrangementNotificationStatus", { required: true }),
@@ -431,6 +430,14 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       arguments: { id },
     };
     try {
+      // サーバー側での実行を禁止
+      if (this.type === "SERVER") {
+        throw new Error(
+          "fetchDocsBySiteOperationScheduleId is not supported on server side. " +
+            "Please use this method only on client side or implement server-specific logic with explicit prefix handling."
+        );
+      }
+
       const instance = new ArrangementNotification();
       const constraints = [["where", "siteOperationScheduleId", "==", id]];
       const result = await instance.fetchDocs({ constraints });
@@ -459,6 +466,14 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       arguments: { ...options, transaction },
     };
     try {
+      // サーバー側での実行を禁止
+      if (this.type === "SERVER") {
+        throw new Error(
+          "bulkDelete is not supported on server side. " +
+            "Please use this method only on client side or implement server-specific logic with explicit prefix handling."
+        );
+      }
+
       const { siteOperationScheduleId, workerIds = [] } = options;
       if (!siteOperationScheduleId) {
         throw new Error("siteOperationScheduleId is required");
@@ -495,8 +510,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       if (transaction) {
         await performTransaction(transaction);
       } else {
-        const firestore = this.getAdapter().firestore;
-        await runTransaction(firestore, performTransaction);
+        await this.runTransaction(performTransaction);
       }
     } catch (error) {
       throw new ContextualError(error.message, context);
