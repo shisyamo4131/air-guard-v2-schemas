@@ -467,7 +467,6 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
     };
     try {
       // サーバー側での実行を禁止
-      console.log(this);
       if (this.type === "SERVER") {
         throw new Error(
           "bulkDelete is not supported on server side. " +
