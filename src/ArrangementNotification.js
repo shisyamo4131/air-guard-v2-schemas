@@ -466,6 +466,12 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       arguments: { ...options, transaction },
     };
     try {
+      // すべてのデバッグログを削除;
+      console.log("[bulkDelete] this:", this);
+      console.log("[bulkDelete] this.type:", this.type);
+      console.log("[bulkDelete] this.getAdapter:", this.getAdapter);
+      console.log("[bulkDelete] this.getAdapter():", this.getAdapter?.());
+      console.log(this);
       // サーバー側での実行を禁止
       if (this.type === "SERVER") {
         throw new Error(
