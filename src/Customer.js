@@ -30,7 +30,7 @@
  * @prop {string} STATUS_ACTIVE - constant for active contract status
  * @prop {string} STATUS_TERMINATED - constant for terminated contract status
  *
- * @method getPaymentDueAt
+ * @method getPaymentDueDateAt
  * @param {Date} baseDate - base date in UTC (JST - 9 hours)
  * @returns {Date} payment due date in UTC (JST - 9 hours)
  *****************************************************************************/
@@ -109,7 +109,7 @@ export default class Customer extends FireModel {
    * @param {Date} baseDate - 基準日（JSTから9時間引いたUTC表現）
    * @returns {Date} 支払期日（JSTから9時間引いたUTC表現）
    */
-  getPaymentDueAt(baseDate) {
+  getPaymentDueDateAt(baseDate) {
     // UTC → JST に変換（+9時間）
     const jstDate = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
 
