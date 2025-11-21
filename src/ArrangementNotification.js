@@ -466,12 +466,6 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       arguments: { ...options, transaction },
     };
     try {
-      // すべてのデバッグログを削除;
-      console.log("[bulkDelete] this:", this);
-      console.log("[bulkDelete] this.type:", this.type);
-      console.log("[bulkDelete] this.getAdapter:", this.getAdapter);
-      console.log("[bulkDelete] this.getAdapter():", this.getAdapter?.());
-      console.log(this);
       // サーバー側での実行を禁止
       if (this.type === "SERVER") {
         throw new Error(
@@ -492,8 +486,11 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       const performTransaction = async (txn) => {
         // Delete all notification documents if workerIds is empty.
         if (workerIds.length === 0) {
-          const fn = ArrangementNotification.fetchDocsBySiteOperationScheduleId;
-          const docs = await fn(siteOperationScheduleId);
+          // 関数を変数に代入せず、直接呼び出す
+          const docs =
+            await ArrangementNotification.fetchDocsBySiteOperationScheduleId(
+              siteOperationScheduleId
+            );
           if (docs.length === 0) return;
           await Promise.all(
             docs.map((doc) => doc.delete({ transaction: txn }))
