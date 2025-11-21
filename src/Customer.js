@@ -29,6 +29,10 @@
  * @static
  * @prop {string} STATUS_ACTIVE - constant for active contract status
  * @prop {string} STATUS_TERMINATED - constant for terminated contract status
+ *
+ * @method getPaymentDueAt
+ * @param {Date} baseDate - base date in UTC (JST - 9 hours)
+ * @returns {Date} payment due date in UTC (JST - 9 hours)
  *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -98,6 +102,42 @@ export default class Customer extends FireModel {
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
     });
+  }
+
+  /**
+   * 支払期日を計算する
+   * @param {Date} baseDate - 基準日（JSTから9時間引いたUTC表現）
+   * @returns {Date} 支払期日（JSTから9時間引いたUTC表現）
+   */
+  getPaymentDueAt(baseDate) {
+    // UTC → JST に変換（+9時間）
+    const jstDate = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+
+    // UTCメソッドでJST相当の年月を取得
+    const year = jstDate.getUTCFullYear();
+    const month = jstDate.getUTCMonth();
+
+    // paymentMonth分加算した年月を計算
+    const targetMonth = month + this.paymentMonth;
+    const targetYear = year + Math.floor(targetMonth / 12);
+    const finalMonth = targetMonth % 12;
+
+    let dueDate;
+    if (this.paymentDate === CutoffDate.VALUES.END_OF_MONTH) {
+      // 月末の場合
+      dueDate = new Date(Date.UTC(targetYear, finalMonth + 1, 0));
+    } else {
+      // 指定日の場合
+      dueDate = new Date(Date.UTC(targetYear, finalMonth, this.paymentDate));
+
+      // 指定日が存在しない場合は月末にする
+      if (dueDate.getUTCMonth() !== finalMonth) {
+        dueDate = new Date(Date.UTC(targetYear, finalMonth + 1, 0));
+      }
+    }
+
+    // JST → UTC に変換（-9時間）
+    return new Date(dueDate.getTime() - 9 * 60 * 60 * 1000);
   }
 }
 

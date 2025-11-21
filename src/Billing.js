@@ -23,7 +23,7 @@
  * @prop {number} subtotal - subtotal (excluding tax) (computed-readonly)
  * @prop {number} taxAmount - tax amount (computed-readonly)
  * @prop {number} totalAmount - total amount (including tax) (computed-readonly)
- * @prop {Array<Object>} itemsSummary - billing items summary for display (computed-readonly)
+ * @prop {Array<Object>} summary - summary for display (computed-readonly)
  *****************************************************************************/
 
 import FireModel from "@shisyamo4131/air-firebase-v2";
@@ -171,7 +171,7 @@ export default class Billing extends FireModel {
     });
 
     // 表示用の明細サマリーを生成
-    Object.defineProperty(this, "itemsSummary", {
+    Object.defineProperty(this, "summary", {
       get() {
         return this.operationResults.map((item) => ({
           operationResultId: item.docId,
