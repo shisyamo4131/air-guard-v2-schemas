@@ -207,9 +207,9 @@
 import Operation from "./Operation.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import { ContextualError } from "./utils/index.js";
-// import { runTransaction } from "firebase/firestore";
 import ArrangementNotification from "./ArrangementNotification.js";
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
+import OperationResult from "./OperationResult.js";
 
 const classProps = {
   ...Operation.classProps,
