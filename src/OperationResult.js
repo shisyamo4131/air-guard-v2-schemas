@@ -178,7 +178,7 @@ import Agreement from "./Agreement.js";
 import { ContextualError } from "./utils/ContextualError.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import Tax from "./tax.js";
+import Tax from "./Tax.js";
 import { BILLING_UNIT_TYPE_PER_HOUR } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
 import CutoffDate from "./utils/CutoffDate.js";
