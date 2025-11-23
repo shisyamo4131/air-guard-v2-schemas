@@ -1,17 +1,22 @@
-/*****************************************************************************
- * User Model ver 1.0.0
+/**
+ * User Model
+ * @version 1.1.0
  * @author shisyamo4131
- *****************************************************************************/
+ * @update 2025-11-23 Set `usePrefix` to false and added `companyId` property.
+ *
+ * @prop {string} email - User's email address.
+ * @prop {string} displayName - User's display name.
+ * @prop {string} [employeeId] - Employee ID (not required as some users may not be employees).
+ * @prop {Array<string>} roles - User roles/permissions.
+ * @prop {boolean} disabled - Indicates if the user is disabled.
+ * @prop {string} companyId - ID of the associated company.
+ */
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 
 const classProps = {
   email: defField("email", { required: true }),
   displayName: defField("displayName", { required: true }),
-  /**
-   * employee-id
-   * - 従業員には該当しないユーザーが存在する可能性もあるため、必須にはしない。
-   */
   employeeId: defField("oneLine", { label: "従業員ID", hidden: true }),
   roles: {
     type: Array,
@@ -26,11 +31,13 @@ const classProps = {
     required: false,
     hidden: true,
   }),
+  companyId: defField("oneLine", { hidden: true, required: true }),
 };
 
 export default class User extends FireModel {
   static className = "ユーザー";
   static collectionPath = "Users";
+  static usePrefix = false;
   static classProps = classProps;
 
   static headers = [

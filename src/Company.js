@@ -1,7 +1,9 @@
-/*****************************************************************************
- * Company Model ver 1.0.0
+/**
+ * Company Model
+ * @version 1.1.0
  * @author shisyamo4131
- *****************************************************************************/
+ * @update 2025-11-23 Set `usePrefix` to false.
+ */
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
@@ -70,6 +72,7 @@ const classProps = {
 export default class Company extends FireModel {
   static className = "会社";
   static collectionPath = "Companies";
+  static usePrefix = false;
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = classProps;
