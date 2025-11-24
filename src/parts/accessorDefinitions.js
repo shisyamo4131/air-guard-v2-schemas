@@ -45,12 +45,12 @@ const accessorImplementations = {
   prefecture: {
     enumerable: true,
     get() {
-      if (!this.hasOwnProperty("prefCode")) {
-        console.warn(
-          "[アクセサ: prefecture] このオブジェクトに prefCode が定義されていません。"
-        );
-        return "";
-      }
+      // if (!this.hasOwnProperty("prefCode")) {
+      //   console.warn(
+      //     "[アクセサ: prefecture] このオブジェクトに prefCode が定義されていません。"
+      //   );
+      //   return "";
+      // }
 
       if (!this.prefCode) return ""; // No warning if prefCode is falsy but present
 
