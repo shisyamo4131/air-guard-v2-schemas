@@ -10,6 +10,7 @@
  * @prop {Array<string>} roles - User roles/permissions.
  * @prop {boolean} disabled - Indicates if the user is disabled.
  * @prop {string} companyId - ID of the associated company.
+ * @prop {boolean} isTemporary - Indicates if the user is temporary.
  */
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -32,12 +33,12 @@ const classProps = {
     hidden: true,
   }),
   companyId: defField("oneLine", { hidden: true, required: true }),
+  isTemporary: defField("check", { hidden: true, default: true }),
 };
 
 export default class User extends FireModel {
   static className = "ユーザー";
   static collectionPath = "Users";
-  static usePrefix = false;
   static classProps = classProps;
 
   static headers = [
