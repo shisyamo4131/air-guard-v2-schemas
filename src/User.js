@@ -2,7 +2,7 @@
  * User Model
  * @version 1.1.0
  * @author shisyamo4131
- * @update 2025-11-23 Set `usePrefix` to false and added `companyId` property.
+ * @update 2025-11-24 Added `companyId`, `isAdmin`, `isTemporary` property.
  *
  * @prop {string} email - User's email address.
  * @prop {string} displayName - User's display name.
@@ -33,6 +33,7 @@ const classProps = {
     hidden: true,
   }),
   companyId: defField("oneLine", { hidden: true, required: true }),
+  isAdmin: defField("check", { hidden: true, default: false }),
   isTemporary: defField("check", { hidden: true, default: true }),
 };
 
