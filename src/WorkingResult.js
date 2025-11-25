@@ -62,6 +62,8 @@ import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
 import { getDayType } from "./constants/day-type.js";
+import { VALUES as DAY_TYPE } from "./constants/day-type.js";
+import { VALUES as SHIFT_TYPE } from "./constants/shift-type.js";
 
 const classProps = {
   dateAt: defField("dateAt", { required: true }),
@@ -105,6 +107,9 @@ export default class WorkingResult extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = classProps;
+
+  static DAY_TYPE = DAY_TYPE;
+  static SHIFT_TYPE = SHIFT_TYPE;
 
   /**
    * Constructor
