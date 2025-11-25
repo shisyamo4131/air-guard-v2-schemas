@@ -10,6 +10,7 @@
  * @prop {Array<string>} roles - User roles/permissions.
  * @prop {boolean} disabled - Indicates if the user is disabled.
  * @prop {string} companyId - ID of the associated company.
+ * @prop {boolean} isAdmin - Indicates if the user is an administrator.
  * @prop {boolean} isTemporary - Indicates if the user is temporary.
  */
 import FireModel from "@shisyamo4131/air-firebase-v2";
@@ -41,10 +42,4 @@ export default class User extends FireModel {
   static className = "ユーザー";
   static collectionPath = "Users";
   static classProps = classProps;
-
-  static headers = [
-    { title: "email", key: "email" },
-    { title: "表示名", key: "displayName" },
-    { title: "管理者", key: "roles" },
-  ];
 }
