@@ -1,11 +1,10 @@
 // prettier-ignore
-export const GENDER_DEFAULT = "MALE";
-
-export const GENDER = Object.freeze({
-  MALE: "男性",
-  FEMALE: "女性",
+export const VALUES = Object.freeze({
+  MALE: { value: "MALE", title: "男性" },
+  FEMALE: { value: "FEMALE", title: "女性" },
 });
 
-export const GENDER_ARRAY = Object.entries(GENDER).map(([key, value]) => {
-  return { value: key, title: value };
-});
+export const OPTIONS = [
+  { title: VALUES.MALE.title, value: VALUES.MALE.value },
+  { title: VALUES.FEMALE.title, value: VALUES.FEMALE.value },
+];

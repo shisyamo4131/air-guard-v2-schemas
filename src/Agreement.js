@@ -75,12 +75,11 @@
  * - @param {Date} v - The new `dateAt` value
  *****************************************************************************/
 import WorkingResult from "./WorkingResult.js";
-import { DAY_TYPE } from "./constants/day-type.js";
-import { SHIFT_TYPE } from "./constants/shift-type.js";
+import { VALUES as DAY_TYPE } from "./constants/day-type.js";
+import { VALUES as SHIFT_TYPE } from "./constants/shift-type.js";
 import {
-  BILLING_UNIT_TYPE,
-  BILLING_UNIT_TYPE_ARRAY,
-  BILLING_UNIT_TYPE_DEFAULT,
+  VALUES as BILLING_UNIT_TYPE,
+  OPTIONS as BILLING_UNIT_TYPE_OPTIONS,
 } from "./constants/billing-unit-type.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import CutoffDate from "./utils/CutoffDate.js";
@@ -101,12 +100,12 @@ const classProps = {
     required: true,
   }),
   billingUnitType: defField("select", {
-    default: BILLING_UNIT_TYPE_DEFAULT,
+    default: BILLING_UNIT_TYPE.PER_DAY.value,
     label: "請求単位",
     required: true,
     component: {
       attrs: {
-        items: BILLING_UNIT_TYPE_ARRAY,
+        items: BILLING_UNIT_TYPE_OPTIONS,
       },
     },
   }),

@@ -135,10 +135,7 @@
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import { getDateAt, ContextualError } from "./utils/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import {
-  VALUES,
-  OPTIONS,
-} from "./constants/arrangement-notification-status.js";
+import { VALUES } from "./constants/arrangement-notification-status.js";
 
 const classProps = {
   status: defField("arrangementNotificationStatus", { required: true }),
@@ -168,12 +165,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
   static logicalDelete = false;
   static classProps = classProps;
 
-  static STATUSES = VALUES;
-  static STATUS_ARRANGED = VALUES.ARRANGED.value;
-  static STATUS_CONFIRMED = VALUES.CONFIRMED.value;
-  static STATUS_ARRIVED = VALUES.ARRIVED.value;
-  static STATUS_LEAVED = VALUES.LEAVED.value;
-  static STATUS_OPTIONS = OPTIONS;
+  static STATUS = VALUES;
 
   afterInitialize(item = {}) {
     // Define computed properties that are defined on SiteOperationScheduleDetail

@@ -1,15 +1,10 @@
 // prettier-ignore
-export const BILLING_UNIT_TYPE_DEFAULT = "PER_DAY";
-export const BILLING_UNIT_TYPE_PER_DAY = "PER_DAY";
-export const BILLING_UNIT_TYPE_PER_HOUR = "PER_HOUR";
-
-export const BILLING_UNIT_TYPE = Object.freeze({
-  PER_DAY: "日",
-  PER_HOUR: "時間",
+export const VALUES = Object.freeze({
+  PER_DAY: { value: "PER_DAY", title: "日" },
+  PER_HOUR: { value: "PER_HOUR", title: "時間" },
 });
 
-export const BILLING_UNIT_TYPE_ARRAY = Object.entries(BILLING_UNIT_TYPE).map(
-  ([key, value]) => {
-    return { value: key, title: value };
-  }
-);
+export const OPTIONS = [
+  { title: VALUES.PER_DAY.title, value: VALUES.PER_DAY.value },
+  { title: VALUES.PER_HOUR.title, value: VALUES.PER_HOUR.value },
+];

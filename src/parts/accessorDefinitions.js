@@ -1,4 +1,4 @@
-import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
+import { OPTIONS } from "../constants/prefectures.js";
 /**
  * @typedef {object} AccessorImplementation - アクセサの実装を定義するオブジェクト。
  * @property {function} get - getter関数。
@@ -54,20 +54,18 @@ const accessorImplementations = {
 
       if (!this.prefCode) return ""; // No warning if prefCode is falsy but present
 
-      const result = PREFECTURES_ARRAY.find(
-        ({ value }) => value === this.prefCode
-      );
+      const result = OPTIONS.find(({ value }) => value === this.prefCode);
 
       if (!result) {
         console.warn(
-          `[アクセサ: prefecture] prefCode '${this.prefCode}' は PREFECTURES_ARRAY に見つかりません。`
+          `[アクセサ: prefecture] prefCode '${this.prefCode}' は OPTIONS に見つかりません。`
         );
         return "";
       }
 
       if (!result.hasOwnProperty("title")) {
         console.warn(
-          `[アクセサ: prefecture] PREFECTURES_ARRAY の prefCode '${this.prefCode}' に title が定義されていません。`
+          `[アクセサ: prefecture] OPTIONS の prefCode '${this.prefCode}' に title が定義されていません。`
         );
         return "";
       }

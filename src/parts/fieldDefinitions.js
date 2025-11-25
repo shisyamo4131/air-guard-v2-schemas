@@ -6,16 +6,22 @@ import {
   VALUES as CONTRACT_STATUS_VALUES,
   OPTIONS as CONTRACT_STATUS_OPTIONS,
 } from "../constants/contract-status.js";
-import { DAY_TYPE_ARRAY, DAY_TYPE_DEFAULT } from "../constants/day-type.js";
+import {
+  OPTIONS as DAY_TYPE_OPTIONS,
+  VALUES as DAY_TYPE_VALUES,
+} from "../constants/day-type.js";
 import {
   VALUES as EMPLOYMENT_STATUS_VALUES,
   OPTIONS as EMPLOYMENT_STATUS_OPTIONS,
 } from "../constants/employment-status.js";
-import { GENDER_ARRAY, GENDER_DEFAULT } from "../constants/gender.js";
-import { PREFECTURES_ARRAY } from "../constants/prefectures.js";
 import {
-  SHIFT_TYPE_ARRAY,
-  SHIFT_TYPE_DEFAULT,
+  VALUES as GENDER_VALUES,
+  OPTIONS as GENDER_OPTIONS,
+} from "../constants/gender.js";
+import { OPTIONS as PREFECTURES_OPTIONS } from "../constants/prefectures.js";
+import {
+  VALUES as SHIFT_TYPE_VALUES,
+  OPTIONS as SHIFT_TYPE_OPTIONS,
 } from "../constants/shift-type.js";
 import {
   VALUES as SITE_STATUS_VALUES,
@@ -412,12 +418,12 @@ export const fieldDefinitions = {
   },
   dayType: {
     ...generalDefinitions.select,
-    default: DAY_TYPE_DEFAULT,
+    default: DAY_TYPE_VALUES.WEEKDAY.value,
     label: "曜日区分",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: DAY_TYPE_ARRAY,
+        items: DAY_TYPE_OPTIONS,
       },
     },
   },
@@ -434,12 +440,12 @@ export const fieldDefinitions = {
   },
   gender: {
     ...generalDefinitions.select,
-    default: GENDER_DEFAULT,
+    default: GENDER_VALUES.MALE.value,
     label: "性別",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: GENDER_ARRAY,
+        items: GENDER_OPTIONS,
       },
     },
   },
@@ -450,18 +456,18 @@ export const fieldDefinitions = {
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: PREFECTURES_ARRAY,
+        items: PREFECTURES_OPTIONS,
       },
     },
   },
   shiftType: {
     ...generalDefinitions.select,
-    default: SHIFT_TYPE_DEFAULT,
+    default: SHIFT_TYPE_VALUES.DAY.value,
     label: "勤務区分",
     component: {
       name: generalDefinitions.select.component.name,
       attrs: {
-        items: SHIFT_TYPE_ARRAY,
+        items: SHIFT_TYPE_OPTIONS,
       },
     },
   },

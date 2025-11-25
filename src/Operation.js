@@ -133,8 +133,8 @@
 import WorkingResult from "./WorkingResult.js";
 import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { DAY_TYPE } from "./constants/day-type.js";
-import { SHIFT_TYPE } from "./constants/shift-type.js";
+import { VALUES as DAY_TYPE } from "./constants/day-type.js";
+import { VALUES as SHIFT_TYPE } from "./constants/shift-type.js";
 
 const classProps = {
   siteId: defField("siteId", { required: true }),
@@ -177,12 +177,7 @@ export default class Operation extends WorkingResult {
   static classProps = classProps;
 
   static DAY_TYPE = DAY_TYPE;
-  static DAY_TYPE_DAY = DAY_TYPE.DAY;
-  static DAY_TYPE_NIGHT = DAY_TYPE.NIGHT;
-
   static SHIFT_TYPE = SHIFT_TYPE;
-  static SHIFT_TYPE_DAY = SHIFT_TYPE.DAY.value;
-  static SHIFT_TYPE_NIGHT = SHIFT_TYPE.NIGHT.value;
 
   /**
    * Constructor

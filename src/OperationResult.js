@@ -179,7 +179,7 @@ import { ContextualError } from "./utils/ContextualError.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import Tax from "./Tax.js";
-import { BILLING_UNIT_TYPE_PER_HOUR } from "./constants/billing-unit-type.js";
+import { VALUES as BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
 import CutoffDate from "./utils/CutoffDate.js";
 import Site from "./Site.js";
@@ -247,6 +247,7 @@ export default class OperationResult extends Operation {
     { title: "現場", key: "siteId", value: "siteId" },
   ];
 
+  static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE;
   /**
    * afterInitialize
    */
@@ -343,7 +344,8 @@ export default class OperationResult extends Operation {
             } else {
               // agreementがある場合のみbillingUnitTypeとincludeBreakInBillingを使用
               const isPerHour =
-                this.agreement?.billingUnitType === BILLING_UNIT_TYPE_PER_HOUR;
+                this.agreement?.billingUnitType ===
+                BILLING_UNIT_TYPE.PER_HOUR.value;
 
               if (isPerHour) {
                 // 時間単位請求の場合
