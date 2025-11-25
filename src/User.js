@@ -3,6 +3,7 @@
  * @version 1.1.0
  * @author shisyamo4131
  * @update 2025-11-24 Added `companyId`, `isAdmin`, `isTemporary` property.
+ *                    Changed to prevent deletion of admin users.
  *
  * @prop {string} email - User's email address.
  * @prop {string} displayName - User's display name.
@@ -42,4 +43,12 @@ export default class User extends FireModel {
   static className = "ユーザー";
   static collectionPath = "Users";
   static classProps = classProps;
+
+  async delete(updateOptions = {}) {
+    // Prevent deletion of administrator accounts
+    if (this.isAdmin) {
+      throw new Error("Administrator accounts cannot be deleted.");
+    }
+    await super.delete(updateOptions);
+  }
 }
