@@ -26,7 +26,7 @@ const classProps = {
     default: () => [],
     label: "権限",
     required: false,
-    hidden: true,
+    hidden: false,
   },
   disabled: defField("check", {
     label: "使用不可",
