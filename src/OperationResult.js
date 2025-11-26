@@ -495,6 +495,7 @@ export default class OperationResult extends Operation {
           const newKey = v ? v.key : null;
           if (oldKey === newKey) return;
           _agreement = v;
+          this.allowEmptyAgreement = false; // 取極めが設定された場合は許容を解除
           this.refreshBillingDateAt();
         },
       },
