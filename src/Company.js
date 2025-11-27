@@ -19,19 +19,22 @@ const classProps = {
     required: true,
   }),
 
-  /** 以下、管理者アカウント作成時に未入力状態で作成されるため required は未定義とする */
+  /**
+   * これ以降のフィールドは管理者アカウント作成時に未入力状態で作成されるため required は未定義（false）とする
+   */
+
+  /** 基本情報 */
   zipcode: defField("zipcode"),
   prefCode: defField("prefCode"),
   city: defField("city"),
   address: defField("address"),
   building: defField("building"),
-  location: defField("location", { hidden: true }),
   tel: defField("tel"),
   fax: defField("fax"),
 
   /** 振込先情報 */
-  bankName: defField("oneLine", { label: "銀行名" }),
-  branchName: defField("oneLine", { label: "支店名" }),
+  bankName: defField("oneLine", { label: "銀行名", length: 20 }),
+  branchName: defField("oneLine", { label: "支店名", length: 20 }),
   accountType: defField("select", {
     label: "口座種別",
     default: "普通",
@@ -43,23 +46,24 @@ const classProps = {
     },
   }),
   accountNumber: defField("oneLine", { label: "口座番号", length: 7 }),
+  accountHolder: defField("oneLine", { label: "口座名義", length: 50 }),
 
+  /** 会社の既定取極め */
   agreements: defField("array", {
     label: "既定の取極め",
     customClass: Agreement,
   }),
+
   /**
    * Field to manage the display order of site-shift type pairs for placement management.
    * Format: { siteId, shiftType }
    */
-  siteOrder: defField("array", {
-    customClass: SiteOrder,
-    hidden: true,
-  }),
+  siteOrder: defField("array", { customClass: SiteOrder, hidden: true }),
 
-  /**
-   * Interval in minutes used for VTimePicker's allowed-minutes.
-   */
+  /** Geolocation */
+  location: defField("location", { hidden: true }),
+
+  /** Interval in minutes used for VTimePicker's allowed-minutes. */
   minuteInterval: defField("number", {
     label: "時刻選択間隔（分）",
     default: 15,
@@ -74,6 +78,8 @@ const classProps = {
       },
     },
   }),
+
+  /** Round setting */
   roundSetting: defField("select", {
     label: "端数処理",
     default: RoundSetting.ROUND,
