@@ -1,6 +1,6 @@
 // prettier-ignore
 export const VALUES = Object.freeze({
-  PER_DAY: { value: "PER_DAY", title: "日" },
+  PER_DAY: { value: "PER_DAY", title: "人工" },
   PER_HOUR: { value: "PER_HOUR", title: "時間" },
 });
 
