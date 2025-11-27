@@ -1,7 +1,8 @@
 /**
  * Company Model
- * @version 1.1.0
+ * @version 1.2.0
  * @author shisyamo4131
+ * @update 2025-11-27 Add bank information fields for billing.
  * @update 2025-11-23 Set `usePrefix` to false.
  */
 import FireModel from "@shisyamo4131/air-firebase-v2";
@@ -17,6 +18,7 @@ const classProps = {
     label: "会社名（カナ）",
     required: true,
   }),
+
   /** 以下、管理者アカウント作成時に未入力状態で作成されるため required は未定義とする */
   zipcode: defField("zipcode"),
   prefCode: defField("prefCode"),
@@ -26,6 +28,22 @@ const classProps = {
   location: defField("location", { hidden: true }),
   tel: defField("tel"),
   fax: defField("fax"),
+
+  /** 振込先情報 */
+  bankName: defField("oneLine", { label: "銀行名" }),
+  branchName: defField("oneLine", { label: "支店名" }),
+  accountType: defField("select", {
+    label: "口座種別",
+    default: "普通",
+    component: {
+      name: "air-select",
+      attrs: {
+        items: ["普通", "当座"],
+      },
+    },
+  }),
+  accountNumber: defField("oneLine", { label: "口座番号", length: 7 }),
+
   agreements: defField("array", {
     label: "既定の取極め",
     customClass: Agreement,
@@ -38,6 +56,7 @@ const classProps = {
     customClass: SiteOrder,
     hidden: true,
   }),
+
   /**
    * Interval in minutes used for VTimePicker's allowed-minutes.
    */
