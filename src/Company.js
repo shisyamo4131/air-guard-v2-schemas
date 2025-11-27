@@ -109,6 +109,22 @@ export default class Company extends FireModel {
       prefecture: defAccessor("prefecture"),
     });
 
+    Object.defineProperties(this, {
+      hasBankInfo: {
+        enumerable: true,
+        configurable: true,
+        get() {
+          return !!(
+            this.bankName &&
+            this.branchName &&
+            this.accountNumber &&
+            this.accountHolder
+          );
+        },
+        set() {},
+      },
+    });
+
     /*************************************************************************
      * CUSTOM METHODS FOR siteOrder ARRAY
      * Note: These methods modify the siteOrder array directly.
