@@ -1,8 +1,9 @@
 /*****************************************************************************
  * SiteOperationSchedule Model ver 1.1.0
- * @version 1.1.0
+ * @version 1.1.1
  * @author shisyamo4131
  *
+ * @update 2025-11-28 v1.1.1 - Removed the `agreement` parameter from `syncToOperationResult` method.
  * @update 2025-11-22 v1.1.0 - Moved `duplicate`, `notify`, `syncToOperationResult`,
  *                             and `toEvent` methods from client side code.
  *
@@ -167,7 +168,8 @@
  * @method syncToOperationResult - Creates an OperationResult document based on the current SiteOperationSchedule
  * - The OperationResult document ID will be the same as the SiteOperationSchedule document ID.
  * - Sets the `operationResultId` property of the SiteOperationSchedule to the created OperationResult document ID.
- * - Accepts an `agreement` object containing necessary properties for creating the OperationResult.
+ * - If an OperationResult already exists, it will be overwritten.
+ * - [UPDATE 2025-11-28] Removed the `agreement` parameter. The agreement is now fetched internally.
  *
  * @method toEvent - Converts the SiteOperationSchedule instance to a VCalendar event object
  * - Returns an object with properties required for displaying events in Vuetify's VCalendar component.
@@ -679,9 +681,14 @@ export default class SiteOperationSchedule extends Operation {
    *   既に存在する場合は上書きされます。
    * - 現場稼働予定ドキュメントの `operationResultId` プロパティに
    *   作成された稼働実績ドキュメントの ID が設定されます。（当該ドキュメント ID と同一）
-   * @param {Object} agreement - 取極め情報オブジェクト。稼働実績ドキュメントの生成に必要なプロパティを含みます。
+   * @param {Object} notifications - 配置通知オブジェクトのマップ。
+   *   - キー: 配置通知の一意キー（`notificationKey` プロパティ）
+   *   - 値: 配置通知ドキュメントオブジェクト
+   * @returns {Promise<void>}
+   *
+   * @update 2025-11-28 - Removed the `agreement` parameter.
    */
-  async syncToOperationResult(agreement, notifications = {}) {
+  async syncToOperationResult(notifications = {}) {
     if (!this.docId) {
       throw new Error(
         "不正な処理です。作成前の現場稼働予定から稼働実績を作成することはできません。"
@@ -712,10 +719,8 @@ export default class SiteOperationSchedule extends Operation {
         ...this.toObject(),
         employees,
         outsourcers,
-        // agreement: agreement || null,
         siteOperationScheduleId: this.docId,
       });
-      // operationResult.refreshBillingDateAt();
       await this.constructor.runTransaction(async (transaction) => {
         const docRef = await operationResult.create({
           docId: this.docId,
