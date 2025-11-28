@@ -555,7 +555,7 @@ export default class OperationResult extends Operation {
       );
     }
     this.customerId = siteInstance.customerId;
-    this.agreement = siteInstance.getCurrentAgreement(this);
+    this.agreement = siteInstance.getAgreement(this);
   }
 
   /**
