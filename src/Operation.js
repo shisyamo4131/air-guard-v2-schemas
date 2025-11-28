@@ -2,9 +2,8 @@
  * Operation Model ver 1.0.0
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
- * - Base class of SiteOperationSchedule based on WorkingResult.
- * - `dateAt` property indicates the date of operation (placement date)
- *   used for billing purposes.
+ * - Base class of SiteOperationSchedule and OperationResult based on WorkingResult.
+ * - `dateAt` property indicates the date of operation (placement date) used for billing purposes.
  *   Actual working day may differ from this date.
  * - `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are
  *   automatically synchronized to all assigned employees and outsourcers
@@ -12,27 +11,51 @@
  * - `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
  *   They should be synchronized at `SiteOperationSchedule` level instead.
  * ---------------------------------------------------------------------------
- * @prop {string} siteId - Site document ID (trigger property)
+ * @prop {string} siteId
+ * - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @prop {number} requiredPersonnel - Required number of personnel
- * @prop {boolean} qualificationRequired - Qualification required flag
- * @prop {string} workDescription - Work description
- * @prop {string} remarks - Remarks
- * @prop {Array<OperationDetail>} employees - Assigned employees
+ *
+ * @prop {number} requiredPersonnel
+ * - Required number of personnel
+ *
+ * @prop {boolean} qualificationRequired
+ * - Qualification required flag
+ *
+ * @prop {string} workDescription
+ * - Work description
+ *
+ * @prop {string} remarks
+ * - Remarks
+ *
+ * @prop {Array<OperationDetail>} employees
+ * - Assigned employees
  * - Array of `OperationDetail` instances representing assigned employees
- * @prop {Array<OperationDetail>} outsourcers - Assigned outsourcers
+ *
+ * @prop {Array<OperationDetail>} outsourcers
+ * - Assigned outsourcers
  * - Array of `OperationDetail` instances representing assigned outsourcers
- * ---------------------------------------------------------------------------
- * @computed {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
- * @computed {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
- * @computed {number} employeesCount - Count of assigned employees (read-only)
- * @computed {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
- * @computed {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
+ *
+ * @prop {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
+ * - Array of employee IDs from `employees` (read-only)
+ *
+ * @prop {Array<string>} outsourcerIds
+ * - Array of outsourcer IDs from `outsourcers` (read-only)
+ *
+ * @prop {number} employeesCount
+ * - Count of assigned employees (read-only)
+ *
+ * @prop {number} outsourcersCount
+ * - Count of assigned outsourcers (sum of amounts) (read-only)
+ *
+ * @prop {boolean} isPersonnelShortage
+ * - Indicates if there is a shortage of personnel (read-only)
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
- * @computed {Array<OperationDetail>} workers - Combined array of `employees` and `outsourcers`
+ *
+ * @prop {Array<OperationDetail>} workers
+ * - Combined array of `employees` and `outsourcers`
  * - Getter: Returns concatenated array of employees and outsourcers
  * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
- * ---------------------------------------------------------------------------
+ *
  * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
  * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
  * - Returns true if the employee IDs have changed compared to `_beforeData`
@@ -46,6 +69,8 @@
  * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult:
+ * @prop {string} key - Unique key combining `siteId`, `date`, `dayType`, and `shiftType` (override/read-only)
+ * - A unique identifier for the working result, combining `siteId`, `date`, `dayType`, and `shiftType`.
  * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
@@ -87,6 +112,8 @@
  * - Extracted from `endTime`.
  * @getter {number} endMinute - End minute (0-59) (read-only)
  * - Extracted from `endTime`.
+ * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
+ * - Compares the current `key` with the `key` in `_beforeData`.
  * ---------------------------------------------------------------------------
  * @method {function} addWorker - Adds a new worker (employee or outsourcer)
  * - @param {Object} options - Options for adding a worker
@@ -233,6 +260,21 @@ export default class Operation extends WorkingResult {
    */
   afterInitialize(item = {}) {
     super.afterInitialize(item);
+
+    /**
+     * Override `key` computed property
+     * - `key`: Combines `siteId`, `date`, `dayType`, and `shiftType`.
+     */
+    Object.defineProperties(this, {
+      key: {
+        configurable: true,
+        enumberable: true,
+        get() {
+          return `${this.siteId}-${this.date}-${this.dayType}-${this.shiftType}`;
+        },
+        set() {},
+      },
+    });
 
     /***********************************************************
      * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
@@ -581,8 +623,6 @@ export default class Operation extends WorkingResult {
         enumerable: false,
       },
     });
-    /** Remove unnecessary properties */
-    delete this.key; // From workingResult.js
   }
 
   /***************************************************************************

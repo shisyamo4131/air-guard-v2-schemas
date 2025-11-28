@@ -7,40 +7,41 @@
  * - `dateAt` is defined as a trigger property. When it is set, `dayType` is automatically updated.
  * - Subclasses can override `setDateAtCallback` to add custom behavior when `dateAt` changes.
  * ---------------------------------------------------------------------------
- * @props {Date} dateAt - Applicable start date (trigger property)
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - Shift type (`DAY`, `NIGHT`)
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
+ * @prop {Date} dateAt - Applicable start date (trigger property)
+ * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @prop {string} shiftType - Shift type (`DAY`, `NIGHT`)
+ * @prop {string} startTime - Start time (HH:MM format)
+ * @prop {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes
+ * @prop {string} endTime - End time (HH:MM format)
+ * @prop {number} breakMinutes - Break time (minutes)
+ * @prop {number} regulationWorkMinutes - Regulation work minutes
  * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
  * - Exceeding this time is considered overtime.
- * ---------------------------------------------------------------------------
- * @computed {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
+ *
+ * @computed
+ * @prop {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
  * - A unique identifier for the working result, combining `date`, `dayType`, and `shiftType`.
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * @prop {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
  * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
+ * @prop {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
  * - `true` if `startTime` is later than `endTime`
- * @computed {Date} startAt - Start date and time (Date object) (read-only)
+ * @prop {Date} startAt - Start date and time (Date object) (read-only)
  * - Returns a Date object with `startTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} endAt - End date and time (Date object) (read-only)
+ * @prop {Date} endAt - End date and time (Date object) (read-only)
  * - Returns a Date object with `endTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
+ * @prop {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
  * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
  * - If the difference between `endAt` and `startAt` is negative, returns 0.
  * - If `startAt` or `endAt` is not set, returns 0.
- * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * @prop {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
  * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
  * - If actual working time is less than regulation time (e.g., early leave), it equals `totalWorkMinutes`.
  * - If actual working time exceeds regulation time (overtime), it equals `regulationWorkMinutes`.
- * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ * @prop {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * - Overtime work is not negative; the minimum is 0.
  * ---------------------------------------------------------------------------
@@ -52,6 +53,8 @@
  * - Extracted from `endTime`.
  * @getter {number} endMinute - End minute (0-59) (read-only)
  * - Extracted from `endTime`.
+ * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
+ * - Compares the current `key` with the `key` in `_beforeData`.
  * ---------------------------------------------------------------------------
  * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
  * - Override this method in subclasses to add custom behavior when `dateAt` changes.
@@ -300,5 +303,16 @@ export default class WorkingResult extends FireModel {
    */
   get endMinute() {
     return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
+  }
+
+  /**
+   * Returns whether the key has changed compared to the previous data.
+   * - Compares the current `key` with the `key` in `_beforeData`.
+   * - Returns `true` if they are different, otherwise `false`.
+   */
+  get isKeyChanged() {
+    const current = this.key;
+    const before = this._beforeData?.key;
+    return current !== before;
   }
 }

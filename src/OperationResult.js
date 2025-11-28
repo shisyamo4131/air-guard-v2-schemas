@@ -10,8 +10,12 @@
  * - Automatically updates `billingDateAt` based on `dateAt` and `cutoffDate`.
  * - Introduces a lock mechanism (`isLocked`) to prevent edits when necessary.
  *
+ * @prop {string} key - Unique key combining `siteId`, `date`, `dayType`, and `shiftType` (override/read-only)
+ * - A unique identifier for the working result, combining `siteId`, `date`, `dayType`, and `shiftType`.
+ *
  * @prop {string} siteId - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ *
  * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  * - Used to determine `dayType`.
@@ -128,6 +132,8 @@
  * - Extracted from `endTime`.
  * @getter {number} endMinute - End minute (0-59) (read-only)
  * - Extracted from `endTime`.
+ * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
+ * - Compares the current `key` with the `key` in `_beforeData`.
  *
  * @method refreshBillingDateAt - Refresh billingDateAt based on dateAt and cutoffDate
  * - Updates `billingDateAt` based on the current `dateAt` and `cutoffDate` values.

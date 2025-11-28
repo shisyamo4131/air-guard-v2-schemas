@@ -17,6 +17,9 @@
  *   `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are synchronized
  *   in the parent `Operation` class.
  *
+ * @prop {string} key - Unique key combining `siteId`, `date`, `dayType`, and `shiftType` (override/read-only)
+ * - A unique identifier for the working result, combining `siteId`, `date`, `dayType`, and `shiftType`.
+ *
  * @prop {string|null} operationResultId - Associated OperationResult document ID
  * - If an OperationResult has been created based on this schedule, this property
  *   holds the ID of that OperationResult document.
@@ -148,6 +151,9 @@
  *
  * @getter {number} endMinute - End minute (0-59) (read-only)
  * - Extracted from `endTime`.
+ *
+ * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
+ * - Compares the current `key` with the `key` in `_beforeData`.
  *
  * @method duplicate - Duplicates the SiteOperationSchedule for specified dates
  * - Creates new SiteOperationSchedule documents for each specified date,
