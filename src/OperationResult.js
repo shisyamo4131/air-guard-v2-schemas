@@ -541,11 +541,11 @@ export default class OperationResult extends Operation {
   }
 
   /**
-   * Synchronize customerId from siteId
+   * Synchronize customerId and apply (re-apply) agreement from siteId
    * @returns {Promise<void>}
    * @throws {Error} If the specified siteId does not exist
    */
-  async _syncCustomerId() {
+  async _syncCustomerIdAndApplyAgreement() {
     if (!this.siteId) return;
     const siteInstance = new Site();
     const siteExists = await siteInstance.fetch({ docId: this.siteId });
@@ -555,6 +555,7 @@ export default class OperationResult extends Operation {
       );
     }
     this.customerId = siteInstance.customerId;
+    this.agreement = siteInstance.getCurrentAgreement(this);
   }
 
   /**
@@ -564,12 +565,12 @@ export default class OperationResult extends Operation {
   async beforeCreate() {
     await super.beforeCreate();
 
-    // Sync customerId
-    await this._syncCustomerId();
+    // Sync customerId and apply agreement
+    await this._syncCustomerIdAndApplyAgreement();
   }
 
   /**
-   * Override beforeUpdate to sync customerId if siteId changed
+   * Override beforeUpdate to sync customerId and apply agreement if key changed
    * @returns {Promise<void>}
    */
   async beforeUpdate() {
@@ -582,9 +583,9 @@ export default class OperationResult extends Operation {
       );
     }
 
-    // Sync customerId if siteId changed
-    if (this.siteId === this._beforeData.siteId && this.customerId) return;
-    await this._syncCustomerId();
+    // Sync customerId and apply agreement if key changed
+    if (this.key === this._beforeData.key) return;
+    await this._syncCustomerIdAndApplyAgreement();
   }
 
   /**
