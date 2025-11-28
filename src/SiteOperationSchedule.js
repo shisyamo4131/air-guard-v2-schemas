@@ -695,18 +695,12 @@ export default class SiteOperationSchedule extends Operation {
       return this[prop].map((w) => {
         const notification = notifications[w.notificationKey];
         if (!notification) return w;
-        const {
-          actualStartTime: startTime,
-          actualEndTime: endTime,
-          actualBreakMinutes: breakMinutes,
-          actualIsStartNextDay: isStartNextDay,
-        } = notification;
         return new SiteOperationScheduleDetail({
           ...w.toObject(),
-          startTime,
-          endTime,
-          breakMinutes,
-          isStartNextDay,
+          startTime: notification.actualStartTime,
+          endTime: notification.actualEndTime,
+          breakMinutes: notification.actualBreakMinutes,
+          isStartNextDay: notification.actualIsStartNextDay,
         });
       });
     };
@@ -718,10 +712,10 @@ export default class SiteOperationSchedule extends Operation {
         ...this.toObject(),
         employees,
         outsourcers,
-        agreement: agreement || null,
+        // agreement: agreement || null,
         siteOperationScheduleId: this.docId,
       });
-      operationResult.refreshBillingDateAt();
+      // operationResult.refreshBillingDateAt();
       await this.constructor.runTransaction(async (transaction) => {
         const docRef = await operationResult.create({
           docId: this.docId,
