@@ -1,7 +1,8 @@
 /**
  * Company Model
- * @version 1.2.0
+ * @version 1.3.0
  * @author shisyamo4131
+ * @update 2025-12-01 Add Stripe integration fields (stripeCustomerId, subscription).
  * @update 2025-11-27 Add bank information fields for billing.
  * @update 2025-11-23 Set `usePrefix` to false.
  */
@@ -91,6 +92,24 @@ const classProps = {
         persistentHint: true,
       },
     },
+  }),
+
+  /** Stripe連携フィールド */
+  stripeCustomerId: defField("oneLine", {
+    label: "Stripe顧客ID",
+    hidden: true,
+    length: 100,
+  }),
+
+  subscription: defField("object", {
+    label: "サブスクリプション情報",
+    hidden: true,
+    default: () => ({
+      id: null,
+      status: null,
+      currentPeriodEnd: null,
+      employeeLimit: 10,
+    }),
   }),
 };
 
