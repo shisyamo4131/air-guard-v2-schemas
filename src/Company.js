@@ -1,7 +1,8 @@
 /**
  * Company Model
- * @version 1.3.0
+ * @version 1.4.0
  * @author shisyamo4131
+ * @update 2025-12-02 Add maintenance information properties.
  * @update 2025-12-01 Add Stripe integration fields (stripeCustomerId, subscription).
  * @update 2025-11-27 Add bank information fields for billing.
  * @update 2025-11-23 Set `usePrefix` to false.
@@ -111,6 +112,12 @@ const classProps = {
       employeeLimit: 10,
     }),
   }),
+
+  /** メンテナンス情報 */
+  maintenanceMode: defField("check", { default: false, hidden: true }),
+  maintenanceReason: defField("oneLine", { default: null, hidden: true }),
+  maintenanceStartAt: defField("dateAt", { default: null, hidden: true }),
+  maintenanceStartedBy: defField("oneLine", { default: null, hidden: true }),
 };
 
 export default class Company extends FireModel {
