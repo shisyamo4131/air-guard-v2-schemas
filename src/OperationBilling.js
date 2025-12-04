@@ -181,7 +181,6 @@
  * @method delete - Override delete method to allow deletion even when isLocked is true
  *****************************************************************************/
 import OperationResult from "./OperationResult.js";
-import Operation from "./Operation.js";
 
 export default class OperationBilling extends OperationResult {
   static className = "稼働請求";
@@ -192,28 +191,38 @@ export default class OperationBilling extends OperationResult {
     { title: "売上金額", key: "salesAmount", value: "salesAmount" },
   ];
 
+  /**
+   * Override beforeUpdate to skip `isLocked` check and sync customerId and apply agreement if key changed
+   * @returns {Promise<void>}
+   */
+  async beforeUpdate() {
+    // Sync customerId and apply agreement if key changed
+    if (this.key === this._beforeData.key) return;
+    await this._syncCustomerIdAndApplyAgreement();
+  }
+
+  /**
+   * Override create method to disallow creation of OperationBilling instances
+   * @returns
+   */
   async create() {
-    return Promise.reject(new Error("[OperationBilling.js] Not implemented."));
+    return Promise.reject(
+      new Error(
+        "[OperationBilling.js] Creation of OperationBilling is not implemented."
+      )
+    );
   }
 
   /**
-   * Override update method to allow editing even when isLocked is true
-   * @param {*} options
+   * Override delete method to disallow deletion of OperationBilling instances
    * @returns {Promise<void>}
    */
-  async update(options = {}) {
-    // isLockedのチェックをスキップして、親クラス(Operation)のupdateを直接呼び出す
-    return await Operation.prototype.update.call(this, options);
-  }
-
-  /**
-   * Override delete method to allow deletion even when isLocked is true
-   * @param {*} options
-   * @returns {Promise<void>}
-   */
-  async delete(options = {}) {
-    // isLockedのチェックをスキップして、親クラス(Operation)のdeleteを直接呼び出す
-    return await Operation.prototype.delete.call(this, options);
+  async delete() {
+    return Promise.reject(
+      new Error(
+        "[OperationBilling.js] Deletion of OperationBilling is not implemented."
+      )
+    );
   }
 
   /**
