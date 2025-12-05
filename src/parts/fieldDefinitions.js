@@ -293,6 +293,18 @@ export const fieldDefinitions = {
       },
     },
   },
+  mobile: {
+    ...generalDefinitions.oneLine,
+    label: "携帯電話",
+    length: 13,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        counter: true,
+        inputType: "tel",
+      },
+    },
+  },
   name: {
     ...generalDefinitions.oneLine,
     label: "名前",

@@ -24,10 +24,13 @@ const classProps = {
   address: defField("address", { required: true }),
   building: defField("building"),
   location: defField("location", { hidden: true }), // 非表示でOK
+  mobile: defField("mobile", { required: true }),
+  email: defField("email", { required: false }),
   dateOfHire: defField("dateAt", { label: "入社日", required: true }),
   employmentStatus: defField("employmentStatus", { required: true }),
   dateOfTermination: defField("dateAt", {
     label: "退職日",
+    default: null,
     component: {
       attrs: {
         required: (item) => item.employmentStatus === "terminated",
@@ -89,6 +92,8 @@ const classProps = {
  * @props {string} address - Address details.
  * @props {string} building - Building name.
  * @props {object} location - Geographical location.
+ * @props {string} mobile - Mobile phone number.
+ * @props {string} email - Email address.
  * @props {Date} dateOfHire - Date of hire.
  * @props {string} employmentStatus - Employment status.
  * @props {Date} dateOfTermination - Date of termination.
