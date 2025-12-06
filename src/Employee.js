@@ -327,6 +327,9 @@ export default class Employee extends FireModel {
 
     try {
       return await this.update(options);
+    } catch (error) {
+      this.rollback();
+      throw error;
     } finally {
       this._skipToTerminatedCheck = false;
     }
