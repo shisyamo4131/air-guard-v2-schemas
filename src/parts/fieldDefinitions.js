@@ -260,6 +260,11 @@ export const fieldDefinitions = {
     label: "表示名",
     length: 6,
   },
+  domicile: {
+    ...generalDefinitions.oneLine,
+    label: "本籍地",
+    length: 30,
+  },
   email: {
     ...generalDefinitions.oneLine,
     label: "email",

@@ -84,27 +84,34 @@ const classProps = {
   // Security guard related fields
   hasSecurityGuardRegistration: defField("check", { label: "警備員登録" }),
   priorSecurityExperienceYears: defField("number", {
-    label: "年",
+    label: "入社前経験(年)",
     default: 0,
+    required: true,
     component: {
       attrs: {
         required: (item) => item.hasSecurityGuardRegistration,
         disabled: (item) => !item.hasSecurityGuardRegistration,
+        suffix: "年",
       },
     },
   }),
   priorSecurityExperienceMonths: defField("number", {
-    label: "月",
+    label: "入社前経験(月)",
     default: 0,
+    required: true,
     component: {
       attrs: {
         required: (item) => item.hasSecurityGuardRegistration,
         disabled: (item) => !item.hasSecurityGuardRegistration,
+        suffix: "ヶ月",
+        min: 0,
+        max: 11,
       },
     },
   }),
   dateOfSecurityGuardRegistration: defField("dateAt", {
     label: "警備員登録日",
+    default: null,
     component: {
       attrs: {
         required: (item) => item.hasSecurityGuardRegistration,
@@ -112,7 +119,14 @@ const classProps = {
       },
     },
   }),
-  bloodType: defField("bloodType"),
+  bloodType: defField("bloodType", {
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
   emergencyContactName: defField("emergencyContactName", {
     component: {
       attrs: {
@@ -146,6 +160,14 @@ const classProps = {
     },
   }),
   emergencyContactPhone: defField("emergencyContactPhone", {
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  domicile: defField("domicile", {
     component: {
       attrs: {
         required: (item) => item.hasSecurityGuardRegistration,
@@ -355,6 +377,52 @@ export default class Employee extends FireModel {
     }
   }
 
+  _validateSecurityGuardFields() {
+    if (this.hasSecurityGuardRegistration) {
+      if (!this.dateOfSecurityGuardRegistration) {
+        throw new Error(
+          "[Employee.js] dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true."
+        );
+      }
+      if (!this.emergencyContactName) {
+        throw new Error(
+          "[Employee.js] emergencyContactName is required when hasSecurityGuardRegistration is true."
+        );
+      }
+      if (!this.emergencyContactRelationDetail) {
+        throw new Error(
+          "[Employee.js] emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true."
+        );
+      }
+      if (!this.emergencyContactAddress) {
+        throw new Error(
+          "[Employee.js] emergencyContactAddress is required when hasSecurityGuardRegistration is true."
+        );
+      }
+      if (!this.emergencyContactPhone) {
+        throw new Error(
+          "[Employee.js] emergencyContactPhone is required when hasSecurityGuardRegistration is true."
+        );
+      }
+      if (!this.domicile) {
+        throw new Error(
+          "[Employee.js] domicile is required when hasSecurityGuardRegistration is true."
+        );
+      }
+    } else {
+      this.priorSecurityExperienceYears = 0;
+      this.priorSecurityExperienceMonths = 0;
+      this.dateOfSecurityGuardRegistration = null;
+      this.bloodType = BLOOD_TYPE_VALUES.A.value;
+      this.emergencyContactName = null;
+      this.emergencyContactRelation = null;
+      this.emergencyContactRelationDetail = null;
+      this.emergencyContactAddress = null;
+      this.emergencyContactPhone = null;
+      this.domicile = null;
+    }
+  }
+
   /**
    * 新しい従業員ドキュメントが作成される前に実行されるフック。
    * - 親クラスの `beforeCreate` を呼び出します。
@@ -364,6 +432,7 @@ export default class Employee extends FireModel {
     await super.beforeCreate();
     this._validateForeignerRequiredFields();
     this._validateTerminatedRequiredFields();
+    this._validateSecurityGuardFields();
   }
 
   /**
@@ -390,6 +459,7 @@ export default class Employee extends FireModel {
 
     this._validateForeignerRequiredFields();
     this._validateTerminatedRequiredFields();
+    this._validateSecurityGuardFields();
   }
 
   /**
