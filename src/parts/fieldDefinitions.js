@@ -147,11 +147,30 @@ export const fieldDefinitions = {
   code: generalDefinitions.code,
   /** dateAt */
   dateAt: generalDefinitions.dateAt,
+  dateOfBirth: {
+    ...generalDefinitions.dateAt,
+    label: "生年月日",
+  },
+  dateOfHire: {
+    ...generalDefinitions.dateAt,
+    label: "入社日",
+  },
+  dateOfTermination: {
+    ...generalDefinitions.dateAt,
+    label: "退職日",
+  },
+  periodOfStay: {
+    ...generalDefinitions.dateAt,
+    label: "在留期間満了日",
+  },
   /** dateTimeAt */
   dateTimeAt: generalDefinitions.dateTimeAt,
   /** multiple-line */
   multipleLine: generalDefinitions.multipleLine,
-
+  remarks: {
+    ...generalDefinitions.multipleLine,
+    label: "備考",
+  },
   /** number */
   number: generalDefinitions.number,
   breakMinutes: {
@@ -333,6 +352,11 @@ export const fieldDefinitions = {
     label: "国籍",
     length: 50,
   },
+  residenceStatus: {
+    ...generalDefinitions.oneLine,
+    label: "在留資格",
+    length: 10,
+  },
   siteId: {
     ...generalDefinitions.oneLine,
     label: "現場",
@@ -356,6 +380,11 @@ export const fieldDefinitions = {
         inputType: "tel",
       },
     },
+  },
+  title: {
+    ...generalDefinitions.oneLine,
+    label: "肩書",
+    length: 20,
   },
   workDescription: {
     ...generalDefinitions.oneLine,

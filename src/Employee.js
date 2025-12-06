@@ -15,9 +15,8 @@ const classProps = {
   lastNameKana: defField("lastNameKana", { required: true }),
   firstNameKana: defField("firstNameKana", { required: true }),
   displayName: defField("displayName", { required: true }),
-  title: defField("oneLine", { label: "肩書", required: true }),
   gender: defField("gender", { required: true }),
-  dateOfBirth: defField("dateAt", { label: "生年月日", required: true }),
+  dateOfBirth: defField("dateOfBirth", { required: true }),
   zipcode: defField("zipcode", { required: true }),
   prefCode: defField("prefCode", { required: true }),
   city: defField("city", { required: true }),
@@ -26,10 +25,10 @@ const classProps = {
   location: defField("location", { hidden: true }), // 非表示でOK
   mobile: defField("mobile", { required: true }),
   email: defField("email", { required: false }),
-  dateOfHire: defField("dateAt", { label: "入社日", required: true }),
+  dateOfHire: defField("dateOfHire", { required: true }),
   employmentStatus: defField("employmentStatus", { required: true }),
-  dateOfTermination: defField("dateAt", {
-    label: "退職日",
+  title: defField("title"),
+  dateOfTermination: defField("dateOfTermination", {
     default: null,
     component: {
       attrs: {
@@ -52,60 +51,61 @@ const classProps = {
       },
     },
   }),
-  residenceStatus: {
-    type: String,
-    default: null,
-    label: "在留資格",
-    required: undefined,
-    component: {
-      name: "air-text-field",
-      attrs: {
-        required: (item) => item.isForeigner,
-      },
-    },
-  },
-  periodOfStay: defField("dateAt", {
-    label: "在留期間満了日",
+  residenceStatus: defField("residenceStatus", {
     component: {
       attrs: {
         required: (item) => item.isForeigner,
       },
     },
   }),
-  remarks: defField("multipleLine", { label: "備考" }),
+  periodOfStay: defField("periodOfStay", {
+    component: {
+      attrs: {
+        required: (item) => item.isForeigner,
+      },
+    },
+  }),
+  remarks: defField("remarks"),
 };
 
 /*****************************************************************************
- * Employee Model
- * @props {string} code - Employee code.
- * @props {string} lastName - Last name.
- * @props {string} firstName - First name.
- * @props {string} lastNameKana - Last name in Kana.
- * @props {string} firstNameKana - First name in Kana.
- * @props {string} displayName - Display name.
- * @props {string} title - Job title.
- * @props {string} gender - Gender.
- * @props {Date} dateOfBirth - Date of birth.
- * @props {string} zipcode - Postal code.
- * @props {string} prefCode - Prefecture code.
- * @props {string} city - City name.
- * @props {string} address - Address details.
- * @props {string} building - Building name.
- * @props {object} location - Geographical location.
- * @props {string} mobile - Mobile phone number.
- * @props {string} email - Email address.
- * @props {Date} dateOfHire - Date of hire.
- * @props {string} employmentStatus - Employment status.
- * @props {Date} dateOfTermination - Date of termination.
- * @props {boolean} isForeigner - Is the employee a foreigner.
- * @props {string} foreignName - Foreign name.
- * @props {string} nationality - Nationality.
- * @props {string} residenceStatus - Residence status.
- * @props {Date} periodOfStay - Period of stay expiration date.
- * @props {string} remarks - Additional remarks.
- * @computed {string} fullName - Full name combining last and first names (read-only)
- * @computed {string} fullAddress - Full address combining prefecture, city, and address (read-only)
- * @computed {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ * @prop {string} code - Employee code.
+ * @prop {string} lastName - Last name.
+ * @prop {string} firstName - First name.
+ * @prop {string} lastNameKana - Last name in Kana.
+ * @prop {string} firstNameKana - First name in Kana.
+ * @prop {string} displayName - Display name.
+ * @prop {string} gender - Gender.
+ * @prop {Date} dateOfBirth - Date of birth.
+ * @prop {string} zipcode - Postal code.
+ * @prop {string} prefCode - Prefecture code.
+ * @prop {string} city - City name.
+ * @prop {string} address - Address details.
+ * @prop {string} building - Building name.
+ * @prop {object} location - Geographical location.
+ * @prop {string} mobile - Mobile phone number.
+ * @prop {string} email - Email address.
+ * @prop {Date} dateOfHire - Date of hire.
+ * @prop {string} employmentStatus - Employment status.
+ * @prop {string} title - Job title.
+ * @prop {Date} dateOfTermination - Date of termination.
+ * @prop {boolean} isForeigner - Is the employee a foreigner.
+ * @prop {string} foreignName - Foreign name.
+ * @prop {string} nationality - Nationality.
+ * @prop {string} residenceStatus - Residence status.
+ * @prop {Date} periodOfStay - Period of stay expiration date.
+ * @prop {string} remarks - Additional remarks.
+ *
+ * @prop {string} fullName - Full name combining last and first names (read-only)
+ * @prop {string} fullNameKana - Full name in Kana combining last and first names (read-only)
+ * @prop {string} fullAddress - Full address combining prefecture, city, and address (read-only)
+ * @prop {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ * @prop {number} age - Age calculated from `dateOfBirth` (read-only)
+ * @prop {number} yearsOfService - Years of service calculated from `dateOfHire` (read-only)
+ *
+ * @static
+ * @prop {string} STATUS_ACTIVE - constant for active employment status
+ * @prop {string} STATUS_TERMINATED - constant for terminated employment status
  *****************************************************************************/
 export default class Employee extends FireModel {
   static className = "従業員";
@@ -114,6 +114,7 @@ export default class Employee extends FireModel {
   static logicalDelete = true;
   static classProps = classProps;
   static tokenFields = [
+    "code",
     "lastName",
     "firstName",
     "lastNameKana",
@@ -134,14 +135,50 @@ export default class Employee extends FireModel {
     super.afterInitialize(item);
     Object.defineProperties(this, {
       fullName: defAccessor("fullName"),
+      fullNameKana: defAccessor("fullNameKana"),
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
+      age: {
+        enumerable: true,
+        configurable: true,
+        get() {
+          if (!this.dateOfBirth) return null;
+          const today = new Date();
+          let age = today.getUTCFullYear() - this.dateOfBirth.getUTCFullYear();
+          const m = today.getUTCMonth() - this.dateOfBirth.getUTCMonth();
+          const d = today.getUTCDate() - this.dateOfBirth.getUTCDate();
+          if (m < 0 || (m === 0 && d < 0)) age--;
+          return age;
+        },
+        set() {},
+      },
+      yearsOfService: {
+        enumerable: true,
+        configurable: true,
+        get() {
+          if (!this.dateOfHire) return null;
+          const today = new Date();
+          let years = today.getUTCFullYear() - this.dateOfHire.getUTCFullYear();
+          const m = today.getUTCMonth() - this.dateOfHire.getUTCMonth();
+          const d = today.getUTCDate() - this.dateOfHire.getUTCDate();
+          if (m < 0 || (m === 0 && d < 0)) years--;
+          return years;
+        },
+        set() {},
+      },
     });
   }
 
   /**
    * 外国籍の場合の必須フィールドを検証します。
-   * エラーがある場合は例外をスローします。
+   * - エラーがある場合は例外をスローします。
+   * - `isForeigner` が false の場合、以下のプロパティを初期化します。
+   *  - `foreignName`
+   *  - `nationality`
+   *  - `residenceStatus`
+   *  - `periodOfStay`
+   * @returns {void}
+   * @throws {Error} 外国籍の場合に必須フィールドが未入力の場合。
    */
   _validateForeignerRequiredFields() {
     if (this.isForeigner) {
@@ -165,20 +202,31 @@ export default class Employee extends FireModel {
           "[Employee.js] periodOfStay is required when isForeigner is true."
         );
       }
+    } else {
+      // 外国籍でない場合、関連フィールドを初期化
+      this.foreignName = null;
+      this.nationality = null;
+      this.residenceStatus = null;
+      this.periodOfStay = null;
     }
   }
 
   /**
    * 退職済である場合の必須フィールドを検証します。
-   * エラーがある場合は例外をスローします。
+   * - エラーがある場合は例外をスローします。
+   * - `employmentStatus` が `active` の場合、`dateOfTermination` を初期化します。
+   * @returns {void}
+   * @throws {Error} 退職済の場合に必須フィールドが未入力の場合。
    */
   _validateTerminatedRequiredFields() {
-    if (this.employmentStatus === "terminated") {
+    if (this.employmentStatus === VALUES.TERMINATED.value) {
       if (!this.dateOfTermination) {
         throw new Error(
           "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'."
         );
       }
+    } else {
+      this.dateOfTermination = null;
     }
   }
 

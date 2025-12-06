@@ -11,16 +11,12 @@ import { OPTIONS } from "../constants/prefectures.js";
  */
 const accessorImplementations = {
   customerId: {
-    enumerable: true,
     get() {
       return this?.customer?.docId;
     },
-    set(value) {
-      // No-op setter for read-only access
-    },
+    set() {},
   },
   fullAddress: {
-    enumerable: true,
     get() {
       // 同じオブジェクトに 'prefecture' アクセサが定義されていることを前提とします
       const prefecture = this.prefecture || "";
@@ -28,53 +24,41 @@ const accessorImplementations = {
       const address = this.address || "";
       return `${prefecture}${city}${address}`;
     },
-    set(value) {
-      // No-op setter for read-only access
-    },
+    set() {},
   },
   fullName: {
-    enumerable: true,
     get() {
       if (!this.lastName || !this.firstName) return "";
       return `${this.lastName} ${this.firstName}`;
     },
-    set(value) {
-      // No-op setter for read-only access
+    set() {},
+  },
+  fullNameKana: {
+    get() {
+      if (!this.lastNameKana || !this.firstNameKana) return "";
+      return `${this.lastNameKana} ${this.firstNameKana}`;
     },
+    set() {},
   },
   prefecture: {
-    enumerable: true,
     get() {
-      // if (!this.hasOwnProperty("prefCode")) {
-      //   console.warn(
-      //     "[アクセサ: prefecture] このオブジェクトに prefCode が定義されていません。"
-      //   );
-      //   return "";
-      // }
-
       if (!this.prefCode) return ""; // No warning if prefCode is falsy but present
-
       const result = OPTIONS.find(({ value }) => value === this.prefCode);
-
       if (!result) {
         console.warn(
           `[アクセサ: prefecture] prefCode '${this.prefCode}' は OPTIONS に見つかりません。`
         );
         return "";
       }
-
       if (!result.hasOwnProperty("title")) {
         console.warn(
           `[アクセサ: prefecture] OPTIONS の prefCode '${this.prefCode}' に title が定義されていません。`
         );
         return "";
       }
-
       return result.title;
     },
-    set(value) {
-      // No-op setter for read-only access
-    },
+    set() {},
   },
 };
 
@@ -90,7 +74,7 @@ const accessorImplementations = {
  */
 export const defAccessor = (
   key,
-  { configurable = false, enumerable = false } = {}
+  { configurable = true, enumerable = true } = {}
 ) => {
   const implementation = accessorImplementations[key];
   if (!implementation) {
