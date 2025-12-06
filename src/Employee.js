@@ -154,30 +154,50 @@ export default class Employee extends FireModel {
 
   /**
    * 生年月日から年齢を計算します。
-   * @returns {number|null} 年齢。dateOfBirthが設定されていない場合はnull。
+   * @returns {{years: number, months: number}|null} 年齢（年数と月数）。dateOfBirthが設定されていない場合はnull。
    */
   get age() {
     if (!this.dateOfBirth) return null;
     const today = new Date();
-    let age = today.getUTCFullYear() - this.dateOfBirth.getUTCFullYear();
-    const m = today.getUTCMonth() - this.dateOfBirth.getUTCMonth();
-    const d = today.getUTCDate() - this.dateOfBirth.getUTCDate();
-    if (m < 0 || (m === 0 && d < 0)) age--;
-    return age;
+
+    let years = today.getUTCFullYear() - this.dateOfBirth.getUTCFullYear();
+    let months = today.getUTCMonth() - this.dateOfBirth.getUTCMonth();
+    const days = today.getUTCDate() - this.dateOfBirth.getUTCDate();
+
+    if (days < 0) {
+      months--;
+    }
+
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    return { years, months };
   }
 
   /**
    * 入社日からの勤続年数を計算します。
-   * @returns {number|null} 勤続年数。dateOfHireが設定されていない場合はnull。
+   * @returns {{years: number, months: number}|null} 勤続年数（年数と月数）。dateOfHireが設定されていない場合はnull。
    */
   get yearsOfService() {
     if (!this.dateOfHire) return null;
     const today = new Date();
+
     let years = today.getUTCFullYear() - this.dateOfHire.getUTCFullYear();
-    const m = today.getUTCMonth() - this.dateOfHire.getUTCMonth();
-    const d = today.getUTCDate() - this.dateOfHire.getUTCDate();
-    if (m < 0 || (m === 0 && d < 0)) years--;
-    return years;
+    let months = today.getUTCMonth() - this.dateOfHire.getUTCMonth();
+    const days = today.getUTCDate() - this.dateOfHire.getUTCDate();
+
+    if (days < 0) {
+      months--;
+    }
+
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    return { years, months };
   }
 
   /**
