@@ -253,7 +253,30 @@ export default class Employee extends FireModel {
    */
   async beforeUpdate() {
     await super.beforeUpdate();
+    if (this.employmentStatus !== this._beforeData.employmentStatus) {
+      throw new Error(
+        "[Employee.js] employmentStatus cannot be changed via update. Use toTerminated() method to change status to terminated."
+      );
+    }
     this._validateForeignerRequiredFields();
     this._validateTerminatedRequiredFields();
+  }
+
+  async toTerminated(dateOfTermination) {
+    if (!this.docId) {
+      throw new Error(
+        "[Employee.js] docId is required to terminate an employee."
+      );
+    }
+    if (!dateOfTermination || !(dateOfTermination instanceof Date)) {
+      throw new Error(
+        "[Employee.js] A valid dateOfTermination is required to terminate an employee."
+      );
+    }
+
+    this.employmentStatus = Employee.STATUS_TERMINATED;
+    this.dateOfTermination = dateOfTermination;
+
+    await FireModel.prototype.update.call(this);
   }
 }
