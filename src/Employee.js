@@ -285,11 +285,12 @@ export default class Employee extends FireModel {
 
   /**
    * 入社日からの勤続年数を計算します。
+   * - 退職日が設定されている場合は、退職日までの勤続年数を計算します。
    * @returns {{years: number, months: number}|null} 勤続年数（年数と月数）。dateOfHireが設定されていない場合はnull。
    */
   get yearsOfService() {
     if (!this.dateOfHire) return null;
-    const today = new Date();
+    const today = this.dateOfTermination || new Date();
 
     let years = today.getUTCFullYear() - this.dateOfHire.getUTCFullYear();
     let months = today.getUTCMonth() - this.dateOfHire.getUTCMonth();
