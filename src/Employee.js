@@ -41,6 +41,7 @@ const classProps = {
     component: {
       attrs: {
         required: (item) => item.isForeigner,
+        disabled: (item) => !item.isForeigner,
       },
     },
   }),
