@@ -319,6 +319,11 @@ export default class Employee extends FireModel {
         "[Employee.js] A valid dateOfTermination is required to terminate an employee."
       );
     }
+    if (dateOfTermination < this.dateOfHire) {
+      throw new Error(
+        "[Employee.js] dateOfTermination cannot be earlier than dateOfHire."
+      );
+    }
 
     this.employmentStatus = Employee.STATUS_TERMINATED;
     this.dateOfTermination = dateOfTermination;
