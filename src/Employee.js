@@ -37,6 +37,14 @@ const classProps = {
       },
     },
   }),
+  reasonOfTermination: defField("reasonOfTermination", {
+    component: {
+      attrs: {
+        required: (item) => item.employmentStatus === VALUES.TERMINATED.value,
+        disabled: (item) => item.employmentStatus !== VALUES.TERMINATED.value,
+      },
+    },
+  }),
   isForeigner: defField("isForeigner"),
   foreignName: defField("foreignName", {
     component: {
@@ -94,6 +102,7 @@ const classProps = {
  * @prop {string} employmentStatus - Employment status.
  * @prop {string} title - Job title.
  * @prop {Date} dateOfTermination - Date of termination.
+ * @prop {string} reasonOfTermination - Reason for termination.
  * @prop {boolean} isForeigner - Is the employee a foreigner.
  * @prop {string} foreignName - Foreign name.
  * @prop {string} nationality - Nationality.
@@ -245,7 +254,10 @@ export default class Employee extends FireModel {
   /**
    * 退職済である場合の必須フィールドを検証します。
    * - エラーがある場合は例外をスローします。
-   * - `employmentStatus` が `active` の場合、`dateOfTermination` を初期化します。
+   * - `employmentStatus` が `terminated` の場合、以下のプロパティを必須とします。
+   *  - `dateOfTermination`
+   *  - `reasonOfTermination`
+   * - `employmentStatus` が `active` の場合、`dateOfTermination`, `reasonOfTermination` を初期化します。
    * @returns {void}
    * @throws {Error} 退職済の場合に必須フィールドが未入力の場合。
    */
@@ -256,8 +268,14 @@ export default class Employee extends FireModel {
           "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'."
         );
       }
+      if (!this.reasonOfTermination) {
+        throw new Error(
+          "[Employee.js] reasonOfTermination is required when employmentStatus is 'terminated'."
+        );
+      }
     } else {
       this.dateOfTermination = null;
+      this.reasonOfTermination = null;
     }
   }
 
@@ -301,6 +319,7 @@ export default class Employee extends FireModel {
   /**
    * 現在インスタンスに読み込まれている従業員を退職状態に変更します。
    * @param {Date} dateOfTermination - 退職日（Dateオブジェクト）
+   * @param {string} reasonOfTermination - 退職理由
    * @param {Object} options - パラメータオブジェクト
    * @param {Function|null} [options.transaction=null] - Firestore トランザクション関数
    * @param {Function|null} [options.callBack=null] - カスタム処理用コールバック
@@ -308,7 +327,7 @@ export default class Employee extends FireModel {
    * @returns {Promise<DocumentReference>} 更新されたドキュメントの参照
    * @throws {Error} docIdが存在しない場合、または有効なdateOfTerminationが提供されていない場合。
    */
-  async toTerminated(dateOfTermination, options = {}) {
+  async toTerminated(dateOfTermination, reasonOfTermination, options = {}) {
     if (!this.docId) {
       throw new Error(
         "[Employee.js] docId is required to terminate an employee."
@@ -325,8 +344,15 @@ export default class Employee extends FireModel {
       );
     }
 
+    if (!reasonOfTermination || typeof reasonOfTermination !== "string") {
+      throw new Error(
+        "[Employee.js] A valid reasonOfTermination is required to terminate an employee."
+      );
+    }
+
     this.employmentStatus = Employee.STATUS_TERMINATED;
     this.dateOfTermination = dateOfTermination;
+    this.reasonOfTermination = reasonOfTermination;
 
     this._skipToTerminatedCheck = true;
 

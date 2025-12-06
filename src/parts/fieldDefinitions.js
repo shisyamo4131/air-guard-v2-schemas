@@ -357,6 +357,11 @@ export const fieldDefinitions = {
     label: "在留資格",
     length: 10,
   },
+  reasonOfTermination: {
+    ...generalDefinitions.oneLine,
+    label: "退職理由",
+    length: 20,
+  },
   siteId: {
     ...generalDefinitions.oneLine,
     label: "現場",
