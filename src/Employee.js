@@ -105,12 +105,16 @@ const classProps = {
  * @prop {string} fullNameKana - Full name in Kana combining last and first names (read-only)
  * @prop {string} fullAddress - Full address combining prefecture, city, and address (read-only)
  * @prop {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ *
+ * @getter
  * @prop {number} age - Age calculated from `dateOfBirth` (read-only)
  * @prop {number} yearsOfService - Years of service calculated from `dateOfHire` (read-only)
  *
  * @static
  * @prop {string} STATUS_ACTIVE - constant for active employment status
  * @prop {string} STATUS_TERMINATED - constant for terminated employment status
+ *
+ * @function toTerminated - Change the current employee instance to terminated status.
  *****************************************************************************/
 export default class Employee extends FireModel {
   static className = "従業員";
@@ -136,6 +140,8 @@ export default class Employee extends FireModel {
   static STATUS_ACTIVE = VALUES.ACTIVE.value;
   static STATUS_TERMINATED = VALUES.TERMINATED.value;
 
+  _skipToTerminatedCheck = false;
+
   afterInitialize(item = {}) {
     super.afterInitialize(item);
     Object.defineProperties(this, {
@@ -143,35 +149,35 @@ export default class Employee extends FireModel {
       fullNameKana: defAccessor("fullNameKana"),
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
-      age: {
-        enumerable: true,
-        configurable: true,
-        get() {
-          if (!this.dateOfBirth) return null;
-          const today = new Date();
-          let age = today.getUTCFullYear() - this.dateOfBirth.getUTCFullYear();
-          const m = today.getUTCMonth() - this.dateOfBirth.getUTCMonth();
-          const d = today.getUTCDate() - this.dateOfBirth.getUTCDate();
-          if (m < 0 || (m === 0 && d < 0)) age--;
-          return age;
-        },
-        set() {},
-      },
-      yearsOfService: {
-        enumerable: true,
-        configurable: true,
-        get() {
-          if (!this.dateOfHire) return null;
-          const today = new Date();
-          let years = today.getUTCFullYear() - this.dateOfHire.getUTCFullYear();
-          const m = today.getUTCMonth() - this.dateOfHire.getUTCMonth();
-          const d = today.getUTCDate() - this.dateOfHire.getUTCDate();
-          if (m < 0 || (m === 0 && d < 0)) years--;
-          return years;
-        },
-        set() {},
-      },
     });
+  }
+
+  /**
+   * 生年月日から年齢を計算します。
+   * @returns {number|null} 年齢。dateOfBirthが設定されていない場合はnull。
+   */
+  get age() {
+    if (!this.dateOfBirth) return null;
+    const today = new Date();
+    let age = today.getUTCFullYear() - this.dateOfBirth.getUTCFullYear();
+    const m = today.getUTCMonth() - this.dateOfBirth.getUTCMonth();
+    const d = today.getUTCDate() - this.dateOfBirth.getUTCDate();
+    if (m < 0 || (m === 0 && d < 0)) age--;
+    return age;
+  }
+
+  /**
+   * 入社日からの勤続年数を計算します。
+   * @returns {number|null} 勤続年数。dateOfHireが設定されていない場合はnull。
+   */
+  get yearsOfService() {
+    if (!this.dateOfHire) return null;
+    const today = new Date();
+    let years = today.getUTCFullYear() - this.dateOfHire.getUTCFullYear();
+    const m = today.getUTCMonth() - this.dateOfHire.getUTCMonth();
+    const d = today.getUTCDate() - this.dateOfHire.getUTCDate();
+    if (m < 0 || (m === 0 && d < 0)) years--;
+    return years;
   }
 
   /**
@@ -253,16 +259,36 @@ export default class Employee extends FireModel {
    */
   async beforeUpdate() {
     await super.beforeUpdate();
-    if (this.employmentStatus !== this._beforeData.employmentStatus) {
+
+    // `employmentStatus` の `terminated` への直接変更の禁止
+    // - 従業員を退職させる場合、様々なチェックが必要になることが想定されるため、専用メソッドとして `toTerminated` を使用する。
+    // - `employmentStatus` を `terminated` に変更する場合は、必ず `toTerminated` メソッドを使用すること。
+    // - 一度退職処理した従業員の復帰処理は現状想定していないが、将来的に必要になった場合は `toActive` メソッド等を追加実装すること。
+    if (
+      !this._skipToTerminatedCheck &&
+      this.employmentStatus === Employee.STATUS_TERMINATED &&
+      this._beforeData.employmentStatus === Employee.STATUS_ACTIVE
+    ) {
       throw new Error(
-        "[Employee.js] employmentStatus cannot be changed via update. Use toTerminated() method to change status to terminated."
+        "[Employee.js] Direct changes to employmentStatus to 'terminated' are not allowed. Use toTerminated() method instead."
       );
     }
+
     this._validateForeignerRequiredFields();
     this._validateTerminatedRequiredFields();
   }
 
-  async toTerminated(dateOfTermination) {
+  /**
+   * 現在インスタンスに読み込まれている従業員を退職状態に変更します。
+   * @param {Date} dateOfTermination - 退職日（Dateオブジェクト）
+   * @param {Object} options - パラメータオブジェクト
+   * @param {Function|null} [options.transaction=null] - Firestore トランザクション関数
+   * @param {Function|null} [options.callBack=null] - カスタム処理用コールバック
+   * @param {string|null} [options.prefix=null] - パスのプレフィックス
+   * @returns {Promise<DocumentReference>} 更新されたドキュメントの参照
+   * @throws {Error} docIdが存在しない場合、または有効なdateOfTerminationが提供されていない場合。
+   */
+  async toTerminated(dateOfTermination, options = {}) {
     if (!this.docId) {
       throw new Error(
         "[Employee.js] docId is required to terminate an employee."
@@ -277,6 +303,12 @@ export default class Employee extends FireModel {
     this.employmentStatus = Employee.STATUS_TERMINATED;
     this.dateOfTermination = dateOfTermination;
 
-    await FireModel.prototype.update.call(this);
+    this._skipToTerminatedCheck = true;
+
+    try {
+      return await this.update(options);
+    } finally {
+      this._skipToTerminatedCheck = false;
+    }
   }
 }
