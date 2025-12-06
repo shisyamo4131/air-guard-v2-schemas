@@ -276,7 +276,7 @@ export const fieldDefinitions = {
     label: "緊急連絡先住所",
     length: 20,
   },
-  emergencyContanctName: {
+  emergencyContactName: {
     ...generalDefinitions.oneLine,
     label: "緊急連絡先氏名",
     length: 20,
