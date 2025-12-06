@@ -3,6 +3,10 @@ import {
   OPTIONS as ARRANGEMENT_NOTIFICATION_STATUS_OPTIONS,
 } from "../constants/arrangement-notification-status.js";
 import {
+  VALUES as BLOOD_TYPE_VALUES,
+  OPTIONS as BLOOD_TYPE_OPTIONS,
+} from "../constants/blood-type.js";
+import {
   VALUES as CONTRACT_STATUS_VALUES,
   OPTIONS as CONTRACT_STATUS_OPTIONS,
 } from "../constants/contract-status.js";
@@ -10,6 +14,10 @@ import {
   OPTIONS as DAY_TYPE_OPTIONS,
   VALUES as DAY_TYPE_VALUES,
 } from "../constants/day-type.js";
+import {
+  VALUES as EMERGENCY_CONTACT_RELATION_VALUES,
+  OPTIONS as EMERGENCY_CONTACT_RELATION_OPTIONS,
+} from "../constants/emergency-contact-relation.js";
 import {
   VALUES as EMPLOYMENT_STATUS_VALUES,
   OPTIONS as EMPLOYMENT_STATUS_OPTIONS,
@@ -263,6 +271,33 @@ export const fieldDefinitions = {
       },
     },
   },
+  emergencyContactAddress: {
+    ...generalDefinitions.oneLine,
+    label: "緊急連絡先住所",
+    length: 20,
+  },
+  emergencyContanctName: {
+    ...generalDefinitions.oneLine,
+    label: "緊急連絡先氏名",
+    length: 20,
+  },
+  emergencyContactRelationDetail: {
+    ...generalDefinitions.oneLine,
+    label: "緊急連絡先続柄詳細",
+    length: 20,
+  },
+  emergencyContactPhone: {
+    ...generalDefinitions.oneLine,
+    label: "緊急連絡先電話番号",
+    length: 13,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        counter: true,
+        inputType: "tel",
+      },
+    },
+  },
   fax: {
     ...generalDefinitions.oneLine,
     label: "FAX番号",
@@ -457,6 +492,17 @@ export const fieldDefinitions = {
       },
     },
   },
+  bloodType: {
+    ...generalDefinitions.select,
+    label: "血液型",
+    default: BLOOD_TYPE_VALUES.A.value,
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: BLOOD_TYPE_OPTIONS,
+      },
+    },
+  },
   // contractStatus -> Used in Customer.js and Outsourcer.js
   contractStatus: {
     ...generalDefinitions.select,
@@ -477,6 +523,17 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: DAY_TYPE_OPTIONS,
+      },
+    },
+  },
+  emergencyContactRelation: {
+    ...generalDefinitions.select,
+    default: EMERGENCY_CONTACT_RELATION_VALUES.PARENT.value,
+    label: "緊急連絡先続柄",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: EMERGENCY_CONTACT_RELATION_OPTIONS,
       },
     },
   },

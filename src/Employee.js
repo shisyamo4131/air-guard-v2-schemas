@@ -45,6 +45,8 @@ const classProps = {
       },
     },
   }),
+
+  // Foreign related fields
   isForeigner: defField("isForeigner"),
   foreignName: defField("foreignName", {
     component: {
@@ -78,6 +80,80 @@ const classProps = {
       },
     },
   }),
+
+  // Security guard related fields
+  hasSecurityGuardRegistration: defField("check", { label: "警備員登録" }),
+  priorSecurityExperienceYears: defField("number", {
+    label: "年",
+    default: 0,
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  priorSecurityExperienceMonths: defField("number", {
+    label: "月",
+    default: 0,
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  dateOfSecurityGuardRegistration: defField("dateAt", {
+    label: "警備員登録日",
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  bloodType: defField("bloodType"),
+  emergencyContactName: defField("emergencyContactName", {
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  emergencyContactRelation: defField("emergencyContactRelation", {
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  emergencyContactRelationDetail: defField("emergencyContactRelationDetail", {
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  emergencyContactAddress: defField("emergencyContactAddress", {
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+  emergencyContactPhone: defField("emergencyContactPhone", {
+    component: {
+      attrs: {
+        required: (item) => item.hasSecurityGuardRegistration,
+        disabled: (item) => !item.hasSecurityGuardRegistration,
+      },
+    },
+  }),
+
   remarks: defField("remarks"),
 };
 

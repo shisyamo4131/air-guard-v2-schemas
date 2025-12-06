@@ -7,6 +7,10 @@ export {
   OPTIONS as BILLING_UNIT_TYPE_OPTIONS,
 } from "./billing-unit-type.js";
 export {
+  VALUES as BLOOD_TYPE_VALUES,
+  OPTIONS as BLOOD_TYPE_OPTIONS,
+} from "./blood-type.js";
+export {
   VALUES as CONTRACT_STATUS_VALUES,
   OPTIONS as CONTRACT_STATUS_OPTIONS,
 } from "./contract-status.js";
@@ -15,6 +19,10 @@ export {
   OPTIONS as DAY_TYPE_OPTIONS,
   getDayType,
 } from "./day-type.js";
+export {
+  VALUES as EMERGENCY_CONTACT_RELATION_VALUES,
+  OPTIONS as EMERGENCY_CONTACT_RELATION_OPTIONS,
+} from "./emergency-contact-relation.js";
 export {
   VALUES as EMPLOYMENT_STATUS_VALUES,
   OPTIONS as EMPLOYMENT_STATUS_OPTIONS,
