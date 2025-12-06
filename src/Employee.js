@@ -22,7 +22,7 @@ const classProps = {
   city: defField("city", { required: true }),
   address: defField("address", { required: true }),
   building: defField("building"),
-  location: defField("location", { hidden: true }), // 非表示でOK
+  location: defField("location", { hidden: true }),
   mobile: defField("mobile", { required: true }),
   email: defField("email", { required: false }),
   dateOfHire: defField("dateOfHire", { required: true }),
@@ -32,7 +32,8 @@ const classProps = {
     default: null,
     component: {
       attrs: {
-        required: (item) => item.employmentStatus === "terminated",
+        required: (item) => item.employmentStatus === VALUES.TERMINATED.value,
+        disabled: (item) => item.employmentStatus !== VALUES.TERMINATED.value,
       },
     },
   }),
@@ -49,6 +50,7 @@ const classProps = {
     component: {
       attrs: {
         required: (item) => item.isForeigner,
+        disabled: (item) => !item.isForeigner,
       },
     },
   }),
@@ -56,6 +58,7 @@ const classProps = {
     component: {
       attrs: {
         required: (item) => item.isForeigner,
+        disabled: (item) => !item.isForeigner,
       },
     },
   }),
@@ -63,6 +66,7 @@ const classProps = {
     component: {
       attrs: {
         required: (item) => item.isForeigner,
+        disabled: (item) => !item.isForeigner,
       },
     },
   }),
