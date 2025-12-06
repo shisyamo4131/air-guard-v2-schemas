@@ -276,6 +276,13 @@ export const fieldDefinitions = {
     ...generalDefinitions.oneLine,
     label: "本名",
     length: 50,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        hint: "パスポート等の表記をご入力ください。",
+        persistentHint: true,
+      },
+    },
   },
   lastName: {
     ...generalDefinitions.oneLine,
