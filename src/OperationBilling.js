@@ -193,12 +193,17 @@ export default class OperationBilling extends OperationResult {
 
   /**
    * Override beforeUpdate to skip `isLocked` check and sync customerId and apply agreement if key changed
+   * @param {Object} args - Creation options.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
    */
-  async beforeUpdate() {
+  async beforeUpdate(args = {}) {
+    await super.beforeUpdate(args);
     // Sync customerId and apply agreement if key changed
     if (this.key === this._beforeData.key) return;
-    await this._syncCustomerIdAndApplyAgreement();
+    await this._syncCustomerIdAndApplyAgreement(args);
   }
 
   /**

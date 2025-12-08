@@ -385,27 +385,35 @@ export default class SiteOperationSchedule extends Operation {
   /**
    * Override `beforeUpdate`.
    * - Prevents updates if an associated OperationResult exists.
+   * @param {Object} args - Creation options.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    */
-  async beforeUpdate() {
+  async beforeUpdate(args = {}) {
     if (this._beforeData.operationResultId) {
       throw new Error(
         `Could not update this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
       );
     }
-    await super.beforeUpdate();
+    await super.beforeUpdate(args);
   }
 
   /**
    * Override `beforeDelete`.
    * - Prevents deletions if an associated OperationResult exists.
+   * @param {Object} args - Creation options.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    */
-  async beforeDelete() {
+  async beforeDelete(args = {}) {
     if (this._beforeData.operationResultId) {
       throw new Error(
         `Could not delete this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
       );
     }
-    await super.beforeDelete();
+    await super.beforeDelete(args);
   }
 
   /**

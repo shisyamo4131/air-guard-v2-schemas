@@ -542,13 +542,19 @@ export default class OperationResult extends Operation {
 
   /**
    * Synchronize customerId and apply (re-apply) agreement from siteId
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
    * @throws {Error} If the specified siteId does not exist
    */
-  async _syncCustomerIdAndApplyAgreement() {
+  async _syncCustomerIdAndApplyAgreement(args = {}) {
     if (!this.siteId) return;
     const siteInstance = new Site();
-    const siteExists = await siteInstance.fetch({ docId: this.siteId });
+    const siteExists = await siteInstance.fetch({
+      ...args,
+      docId: this.siteId,
+    });
     if (!siteExists) {
       throw new Error(
         `[OperationResult] The specified siteId (${this.siteId}) does not exist.`
@@ -560,10 +566,16 @@ export default class OperationResult extends Operation {
 
   /**
    * Override beforeCreate to sync customerId
+   * @param {Object} args - Creation options.
+   * @param {string} [args.docId] - Document ID to use (optional).
+   * @param {boolean} [args.useAutonumber=true] - Whether to use auto-numbering.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
    */
-  async beforeCreate() {
-    await super.beforeCreate();
+  async beforeCreate(args = {}) {
+    await super.beforeCreate(args);
 
     // Sync customerId and apply agreement
     await this._syncCustomerIdAndApplyAgreement();
@@ -571,10 +583,14 @@ export default class OperationResult extends Operation {
 
   /**
    * Override beforeUpdate to sync customerId and apply agreement if key changed
+   * @param {Object} args - Creation options.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
    */
-  async beforeUpdate() {
-    await super.beforeUpdate();
+  async beforeUpdate(args = {}) {
+    await super.beforeUpdate(args);
 
     // Prevent editing if isLocked is true
     if (this.isLocked) {
@@ -590,12 +606,15 @@ export default class OperationResult extends Operation {
 
   /**
    * Override beforeDelete to prevent deletion if isLocked is true
+   * @param {Object} args - Creation options.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
    * @throws {Error} If isLocked is true
    */
-  async beforeDelete() {
-    await super.beforeDelete();
-
+  async beforeDelete(args = {}) {
+    await super.beforeDelete(args);
     // Prevent deletion if isLocked is true
     if (this.isLocked) {
       throw new Error(

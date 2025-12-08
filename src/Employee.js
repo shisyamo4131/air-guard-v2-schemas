@@ -414,9 +414,15 @@ export default class Employee extends FireModel {
    * 新しい従業員ドキュメントが作成される前に実行されるフック。
    * - 親クラスの `beforeCreate` を呼び出します。
    * - 従業員が外国人の場合、外国人名と国籍が未入力であればエラーをスローします。
+   * @param {Object} args - Creation options.
+   * @param {string} [args.docId] - Document ID to use (optional).
+   * @param {boolean} [args.useAutonumber=true] - Whether to use auto-numbering.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    */
-  async beforeCreate() {
-    await super.beforeCreate();
+  async beforeCreate(args = {}) {
+    await super.beforeCreate(args);
     this._validateForeignerRequiredFields();
     this._validateTerminatedRequiredFields();
     this._validateSecurityGuardFields();
@@ -426,9 +432,13 @@ export default class Employee extends FireModel {
    * 従業員ドキュメントが更新される前に実行されるフック。
    * - 親クラスの `beforeUpdate` を呼び出します。
    * - 従業員が外国人の場合、外国人名と国籍が未入力であればエラーをスローします。
+   * @param {Object} args - Creation options.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    */
-  async beforeUpdate() {
-    await super.beforeUpdate();
+  async beforeUpdate(args = {}) {
+    await super.beforeUpdate(args);
 
     // `employmentStatus` の `terminated` への直接変更の禁止
     // - 従業員を退職させる場合、様々なチェックが必要になることが想定されるため、専用メソッドとして `toTerminated` を使用する。
