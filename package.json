@@ -1,6 +1,6 @@
 {
   "name": "@shisyamo4131/air-guard-v2-schemas",
-  "version": "2.3.7-dev.29",
+  "version": "2.3.7-dev.30",
   "description": "Schemas for AirGuard V2",
   "type": "module",
   "main": "index.js",
