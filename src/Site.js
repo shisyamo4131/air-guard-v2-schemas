@@ -20,7 +20,16 @@ import Agreement from "./Agreement.js";
 import { VALUES } from "./constants/site-status.js";
 
 const classProps = {
-  customerId: defField("customerId", { required: true }),
+  customerId: defField("customerId", {
+    required: true,
+    component: {
+      attrs: {
+        disabled: ({ editMode }) => {
+          return editMode !== "CREATE";
+        },
+      },
+    },
+  }),
   customer: defField("customer", { hidden: true, customClass: Customer }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
