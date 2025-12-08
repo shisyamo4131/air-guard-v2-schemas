@@ -16,24 +16,12 @@ import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import Customer from "./Customer.js";
-// import { CustomerMinimal } from "./Customer.js";
-// import { fetchDocsApi } from "./apis/index.js";
 import Agreement from "./Agreement.js";
 import { VALUES } from "./constants/site-status.js";
 
 const classProps = {
   customerId: defField("customerId", { required: true }),
   customer: defField("customer", { hidden: true, customClass: Customer }),
-  // customer: defField("customer", {
-  //   required: true,
-  //   customClass: CustomerMinimal,
-  //   component: {
-  //     attrs: {
-  //       api: () => fetchDocsApi(CustomerMinimal),
-  //       noFilter: true,
-  //     },
-  //   },
-  // }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
     label: "現場名",
