@@ -6,7 +6,8 @@
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
-import { VALUES } from "./constants/employment-status.js";
+import { VALUES as EMPLOYMENT_STATUS_VALUES } from "./constants/employment-status.js";
+import { VALUES as BLOOD_TYPE_VALUES } from "./constants/blood-type.js";
 
 const classProps = {
   code: defField("code", { label: "従業員コード" }),
@@ -32,16 +33,20 @@ const classProps = {
     default: null,
     component: {
       attrs: {
-        required: (item) => item.employmentStatus === VALUES.TERMINATED.value,
-        disabled: (item) => item.employmentStatus !== VALUES.TERMINATED.value,
+        required: (item) =>
+          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+        disabled: (item) =>
+          item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
       },
     },
   }),
   reasonOfTermination: defField("reasonOfTermination", {
     component: {
       attrs: {
-        required: (item) => item.employmentStatus === VALUES.TERMINATED.value,
-        disabled: (item) => item.employmentStatus !== VALUES.TERMINATED.value,
+        required: (item) =>
+          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+        disabled: (item) =>
+          item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
       },
     },
   }),
@@ -83,32 +88,6 @@ const classProps = {
 
   // Security guard related fields
   hasSecurityGuardRegistration: defField("check", { label: "警備員登録" }),
-  priorSecurityExperienceYears: defField("number", {
-    label: "入社前経験(年)",
-    default: 0,
-    required: true,
-    component: {
-      attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
-        suffix: "年",
-      },
-    },
-  }),
-  priorSecurityExperienceMonths: defField("number", {
-    label: "入社前経験(月)",
-    default: 0,
-    required: true,
-    component: {
-      attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
-        suffix: "ヶ月",
-        min: 0,
-        max: 11,
-      },
-    },
-  }),
   dateOfSecurityGuardRegistration: defField("dateAt", {
     label: "警備員登録日",
     default: null,
@@ -206,6 +185,15 @@ const classProps = {
  * @prop {string} nationality - Nationality.
  * @prop {string} residenceStatus - Residence status.
  * @prop {Date} periodOfStay - Period of stay expiration date.
+ * @prop {boolean} hasSecurityGuardRegistration - Has security guard registration.
+ * @prop {Date} dateOfSecurityGuardRegistration - Date of security guard registration.
+ * @prop {string} bloodType - Blood type.
+ * @prop {string} emergencyContactName - Emergency contact name.
+ * @prop {string} emergencyContactRelation - Emergency contact relation.
+ * @prop {string} emergencyContactRelationDetail - Emergency contact relation detail.
+ * @prop {string} emergencyContactAddress - Emergency contact address.
+ * @prop {string} emergencyContactPhone - Emergency contact phone number.
+ * @prop {string} domicile - Domicile.
  * @prop {string} remarks - Additional remarks.
  *
  * @prop {string} fullName - Full name combining last and first names (read-only)
@@ -244,8 +232,8 @@ export default class Employee extends FireModel {
     { title: "名前", key: "fullName" },
   ];
 
-  static STATUS_ACTIVE = VALUES.ACTIVE.value;
-  static STATUS_TERMINATED = VALUES.TERMINATED.value;
+  static STATUS_ACTIVE = EMPLOYMENT_STATUS_VALUES.ACTIVE.value;
+  static STATUS_TERMINATED = EMPLOYMENT_STATUS_VALUES.TERMINATED.value;
 
   _skipToTerminatedCheck = false;
 
@@ -361,7 +349,7 @@ export default class Employee extends FireModel {
    * @throws {Error} 退職済の場合に必須フィールドが未入力の場合。
    */
   _validateTerminatedRequiredFields() {
-    if (this.employmentStatus === VALUES.TERMINATED.value) {
+    if (this.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
       if (!this.dateOfTermination) {
         throw new Error(
           "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'."
@@ -411,8 +399,6 @@ export default class Employee extends FireModel {
         );
       }
     } else {
-      this.priorSecurityExperienceYears = 0;
-      this.priorSecurityExperienceMonths = 0;
       this.dateOfSecurityGuardRegistration = null;
       this.bloodType = BLOOD_TYPE_VALUES.A.value;
       this.emergencyContactName = null;

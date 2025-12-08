@@ -1,11 +1,62 @@
-/*****************************************************************************
- * Customer ver 1.1.0
- * @author shisyamo4131
- *
- * @description Customer model.
- *
+/**
+ * Customer
+ * @version 1.1.1
+ * @description This module defines the Customer model for managing customer data.
  * @hasMany Sites - related sites associated with the customer
- *
+ * @author shisyamo4131
+ * @update 2025-12-08 - Changed `paymentMonth` type from direct number to select field.
+ */
+import FireModel from "@shisyamo4131/air-firebase-v2";
+import { defField } from "./parts/fieldDefinitions.js";
+import { defAccessor } from "./parts/accessorDefinitions.js";
+import { VALUES } from "./constants/contract-status.js";
+import CutoffDate from "./utils/CutoffDate.js";
+
+const classProps = {
+  code: defField("code", { label: "取引先コード" }),
+  name: defField("name", { label: "取引先名", required: true }),
+  nameKana: defField("nameKana", { label: "取引先名（カナ）", required: true }),
+  zipcode: defField("zipcode", { required: true }),
+  prefCode: defField("prefCode", { required: true }),
+  city: defField("city", { required: true }),
+  address: defField("address", { required: true }),
+  building: defField("building"),
+  location: defField("location", { hidden: true }),
+  tel: defField("tel", { colsDefinition: { cols: 12, sm: 6 } }),
+  fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
+  contractStatus: defField("contractStatus", { required: true }),
+  paymentMonth: defField("select", {
+    default: 1,
+    label: "入金サイト（月数）",
+    required: true,
+    component: {
+      attrs: {
+        items: [
+          { text: "当月", value: 0 },
+          { text: "翌月", value: 1 },
+          { text: "翌々月", value: 2 },
+          { text: "3ヶ月後", value: 3 },
+          { text: "4ヶ月後", value: 4 },
+          { text: "5ヶ月後", value: 5 },
+          { text: "6ヶ月後", value: 6 },
+        ],
+      },
+    },
+  }),
+  paymentDate: defField("select", {
+    label: "入金サイト（日付）",
+    default: CutoffDate.VALUES.END_OF_MONTH,
+    required: true,
+    component: {
+      attrs: {
+        items: CutoffDate.OPTIONS,
+      },
+    },
+  }),
+  remarks: defField("multipleLine", { label: "備考" }),
+};
+
+/*****************************************************************************
  * @prop {string} code - customer code
  * @prop {string} name - customer name
  * @prop {string} nameKana - customer name in kana
@@ -34,43 +85,6 @@
  * @param {Date} baseDate - base date in UTC (JST - 9 hours)
  * @returns {Date} payment due date in UTC (JST - 9 hours)
  *****************************************************************************/
-import FireModel from "@shisyamo4131/air-firebase-v2";
-import { defField } from "./parts/fieldDefinitions.js";
-import { defAccessor } from "./parts/accessorDefinitions.js";
-import { VALUES } from "./constants/contract-status.js";
-import CutoffDate from "./utils/CutoffDate.js";
-
-const classProps = {
-  code: defField("code", { label: "取引先コード" }),
-  name: defField("name", { label: "取引先名", required: true }),
-  nameKana: defField("nameKana", { label: "取引先名（カナ）", required: true }),
-  zipcode: defField("zipcode", { required: true }),
-  prefCode: defField("prefCode", { required: true }),
-  city: defField("city", { required: true }),
-  address: defField("address", { required: true }),
-  building: defField("building"),
-  location: defField("location", { hidden: true }),
-  tel: defField("tel", { colsDefinition: { cols: 12, sm: 6 } }),
-  fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
-  contractStatus: defField("contractStatus", { required: true }),
-  paymentMonth: defField("number", {
-    default: 1,
-    label: "入金サイト（月数）",
-    required: true,
-  }),
-  paymentDate: defField("select", {
-    label: "入金サイト（日付）",
-    default: CutoffDate.VALUES.END_OF_MONTH,
-    required: true,
-    component: {
-      attrs: {
-        items: CutoffDate.OPTIONS,
-      },
-    },
-  }),
-  remarks: defField("multipleLine", { label: "備考" }),
-};
-
 export default class Customer extends FireModel {
   static className = "取引先";
   static collectionPath = "Customers";
