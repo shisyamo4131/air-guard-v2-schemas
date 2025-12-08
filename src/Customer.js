@@ -32,13 +32,13 @@ const classProps = {
     component: {
       attrs: {
         items: [
-          { text: "当月", value: 0 },
-          { text: "翌月", value: 1 },
-          { text: "翌々月", value: 2 },
-          { text: "3ヶ月後", value: 3 },
-          { text: "4ヶ月後", value: 4 },
-          { text: "5ヶ月後", value: 5 },
-          { text: "6ヶ月後", value: 6 },
+          { title: "当月", value: 0 },
+          { title: "翌月", value: 1 },
+          { title: "翌々月", value: 2 },
+          { title: "3ヶ月後", value: 3 },
+          { title: "4ヶ月後", value: 4 },
+          { title: "5ヶ月後", value: 5 },
+          { title: "6ヶ月後", value: 6 },
         ],
       },
     },
