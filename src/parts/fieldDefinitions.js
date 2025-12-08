@@ -451,9 +451,9 @@ export const fieldDefinitions = {
       attrs: {
         counter: true,
         inputType: "zipcode",
-        "onUpdate:address": (item, updater) => {
+        "onUpdate:address": ({ item, updateProperties }) => {
           return (result) => {
-            updater({
+            updateProperties({
               prefCode: result.prefcode,
               prefecture: result.address1,
               city: result.address2,
