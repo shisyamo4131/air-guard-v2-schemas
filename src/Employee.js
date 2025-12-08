@@ -33,9 +33,9 @@ const classProps = {
     default: null,
     component: {
       attrs: {
-        required: (item) =>
+        required: ({ item }) =>
           item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-        disabled: (item) =>
+        disabled: ({ item }) =>
           item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
       },
     },
@@ -43,9 +43,9 @@ const classProps = {
   reasonOfTermination: defField("reasonOfTermination", {
     component: {
       attrs: {
-        required: (item) =>
+        required: ({ item }) =>
           item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-        disabled: (item) =>
+        disabled: ({ item }) =>
           item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
       },
     },
@@ -56,32 +56,32 @@ const classProps = {
   foreignName: defField("foreignName", {
     component: {
       attrs: {
-        required: (item) => item.isForeigner,
-        disabled: (item) => !item.isForeigner,
+        required: ({ item }) => item.isForeigner,
+        disabled: ({ item }) => !item.isForeigner,
       },
     },
   }),
   nationality: defField("nationality", {
     component: {
       attrs: {
-        required: (item) => item.isForeigner,
-        disabled: (item) => !item.isForeigner,
+        required: ({ item }) => item.isForeigner,
+        disabled: ({ item }) => !item.isForeigner,
       },
     },
   }),
   residenceStatus: defField("residenceStatus", {
     component: {
       attrs: {
-        required: (item) => item.isForeigner,
-        disabled: (item) => !item.isForeigner,
+        required: ({ item }) => item.isForeigner,
+        disabled: ({ item }) => !item.isForeigner,
       },
     },
   }),
   periodOfStay: defField("periodOfStay", {
     component: {
       attrs: {
-        required: (item) => item.isForeigner,
-        disabled: (item) => !item.isForeigner,
+        required: ({ item }) => item.isForeigner,
+        disabled: ({ item }) => !item.isForeigner,
       },
     },
   }),
@@ -93,64 +93,64 @@ const classProps = {
     default: null,
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
   bloodType: defField("bloodType", {
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
   emergencyContactName: defField("emergencyContactName", {
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
   emergencyContactRelation: defField("emergencyContactRelation", {
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
   emergencyContactRelationDetail: defField("emergencyContactRelationDetail", {
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
   emergencyContactAddress: defField("emergencyContactAddress", {
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
   emergencyContactPhone: defField("emergencyContactPhone", {
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
   domicile: defField("domicile", {
     component: {
       attrs: {
-        required: (item) => item.hasSecurityGuardRegistration,
-        disabled: (item) => !item.hasSecurityGuardRegistration,
+        required: ({ item }) => item.hasSecurityGuardRegistration,
+        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
       },
     },
   }),
