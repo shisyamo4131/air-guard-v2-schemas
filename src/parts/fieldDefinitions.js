@@ -7,6 +7,10 @@ import {
   OPTIONS as BLOOD_TYPE_OPTIONS,
 } from "../constants/blood-type.js";
 import {
+  VALUES as CERTIFICATION_TYPE_VALUES,
+  OPTIONS as CERTIFICATION_TYPE_OPTIONS,
+} from "../constants/certification-type.js";
+import {
   VALUES as CONTRACT_STATUS_VALUES,
   OPTIONS as CONTRACT_STATUS_OPTIONS,
 } from "../constants/contract-status.js";
@@ -507,6 +511,17 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: BLOOD_TYPE_OPTIONS,
+      },
+    },
+  },
+  certificationType: {
+    ...generalDefinitions.select,
+    label: "資格種別",
+    default: null,
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: CERTIFICATION_TYPE_OPTIONS,
       },
     },
   },

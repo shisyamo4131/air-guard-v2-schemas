@@ -8,6 +8,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { VALUES as EMPLOYMENT_STATUS_VALUES } from "./constants/employment-status.js";
 import { VALUES as BLOOD_TYPE_VALUES } from "./constants/blood-type.js";
+import Certification from "./Certification.js";
 
 const classProps = {
   code: defField("code", { label: "従業員コード" }),
@@ -154,7 +155,7 @@ const classProps = {
       },
     },
   }),
-
+  securityCertificatoions: defField("array", { customClass: Certification }),
   remarks: defField("remarks"),
 };
 
@@ -194,6 +195,7 @@ const classProps = {
  * @prop {string} emergencyContactAddress - Emergency contact address.
  * @prop {string} emergencyContactPhone - Emergency contact phone number.
  * @prop {string} domicile - Domicile.
+ * @prop {Array<Certification>} securityCertifications - Array of security certifications.
  * @prop {string} remarks - Additional remarks.
  *
  * @prop {string} fullName - Full name combining last and first names (read-only)
