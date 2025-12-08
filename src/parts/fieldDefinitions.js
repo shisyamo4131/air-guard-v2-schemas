@@ -246,6 +246,8 @@ export const fieldDefinitions = {
   customerId: {
     ...generalDefinitions.oneLine,
     label: "取引先",
+    // アプリ側で `useFetchXxxx` コンポーザブルを使用するため
+    // 使用するクラス側で api 関連の設定は不要。
     component: {
       name: "air-autocomplete-api",
       attrs: {

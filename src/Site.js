@@ -5,26 +5,35 @@
  * @update 2025-11-20 version 0.2.0-bata
  *                    - Prevent changing customer reference on update.
  *                    - Move `customer` property to the top of classProps for better visibility.
+ *
+ * NOTE: `customer` プロパティについて
+ * 自身の従属先データを持たせる場合に `XxxxxMinimal` クラスを使用するが、アプリ側でオブジェクト選択を行う場合に
+ * `Xxxxx` クラスにするのか `XxxxxMinimal` クラスにするのかを判断できないため、docId を持たせて
+ * `beforeCreate` フックでオブジェクトを取得するようにする。
+ * 尚、取引先は変更できない仕様。
  */
 import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
-import { CustomerMinimal } from "./Customer.js";
-import { fetchDocsApi } from "./apis/index.js";
+import Customer from "./Customer.js";
+// import { CustomerMinimal } from "./Customer.js";
+// import { fetchDocsApi } from "./apis/index.js";
 import Agreement from "./Agreement.js";
 import { VALUES } from "./constants/site-status.js";
 
 const classProps = {
-  customer: defField("customer", {
-    required: true,
-    customClass: CustomerMinimal,
-    component: {
-      attrs: {
-        api: () => fetchDocsApi(CustomerMinimal),
-        noFilter: true,
-      },
-    },
-  }),
+  customerId: defField("customerId", { required: true }),
+  customer: defField("customer", { hidden: true, customClass: Customer }),
+  // customer: defField("customer", {
+  //   required: true,
+  //   customClass: CustomerMinimal,
+  //   component: {
+  //     attrs: {
+  //       api: () => fetchDocsApi(CustomerMinimal),
+  //       noFilter: true,
+  //     },
+  //   },
+  // }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
     label: "現場名",
@@ -119,11 +128,41 @@ export default class Site extends FireModel {
   static STATUS_TERMINATED = VALUES.TERMINATED.value;
 
   /**
-   * Override beforeUpdate to prevent changing customer reference.
+   * Overrides to fetch and set the customer object before creation.
+   * @param {Object} args - Creation options.
+   * @param {string} [args.docId] - Document ID to use (optional).
+   * @param {boolean} [args.useAutonumber=true] - Whether to use auto-numbering.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
    */
-  async beforeUpdate() {
-    await super.beforeUpdate();
+  async beforeCreate(args = {}) {
+    await super.beforeCreate(args);
+    if (!this.customerId) return;
+    const customerInstance = new Customer();
+    const isExist = await customerInstance.fetch({
+      ...args,
+      docId: this.customerId,
+    });
+    if (!isExist) {
+      return Promise.reject(
+        new Error("Invalid customerId: Customer does not exist.")
+      );
+    }
+    this.customer = customerInstance;
+  }
+
+  /**
+   * Override beforeUpdate to prevent changing customer reference.
+   * @param {Object} args - Creation options.
+   * @param {Object} [args.transaction] - Firestore transaction.
+   * @param {Function} [args.callBack] - Callback function.
+   * @param {string} [args.prefix] - Path prefix.
+   * @returns {Promise<void>}
+   */
+  async beforeUpdate(args = {}) {
+    await super.beforeUpdate(args);
     if (this.customer.docId !== this._beforeData.customer.docId) {
       return Promise.reject(
         new Error("Not allowed to change customer reference.")
@@ -135,7 +174,7 @@ export default class Site extends FireModel {
     super.afterInitialize(item);
 
     Object.defineProperties(this, {
-      customerId: defAccessor("customerId"),
+      // customerId: defAccessor("customerId"),
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
     });

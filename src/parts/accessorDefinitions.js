@@ -10,6 +10,8 @@ import { OPTIONS } from "../constants/prefectures.js";
  * @type {Object.<string, AccessorImplementation>}
  */
 const accessorImplementations = {
+  // 2025-12-08 削除可能
+  // `defAccessor("customerId")` で使用されていなければ削除。
   customerId: {
     get() {
       return this?.customer?.docId;
