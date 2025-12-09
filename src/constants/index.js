@@ -11,6 +11,10 @@ export {
   OPTIONS as BLOOD_TYPE_OPTIONS,
 } from "./blood-type.js";
 export {
+  VALUES as CERTIFICATION_TYPE_VALUES,
+  OPTIONS as CERTIFICATION_TYPE_OPTIONS,
+} from "./certification-type.js";
+export {
   VALUES as CONTRACT_STATUS_VALUES,
   OPTIONS as CONTRACT_STATUS_OPTIONS,
 } from "./contract-status.js";
