@@ -237,7 +237,17 @@ export default class Employee extends FireModel {
   static STATUS_ACTIVE = EMPLOYMENT_STATUS_VALUES.ACTIVE.value;
   static STATUS_TERMINATED = EMPLOYMENT_STATUS_VALUES.TERMINATED.value;
 
-  _skipToTerminatedCheck = false;
+  constructor(item = {}) {
+    super(item);
+
+    // Internal flag to skip terminated status check during toTerminated method
+    Object.defineProperty(this, "_skipToTerminatedCheck", {
+      writable: true,
+      enumerable: false,
+      configurable: true,
+      value: false,
+    });
+  }
 
   afterInitialize(item = {}) {
     super.afterInitialize(item);
