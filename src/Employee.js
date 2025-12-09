@@ -155,7 +155,7 @@ const classProps = {
       },
     },
   }),
-  securityCertificatoions: defField("array", { customClass: Certification }),
+  securityCertifications: defField("array", { customClass: Certification }),
   remarks: defField("remarks"),
 };
 
