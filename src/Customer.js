@@ -9,8 +9,11 @@
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
-import { VALUES } from "./constants/contract-status.js";
 import CutoffDate from "./utils/CutoffDate.js";
+import {
+  CONTRACT_STATUS_VALUES,
+  PAYMENT_MONTH_OPTIONS,
+} from "./constants/index.js";
 
 const classProps = {
   code: defField("code", { label: "取引先コード" }),
@@ -31,15 +34,7 @@ const classProps = {
     required: true,
     component: {
       attrs: {
-        items: [
-          { title: "当月", value: 0 },
-          { title: "翌月", value: 1 },
-          { title: "翌々月", value: 2 },
-          { title: "3ヶ月後", value: 3 },
-          { title: "4ヶ月後", value: 4 },
-          { title: "5ヶ月後", value: 5 },
-          { title: "6ヶ月後", value: 6 },
-        ],
+        items: PAYMENT_MONTH_OPTIONS,
       },
     },
   }),
@@ -108,9 +103,9 @@ export default class Customer extends FireModel {
     { key: "fullAddress", title: "所在地" },
   ];
 
-  static STATUS = VALUES;
-  static STATUS_ACTIVE = VALUES.ACTIVE.value;
-  static STATUS_TERMINATED = VALUES.TERMINATED.value;
+  static STATUS = CONTRACT_STATUS_VALUES;
+  static STATUS_ACTIVE = CONTRACT_STATUS_VALUES.ACTIVE.value;
+  static STATUS_TERMINATED = CONTRACT_STATUS_VALUES.TERMINATED.value;
 
   afterInitialize(item = {}) {
     super.afterInitialize(item);

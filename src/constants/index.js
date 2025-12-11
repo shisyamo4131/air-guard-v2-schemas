@@ -36,6 +36,10 @@ export {
   OPTIONS as GENDER_OPTIONS,
 } from "./gender.js";
 export {
+  VALUES as PAYMENT_MONTH_VALUES,
+  OPTIONS as PAYMENT_MONTH_OPTIONS,
+} from "./payment-month.js";
+export {
   VALUES as PREFECTURES_VALUES,
   OPTIONS as PREFECTURES_OPTIONS,
 } from "./prefectures.js";
