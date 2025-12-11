@@ -121,6 +121,7 @@ export default class Site extends FireModel {
     { title: "取引先名", key: "customer.name", value: "customer.name" },
   ];
 
+  static STATUS = VALUES;
   static STATUS_ACTIVE = VALUES.ACTIVE.value;
   static STATUS_TERMINATED = VALUES.TERMINATED.value;
 
