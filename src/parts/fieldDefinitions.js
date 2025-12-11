@@ -540,7 +540,7 @@ export const fieldDefinitions = {
   },
   cutoffDate: {
     ...generalDefinitions.select,
-    default: CutoffDate.VALUES.END_OF_MONTH,
+    default: CutoffDate.VALUES[0].value,
     label: "締日",
     component: {
       name: generalDefinitions.select.component.name,

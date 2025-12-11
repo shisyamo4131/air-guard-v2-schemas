@@ -22,24 +22,24 @@ export default class CutoffDate {
    * Cutoff date constant values
    */
   static VALUES = Object.freeze({
-    DAY_5: 5,
-    DAY_10: 10,
-    DAY_15: 15,
-    DAY_20: 20,
-    DAY_25: 25,
-    END_OF_MONTH: 0,
+    5: { value: 5, title: "5日" },
+    10: { value: 10, title: "10日" },
+    15: { value: 15, title: "15日" },
+    20: { value: 20, title: "20日" },
+    25: { value: 25, title: "25日" },
+    0: { value: 0, title: "月末" },
   });
 
   /**
    * Options for selection components
    */
   static OPTIONS = [
-    { title: "5日", value: CutoffDate.VALUES.DAY_5 },
-    { title: "10日", value: CutoffDate.VALUES.DAY_10 },
-    { title: "15日", value: CutoffDate.VALUES.DAY_15 },
-    { title: "20日", value: CutoffDate.VALUES.DAY_20 },
-    { title: "25日", value: CutoffDate.VALUES.DAY_25 },
-    { title: "月末", value: CutoffDate.VALUES.END_OF_MONTH },
+    { title: "5日", value: CutoffDate.VALUES[5].value },
+    { title: "10日", value: CutoffDate.VALUES[10].value },
+    { title: "15日", value: CutoffDate.VALUES[15].value },
+    { title: "20日", value: CutoffDate.VALUES[20].value },
+    { title: "25日", value: CutoffDate.VALUES[25].value },
+    { title: "月末", value: CutoffDate.VALUES[0].value },
   ];
 
   /**
@@ -50,11 +50,11 @@ export default class CutoffDate {
    * @returns {number} Actual cutoff day
    * @example
    * // Get cutoff day for February 2024 with month-end setting
-   * const cutoffDay = CutoffDate.calculateActualCutoffDay(2024, 1, CutoffDate.VALUES.END_OF_MONTH);
+   * const cutoffDay = CutoffDate.calculateActualCutoffDay(2024, 1, CutoffDate.VALUES[0].value);
    * // Returns 29 (leap year)
    */
   static calculateActualCutoffDay(year, month, cutoffDateValue) {
-    if (cutoffDateValue === CutoffDate.VALUES.END_OF_MONTH) {
+    if (cutoffDateValue === CutoffDate.VALUES[0].value) {
       // Get last day of the month using UTC
       return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     }

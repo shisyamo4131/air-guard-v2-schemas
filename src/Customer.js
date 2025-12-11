@@ -41,7 +41,7 @@ const classProps = {
   }),
   paymentDate: defField("select", {
     label: "入金サイト（日付）",
-    default: CutoffDate.VALUES.END_OF_MONTH,
+    default: CutoffDate.VALUES[0].value,
     required: true,
     component: {
       attrs: {
@@ -135,7 +135,7 @@ export default class Customer extends FireModel {
     const finalMonth = targetMonth % 12;
 
     let dueDate;
-    if (this.paymentDate === CutoffDate.VALUES.END_OF_MONTH) {
+    if (this.paymentDate === CutoffDate.VALUES[0].value) {
       // 月末の場合
       dueDate = new Date(Date.UTC(targetYear, finalMonth + 1, 0));
     } else {
