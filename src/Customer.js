@@ -78,6 +78,7 @@ const classProps = {
  * @prop {string} prefecture - prefecture name derived from `prefCode` (read-only)
  *
  * @static
+ * @prop {object} STATUS - constant mapping for contract statuses
  * @prop {string} STATUS_ACTIVE - constant for active contract status
  * @prop {string} STATUS_TERMINATED - constant for terminated contract status
  *
@@ -107,6 +108,7 @@ export default class Customer extends FireModel {
     { key: "fullAddress", title: "所在地" },
   ];
 
+  static STATUS = VALUES;
   static STATUS_ACTIVE = VALUES.ACTIVE.value;
   static STATUS_TERMINATED = VALUES.TERMINATED.value;
 
