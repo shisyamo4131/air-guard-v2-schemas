@@ -76,11 +76,10 @@
  *****************************************************************************/
 import WorkingResult from "./WorkingResult.js";
 import {
-  VALUES as BILLING_UNIT_TYPE,
-  OPTIONS as BILLING_UNIT_TYPE_OPTIONS,
-} from "./constants/billing-unit-type.js";
+  BILLING_UNIT_TYPE_VALUES,
+  BILLING_UNIT_TYPE_OPTIONS,
+} from "./constants/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import CutoffDate from "./utils/CutoffDate.js";
 
 const classProps = {
   ...WorkingResult.classProps,
@@ -98,7 +97,7 @@ const classProps = {
     required: true,
   }),
   billingUnitType: defField("select", {
-    default: BILLING_UNIT_TYPE.PER_DAY.value,
+    default: BILLING_UNIT_TYPE_VALUES.PER_DAY.value,
     label: "請求単位",
     required: true,
     component: {
@@ -111,23 +110,14 @@ const classProps = {
     label: "請求に休憩時間を含める",
     default: false,
   }),
-  cutoffDate: defField("select", {
-    label: "締日区分",
-    default: CutoffDate.VALUES.END_OF_MONTH,
-    required: true,
-    component: {
-      attrs: {
-        items: CutoffDate.OPTIONS,
-      },
-    },
-  }),
+  cutoffDate: defField("cutoffDate", { required: true }),
 };
 
 export default class Agreement extends WorkingResult {
   static className = "取極め";
   static classProps = classProps;
 
-  static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE;
+  static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE_VALUES;
 
   /**
    * Returns an object containing price-related properties.

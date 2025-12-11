@@ -39,6 +39,7 @@ import {
   VALUES as SITE_STATUS_VALUES,
   OPTIONS as SITE_STATUS_OPTIONS,
 } from "../constants/site-status.js";
+import CutoffDate from "../utils/CutoffDate.js";
 
 export const DEFAULT_WORKING_MINUTES = 480;
 export const DEFAULT_BREAK_MINUTES = 60;
@@ -534,6 +535,17 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: CONTRACT_STATUS_OPTIONS,
+      },
+    },
+  },
+  cutoffDate: {
+    ...generalDefinitions.select,
+    default: CutoffDate.VALUES.END_OF_MONTH,
+    label: "締日",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: CutoffDate.OPTIONS,
       },
     },
   },

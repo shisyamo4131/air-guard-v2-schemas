@@ -28,6 +28,7 @@ const classProps = {
   tel: defField("tel", { colsDefinition: { cols: 12, sm: 6 } }),
   fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
   contractStatus: defField("contractStatus", { required: true }),
+  cutoffDate: defField("cutoffDate", { required: true }),
   paymentMonth: defField("select", {
     default: 1,
     label: "入金サイト（月数）",
