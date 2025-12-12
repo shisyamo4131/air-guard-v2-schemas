@@ -25,7 +25,7 @@ const classProps = {
   address: defField("address", { required: true }),
   building: defField("building"),
   location: defField("location", { hidden: true }),
-  mobile: defField("mobile", { required: true }),
+  mobile: defField("mobile"),
   email: defField("email", { required: false }),
   dateOfHire: defField("dateOfHire", { required: true }),
   employmentStatus: defField("employmentStatus", { required: true }),
