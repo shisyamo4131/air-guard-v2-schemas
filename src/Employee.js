@@ -254,11 +254,45 @@ export default class Employee extends FireModel {
 
   afterInitialize(item = {}) {
     super.afterInitialize(item);
+
+    // Define computed properties
     Object.defineProperties(this, {
       fullName: defAccessor("fullName"),
       fullNameKana: defAccessor("fullNameKana"),
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
+    });
+
+    // Define trigger fields
+    let _lastName = this.lastName;
+    let _firstName = this.firstName;
+    Object.defineProperties(this, {
+      lastName: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _lastName;
+        },
+        set(v) {
+          if (v !== _lastName) {
+            _lastName = v;
+            this.displayName = `${_lastName}${this.firstName}`.trim();
+          }
+        },
+      },
+      firstName: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _firstName;
+        },
+        set(v) {
+          if (v !== _firstName) {
+            _firstName = v;
+            this.displayName = `${this.lastName}${_firstName}`.trim();
+          }
+        },
+      },
     });
   }
 
