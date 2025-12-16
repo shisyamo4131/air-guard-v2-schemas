@@ -276,7 +276,7 @@ export default class Employee extends FireModel {
         set(v) {
           if (v !== _lastName) {
             _lastName = v;
-            this.displayName = `${_lastName}${this.firstName}`.trim();
+            this.displayName = `${_lastName}${this.firstName || ""}`.trim();
           }
         },
       },
@@ -289,7 +289,7 @@ export default class Employee extends FireModel {
         set(v) {
           if (v !== _firstName) {
             _firstName = v;
-            this.displayName = `${this.lastName}${_firstName}`.trim();
+            this.displayName = `${this.lastName || ""}${_firstName}`.trim();
           }
         },
       },
