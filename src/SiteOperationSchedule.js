@@ -595,7 +595,13 @@ export default class SiteOperationSchedule extends Operation {
       // 加えて重複も除外する。
       const targetDates = dates
         .map((date) => {
-          if (date instanceof Date) return dayjs(date).format("YYYY-MM-DD");
+          if (date instanceof Date) {
+            const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+            const year = jstDate.getUTCFullYear();
+            const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
+            const day = String(jstDate.getUTCDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+          }
           return date;
         })
         .filter((date) => date !== this.date)
