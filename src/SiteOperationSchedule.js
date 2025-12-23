@@ -616,6 +616,12 @@ export default class SiteOperationSchedule extends Operation {
         instance.docId = "";
         instance.dateAt = new Date(date);
         instance.operationResultId = null;
+
+        // 2025-12-23 追加
+        // 複製元が既に配置通知を出している可能性があるため、`hasNotification` を false に更新
+        instance.employees.forEach((emp) => (emp.hasNotification = false));
+        instance.outsourcers.forEach((out) => (out.hasNotification = false));
+
         return instance;
       });
 
