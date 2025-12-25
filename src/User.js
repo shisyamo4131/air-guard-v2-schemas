@@ -3,6 +3,7 @@
  * @version 1.1.0
  * @author shisyamo4131
  * @update 2025-12-25 Added `tagSize` property.
+ *                    Added `updateProperties` method for updating multiple properties.
  * @update 2025-11-24 Added `companyId`, `isAdmin`, `isTemporary` property.
  *                    Changed to prevent deletion of admin users.
  *
