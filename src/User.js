@@ -2,6 +2,7 @@
  * User Model
  * @version 1.1.0
  * @author shisyamo4131
+ * @update 2025-12-25 Added `tagSize` property.
  * @update 2025-11-24 Added `companyId`, `isAdmin`, `isTemporary` property.
  *                    Changed to prevent deletion of admin users.
  *
@@ -13,9 +14,11 @@
  * @prop {string} companyId - ID of the associated company.
  * @prop {boolean} isAdmin - Indicates if the user is an administrator.
  * @prop {boolean} isTemporary - Indicates if the user is temporary.
+ * @prop {string} tagSize - Size of the tag associated with the user.
  */
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
+import { TAG_SIZE_VALUES, TAG_SIZE_OPTIONS } from "./constants/index.js";
 
 const classProps = {
   email: defField("email", { required: true }),
@@ -37,6 +40,11 @@ const classProps = {
   companyId: defField("oneLine", { hidden: true, required: true }),
   isAdmin: defField("check", { hidden: true, default: false }),
   isTemporary: defField("check", { hidden: true, default: true }),
+  tagSize: defField("select", {
+    label: "タグサイズ",
+    default: TAG_SIZE_VALUES.MEDIUM.value,
+    options: TAG_SIZE_OPTIONS,
+  }),
 };
 
 export default class User extends FireModel {

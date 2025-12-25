@@ -52,3 +52,7 @@ export {
   VALUES as SITE_STATUS_VALUES,
   OPTIONS as SITE_STATUS_OPTIONS,
 } from "./site-status.js";
+export {
+  VALUES as TAG_SIZE_VALUES,
+  OPTIONS as TAG_SIZE_OPTIONS,
+} from "./tag-size.js";
