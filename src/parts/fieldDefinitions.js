@@ -163,14 +163,39 @@ export const fieldDefinitions = {
   dateOfBirth: {
     ...generalDefinitions.dateAt,
     label: "生年月日",
+    default: null, // 2025-12-26 Set default to null
+    component: {
+      ...generalDefinitions.dateAt.component,
+      attrs: {
+        viewMode: "year", // 2025-12-26 Added
+      },
+    },
   },
   dateOfHire: {
     ...generalDefinitions.dateAt,
     label: "入社日",
   },
+  // 2025-12-26 Added
+  dateOfSecurityGuardRegistration: {
+    ...generalDefinitions.dateAt,
+    label: "警備員登録日",
+    default: null,
+  },
   dateOfTermination: {
     ...generalDefinitions.dateAt,
     label: "退職日",
+    default: null, // 2025-12-26 Set default to null
+  },
+  // 2025-12-26 Added
+  expirationDateAt: {
+    ...generalDefinitions.dateAt,
+    label: "有効期限",
+    default: null,
+  },
+  // 2025-12-26 Added
+  issueDateAt: {
+    ...generalDefinitions.dateAt,
+    label: "取得日",
   },
   periodOfStay: {
     ...generalDefinitions.dateAt,
@@ -350,6 +375,12 @@ export const fieldDefinitions = {
       },
     },
   },
+  // 2025-12-26 Added
+  issuedBy: {
+    ...generalDefinitions.oneLine,
+    label: "発行元",
+    length: 20,
+  },
   lastName: {
     ...generalDefinitions.oneLine,
     label: "姓",
@@ -407,6 +438,12 @@ export const fieldDefinitions = {
   reasonOfTermination: {
     ...generalDefinitions.oneLine,
     label: "退職理由",
+    length: 20,
+  },
+  // 2025-12-26 Added
+  serialNumber: {
+    ...generalDefinitions.oneLine,
+    label: "証明書番号",
     length: 20,
   },
   siteId: {

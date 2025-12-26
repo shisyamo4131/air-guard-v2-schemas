@@ -15,10 +15,10 @@ import { defField } from "./parts/fieldDefinitions.js";
 const classProps = {
   name: defField("name", { label: "資格名", required: true }),
   type: defField("certificationType", { required: true }),
-  issuedBy: defField("name", { label: "発行元" }),
-  issueDateAt: defField("dateAt", { label: "取得日", required: true }),
-  expirationDateAt: defField("dateAt", { label: "有効期限", default: null }),
-  serialNumber: defField("oneLine", { label: "証明書番号" }),
+  issuedBy: defField("issuedBy"),
+  issueDateAt: defField("issueDateAt", { required: true }),
+  expirationDateAt: defField("expirationDateAt"),
+  serialNumber: defField("serialNumber"),
 };
 
 /**
