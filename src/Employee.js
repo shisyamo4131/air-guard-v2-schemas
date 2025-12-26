@@ -2,6 +2,8 @@
  * @file src/Employee.js
  * @author shisyamo4131
  * @version 1.0.0
+ *
+ * @update 2025-12-26 Set default to null for dateOfBirth
  */
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -18,7 +20,7 @@ const classProps = {
   firstNameKana: defField("firstNameKana", { required: true }),
   displayName: defField("displayName", { required: true }),
   gender: defField("gender", { required: true }),
-  dateOfBirth: defField("dateOfBirth", { required: true }),
+  dateOfBirth: defField("dateOfBirth", { required: true, default: null }),
   zipcode: defField("zipcode", { required: true }),
   prefCode: defField("prefCode", { required: true }),
   city: defField("city", { required: true }),

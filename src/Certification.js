@@ -6,6 +6,8 @@
  *
  * NOTE: 配列で管理されるので key が必要。2025-12-08 現在、資格名が重複することはない想定。
  * 但し、2バイト文字が key として適切かは要検討。
+ *
+ * @update 2025-12-26 Set default to null for expirationDateAt
  */
 import { BaseClass } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -15,7 +17,7 @@ const classProps = {
   type: defField("certificationType", { required: true }),
   issuedBy: defField("name", { label: "発行元" }),
   issueDateAt: defField("dateAt", { label: "取得日", required: true }),
-  expirationDateAt: defField("dateAt", { label: "有効期限" }),
+  expirationDateAt: defField("dateAt", { label: "有効期限", default: null }),
   serialNumber: defField("oneLine", { label: "証明書番号" }),
 };
 
