@@ -1,11 +1,12 @@
 /**
  * Company Model
- * @version 1.4.0
+ * @version 1.0.0
  * @author shisyamo4131
- * @update 2025-12-02 Add maintenance information properties.
- * @update 2025-12-01 Add Stripe integration fields (stripeCustomerId, subscription).
- * @update 2025-11-27 Add bank information fields for billing.
- * @update 2025-11-23 Set `usePrefix` to false.
+ * @update 2025-12-29 - Add `isCompleteRequiredFields` computed property.
+ * @update 2025-12-02 - Add maintenance information properties.
+ * @update 2025-12-01 - Add Stripe integration fields (stripeCustomerId, subscription).
+ * @update 2025-11-27 - Add bank information fields for billing.
+ * @update 2025-11-23 - Set `usePrefix` to false.
  */
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -145,6 +146,25 @@ export default class Company extends FireModel {
             this.branchName &&
             this.accountNumber &&
             this.accountHolder
+          );
+        },
+        set() {},
+      },
+
+      // Check if all `required` fields are filled.
+      // Used for validating whether the Company info is complete.
+      isCompleteRequiredFields: {
+        enumerable: true,
+        configurable: true,
+        get() {
+          return !!(
+            this.companyName &&
+            this.companyNameKana &&
+            this.zipcode &&
+            this.prefCode &&
+            this.city &&
+            this.address &&
+            this.tel
           );
         },
         set() {},
