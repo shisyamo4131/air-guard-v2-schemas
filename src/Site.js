@@ -18,6 +18,7 @@ import { defAccessor } from "./parts/accessorDefinitions.js";
 import Customer from "./Customer.js";
 import Agreement from "./Agreement.js";
 import { VALUES } from "./constants/site-status.js";
+import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
 const classProps = {
   customerId: defField("customerId", {
@@ -99,7 +100,7 @@ const classProps = {
  * @param {Agreement} agreement - Agreement instance to remove.
  * @throws {Error} If agreement not found.
  *****************************************************************************/
-export default class Site extends FireModel {
+export default class Site extends GeocodableMixin(FireModel) {
   static className = "現場";
   static collectionPath = "Sites";
   static useAutonumber = false;

@@ -9,6 +9,7 @@ import { defAccessor } from "./parts/accessorDefinitions.js";
 import { VALUES as EMPLOYMENT_STATUS_VALUES } from "./constants/employment-status.js";
 import { VALUES as BLOOD_TYPE_VALUES } from "./constants/blood-type.js";
 import Certification from "./Certification.js";
+import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
 const classProps = {
   code: defField("code", { label: "従業員コード" }),
@@ -213,7 +214,7 @@ const classProps = {
  *
  * @function toTerminated - Change the current employee instance to terminated status.
  *****************************************************************************/
-export default class Employee extends FireModel {
+export default class Employee extends GeocodableMixin(FireModel) {
   static className = "従業員";
   static collectionPath = "Employees";
   static useAutonumber = false;

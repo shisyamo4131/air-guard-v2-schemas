@@ -14,6 +14,7 @@ import { defAccessor } from "./parts/accessorDefinitions.js";
 import Agreement from "./Agreement.js";
 import SiteOrder from "./SiteOrder.js";
 import RoundSetting from "./RoundSetting.js";
+import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
 const classProps = {
   companyName: defField("name", { label: "会社名", required: true }),
@@ -121,7 +122,7 @@ const classProps = {
   maintenanceStartedBy: defField("oneLine", { default: null, hidden: true }),
 };
 
-export default class Company extends FireModel {
+export default class Company extends GeocodableMixin(FireModel) {
   static className = "会社";
   static collectionPath = "Companies";
   static usePrefix = false;

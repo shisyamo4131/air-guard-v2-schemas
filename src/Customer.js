@@ -14,6 +14,7 @@ import {
   CONTRACT_STATUS_VALUES,
   PAYMENT_MONTH_OPTIONS,
 } from "./constants/index.js";
+import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
 const classProps = {
   code: defField("code", { label: "取引先コード" }),
@@ -82,7 +83,7 @@ const classProps = {
  * @param {Date} baseDate - base date in UTC (JST - 9 hours)
  * @returns {Date} payment due date in UTC (JST - 9 hours)
  *****************************************************************************/
-export default class Customer extends FireModel {
+export default class Customer extends GeocodableMixin(FireModel) {
   static className = "取引先";
   static collectionPath = "Customers";
   static useAutonumber = false;
