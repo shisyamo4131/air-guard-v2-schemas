@@ -162,7 +162,12 @@ export default class Site extends GeocodableMixin(FireModel) {
    */
   async beforeUpdate(args = {}) {
     await super.beforeUpdate(args);
-    if (this.customer.docId !== this._beforeData.customer.docId) {
+    // Check if customer reference has changed (only if both exist)
+    if (
+      this.customer?.docId &&
+      this._beforeData.customer?.docId &&
+      this.customer.docId !== this._beforeData.customer.docId
+    ) {
       return Promise.reject(
         new Error("Not allowed to change customer reference.")
       );
