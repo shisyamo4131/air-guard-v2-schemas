@@ -808,6 +808,7 @@ export const defField = (key, options = {}) => {
   if (options.hasOwnProperty("length")) {
     // options.length が明示的に指定されていれば最優先
     lengthToUseForRules = options.length;
+    newConfig.length = options.length; // newConfig.length も更新
   } else if (
     newConfig.hasOwnProperty("length") &&
     newConfig.length !== undefined
