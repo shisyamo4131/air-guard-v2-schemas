@@ -18,6 +18,16 @@ export {
   VALUES as CONTRACT_STATUS_VALUES,
   OPTIONS as CONTRACT_STATUS_OPTIONS,
 } from "./contract-status.js";
+
+/**
+ * Day of Week Constants
+ * @see src/constants/day-of-week.js
+ */
+export {
+  VALUES as DAY_OF_WEEK_VALUES,
+  OPTIONS as DAY_OF_WEEK_OPTIONS,
+} from "./day-of-week.js";
+
 export {
   VALUES as DAY_TYPE_VALUES,
   OPTIONS as DAY_TYPE_OPTIONS,

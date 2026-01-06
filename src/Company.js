@@ -2,6 +2,7 @@
  * Company Model
  * @version 1.0.0
  * @author shisyamo4131
+ * @update 2026-01-06 - Add `firstDayOfWeek` property.
  * @update 2025-12-29 - Add `isCompleteRequiredFields` computed property.
  * @update 2025-12-02 - Add maintenance information properties.
  * @update 2025-12-01 - Add Stripe integration fields (stripeCustomerId, subscription).
@@ -15,6 +16,7 @@ import Agreement from "./Agreement.js";
 import SiteOrder from "./SiteOrder.js";
 import RoundSetting from "./RoundSetting.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
+import { DAY_OF_WEEK_OPTIONS, DAY_OF_WEEK_VALUES } from "./constants/index.js";
 
 const classProps = {
   companyName: defField("name", { label: "会社名", required: true }),
@@ -42,12 +44,7 @@ const classProps = {
   accountType: defField("select", {
     label: "口座種別",
     default: "普通",
-    component: {
-      name: "air-select",
-      attrs: {
-        items: ["普通", "当座"],
-      },
-    },
+    component: { name: "air-select", attrs: { items: ["普通", "当座"] } },
   }),
   accountNumber: defField("oneLine", { label: "口座番号", length: 7 }),
   accountHolder: defField("oneLine", { label: "口座名義", length: 50 }),
@@ -92,6 +89,19 @@ const classProps = {
       attrs: {
         items: RoundSetting.ITEMS,
         hint: "売上金額や消費税の端数処理をどのように行うかを設定します。",
+        persistentHint: true,
+      },
+    },
+  }),
+
+  firstDayOfWeek: defField("select", {
+    label: "週の始まり",
+    default: DAY_OF_WEEK_VALUES.SUNDAY.value,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: DAY_OF_WEEK_OPTIONS,
+        hint: "勤怠管理などで週の始まりとする曜日を設定します。",
         persistentHint: true,
       },
     },
