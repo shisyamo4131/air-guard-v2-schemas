@@ -96,7 +96,7 @@ const classProps = {
 
   firstDayOfWeek: defField("select", {
     label: "週の始まり",
-    default: DAY_OF_WEEK_VALUES.SUNDAY.value,
+    default: DAY_OF_WEEK_VALUES[0].value,
     component: {
       name: "air-select",
       attrs: {
