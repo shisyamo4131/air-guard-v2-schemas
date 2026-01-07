@@ -4,13 +4,13 @@
  * ---------------------------------------------------------------------------
  * A class to manage agreement details based on WorkingResult.
  * ---------------------------------------------------------------------------
- * @prop {number} unitPriceBase - Base unit price (JPY)
- * @prop {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
- * @prop {number} unitPriceQualified - Qualified unit price (JPY)
- * @prop {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
- * @prop {string} billingUnitType - Billing unit type
- * @prop {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
- * @prop {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
+ * @property {number} unitPriceBase - Base unit price (JPY)
+ * @property {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
+ * @property {number} unitPriceQualified - Qualified unit price (JPY)
+ * @property {number} overtimeUnitPriceQualified - Qualified overtime unit price (JPY/hour)
+ * @property {string} billingUnitType - Billing unit type
+ * @property {boolean} includeBreakInBilling - Whether to include break time in billing if `billingUnitType` is `PER_HOUR`.
+ * @property {number} cutoffDate - Cutoff date value from CutoffDate.VALUES
  * - The cutoff date for billing, using values defined in the CutoffDate utility class.
  * ---------------------------------------------------------------------------
  * @getter {Object} prices - Object containing price-related properties (read-only)
@@ -20,21 +20,22 @@
  *   unitPriceQualified, overtimeUnitPriceQualified, billingUnitType, includeBreakInBilling
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult:
- * @prop {Date} dateAt - Applicable start date (trigger property)
- * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @prop {string} shiftType - Shift type (`DAY`, `NIGHT`)
- * @prop {string} startTime - Start time (HH:MM format)
- * @prop {boolean} isStartNextDay - Next day start flag
+ * @property {Date} dateAt - Applicable start date (trigger property)
+ * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @property {string} shiftType - Shift type (`DAY`, `NIGHT`)
+ * @property {string} startTime - Start time (HH:MM format)
+ * @property {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @prop {string} endTime - End time (HH:MM format)
- * @prop {number} breakMinutes - Break time (minutes)
- * @prop {number} regulationWorkMinutes - Regulation work minutes
+ * @property {string} endTime - End time (HH:MM format)
+ * @property {number} breakMinutes - Break time (minutes)
+ * @property {number} regulationWorkMinutes - Regulation work minutes
  * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
  * - Exceeding this time is considered overtime.
  * ---------------------------------------------------------------------------
  * @inherited - The following computed properties are inherited from WorkingResult:
- * @computed {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
- * - A unique identifier for the working result, combining `date`, `dayType`, and `shiftType`.
+ *
+ * @property {string} key - {@link WorkingResult#key}
+ *
  * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
  * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
  * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)

@@ -2,46 +2,60 @@
  * WorkingResult ver 1.0.0
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
+ * - `Agreement`, `Operation` クラスの継承元となるクラスです。
  * A class representing the working result for a specific date and shift extending FireModel.
  * - This class is intended to be inherited by other classes so, it cannot be instantiated directly.
  * - `dateAt` is defined as a trigger property. When it is set, `dayType` is automatically updated.
  * - Subclasses can override `setDateAtCallback` to add custom behavior when `dateAt` changes.
  * ---------------------------------------------------------------------------
- * @prop {Date} dateAt - Applicable start date (trigger property)
- * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @prop {string} shiftType - Shift type (`DAY`, `NIGHT`)
- * @prop {string} startTime - Start time (HH:MM format)
- * @prop {boolean} isStartNextDay - Next day start flag
+ * @property {Date} dateAt - Applicable start date (trigger property)
+ *
+ * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ *
+ * @property {string} shiftType - Shift type (`DAY`, `NIGHT`)
+ *
+ * @property {string} startTime - Start time (HH:MM format)
+ *
+ * @property {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @prop {string} endTime - End time (HH:MM format)
- * @prop {number} breakMinutes - Break time (minutes)
- * @prop {number} regulationWorkMinutes - Regulation work minutes
+ *
+ * @property {string} endTime - End time (HH:MM format)
+ *
+ * @property {number} breakMinutes - Break time (minutes)
+ *
+ * @property {number} regulationWorkMinutes - Regulation work minutes
  * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
  * - Exceeding this time is considered overtime.
  *
- * @computed
- * @prop {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
- * - A unique identifier for the working result, combining `date`, `dayType`, and `shiftType`.
- * @prop {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * @property {string} key - `date`, `dayType`, `shifType` を組み合わせたユニークキー。（読み取り専用）
+ * - 継承先である `Agreement` でデータを一意に識別するためのキーとして使用されます。
+ *
+ * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
  * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
- * @prop {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
+ *
+ * @property {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
  * - `true` if `startTime` is later than `endTime`
- * @prop {Date} startAt - Start date and time (Date object) (read-only)
+ *
+ * @property {Date} startAt - Start date and time (Date object) (read-only)
  * - Returns a Date object with `startTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @prop {Date} endAt - End date and time (Date object) (read-only)
+ *
+ * @property {Date} endAt - End date and time (Date object) (read-only)
  * - Returns a Date object with `endTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @prop {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
+ *
+ * @property {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
  * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
  * - If the difference between `endAt` and `startAt` is negative, returns 0.
  * - If `startAt` or `endAt` is not set, returns 0.
- * @prop {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ *
+ * @property {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
  * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
  * - If actual working time is less than regulation time (e.g., early leave), it equals `totalWorkMinutes`.
  * - If actual working time exceeds regulation time (overtime), it equals `regulationWorkMinutes`.
- * @prop {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ *
+ * @property {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * - Overtime work is not negative; the minimum is 0.
  * ---------------------------------------------------------------------------

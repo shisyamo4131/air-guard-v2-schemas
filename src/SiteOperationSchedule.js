@@ -18,16 +18,15 @@
  *   `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are synchronized
  *   in the parent `Operation` class.
  *
- * @prop {string} key - Unique key combining `siteId`, `date`, `dayType`, and `shiftType` (override/read-only)
- * - A unique identifier for the working result, combining `siteId`, `date`, `dayType`, and `shiftType`.
+ * @property { string } key - {@link Operation#key}
  *
- * @prop {string|null} operationResultId - Associated OperationResult document ID
+ * @property {string|null} operationResultId - Associated OperationResult document ID
  * - If an OperationResult has been created based on this schedule, this property
  *   holds the ID of that OperationResult document.
  * - If this property is set, the schedule cannot be updated or deleted.
  *   Conversely, if the associated OperationResult is deleted, this property can be set to null.
  *
- * @prop {number} displayOrder - Display order
+ * @property {number} displayOrder - Display order
  * - Property to control the display order of schedules on the same date and shift type.
  * - Automatically assigned during creation based on existing documents.
  *
@@ -38,88 +37,88 @@
  * - Returns `true` if all workers in the `workers` array have `hasNotification` set to `true`
  *
  * @inherited - The following properties are inherited from Operation:
- * @prop {string} siteId - Site document ID (trigger property)
+ * @property {string} siteId - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {number} requiredPersonnel - Required number of personnel
+ * @property {number} requiredPersonnel - Required number of personnel
  *
- * @prop {boolean} qualificationRequired - Qualification required flag
+ * @property {boolean} qualificationRequired - Qualification required flag
  *
- * @prop {string} workDescription - Work description
+ * @property {string} workDescription - Work description
  *
- * @prop {string} remarks - Remarks
+ * @property {string} remarks - Remarks
  *
- * @prop {Array<SiteOperationScheduleDetail>} employees - Assigned employees
+ * @property {Array<SiteOperationScheduleDetail>} employees - Assigned employees
  * - Array of `SiteOperationScheduleDetail` instances representing assigned employees
  *
- * @prop {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
+ * @property {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
  * - Array of `SiteOperationScheduleDetail` instances representing assigned outsourcers
  *
  * @inherited - The following properties are inherited from WorkingResult (via Operation):
- * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
+ * @property {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
  *
- * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * @property {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {string} startTime - Start time (HH:MM format) (trigger property)
+ * @property {string} startTime - Start time (HH:MM format) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {boolean} isStartNextDay - Next day start flag (trigger property)
+ * @property {boolean} isStartNextDay - Next day start flag (trigger property)
  * - `true` if the actual work starts the day after the placement date `dateAt`
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {string} endTime - End time (HH:MM format) (trigger property)
+ * @property {string} endTime - End time (HH:MM format) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {number} breakMinutes - Break time (minutes) (trigger property)
+ * @property {number} breakMinutes - Break time (minutes) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * @property {number} regulationWorkMinutes - Regulation work minutes (trigger property)
  * - Indicates the maximum working time treated as regular working hours.
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
  * @inherited - The following computed properties are inherited from Operation:
- * @prop {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
+ * @property {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
  *
- * @prop {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
+ * @property {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
  *
- * @prop {number} employeesCount - Count of assigned employees (read-only)
+ * @property {number} employeesCount - Count of assigned employees (read-only)
  *
- * @prop {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
+ * @property {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
  *
- * @prop {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
+ * @property {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
  *
- * @prop {Array<SiteOperationScheduleDetail>} workers - Combined array of `employees` and `outsourcers`
+ * @property {Array<SiteOperationScheduleDetail>} workers - Combined array of `employees` and `outsourcers`
  * - Getter: Returns concatenated array of employees and outsourcers
  * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
  *
  * @inherited - The following computed properties are inherited from WorkingResult (via Operation):
- * @prop {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
  * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
  *
- * @prop {Date} startAt - Start date and time (Date object) (read-only)
+ * @property {Date} startAt - Start date and time (Date object) (read-only)
  * - Returns a Date object with `startTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  *
- * @prop {Date} endAt - End date and time (Date object) (read-only)
+ * @property {Date} endAt - End date and time (Date object) (read-only)
  * - Returns a Date object with `endTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
  *
- * @prop {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
+ * @property {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
  * - `true` if `startTime` is later than `endTime`
  *
- * @prop {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
+ * @property {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
  * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
  *
- * @prop {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * @property {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
  * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
  *
- * @prop {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ * @property {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  *
  * @inherited - The following getter properties are inherited from Operation:

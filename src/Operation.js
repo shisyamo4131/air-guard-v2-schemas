@@ -11,50 +11,54 @@
  * - `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
  *   They should be synchronized at `SiteOperationSchedule` level instead.
  * ---------------------------------------------------------------------------
- * @prop {string} siteId
+ * @property {string} siteId
  * - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *
- * @prop {number} requiredPersonnel
+ * @property {number} requiredPersonnel
  * - Required number of personnel
  *
- * @prop {boolean} qualificationRequired
+ * @property {boolean} qualificationRequired
  * - Qualification required flag
  *
- * @prop {string} workDescription
+ * @property {string} workDescription
  * - Work description
  *
- * @prop {string} remarks
+ * @property {string} remarks
  * - Remarks
  *
- * @prop {Array<OperationDetail>} employees
+ * @property {Array<OperationDetail>} employees
  * - Assigned employees
  * - Array of `OperationDetail` instances representing assigned employees
  *
- * @prop {Array<OperationDetail>} outsourcers
+ * @property {Array<OperationDetail>} outsourcers
  * - Assigned outsourcers
  * - Array of `OperationDetail` instances representing assigned outsourcers
  *
- * @prop {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
+ * @property {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
  * - Array of employee IDs from `employees` (read-only)
  *
- * @prop {Array<string>} outsourcerIds
+ * @property {Array<string>} outsourcerIds
  * - Array of outsourcer IDs from `outsourcers` (read-only)
  *
- * @prop {number} employeesCount
+ * @property {number} employeesCount
  * - Count of assigned employees (read-only)
  *
- * @prop {number} outsourcersCount
+ * @property {number} outsourcersCount
  * - Count of assigned outsourcers (sum of amounts) (read-only)
  *
- * @prop {boolean} isPersonnelShortage
+ * @property {boolean} isPersonnelShortage
  * - Indicates if there is a shortage of personnel (read-only)
  * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
  *
- * @prop {Array<OperationDetail>} workers
+ * @property {Array<OperationDetail>} workers
  * - Combined array of `employees` and `outsourcers`
  * - Getter: Returns concatenated array of employees and outsourcers
  * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
+ *
+ * @property {string} key - `siteId`, `date`, `dayType`, `shiftType` を組み合わせたキー。（読み取り専用）
+ * - 2026-01-07 現在使用していないプロパティ。
+ * - `dayType` は請求時の単価情報を取得するために必要な情報であるため含める必要がないと思われる。
  *
  * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
  * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
@@ -69,19 +73,18 @@
  * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult:
- * @prop {string} key - Unique key combining `siteId`, `date`, `dayType`, and `shiftType` (override/read-only)
- * - A unique identifier for the working result, combining `siteId`, `date`, `dayType`, and `shiftType`.
- * @prop {Date} dateAt - Date of operation (placement date) (trigger property)
+ *
+ * @property {Date} dateAt - Date of operation (placement date) (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @prop {string} shiftType - `DAY` or `NIGHT` (trigger property)
+ * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @property {string} shiftType - `DAY` or `NIGHT` (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @prop {string} startTime - Start time (HH:MM format)
- * @prop {boolean} isStartNextDay - Next day start flag
+ * @property {string} startTime - Start time (HH:MM format)
+ * @property {boolean} isStartNextDay - Next day start flag
  * - `true` if the actual work starts the day after the placement date `dateAt`
- * @prop {string} endTime - End time (HH:MM format)
- * @prop {number} breakMinutes - Break time (minutes)
- * @prop {number} regulationWorkMinutes - Regulation work minutes (trigger property)
+ * @property {string} endTime - End time (HH:MM format)
+ * @property {number} breakMinutes - Break time (minutes)
+ * @property {number} regulationWorkMinutes - Regulation work minutes (trigger property)
  * - Indicates the maximum working time treated as regular working hours.
  * - A new value will be synchronized to all `employees` and `outsourcers`.
  * ---------------------------------------------------------------------------
