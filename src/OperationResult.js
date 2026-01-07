@@ -12,6 +12,8 @@
  *
  * @property { string } key - {@link Operation#key}
  *
+ * @property {string} orderKey - {@link Operation#orderKey}
+ *
  * @property {string} siteId - Site document ID (trigger property)
  * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
  *

@@ -20,6 +20,8 @@
  *
  * @property { string } key - {@link Operation#key}
  *
+ * @property {string} orderKey - {@link Operation#orderKey}
+ *
  * @property {string|null} operationResultId - Associated OperationResult document ID
  * - If an OperationResult has been created based on this schedule, this property
  *   holds the ID of that OperationResult document.
