@@ -60,6 +60,9 @@
  * - 2026-01-07 現在使用していないプロパティ。
  * - `dayType` は請求時の単価情報を取得するために必要な情報であるため含める必要がないと思われる。
  *
+ * @property {string} orderKey - `siteId`, `shiftType` を組み合わせたキー。（読み取り専用）
+ * - `siteOrder` の `key` プロパティに対応するキー。
+ *
  * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
  * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
  * - Returns true if the employee IDs have changed compared to `_beforeData`
@@ -264,16 +267,31 @@ export default class Operation extends WorkingResult {
   afterInitialize(item = {}) {
     super.afterInitialize(item);
 
-    /**
-     * Override `key` computed property
-     * - `key`: Combines `siteId`, `date`, `dayType`, and `shiftType`.
-     */
     Object.defineProperties(this, {
+      /**
+       * `siteId`, `date`, `dayType`, `shiftType` を組み合わせたキー。（読み取り専用）
+       * - `WorkingResult.key` をオーバーライド。
+       * - 2026-01-07 現在使用していないプロパティ。
+       * - `dayType` は請求時の単価情報を取得するために必要な情報であるため含める必要がないと思われる。
+       */
       key: {
         configurable: true,
         enumberable: true,
         get() {
           return `${this.siteId}-${this.date}-${this.dayType}-${this.shiftType}`;
+        },
+        set() {},
+      },
+
+      /**
+       * `siteId`, `shiftType` を組み合わせたキー。（読み取り専用）
+       * - `siteOrder` の `key` プロパティに対応するキー。
+       */
+      orderKey: {
+        configurable: true,
+        enumberable: true,
+        get() {
+          return `${this.siteId}-${this.shiftType}`;
         },
         set() {},
       },
