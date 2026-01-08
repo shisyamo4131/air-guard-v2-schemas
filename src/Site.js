@@ -1,18 +1,15 @@
 /**
  * @file src/Site.js
  * @author shisyamo4131
- * @update 2026-01-08 - 取引先の変更禁止ロジックを削除。
- *                    - `customerId` の必須入力を解除 -> 取引先未設定の現場を許容するため。
- * @update 2025-11-20 - Prevent changing customer reference on update.
- *                    - Move `customer` property to the top of classProps for better visibility.
  *
  * NOTE: `customerId`, `customer` プロパティについて
+ * - 仮登録
+ *   - 取引先未定での現場登録のシチュエーションを考慮して現場情報は仮登録を可能とする。
+ *   - 仮登録状態の現場は `isTemporary` プロパティが `true` となる。
+ *   - 但し、一度取引先を設定した後に未設定に戻すことはできない。
  * - 自身の従属先データを持たせる場合に `XxxxxMinimal` クラスを使用するが、アプリ側でオブジェクト選択を行う場合に
  *   `Xxxxx` クラスにするのか `XxxxxMinimal` クラスにするのかを判断できないため、docId を持たせて
  *   `beforeCreate` フックでオブジェクトを取得するようにする。
- * - 2026-01-08 現場に取引先未設定を許容するため、`customerId` の必須入力を解除し、変更禁止ロジックを削除。
- *   -> 取引先未定のまま現場登録を行うシチュエーションが存在する。
- *   -> 但し、一度取引先を設定した後に未設定に戻すことはできない。
  */
 import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -85,6 +82,7 @@ const classProps = {
  *
  * @property {string} status - Site status.
  *
+ * @property {boolean} isTemporary - 仮登録状態かどうかを表すフラグ
  *
  * @function getAgreement
  * Gets applicable agreement based on date, dayType, and shiftType.
@@ -218,6 +216,14 @@ export default class Site extends GeocodableMixin(FireModel) {
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
+      isTemporary: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return !!this.customerId;
+        },
+        set() {},
+      },
     });
 
     const self = this;
