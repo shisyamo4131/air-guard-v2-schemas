@@ -1,6 +1,5 @@
 /*****************************************************************************
  * OperationResult Model
- * @version 1.2.0 - 2025-11-19 Add `agreement`, `hasAgreement`, `isValid` properties.
  * @author shisyamo4131
  *
  * - Extends Operation class to represent the result of an operation.
@@ -11,6 +10,8 @@
  * - Introduces a lock mechanism (`isLocked`) to prevent edits when necessary.
  *
  * @property { string } key - {@link Operation#key}
+ *
+ * @property {string} agreementKey - {@link Operation#agreementKey}
  *
  * @property {string} orderKey - {@link Operation#orderKey}
  *
@@ -601,7 +602,11 @@ export default class OperationResult extends Operation {
     }
 
     // Sync customerId and apply agreement if key changed
-    if (this.key === this._beforeData.key) return;
+    /**
+     * 2026-01-08 `agreementKey` を実装したため、`key` の使用を避ける。
+     */
+    // if (this.key === this._beforeData.key) return;
+    if (this.agreementKey === this._beforeData.agreementKey) return;
     await this._syncCustomerIdAndApplyAgreement();
   }
 

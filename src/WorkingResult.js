@@ -27,7 +27,7 @@
  * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
  * - Exceeding this time is considered overtime.
  *
- * @property {string} key - `date`, `dayType`, `shifType` を組み合わせたユニークキー。（読み取り専用）
+ * @property {string} key - `date`, `dayType`, `shiftType` を組み合わせたユニークキー。（読み取り専用）
  * - 継承先である `Agreement` でデータを一意に識別するためのキーとして使用されます。
  *
  * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)

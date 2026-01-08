@@ -20,6 +20,8 @@
  *
  * @property { string } key - {@link Operation#key}
  *
+ * @property {string} agreementKey - {@link Operation#agreementKey}
+ *
  * @property {string} orderKey - {@link Operation#orderKey}
  *
  * @property {string|null} operationResultId - Associated OperationResult document ID
