@@ -545,7 +545,6 @@ export default class OperationResult extends Operation {
   /**
    * Synchronize customerId and apply (re-apply) agreement from siteId
    * @param {Object} [args.transaction] - Firestore transaction.
-   * @param {Function} [args.callBack] - Callback function.
    * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
    * @throws {Error} If the specified siteId does not exist
