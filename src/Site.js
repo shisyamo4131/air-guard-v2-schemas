@@ -1,16 +1,18 @@
 /**
  * @file src/Site.js
  * @author shisyamo4131
- * @version 1.1.0
- * @update 2025-11-20 version 0.2.0-bata
- *                    - Prevent changing customer reference on update.
+ * @update 2026-01-08 - 取引先の変更禁止ロジックを削除。
+ *                    - `customerId` の必須入力を解除 -> 取引先未設定の現場を許容するため。
+ * @update 2025-11-20 - Prevent changing customer reference on update.
  *                    - Move `customer` property to the top of classProps for better visibility.
  *
- * NOTE: `customer` プロパティについて
- * 自身の従属先データを持たせる場合に `XxxxxMinimal` クラスを使用するが、アプリ側でオブジェクト選択を行う場合に
- * `Xxxxx` クラスにするのか `XxxxxMinimal` クラスにするのかを判断できないため、docId を持たせて
- * `beforeCreate` フックでオブジェクトを取得するようにする。
- * 尚、取引先は変更できない仕様。
+ * NOTE: `customerId`, `customer` プロパティについて
+ * - 自身の従属先データを持たせる場合に `XxxxxMinimal` クラスを使用するが、アプリ側でオブジェクト選択を行う場合に
+ *   `Xxxxx` クラスにするのか `XxxxxMinimal` クラスにするのかを判断できないため、docId を持たせて
+ *   `beforeCreate` フックでオブジェクトを取得するようにする。
+ * - 2026-01-08 現場に取引先未設定を許容するため、`customerId` の必須入力を解除し、変更禁止ロジックを削除。
+ *   -> 取引先未定のまま現場登録を行うシチュエーションが存在する。
+ *   -> 但し、一度取引先を設定した後に未設定に戻すことはできない。
  */
 import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -21,16 +23,17 @@ import { VALUES } from "./constants/site-status.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
 const classProps = {
-  customerId: defField("customerId", {
-    required: true,
-    component: {
-      attrs: {
-        disabled: ({ editMode }) => {
-          return editMode !== "CREATE";
-        },
-      },
-    },
-  }),
+  // customerId: defField("customerId", {
+  //   required: true,
+  //   component: {
+  //     attrs: {
+  //       disabled: ({ editMode }) => {
+  //         return editMode !== "CREATE";
+  //       },
+  //     },
+  //   },
+  // }),
+  customerId: defField("customerId"),
   customer: defField("customer", { hidden: true, customClass: Customer }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
@@ -55,24 +58,33 @@ const classProps = {
 };
 
 /*****************************************************************************
- * @props {string} code - Site code.
- * @props {string} name - Site name.
- * @props {string} nameKana - Site name in Kana.
- * @props {string} zipcode - Postal code.
- * @props {string} prefCode - Prefecture code.
- * @props {string} city - City name.
- * @props {string} address - Address details.
- * @props {string} building - Building name.
- * @props {object} location - Geographical location.
- * @props {object} customer - Associated customer (CustomerMinimal).
- * @props {string} remarks - Additional remarks.
- * @props {array} agreements - List of agreements (Agreement).
- * - Enhanced with custom methods: `add()`, `change()`, `remove()`
- * @props {string} status - Site status.
+ * @property {string} customerId - 取引先ドキュメントID
  *
- * @computed {string} customerId - ID of the associated customer (read-only)
- * @computed {string} fullAddress - Full address combining prefecture, city, and address (read-only)
- * @computed {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ * @property {object} customer - 取引先オブジェクト
+ * - `beforeCreate`, `beforeUpdate` で `customerId` に該当する `Customer` オブジェクトと自動的に同期されます。
+ * - `Customer` が更新された場合は Cloud Functions で同期される必要があります。
+ *
+ * @property {string} code - Site code.
+ * @property {string} name - Site name.
+ * @property {string} nameKana - Site name in Kana.
+ * @property {string} zipcode - Postal code.
+ * @property {string} prefCode - Prefecture code.
+ *
+ * @property {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ *
+ * @property {string} city - City name.
+ * @property {string} address - Address details.
+ * @property {string} building - Building name.
+ *
+ * @property {string} fullAddress - Full address combining prefecture, city, and address (read-only)
+ *
+ * @property {object} location - Geographical location.
+ * @property {string} remarks - Additional remarks.
+ * @property {array} agreements - List of agreements (Agreement).
+ * - Enhanced with custom methods: `add()`, `change()`, `remove()`
+ *
+ * @property {string} status - Site status.
+ *
  *
  * @function getAgreement
  * Gets applicable agreement based on date, dayType, and shiftType.
@@ -127,7 +139,26 @@ export default class Site extends GeocodableMixin(FireModel) {
   static STATUS_TERMINATED = VALUES.TERMINATED.value;
 
   /**
-   * Overrides to fetch and set the customer object before creation.
+   * `customerId` に該当する `Customer` インスタンスを取得して `customer` プロパティにセットします。
+   * - `customerId` が未設定の場合は何もしません。
+   * @returns {Promise<void>}
+   * @throws {Error} `Customer` が存在しない場合にスローされます。
+   */
+  async _setCustomer() {
+    if (!this.customerId) return;
+    const customerInstance = new Customer();
+    const isExist = await customerInstance.fetch({
+      docId: this.customerId,
+    });
+    if (!isExist) {
+      throw new Error("Customer does not exist.");
+    }
+    this.customer = customerInstance;
+  }
+
+  /**
+   * ドキュメント作成直前の処理です。
+   * - `customerId` に該当する `Customer` インスタンスを取得して `customer` プロパティにセットします。
    * @param {Object} args - Creation options.
    * @param {string} [args.docId] - Document ID to use (optional).
    * @param {boolean} [args.useAutonumber=true] - Whether to use auto-numbering.
@@ -138,18 +169,19 @@ export default class Site extends GeocodableMixin(FireModel) {
    */
   async beforeCreate(args = {}) {
     await super.beforeCreate(args);
-    if (!this.customerId) return;
-    const customerInstance = new Customer();
-    const isExist = await customerInstance.fetch({
-      ...args,
-      docId: this.customerId,
-    });
-    if (!isExist) {
-      return Promise.reject(
-        new Error("Invalid customerId: Customer does not exist.")
-      );
-    }
-    this.customer = customerInstance;
+    // if (!this.customerId) return;
+    // const customerInstance = new Customer();
+    // const isExist = await customerInstance.fetch({
+    //   ...args,
+    //   docId: this.customerId,
+    // });
+    // if (!isExist) {
+    //   return Promise.reject(
+    //     new Error("Invalid customerId: Customer does not exist.")
+    //   );
+    // }
+    // this.customer = customerInstance;
+    await this._setCustomer();
   }
 
   /**
@@ -162,10 +194,21 @@ export default class Site extends GeocodableMixin(FireModel) {
    */
   async beforeUpdate(args = {}) {
     await super.beforeUpdate(args);
-    if (this.customer.docId !== this._beforeData.customer.docId) {
-      return Promise.reject(
-        new Error("Not allowed to change customer reference.")
-      );
+
+    // if (this.customer.docId !== this._beforeData.customer.docId) {
+    //   return Promise.reject(
+    //     new Error("Not allowed to change customer reference.")
+    //   );
+    // }
+
+    // 取引先を未設定に戻すことはできない。
+    if (this._beforeData.customerId && !this.customerId) {
+      throw new Error("Cannot unset customerId once it is set.");
+    }
+
+    // 取引先が変更されていた場合は `customer` プロパティを更新する。
+    if (this.customerId !== this._beforeData.customerId) {
+      await this._setCustomer();
     }
   }
 
@@ -173,12 +216,18 @@ export default class Site extends GeocodableMixin(FireModel) {
     super.afterInitialize(item);
 
     Object.defineProperties(this, {
-      // customerId: defAccessor("customerId"),
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
     });
 
     const self = this;
+
+    /**
+     * `Agreement` プロパティに対するカスタムメソッドを定義します。
+     * - add(agreement): `Agreement` インスタンスを追加します。
+     * - change(newAgreement): `key` プロパティを基に既存の `Agreement` を置き換えます。
+     * - remove(agreement): `key` プロパティを基に `Agreement` を削除します。
+     */
     Object.defineProperties(this.agreements, {
       add: {
         value: function (agreement) {
