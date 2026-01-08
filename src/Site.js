@@ -7,6 +7,8 @@
  *   - 取引先未定での現場登録のシチュエーションを考慮して現場情報は仮登録を可能とする。
  *   - 仮登録状態の現場は `isTemporary` プロパティが `true` となる。
  *   - 但し、一度取引先を設定した後に未設定に戻すことはできない。
+ *   - 取引先未設定の場合に、`Site` インスタンスから取引先名を参照する必要があるケースに備えて
+ *     `customerName` プロパティを設ける。
  * - 自身の従属先データを持たせる場合に `XxxxxMinimal` クラスを使用するが、アプリ側でオブジェクト選択を行う場合に
  *   `Xxxxx` クラスにするのか `XxxxxMinimal` クラスにするのかを判断できないため、docId を持たせて
  *   `beforeCreate` フックでオブジェクトを取得するようにする。
@@ -30,8 +32,25 @@ const classProps = {
   //     },
   //   },
   // }),
-  customerId: defField("customerId"),
+  customerId: defField("customerId", {
+    component: {
+      attrs: {
+        /**
+         * `_beforeData.customerId` が存在する場合（本登録後の編集時を表す）には `customerId` を必須とする。
+         */
+        required: ({ item }) => {
+          return !!item._beforeData.customerId;
+        },
+      },
+    },
+  }),
   customer: defField("customer", { hidden: true, customClass: Customer }),
+  customerName: defField("name", {
+    label: "取引先名",
+    required: ({ item }) => {
+      return !item.customerId; // isTemporary プロパティでの判定でも良いか？
+    },
+  }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
     label: "現場名",
