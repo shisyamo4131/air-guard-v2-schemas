@@ -52,11 +52,7 @@ const classProps = {
     },
     component: {
       attrs: {
-        rules: [
-          (value) =>
-            (value && value.length >= 2) ||
-            "取引先名を2文字以上で入力してください。",
-        ],
+        minLength: 2,
       },
     },
   }),
