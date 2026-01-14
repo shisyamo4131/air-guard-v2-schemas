@@ -50,6 +50,15 @@ const classProps = {
     required: ({ item }) => {
       return !item.customerId; // isTemporary プロパティでの判定でも良いか？
     },
+    component: {
+      attrs: {
+        rules: [
+          (value) =>
+            (value && value.length >= 2) ||
+            "取引先名を2文字以上で入力してください。",
+        ],
+      },
+    },
   }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
