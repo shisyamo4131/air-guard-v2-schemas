@@ -22,22 +22,10 @@ import { VALUES } from "./constants/site-status.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
 const classProps = {
-  // customerId: defField("customerId", {
-  //   required: true,
-  //   component: {
-  //     attrs: {
-  //       disabled: ({ editMode }) => {
-  //         return editMode !== "CREATE";
-  //       },
-  //     },
-  //   },
-  // }),
   customerId: defField("customerId", {
     component: {
       attrs: {
-        /**
-         * `_beforeData.customerId` が存在する場合（本登録後の編集時を表す）には `customerId` を必須とする。
-         */
+        /** `_beforeData.customerId` が存在する場合（本登録後の編集時を表す）には `customerId` を必須とする。 */
         required: ({ item }) => {
           return !!item._beforeData.customerId;
         },
@@ -45,16 +33,13 @@ const classProps = {
     },
   }),
   customer: defField("customer", { hidden: true, customClass: Customer }),
-  customerName: defField("name", {
-    label: "取引先名",
-    required: ({ item }) => {
-      return !item.customerId; // isTemporary プロパティでの判定でも良いか？
-    },
-    component: {
-      attrs: {
-        minLength: 2,
-      },
-    },
+
+  /**
+   * 取引先名
+   * - `customerId` が未設定の場合に必須（仮登録状態で取引先の名前だけ登録したい場合を想定）
+   */
+  customerName: defField("customerName", {
+    required: ({ item }) => !item.customerId,
   }),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
@@ -85,9 +70,15 @@ const classProps = {
  * - `beforeCreate`, `beforeUpdate` で `customerId` に該当する `Customer` オブジェクトと自動的に同期されます。
  * - `Customer` が更新された場合は Cloud Functions で同期される必要があります。
  *
- * @property {string} code - Site code.
- * @property {string} name - Site name.
- * @property {string} nameKana - Site name in Kana.
+ * @property {string} customerName - 取引先名
+ * - `customerId` が未設定の場合に必須（仮登録状態で取引先の名前だけ登録したい場合を想定）
+ *
+ * @property {string} code - 現場コード
+ *
+ * @property {string} name - 現場名
+ *
+ * @property {string} nameKana - 現場名カナ
+ *
  * @property {string} zipcode - Postal code.
  * @property {string} prefCode - Prefecture code.
  *
@@ -191,18 +182,6 @@ export default class Site extends GeocodableMixin(FireModel) {
    */
   async beforeCreate(args = {}) {
     await super.beforeCreate(args);
-    // if (!this.customerId) return;
-    // const customerInstance = new Customer();
-    // const isExist = await customerInstance.fetch({
-    //   ...args,
-    //   docId: this.customerId,
-    // });
-    // if (!isExist) {
-    //   return Promise.reject(
-    //     new Error("Invalid customerId: Customer does not exist.")
-    //   );
-    // }
-    // this.customer = customerInstance;
     await this._setCustomer();
   }
 
@@ -217,13 +196,7 @@ export default class Site extends GeocodableMixin(FireModel) {
   async beforeUpdate(args = {}) {
     await super.beforeUpdate(args);
 
-    // if (this.customer.docId !== this._beforeData.customer.docId) {
-    //   return Promise.reject(
-    //     new Error("Not allowed to change customer reference.")
-    //   );
-    // }
-
-    // 取引先を未設定に戻すことはできない。
+    // 一度設定した取引先を未設定に戻すことはできない。
     if (this._beforeData.customerId && !this.customerId) {
       throw new Error("Cannot unset customerId once it is set.");
     }
@@ -234,9 +207,17 @@ export default class Site extends GeocodableMixin(FireModel) {
     }
   }
 
+  /**
+   * Override `afterInitialize` to define custom accessors and methods.
+   * - Defines `fullAddress`, `prefecture`, and `isTemporary` accessors.
+   * - Enhances `agreements` array with `add`, `change`, and `remove` methods.
+   * @param {Object} item - Initial data item.
+   * @return {void}
+   */
   afterInitialize(item = {}) {
     super.afterInitialize(item);
 
+    /** Define `fullAddress`, `prefecture`, and `isTemporary` accessors. */
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),
@@ -250,14 +231,13 @@ export default class Site extends GeocodableMixin(FireModel) {
       },
     });
 
-    const self = this;
-
     /**
      * `Agreement` プロパティに対するカスタムメソッドを定義します。
      * - add(agreement): `Agreement` インスタンスを追加します。
      * - change(newAgreement): `key` プロパティを基に既存の `Agreement` を置き換えます。
      * - remove(agreement): `key` プロパティを基に `Agreement` を削除します。
      */
+    const self = this;
     Object.defineProperties(this.agreements, {
       add: {
         value: function (agreement) {

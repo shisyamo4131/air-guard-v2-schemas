@@ -221,6 +221,7 @@ import { ContextualError } from "./utils/index.js";
 import ArrangementNotification from "./ArrangementNotification.js";
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import OperationResult from "./OperationResult.js";
+import Site from "./Site.js";
 
 const classProps = {
   ...Operation.classProps,
@@ -712,15 +713,29 @@ export default class SiteOperationSchedule extends Operation {
    * @update 2025-11-28 - Removed the `agreement` parameter.
    */
   async syncToOperationResult(notifications = {}) {
+    // ドキュメントIDがない（現場稼働予定ドキュメントとして未作成）場合はエラー
     if (!this.docId) {
       throw new Error(
         "不正な処理です。作成前の現場稼働予定から稼働実績を作成することはできません。"
       );
     }
 
-    if (!notifications) {
-      throw new Error("配置通知の指定が必要です。");
+    // 現場データの存在確認と登録状態の確認
+    // - 存在しない、または仮登録状態の場合はエラー
+    const siteInstance = new Site();
+    const siteIsExist = await siteInstance.fetch({ docId: this.siteId });
+    if (!siteIsExist) {
+      throw new Error(
+        `不正な処理です。現場ID: ${this.siteId} の現場データが存在しません。`
+      );
     }
+    if (siteInstance.isTemporary) {
+      throw new Error(
+        `不正な処理です。現場ID: ${this.siteId} の現場データは仮登録状態です。`
+      );
+    }
+
+    // 配置通知データをもとに、従業員・外注先の稼働実績詳細データを生成する関数
     const converter = (prop) => {
       return this[prop].map((w) => {
         const notification = notifications[w.notificationKey];
@@ -734,8 +749,11 @@ export default class SiteOperationSchedule extends Operation {
         });
       });
     };
+
+    // 従業員・外注先の稼働実績詳細データを生成
     const employees = converter("employees");
     const outsourcers = converter("outsourcers");
+
     try {
       // Create OperationResult instance based on the current SiteOperationSchedule
       const operationResult = new OperationResult({
@@ -756,7 +774,7 @@ export default class SiteOperationSchedule extends Operation {
       throw new ContextualError(error.message, {
         method: "syncToOperationResult()",
         className: "SiteOperationSchedule",
-        arguments: { agreement },
+        arguments: {},
         state: this.toObject(),
       });
     }

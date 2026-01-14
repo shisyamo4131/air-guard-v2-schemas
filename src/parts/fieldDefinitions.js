@@ -287,6 +287,21 @@ export const fieldDefinitions = {
       },
     },
   },
+
+  /**
+   * 取引先名
+   * - 2文字以上最大20文字
+   */
+  customerName: {
+    ...generalDefinitions.oneLine,
+    label: "取引先名",
+    length: 20,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: { minLength: 2 },
+    },
+  },
+
   displayName: {
     ...generalDefinitions.oneLine,
     label: "表示名",
