@@ -1,14 +1,7 @@
-/**
+/*****************************************************************************
  * Company Model
- * @version 1.0.0
  * @author shisyamo4131
- * @update 2026-01-06 - Add `firstDayOfWeek` property.
- * @update 2025-12-29 - Add `isCompleteRequiredFields` computed property.
- * @update 2025-12-02 - Add maintenance information properties.
- * @update 2025-12-01 - Add Stripe integration fields (stripeCustomerId, subscription).
- * @update 2025-11-27 - Add bank information fields for billing.
- * @update 2025-11-23 - Set `usePrefix` to false.
- */
+ *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
@@ -56,10 +49,18 @@ const classProps = {
   }),
 
   /**
-   * Field to manage the display order of site-shift type pairs for placement management.
+   * Property to manage the display order of site-shift type pairs for arrangement management.
    * Format: { siteId, shiftType }
+   * NOTE: `key` is a unique identifier combined from siteId and shiftType.
    */
   siteOrder: defField("array", { customClass: SiteOrder, hidden: true }),
+
+  /**
+   * Property to manage the display order of site-shift type pairs for site-operation-schedule.
+   * Format: { siteId, shiftType, key }
+   * NOTE: `key` is a unique identifier combined from siteId and shiftType.
+   */
+  scheduleOrder: defField("array", { customClass: SiteOrder, hidden: true }),
 
   /** Geolocation */
   location: defField("location", { hidden: true }),
@@ -203,7 +204,7 @@ export default class Company extends GeocodableMixin(FireModel) {
           const newOrder = new SiteOrder({ siteId, shiftType });
           if (this.some((order) => order.key === newOrder.key)) {
             throw new Error(
-              `SiteOrder with key ${newOrder.key} already exists.`
+              `SiteOrder with key ${newOrder.key} already exists.`,
             );
           }
           index === -1 ? this.push(newOrder) : this.splice(index, 0, newOrder);
@@ -253,13 +254,101 @@ export default class Company extends GeocodableMixin(FireModel) {
             key = `${arg.siteId}-${arg.shiftType}`;
           } else {
             throw new Error(
-              "Invalid argument for remove. Must be a string key or an object with siteId and shiftType."
+              "Invalid argument for remove. Must be a string key or an object with siteId and shiftType.",
             );
           }
 
           const index = this.findIndex((order) => order.key === key);
           if (index === -1) {
-            throw new Error(`SiteOrder with key ${key} does not exist.`);
+            throw new Error(`ScheduleOrder with key ${key} does not exist.`);
+          }
+
+          this.splice(index, 1);
+        },
+        writable: false,
+        enumerable: false,
+        configurable: true,
+      },
+    });
+
+    /*************************************************************************
+     * CUSTOM METHODS FOR scheduleOrder ARRAY
+     * Note: These methods modify the scheduleOrder array directly.
+     * The Company instance itself is not updated by these methods.
+     * Use the provided public methods to interact with scheduleOrder.
+     *************************************************************************/
+    Object.defineProperties(this.scheduleOrder, {
+      /**
+       * Inserts a new ScheduleOrder into the `scheduleOrder` array.
+       * @param {Object} params - The parameters for the ScheduleOrder.
+       * @param {string} params.siteId - The ID of the site.
+       * @param {string} params.shiftType - The shift type associated with the site.
+       * @param {number} [index=-1] - The position to insert the new ScheduleOrder. Defaults to the end.
+       * @returns {ScheduleOrder} The newly created ScheduleOrder instance.
+       * @throws {Error} If a ScheduleOrder with the same key already exists.
+       */
+      add: {
+        value: function ({ siteId, shiftType }, index = -1) {
+          const newOrder = new ScheduleOrder({ siteId, shiftType });
+          if (this.some((order) => order.key === newOrder.key)) {
+            throw new Error(
+              `ScheduleOrder with key ${newOrder.key} already exists.`,
+            );
+          }
+          index === -1 ? this.push(newOrder) : this.splice(index, 0, newOrder);
+          return newOrder;
+        },
+        writable: false,
+        enumerable: false,
+        configurable: true,
+      },
+      /**
+       * Changes the order of a ScheduleOrder in the scheduleOrder array.
+       * Note: Company instance does not be updated by this method.
+       * @param {number} oldIndex - The current index of the ScheduleOrder.
+       * @param {number} newIndex - The new index to move the ScheduleOrder to.
+       * @returns {void}
+       * @throws {Error} If oldIndex or newIndex are out of bounds.
+       */
+      change: {
+        value: function (oldIndex, newIndex) {
+          const length = this.length;
+          if (oldIndex < 0 || oldIndex >= length) {
+            throw new Error("Invalid oldIndex for site order change.");
+          }
+          if (newIndex < 0 || newIndex >= length) {
+            throw new Error("Invalid newIndex for site order change.");
+          }
+          const [movedOrder] = this.splice(oldIndex, 1);
+          this.splice(newIndex, 0, movedOrder);
+        },
+        writable: false,
+        enumerable: false,
+        configurable: true,
+      },
+      /**
+       * Removes a ScheduleOrder from the scheduleOrder array.
+       * Note: Company instance does not be updated by this method.
+       * @param {string|Object} arg - The key or {siteId, shiftType} of the ScheduleOrder to remove.
+       * @returns {void}
+       * @throws {Error} If the ScheduleOrder does not exist or if the argument is invalid.
+       */
+      remove: {
+        value: function (arg) {
+          let key = "";
+          if (typeof arg === "string") {
+            key = arg;
+          } else if (typeof arg === "object" && arg.siteId && arg.shiftType) {
+            key = `${arg.siteId}-${arg.shiftType}`;
+          } else {
+            throw new Error(
+              "Invalid argument for remove. Must be a string key or an object with siteId and shiftType.",
+            );
+          }
+
+          const index = this.findIndex((order) => order.key === key);
+          if (index === -1) {
+            throw new Error(`ScheduleOrder with key ${key} does not exist.`);
           }
 
           this.splice(index, 1);
