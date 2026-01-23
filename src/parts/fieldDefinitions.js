@@ -320,6 +320,7 @@ export const fieldDefinitions = {
       name: generalDefinitions.oneLine.component.name,
       attrs: {
         inputType: "email",
+        inputmode: "email",
       },
     },
   },
@@ -347,6 +348,7 @@ export const fieldDefinitions = {
       attrs: {
         counter: true,
         inputType: "tel",
+        inputmode: "tel",
       },
     },
   },
@@ -359,6 +361,7 @@ export const fieldDefinitions = {
       attrs: {
         counter: true,
         inputType: "tel",
+        inputmode: "tel",
       },
     },
   },
@@ -421,6 +424,7 @@ export const fieldDefinitions = {
       attrs: {
         counter: true,
         inputType: "tel",
+        inputmode: "tel",
       },
     },
   },
@@ -482,6 +486,7 @@ export const fieldDefinitions = {
       attrs: {
         counter: true,
         inputType: "tel",
+        inputmode: "tel",
       },
     },
   },
@@ -704,7 +709,7 @@ export const defField = (key, options = {}) => {
 
   if (!baseConfigSource) {
     console.warn(
-      `[parts/fieldDefinitions.js defField] Definition for key "${key}" not found. Using fieldDefinitions.default as base.`
+      `[parts/fieldDefinitions.js defField] Definition for key "${key}" not found. Using fieldDefinitions.default as base.`,
     );
     baseConfigSource = effectiveDefaultDefinition;
     isFallback = true;

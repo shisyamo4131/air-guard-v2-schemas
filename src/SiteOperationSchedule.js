@@ -37,7 +37,11 @@
  * @getter {boolean} isEditable - Indicates whether the instance is editable (read-only)
  * - Returns `false` if `operationResultId` is set, `true` otherwise
  *
+ * @deprecated
  * @getter {boolean} isNotificatedAllWorkers - Indicates whether all workers have been notified (read-only)
+ * - Returns `true` if all workers in the `workers` array have `hasNotification` set to `true`
+ *
+ * @getter {boolean} isNotifiedAllWorkers - Indicates whether all workers have been notified (read-only)
  * - Returns `true` if all workers in the `workers` array have `hasNotification` set to `true`
  *
  * @inherited - The following properties are inherited from Operation:
@@ -339,7 +343,7 @@ export default class SiteOperationSchedule extends Operation {
         set(v) {
           if (typeof v !== "number" || isNaN(v) || v < 0) {
             throw new Error(
-              `breakMinutes must be a non-negative number. breakMinutes: ${v}`
+              `breakMinutes must be a non-negative number. breakMinutes: ${v}`,
             );
           }
           if (_breakMinutes === v) return;
@@ -354,7 +358,7 @@ export default class SiteOperationSchedule extends Operation {
         set(v) {
           if (typeof v !== "boolean") {
             throw new Error(
-              `isStartNextDay must be a boolean. isStartNextDay: ${v}`
+              `isStartNextDay must be a boolean. isStartNextDay: ${v}`,
             );
           }
           if (_isStartNextDay === v) return;
@@ -376,10 +380,22 @@ export default class SiteOperationSchedule extends Operation {
   }
 
   /**
+   * @deprecated
    * Returns whether all workers have been notified.
    * @returns {boolean} - Whether all workers have been notified.
    */
   get isNotificatedAllWorkers() {
+    console.warn(
+      "`isNotificatedAllWorkers` is deprecated. Use `isNotifiedAllWorkers` instead.",
+    );
+    return this.workers.every((worker) => worker.hasNotification);
+  }
+
+  /**
+   * Returns whether all workers have been notified.
+   * @returns {boolean} - Whether all workers have been notified.
+   */
+  get isNotifiedAddWorkers() {
     return this.workers.every((worker) => worker.hasNotification);
   }
 
@@ -397,7 +413,7 @@ export default class SiteOperationSchedule extends Operation {
   async beforeUpdate(args = {}) {
     if (this._beforeData.operationResultId) {
       throw new Error(
-        `Could not update this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
+        `Could not update this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`,
       );
     }
     await super.beforeUpdate(args);
@@ -414,7 +430,7 @@ export default class SiteOperationSchedule extends Operation {
   async beforeDelete(args = {}) {
     if (this._beforeData.operationResultId) {
       throw new Error(
-        `Could not delete this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`
+        `Could not delete this document. The OperationResult based on this document already exists. OperationResultId: ${this._beforeData.operationResultId}`,
       );
     }
     await super.beforeDelete(args);
@@ -588,7 +604,7 @@ export default class SiteOperationSchedule extends Operation {
     }
     if (dates.some((d) => !(d instanceof Date) && typeof d !== "string")) {
       throw new TypeError(
-        "日付の指定が無効です。Dateオブジェクトか文字列で指定してください。"
+        "日付の指定が無効です。Dateオブジェクトか文字列で指定してください。",
       );
     }
     if (dates.length > 20) {
@@ -632,7 +648,7 @@ export default class SiteOperationSchedule extends Operation {
       // トランザクションで一括作成
       await this.constructor.runTransaction(async (transaction) => {
         await Promise.all(
-          newSchedules.map((schedule) => schedule.create({ transaction }))
+          newSchedules.map((schedule) => schedule.create({ transaction })),
         );
       });
 
@@ -694,7 +710,7 @@ export default class SiteOperationSchedule extends Operation {
           className: "SiteOperationSchedule",
           arguments: {},
           state: this.toObject(),
-        }
+        },
       );
     }
   }
@@ -716,7 +732,7 @@ export default class SiteOperationSchedule extends Operation {
     // ドキュメントIDがない（現場稼働予定ドキュメントとして未作成）場合はエラー
     if (!this.docId) {
       throw new Error(
-        "不正な処理です。作成前の現場稼働予定から稼働実績を作成することはできません。"
+        "不正な処理です。作成前の現場稼働予定から稼働実績を作成することはできません。",
       );
     }
 
@@ -726,12 +742,12 @@ export default class SiteOperationSchedule extends Operation {
     const siteIsExist = await siteInstance.fetch({ docId: this.siteId });
     if (!siteIsExist) {
       throw new Error(
-        `不正な処理です。現場ID: ${this.siteId} の現場データが存在しません。`
+        `不正な処理です。現場ID: ${this.siteId} の現場データが存在しません。`,
       );
     }
     if (siteInstance.isTemporary) {
       throw new Error(
-        `不正な処理です。現場ID: ${this.siteId} の現場データは仮登録状態です。`
+        `不正な処理です。現場ID: ${this.siteId} の現場データは仮登録状態です。`,
       );
     }
 
@@ -813,8 +829,8 @@ export default class SiteOperationSchedule extends Operation {
     const color = !this.isEditable
       ? "grey"
       : this.shiftType === "DAY"
-      ? "orange"
-      : "indigo";
+        ? "orange"
+        : "indigo";
     return {
       name,
       start: this.dateAt,
