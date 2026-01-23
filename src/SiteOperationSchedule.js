@@ -395,7 +395,7 @@ export default class SiteOperationSchedule extends Operation {
    * Returns whether all workers have been notified.
    * @returns {boolean} - Whether all workers have been notified.
    */
-  get isNotifiedAddWorkers() {
+  get isNotifiedAllWorkers() {
     return this.workers.every((worker) => worker.hasNotification);
   }
 
