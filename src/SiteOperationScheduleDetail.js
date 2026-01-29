@@ -5,46 +5,43 @@
  * - Model representing the details of a site operation schedule.
  * - Inherits from OperationDetail.
  * ---------------------------------------------------------------------------
- * @prop {string} siteOperationScheduleId - Site Operation Schedule ID
- * @prop {boolean} hasNotification - Notification flag
- * ---------------------------------------------------------------------------
- * @computed {string} notificationKey - Notification key (read-only)
- * - Concatenation of `siteOperationScheduleId` and `workerId` with '-'
+ * @property {string} siteOperationScheduleId - Site Operation Schedule ID
+ * @property {boolean} hasNotification - 配置通知が作成されているかどうかのフラグ。SiteOperationSchedule クラスから設定される。
+ * @property {string} notificationKey - Notification key (read-only)
+ * - `siteOperationScheduleId` と `workerId` を `-` で連結したキー。`ArrangemntNotification` ドキュメントIDと一致する。
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from OperationDetail:
- * @prop {string} id - Employee or Outsourcer document ID
- * @prop {number} index - Identifier index for Outsourcer (always 0 for Employee)
- * @prop {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
- * @prop {number} amount - Number of placements (always fixed at 1)
- * @prop {string} siteId - Site ID
- * @prop {boolean} isQualified - Qualified flag
- * @prop {boolean} isOjt - OJT flag
- * ---------------------------------------------------------------------------
- * @inherited - The following computed properties are inherited from OperationDetail:
- * @computed {string} workerId - Worker ID (read-only)
+ * @property {string} id - Employee or Outsourcer document ID
+ * @property {number} index - Identifier index for Outsourcer (always 0 for Employee)
+ * @property {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
+ * @property {number} amount - Number of placements (always fixed at 1)
+ * @property {string} siteId - Site ID
+ * @property {boolean} isQualified - Qualified flag
+ * @property {boolean} isOjt - OJT flag
+ * @property {string} workerId - Worker ID (read-only)
  * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
- * @computed {string|null} employeeId - Employee ID (null if not applicable) (read-only)
- * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable) (read-only)
+ * @property {string|null} employeeId - Employee ID (null if not applicable) (read-only)
+ * @property {string|null} outsourcerId - Outsourcer ID (null if not applicable) (read-only)
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from WorkingResult (via OperationDetail):
- * @prop {Date} dateAt - Placement date (trigger property)
- * @prop {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @prop {string} shiftType - `DAY` or `NIGHT`
- * @prop {string} startTime - Start time (HH:MM format)
- * @prop {boolean} isStartNextDay - Next day start flag
- * @prop {string} endTime - End time (HH:MM format)
- * @prop {number} breakMinutes - Break time (minutes)
- * @prop {number} regulationWorkMinutes - Regulation work minutes
+ * @property {Date} dateAt - Placement date (trigger property)
+ * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @property {string} shiftType - `DAY` or `NIGHT`
+ * @property {string} startTime - Start time (HH:MM format)
+ * @property {boolean} isStartNextDay - Next day start flag
+ * @property {string} endTime - End time (HH:MM format)
+ * @property {number} breakMinutes - Break time (minutes)
+ * @property {number} regulationWorkMinutes - Regulation work minutes
  * ---------------------------------------------------------------------------
  * @inherited - The following computed properties are inherited from WorkingResult (via OperationDetail):
- * @computed {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
- * @computed {Date} startAt - Start date and time (Date object) (read-only)
- * @computed {Date} endAt - End date and time (Date object) (read-only)
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
- * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
- * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ * @property {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
+ * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * @property {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
+ * @property {Date} startAt - Start date and time (Date object) (read-only)
+ * @property {Date} endAt - End date and time (Date object) (read-only)
+ * @property {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
+ * @property {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * @property {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * - Overtime work is not negative; the minimum is 0.
  * ---------------------------------------------------------------------------
