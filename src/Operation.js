@@ -221,7 +221,7 @@ export default class Operation extends WorkingResult {
   constructor(item = {}) {
     if (new.target == Operation) {
       throw new Error(
-        `Operation is an abstract class and cannot be instantiated directly.`
+        `Operation is an abstract class and cannot be instantiated directly.`,
       );
     }
     super(item);
@@ -367,7 +367,7 @@ export default class Operation extends WorkingResult {
         set(v) {
           if (typeof v !== "number" || isNaN(v) || v < 0) {
             throw new Error(
-              `regulationWorkMinutes must be a non-negative number. regulationWorkMinutes: ${v}`
+              `regulationWorkMinutes must be a non-negative number. regulationWorkMinutes: ${v}`,
             );
           }
           if (_regulationWorkMinutes === v) return;
@@ -456,7 +456,7 @@ export default class Operation extends WorkingResult {
           const { id } = args;
           if (!id || typeof id !== "string") {
             throw new Error(
-              `Employee ID is required and must be a string. id: ${id}`
+              `Employee ID is required and must be a string. id: ${id}`,
             );
           }
           if (this.some((emp) => emp.workerId === id)) {
@@ -467,7 +467,7 @@ export default class Operation extends WorkingResult {
             throw new Error("employees.customClass is not defined.");
           }
           const newEmployee = new schema({
-            ...self.toObject(),
+            ...self.toObject(), // 自身のプロパティを継承（siteId, dateAt, shiftType, startTime, endTime, breakMinutes など）
             ...args,
             isEmployee: true, // Force override to true
           });
@@ -490,7 +490,7 @@ export default class Operation extends WorkingResult {
         value: function (oldIndex, newIndex) {
           if (newIndex > this.length - 1) {
             throw new Error(
-              `Employees must be placed before outsourcers. newIndex: ${newIndex}, employees.length: ${this.length}`
+              `Employees must be placed before outsourcers. newIndex: ${newIndex}, employees.length: ${this.length}`,
             );
           }
           if (newIndex < 0 || newIndex >= this.length) {
@@ -510,7 +510,7 @@ export default class Operation extends WorkingResult {
       change: {
         value: function (newEmployee) {
           const index = this.findIndex(
-            (e) => e.workerId === newEmployee.workerId
+            (e) => e.workerId === newEmployee.workerId,
           );
           if (index < 0) {
             throw new Error("Worker not found in employees.");
@@ -559,7 +559,7 @@ export default class Operation extends WorkingResult {
           const { id } = args;
           if (!id || typeof id !== "string") {
             throw new Error(
-              `Outsourcer ID is required and must be a string. id: ${id}`
+              `Outsourcer ID is required and must be a string. id: ${id}`,
             );
           }
           const maxIndex = this.reduce((result, out) => {
@@ -600,16 +600,16 @@ export default class Operation extends WorkingResult {
         value: function (oldIndex, newIndex) {
           if (newIndex <= self.employees.length - 1) {
             throw new Error(
-              `Outsourcers must be placed after employees. newIndex: ${newIndex}, employees.length: ${self.employees.length}`
+              `Outsourcers must be placed after employees. newIndex: ${newIndex}, employees.length: ${self.employees.length}`,
             );
           }
           const internalOldIndex = Math.max(
             0,
-            oldIndex - self.employees.length
+            oldIndex - self.employees.length,
           );
           const internalNewIndex = Math.max(
             0,
-            newIndex - self.employees.length
+            newIndex - self.employees.length,
           );
           if (internalOldIndex < 0 || internalOldIndex >= this.length) {
             throw new Error(`Invalid old index: ${internalOldIndex}`);
@@ -631,7 +631,7 @@ export default class Operation extends WorkingResult {
       change: {
         value: function (newOutsourcer) {
           const index = this.findIndex(
-            (e) => e.workerId === newOutsourcer.workerId
+            (e) => e.workerId === newOutsourcer.workerId,
           );
           if (index < 0) {
             throw new Error("Worker not found in outsourcers.");
@@ -781,7 +781,7 @@ export default class Operation extends WorkingResult {
     const { oldIndex, newIndex, isEmployee = true } = options;
     if (typeof oldIndex !== "number" || typeof newIndex !== "number") {
       throw new Error(
-        "oldIndex and newIndex are required and must be numbers."
+        "oldIndex and newIndex are required and must be numbers.",
       );
     }
     if (isEmployee) {
@@ -831,7 +831,7 @@ export default class Operation extends WorkingResult {
       case "object":
         if (!key.siteId || !key.shiftType || !key.date) {
           throw new Error(
-            "key must contain siteId, shiftType, and date properties."
+            "key must contain siteId, shiftType, and date properties.",
           );
         }
         return [key.siteId, key.shiftType, key.date];
@@ -839,7 +839,7 @@ export default class Operation extends WorkingResult {
         const [siteId, shiftType, year, month, day] = key.split("-");
         if (!siteId || !shiftType || !year || !month || !day) {
           throw new Error(
-            "key must be in the format 'siteId-shiftType-year-month-day'."
+            "key must be in the format 'siteId-shiftType-year-month-day'.",
           );
         }
         return [siteId, shiftType, `${year}-${month}-${day}`];
