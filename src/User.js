@@ -44,8 +44,10 @@ const classProps = {
   tagSize: defField("select", {
     label: "タグサイズ",
     default: TAG_SIZE_VALUES.MEDIUM.value,
-    attrs: {
-      items: TAG_SIZE_OPTIONS,
+    component: {
+      attrs: {
+        items: TAG_SIZE_OPTIONS,
+      },
     },
   }),
 };
