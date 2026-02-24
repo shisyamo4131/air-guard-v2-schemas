@@ -10,10 +10,7 @@ import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import CutoffDate from "./utils/CutoffDate.js";
-import {
-  CONTRACT_STATUS_VALUES,
-  PAYMENT_MONTH_OPTIONS,
-} from "./constants/index.js";
+import { CONTRACT_STATUS_VALUES } from "./constants/index.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
 const classProps = {
@@ -30,26 +27,8 @@ const classProps = {
   fax: defField("fax", { colsDefinition: { cols: 12, sm: 6 } }),
   contractStatus: defField("contractStatus", { required: true }),
   cutoffDate: defField("cutoffDate", { required: true }),
-  paymentMonth: defField("select", {
-    default: 1,
-    label: "入金サイト（月数）",
-    required: true,
-    component: {
-      attrs: {
-        items: PAYMENT_MONTH_OPTIONS,
-      },
-    },
-  }),
-  paymentDate: defField("select", {
-    label: "入金サイト（日付）",
-    default: CutoffDate.VALUES[0].value,
-    required: true,
-    component: {
-      attrs: {
-        items: CutoffDate.OPTIONS,
-      },
-    },
-  }),
+  paymentMonth: defField("paymentMonth", { required: true }),
+  paymentDate: defField("paymentDate", { required: true }),
   remarks: defField("multipleLine", { label: "備考" }),
 };
 
@@ -80,8 +59,8 @@ const classProps = {
  * @prop {string} STATUS_TERMINATED - constant for terminated contract status
  *
  * @method getPaymentDueDateAt
- * @param {Date} baseDate - base date in UTC (JST - 9 hours)
- * @returns {Date} payment due date in UTC (JST - 9 hours)
+ *        @param {Date} baseDate - base date in UTC (JST - 9 hours)
+ *        @returns {Date} payment due date in UTC (JST - 9 hours)
  *****************************************************************************/
 export default class Customer extends GeocodableMixin(FireModel) {
   static className = "取引先";

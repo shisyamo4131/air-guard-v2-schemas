@@ -32,6 +32,10 @@ import {
 } from "../constants/gender.js";
 import { OPTIONS as PREFECTURES_OPTIONS } from "../constants/prefectures.js";
 import {
+  VALUES as PAYMENT_MONTH_VALUES,
+  OPTIONS as PAYMENT_MONTH_OPTIONS,
+} from "../constants/payment-month.js";
+import {
   VALUES as SHIFT_TYPE_VALUES,
   OPTIONS as SHIFT_TYPE_OPTIONS,
 } from "../constants/shift-type.js";
@@ -647,6 +651,28 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: GENDER_OPTIONS,
+      },
+    },
+  },
+  paymentDate: {
+    ...generalDefinitions.select,
+    default: CutoffDate.VALUES[0].value,
+    label: "入金サイト（日）",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: CutoffDate.OPTIONS,
+      },
+    },
+  },
+  paymentMonth: {
+    ...generalDefinitions.select,
+    default: PAYMENT_MONTH_VALUES[1].value,
+    label: "入金サイト（月数）",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: PAYMENT_MONTH_OPTIONS,
       },
     },
   },
