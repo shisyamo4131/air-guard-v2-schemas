@@ -592,8 +592,8 @@ export default class OperationResult extends Operation {
   async beforeUpdate(args = {}) {
     await super.beforeUpdate(args);
 
-    // 更新前および更新後の `isLocked` が true の場合は編集不可とする。
-    if (this.isLocked && this._beforeData.isLocked) {
+    // 更新前 `isLocked` が false かつ更新後の `isLocked` が true の場合は編集不可とする。
+    if (!this._beforeData.isLocked && this.isLocked) {
       const message = `[OperationResult.js] This OperationResult (docId: ${this.docId}) is locked and cannot be edited.`;
       throw new Error(message);
     }
@@ -616,8 +616,8 @@ export default class OperationResult extends Operation {
   async beforeDelete(args = {}) {
     await super.beforeDelete(args);
 
-    // 更新前および更新後の `isLocked` が true の場合は削除不可とする。
-    if (this.isLocked && this._beforeData.isLocked) {
+    // 更新前 `isLocked` が false かつ更新後の `isLocked` が true の場合は削除不可とする。
+    if (!this._beforeData.isLocked && this.isLocked) {
       const message = `[OperationResult.js] This OperationResult (docId: ${this.docId}) is locked and cannot be deleted.`;
       throw new Error(message);
     }
