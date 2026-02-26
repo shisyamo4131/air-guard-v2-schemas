@@ -334,7 +334,7 @@ export default class OperationResult extends Operation {
                   siteId: this.siteId,
                   category,
                   statistics: this.statistics,
-                }
+                },
               );
               return createInitialValues();
             }
@@ -383,10 +383,10 @@ export default class OperationResult extends Operation {
 
               // 金額計算(RoundSettingを適用)
               result.regularAmount = RoundSetting.apply(
-                result.quantity * result.unitPrice
+                result.quantity * result.unitPrice,
               );
               result.overtimeAmount = RoundSetting.apply(
-                (result.overtimeMinutes * result.overtimeUnitPrice) / 60
+                (result.overtimeMinutes * result.overtimeUnitPrice) / 60,
               );
               result.total = result.regularAmount + result.overtimeAmount;
             }
@@ -440,13 +440,13 @@ export default class OperationResult extends Operation {
         get() {
           if (!this.billingDateAt) return null;
           const jstDate = new Date(
-            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
+            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000,
           ); /* JST補正 */
           const year = jstDate.getUTCFullYear();
           const month = jstDate.getUTCMonth() + 1;
           const day = jstDate.getUTCDate();
           return `${year}-${String(month).padStart(2, "0")}-${String(
-            day
+            day,
           ).padStart(2, "0")}`;
         },
         set(v) {},
@@ -457,7 +457,7 @@ export default class OperationResult extends Operation {
         get() {
           if (!this.billingDateAt) return null;
           const jstDate = new Date(
-            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
+            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000,
           ); /* JST補正 */
           const year = jstDate.getUTCFullYear();
           const month = jstDate.getUTCMonth() + 1;
@@ -529,7 +529,7 @@ export default class OperationResult extends Operation {
     }
     this.billingDateAt = CutoffDate.calculateBillingDateAt(
       this.dateAt,
-      this.agreement.cutoffDate
+      this.agreement.cutoffDate,
     );
   }
 
@@ -557,9 +557,8 @@ export default class OperationResult extends Operation {
       docId: this.siteId,
     });
     if (!siteExists) {
-      throw new Error(
-        `[OperationResult] The specified siteId (${this.siteId}) does not exist.`
-      );
+      const message = `[OperationResult.js] The specified siteId (${this.siteId}) does not exist.`;
+      throw new Error(message);
     }
     this.customerId = siteInstance.customerId;
     this.agreement = siteInstance.getAgreement(this);
@@ -593,20 +592,16 @@ export default class OperationResult extends Operation {
   async beforeUpdate(args = {}) {
     await super.beforeUpdate(args);
 
-    // Prevent editing if isLocked is true
-    if (this.isLocked) {
-      throw new Error(
-        "[OperationResult] This OperationResult is locked and cannot be edited."
-      );
+    // 更新前および更新後の `isLocked` が true の場合は編集不可とする。
+    if (this.isLocked && this._beforeData.isLocked) {
+      const message = `[OperationResult.js] This OperationResult (docId: ${this.docId}) is locked and cannot be edited.`;
+      throw new Error(message);
     }
 
     // Sync customerId and apply agreement if key changed
-    /**
-     * 2026-01-08 `agreementKey` を実装したため、`key` の使用を避ける。
-     */
-    // if (this.key === this._beforeData.key) return;
-    if (this.agreementKey === this._beforeData.agreementKey) return;
-    await this._syncCustomerIdAndApplyAgreement();
+    if (this.agreementKey !== this._beforeData.agreementKey) {
+      await this._syncCustomerIdAndApplyAgreement();
+    }
   }
 
   /**
@@ -620,11 +615,11 @@ export default class OperationResult extends Operation {
    */
   async beforeDelete(args = {}) {
     await super.beforeDelete(args);
-    // Prevent deletion if isLocked is true
-    if (this.isLocked) {
-      throw new Error(
-        "[OperationResult] This OperationResult is locked and cannot be deleted."
-      );
+
+    // 更新前および更新後の `isLocked` が true の場合は削除不可とする。
+    if (this.isLocked && this._beforeData.isLocked) {
+      const message = `[OperationResult.js] This OperationResult (docId: ${this.docId}) is locked and cannot be deleted.`;
+      throw new Error(message);
     }
   }
 }
