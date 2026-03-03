@@ -2,6 +2,13 @@
  * OperationResult Model
  * @author shisyamo4131
  *
+ * ### ドキュメント作成前処理
+ * - `siteId` から `customerId` を同期し、関連する `agreement` を適用します。
+ *
+ * ### ドキュメント更新前処理
+ * - 更新前および更新後の `isLocked` が true の場合は編集不可とします。（`isLocked` は `OperationBilling` クラスで更新されます。）
+ * - `key` が変更された場合は `customerId` の同期と `agreement` の適用を行います。
+ *
  * - Extends Operation class to represent the result of an operation.
  * - Also incorporates Agreement class properties for pricing and billing information.
  * - Provides comprehensive billing calculations including statistics, sales amounts, and tax.
@@ -565,7 +572,8 @@ export default class OperationResult extends Operation {
   }
 
   /**
-   * Override beforeCreate to sync customerId
+   * ドキュメント作成前処理
+   * - siteId から customerId を同期し、agreement を適用する。
    * @param {Object} args - Creation options.
    * @param {string} [args.docId] - Document ID to use (optional).
    * @param {boolean} [args.useAutonumber=true] - Whether to use auto-numbering.
@@ -582,7 +590,9 @@ export default class OperationResult extends Operation {
   }
 
   /**
-   * Override beforeUpdate to sync customerId and apply agreement if key changed
+   * ドキュメント更新前処理
+   * - 更新前および更新後の `isLocked` が true の場合は編集不可とする。
+   * - `key` が変更された場合は `customerId` の同期と `agreement` の適用を行う。
    * @param {Object} args - Creation options.
    * @param {Object} [args.transaction] - Firestore transaction.
    * @param {Function} [args.callBack] - Callback function.
@@ -598,8 +608,8 @@ export default class OperationResult extends Operation {
       throw new Error(message);
     }
 
-    // Sync customerId and apply agreement if key changed
-    if (this.agreementKey !== this._beforeData.agreementKey) {
+    // keyが変更された場合はcustomerIdの同期とagreementの適用を行う
+    if (this.key !== this._beforeData.key) {
       await this._syncCustomerIdAndApplyAgreement();
     }
   }

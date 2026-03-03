@@ -193,7 +193,7 @@ export default class OperationBilling extends OperationResult {
 
   /**
    * 2026-03-03 - コメントアウト
-   * - 継承元である `OperationResult` クラスの `beforeUpdate` で `agreementKey` の変更を検知して
+   * - 継承元である `OperationResult` クラスの `beforeUpdate` で `key` の変更を検知して
    *   `customerId` の同期および `agreement` の適用を行う処理があるため、ここでの処理は不要。
    */
   // /**
