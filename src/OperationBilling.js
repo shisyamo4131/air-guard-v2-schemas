@@ -192,19 +192,24 @@ export default class OperationBilling extends OperationResult {
   ];
 
   /**
-   * Override beforeUpdate to skip `isLocked` check and sync customerId and apply agreement if key changed
-   * @param {Object} args - Creation options.
-   * @param {Object} [args.transaction] - Firestore transaction.
-   * @param {Function} [args.callBack] - Callback function.
-   * @param {string} [args.prefix] - Path prefix.
-   * @returns {Promise<void>}
+   * 2026-03-03 - コメントアウト
+   * - 継承元である `OperationResult` クラスの `beforeUpdate` で `agreementKey` の変更を検知して
+   *   `customerId` の同期および `agreement` の適用を行う処理があるため、ここでの処理は不要。
    */
-  async beforeUpdate(args = {}) {
-    await super.beforeUpdate(args);
-    // Sync customerId and apply agreement if key changed
-    if (this.key === this._beforeData.key) return;
-    await this._syncCustomerIdAndApplyAgreement(args);
-  }
+  // /**
+  //  * Override beforeUpdate to skip `isLocked` check and sync customerId and apply agreement if key changed
+  //  * @param {Object} args - Creation options.
+  //  * @param {Object} [args.transaction] - Firestore transaction.
+  //  * @param {Function} [args.callBack] - Callback function.
+  //  * @param {string} [args.prefix] - Path prefix.
+  //  * @returns {Promise<void>}
+  //  */
+  // async beforeUpdate(args = {}) {
+  //   await super.beforeUpdate(args);
+  //   // Sync customerId and apply agreement if key changed
+  //   if (this.key === this._beforeData.key) return;
+  //   await this._syncCustomerIdAndApplyAgreement(args);
+  // }
 
   /**
    * Override create method to disallow creation of OperationBilling instances
@@ -213,8 +218,8 @@ export default class OperationBilling extends OperationResult {
   async create() {
     return Promise.reject(
       new Error(
-        "[OperationBilling.js] Creation of OperationBilling is not implemented."
-      )
+        "[OperationBilling.js] Creation of OperationBilling is not implemented.",
+      ),
     );
   }
 
@@ -225,8 +230,8 @@ export default class OperationBilling extends OperationResult {
   async delete() {
     return Promise.reject(
       new Error(
-        "[OperationBilling.js] Deletion of OperationBilling is not implemented."
-      )
+        "[OperationBilling.js] Deletion of OperationBilling is not implemented.",
+      ),
     );
   }
 
