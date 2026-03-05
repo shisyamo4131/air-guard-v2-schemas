@@ -1,9 +1,11 @@
 /*****************************************************************************
- * Agreement Model ver 1.0.0
+ * 取極めモデルクラス
  * @author shisyamo4131
- * ---------------------------------------------------------------------------
- * A class to manage agreement details based on WorkingResult.
- * ---------------------------------------------------------------------------
+ *
+ * @constant {Object} BILLING_UNIT_TYPE - 請求単位定数オブジェクト
+ * @constant {Object} DAY_TYPE - 曜日区分定数オブジェクト
+ * @constant {Object} SHIFT_TYPE - シフト区分定数オブジェクト
+ *
  * @property {number} unitPriceBase - Base unit price (JPY)
  * @property {number} overtimeUnitPriceBase - Overtime unit price (JPY/hour)
  * @property {number} unitPriceQualified - Qualified unit price (JPY)
@@ -36,26 +38,26 @@
  *
  * @property {string} key - {@link WorkingResult#key}
  *
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
+ * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
  * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
+ * @property {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
  * - `true` if `startTime` is later than `endTime`
- * @computed {Date} startAt - Start date and time (Date object) (read-only)
+ * @property {Date} startAt - Start date and time (Date object) (read-only)
  * - Returns a Date object with `startTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} endAt - End date and time (Date object) (read-only)
+ * @property {Date} endAt - End date and time (Date object) (read-only)
  * - Returns a Date object with `endTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
+ * @property {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
  * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
  * - If the difference between `endAt` and `startAt` is negative, returns 0.
  * - If `startAt` or `endAt` is not set, returns 0.
- * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
+ * @property {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
  * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
  * - If actual working time is less than regulation time (e.g., early leave), it equals `totalWorkMinutes`.
  * - If actual working time exceeds regulation time (overtime), it equals `regulationWorkMinutes`.
- * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
+ * @property {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
  * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
  * - Overtime work is not negative; the minimum is 0.
  * ---------------------------------------------------------------------------
@@ -164,7 +166,7 @@ export default class Agreement extends WorkingResult {
    */
   get prices() {
     console.warn(
-      "`Agreement.prices` is deprecated. Use `Agreement.billingInfo` instead."
+      "`Agreement.prices` is deprecated. Use `Agreement.billingInfo` instead.",
     );
     return {
       regulationWorkMinutes: this.regulationWorkMinutes,

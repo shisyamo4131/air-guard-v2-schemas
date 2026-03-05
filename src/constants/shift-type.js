@@ -1,7 +1,10 @@
+/*****************************************************************************
+ * 勤務区分定数定義
+ *****************************************************************************/
 // prettier-ignore
 export const VALUES = Object.freeze({
-  DAY: { value: "DAY", title: "日勤", color: "deep-orange" },
-  NIGHT: { value: "NIGHT", title: "夜勤", color: "indigo" },
+  DAY: { value: "DAY", title: "日勤", color: "deep-orange", order: 0 },
+  NIGHT: { value: "NIGHT", title: "夜勤", color: "indigo", order: 1 },
 });
 
 export const OPTIONS = [

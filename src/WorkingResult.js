@@ -8,6 +8,9 @@
  * - `dateAt` is defined as a trigger property. When it is set, `dayType` is automatically updated.
  * - Subclasses can override `setDateAtCallback` to add custom behavior when `dateAt` changes.
  * ---------------------------------------------------------------------------
+ * @constant {Object} DAY_TYPE - 曜日区分定数オブジェクト
+ * @constant {Object} SHIFT_TYPE - シフト区分定数オブジェクト
+ *
  * @property {Date} dateAt - Applicable start date (trigger property)
  *
  * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
@@ -136,7 +139,7 @@ export default class WorkingResult extends FireModel {
   constructor(item = {}) {
     if (new.target === WorkingResult) {
       throw new Error(
-        "WorkingResult is an abstract class and cannot be instantiated directly."
+        "WorkingResult is an abstract class and cannot be instantiated directly.",
       );
     }
     super(item);
