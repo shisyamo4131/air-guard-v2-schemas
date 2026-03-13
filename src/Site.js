@@ -38,9 +38,7 @@ const classProps = {
    * 取引先名
    * - `customerId` が未設定の場合に必須（仮登録状態で取引先の名前だけ登録したい場合を想定）
    */
-  customerName: defField("customerName", {
-    required: ({ item }) => !item.customerId,
-  }),
+  customerName: defField("customerName"),
   code: defField("code", { label: "現場コード" }),
   name: defField("name", {
     label: "現場名",
@@ -172,6 +170,8 @@ export default class Site extends GeocodableMixin(FireModel) {
   /**
    * ドキュメント作成直前の処理です。
    * - `customerId` に該当する `Customer` インスタンスを取得して `customer` プロパティにセットします。
+   * - 取引先が未設定のまま現場を仮登録することを許容しますが、その場合は `customerName` プロパティに取引先名を入力する必要があります。
+   * - `customerId` と `customerName` の両方が未設定の場合はエラーをスローします。
    * @param {Object} args - Creation options.
    * @param {string} [args.docId] - Document ID to use (optional).
    * @param {boolean} [args.useAutonumber=true] - Whether to use auto-numbering.
@@ -179,14 +179,29 @@ export default class Site extends GeocodableMixin(FireModel) {
    * @param {Function} [args.callBack] - Callback function.
    * @param {string} [args.prefix] - Path prefix.
    * @returns {Promise<void>}
+   * @throws {Error} `customerId` と `customerName` の両方が未設定の場合にスローされます。
    */
   async beforeCreate(args = {}) {
     await super.beforeCreate(args);
+
+    /**
+     * 取引先IDが指定されておらず、かつ取引先名が指定されていない場合はエラーをスロー
+     */
+    if (!this.customerId && !this.customerName) {
+      throw new Error(
+        "Either customerId or customerName must be provided for temporary registration.",
+      );
+    }
+
     await this._setCustomer();
   }
 
   /**
-   * Override beforeUpdate to prevent changing customer reference.
+   * ドキュメント更新直前の処理です。
+   * - `customerId` に該当する `Customer` インスタンスを取得して `customer` プロパティにセットします。
+   * - 一度設定した取引先を未設定に戻すことはできません。
+   * - 取引先が変更されていた場合は `customer` プロパティを更新します。
+   * - `customerId` と `customerName` の両方が未設定の場合はエラーをスローします。
    * @param {Object} args - Creation options.
    * @param {Object} [args.transaction] - Firestore transaction.
    * @param {Function} [args.callBack] - Callback function.
@@ -204,6 +219,15 @@ export default class Site extends GeocodableMixin(FireModel) {
     // 取引先が変更されていた場合は `customer` プロパティを更新する。
     if (this.customerId !== this._beforeData.customerId) {
       await this._setCustomer();
+    }
+
+    /**
+     * 取引先IDが指定されておらず、かつ取引先名が指定されていない場合はエラーをスロー
+     */
+    if (!this.customerId && !this.customerName) {
+      throw new Error(
+        "Either customerId or customerName must be provided for temporary registration.",
+      );
     }
   }
 
@@ -255,7 +279,7 @@ export default class Site extends GeocodableMixin(FireModel) {
             throw new Error("Argument must be an instance of Agreement");
           }
           const index = self.agreements.findIndex(
-            (agr) => agr.key === newAgreement._beforeData.key
+            (agr) => agr.key === newAgreement._beforeData.key,
           );
           if (index !== -1) {
             self.agreements[index] = newAgreement;
@@ -269,7 +293,7 @@ export default class Site extends GeocodableMixin(FireModel) {
       remove: {
         value: function (agreement) {
           const index = self.agreements.findIndex(
-            (agr) => agr.key === agreement._beforeData.key
+            (agr) => agr.key === agreement._beforeData.key,
           );
           if (index !== -1) {
             self.agreements.splice(index, 1);
