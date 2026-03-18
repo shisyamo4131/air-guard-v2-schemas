@@ -238,6 +238,9 @@ export default class Employee extends GeocodableMixin(FireModel) {
   static STATUS_ACTIVE = EMPLOYMENT_STATUS_VALUES.ACTIVE.value;
   static STATUS_TERMINATED = EMPLOYMENT_STATUS_VALUES.TERMINATED.value;
 
+  /** 2026-03-18 追加 */
+  static EMPLOYMENT_STATUS = EMPLOYMENT_STATUS_VALUES;
+
   constructor(item = {}) {
     super(item);
 
@@ -358,22 +361,22 @@ export default class Employee extends GeocodableMixin(FireModel) {
     if (this.isForeigner) {
       if (!this.foreignName) {
         throw new Error(
-          "[Employee.js] foreignName is required when isForeigner is true."
+          "[Employee.js] foreignName is required when isForeigner is true.",
         );
       }
       if (!this.nationality) {
         throw new Error(
-          "[Employee.js] nationality is required when isForeigner is true."
+          "[Employee.js] nationality is required when isForeigner is true.",
         );
       }
       if (!this.residenceStatus) {
         throw new Error(
-          "[Employee.js] residenceStatus is required when isForeigner is true."
+          "[Employee.js] residenceStatus is required when isForeigner is true.",
         );
       }
       if (!this.periodOfStay) {
         throw new Error(
-          "[Employee.js] periodOfStay is required when isForeigner is true."
+          "[Employee.js] periodOfStay is required when isForeigner is true.",
         );
       }
     } else {
@@ -399,12 +402,12 @@ export default class Employee extends GeocodableMixin(FireModel) {
     if (this.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
       if (!this.dateOfTermination) {
         throw new Error(
-          "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'."
+          "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'.",
         );
       }
       if (!this.reasonOfTermination) {
         throw new Error(
-          "[Employee.js] reasonOfTermination is required when employmentStatus is 'terminated'."
+          "[Employee.js] reasonOfTermination is required when employmentStatus is 'terminated'.",
         );
       }
     } else {
@@ -417,32 +420,32 @@ export default class Employee extends GeocodableMixin(FireModel) {
     if (this.hasSecurityGuardRegistration) {
       if (!this.dateOfSecurityGuardRegistration) {
         throw new Error(
-          "[Employee.js] dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true."
+          "[Employee.js] dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true.",
         );
       }
       if (!this.emergencyContactName) {
         throw new Error(
-          "[Employee.js] emergencyContactName is required when hasSecurityGuardRegistration is true."
+          "[Employee.js] emergencyContactName is required when hasSecurityGuardRegistration is true.",
         );
       }
       if (!this.emergencyContactRelationDetail) {
         throw new Error(
-          "[Employee.js] emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true."
+          "[Employee.js] emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true.",
         );
       }
       if (!this.emergencyContactAddress) {
         throw new Error(
-          "[Employee.js] emergencyContactAddress is required when hasSecurityGuardRegistration is true."
+          "[Employee.js] emergencyContactAddress is required when hasSecurityGuardRegistration is true.",
         );
       }
       if (!this.emergencyContactPhone) {
         throw new Error(
-          "[Employee.js] emergencyContactPhone is required when hasSecurityGuardRegistration is true."
+          "[Employee.js] emergencyContactPhone is required when hasSecurityGuardRegistration is true.",
         );
       }
       if (!this.domicile) {
         throw new Error(
-          "[Employee.js] domicile is required when hasSecurityGuardRegistration is true."
+          "[Employee.js] domicile is required when hasSecurityGuardRegistration is true.",
         );
       }
     } else {
@@ -497,7 +500,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
       this._beforeData.employmentStatus === Employee.STATUS_ACTIVE
     ) {
       throw new Error(
-        "[Employee.js] Direct changes to employmentStatus to 'terminated' are not allowed. Use toTerminated() method instead."
+        "[Employee.js] Direct changes to employmentStatus to 'terminated' are not allowed. Use toTerminated() method instead.",
       );
     }
 
@@ -520,23 +523,23 @@ export default class Employee extends GeocodableMixin(FireModel) {
   async toTerminated(dateOfTermination, reasonOfTermination, options = {}) {
     if (!this.docId) {
       throw new Error(
-        "[Employee.js] docId is required to terminate an employee."
+        "[Employee.js] docId is required to terminate an employee.",
       );
     }
     if (!dateOfTermination || !(dateOfTermination instanceof Date)) {
       throw new Error(
-        "[Employee.js] A valid dateOfTermination is required to terminate an employee."
+        "[Employee.js] A valid dateOfTermination is required to terminate an employee.",
       );
     }
     if (dateOfTermination < this.dateOfHire) {
       throw new Error(
-        "[Employee.js] dateOfTermination cannot be earlier than dateOfHire."
+        "[Employee.js] dateOfTermination cannot be earlier than dateOfHire.",
       );
     }
 
     if (!reasonOfTermination || typeof reasonOfTermination !== "string") {
       throw new Error(
-        "[Employee.js] A valid reasonOfTermination is required to terminate an employee."
+        "[Employee.js] A valid reasonOfTermination is required to terminate an employee.",
       );
     }
 
