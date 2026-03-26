@@ -78,10 +78,7 @@
  * - @param {Date} v - The new `dateAt` value
  *****************************************************************************/
 import WorkingResult from "./WorkingResult.js";
-import {
-  BILLING_UNIT_TYPE_VALUES,
-  BILLING_UNIT_TYPE_OPTIONS,
-} from "./constants/index.js";
+import { BILLING_UNIT_TYPE_VALUES } from "./constants/index.js";
 import { defField } from "./parts/fieldDefinitions.js";
 
 const classProps = {
@@ -99,15 +96,8 @@ const classProps = {
     label: "資格者時間外単価",
     required: true,
   }),
-  billingUnitType: defField("select", {
-    default: BILLING_UNIT_TYPE_VALUES.PER_DAY.value,
-    label: "請求単位",
+  billingUnitType: defField("billingUnitType", {
     required: true,
-    component: {
-      attrs: {
-        items: BILLING_UNIT_TYPE_OPTIONS,
-      },
-    },
   }),
   includeBreakInBilling: defField("check", {
     label: "請求に休憩時間を含める",

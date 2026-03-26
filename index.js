@@ -1,4 +1,5 @@
 export { default as Agreement } from "./src/Agreement.js";
+export { default as AgreementV2 } from "./src/AgreementV2.js";
 export { default as ArrangementNotification } from "./src/ArrangementNotification.js";
 export { default as Billing } from "./src/Billing.js";
 export { default as Certification } from "./src/Certification.js";

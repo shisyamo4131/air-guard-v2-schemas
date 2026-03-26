@@ -3,6 +3,10 @@ import {
   OPTIONS as ARRANGEMENT_NOTIFICATION_STATUS_OPTIONS,
 } from "../constants/arrangement-notification-status.js";
 import {
+  VALUES as BILLING_UNIT_TYPE_VALUES,
+  OPTIONS as BILLING_UNIT_TYPE_OPTIONS,
+} from "../constants/billing-unit-type.js";
+import {
   VALUES as BLOOD_TYPE_VALUES,
   OPTIONS as BLOOD_TYPE_OPTIONS,
 } from "../constants/blood-type.js";
@@ -152,17 +156,28 @@ const generalDefinitions = {
 
 /** カスタムパーツ（汎用パーツ含む） */
 export const fieldDefinitions = {
-  /** array */
+  /*****************************************************************************
+   * ARRAY
+   *****************************************************************************/
   array: generalDefinitions.array,
-  /** check */
+
+  /*****************************************************************************
+   * CHECK
+   *****************************************************************************/
   check: generalDefinitions.check,
   isForeigner: {
     ...generalDefinitions.check,
     label: "外国籍",
   },
-  /** code */
+
+  /*****************************************************************************
+   * CODE
+   *****************************************************************************/
   code: generalDefinitions.code,
-  /** dateAt */
+
+  /*****************************************************************************
+   * DATE AT
+   *****************************************************************************/
   dateAt: generalDefinitions.dateAt,
   dateOfBirth: {
     ...generalDefinitions.dateAt,
@@ -213,7 +228,10 @@ export const fieldDefinitions = {
     ...generalDefinitions.multipleLine,
     label: "備考",
   },
-  /** number */
+
+  /*****************************************************************************
+   * NUMBER
+   *****************************************************************************/
   number: generalDefinitions.number,
   breakMinutes: {
     ...generalDefinitions.number,
@@ -260,7 +278,9 @@ export const fieldDefinitions = {
     ...generalDefinitions.number,
   },
 
-  /** one-line */
+  /*****************************************************************************
+   * ONE LINE
+   *****************************************************************************/
   oneLine: generalDefinitions.oneLine,
   address: {
     ...generalDefinitions.oneLine,
@@ -527,7 +547,9 @@ export const fieldDefinitions = {
     },
   },
 
-  /** object */
+  /*****************************************************************************
+   * OBJECT
+   *****************************************************************************/
   object: generalDefinitions.object,
 
   customer: {
@@ -549,10 +571,14 @@ export const fieldDefinitions = {
     hidden: true,
   },
 
-  /** radio */
+  /*****************************************************************************
+   * RADIO
+   *****************************************************************************/
   radio: generalDefinitions.radio,
 
-  /** select */
+  /*****************************************************************************
+   * SELECT
+   *****************************************************************************/
   select: generalDefinitions.select,
   arrangementNotificationStatus: {
     ...generalDefinitions.select,
@@ -562,6 +588,18 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: ARRANGEMENT_NOTIFICATION_STATUS_OPTIONS,
+      },
+    },
+  },
+  /** 請求単位 */
+  billingUnitType: {
+    ...generalDefinitions.select,
+    default: BILLING_UNIT_TYPE_VALUES.PER_DAY.value,
+    label: "請求単位",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: BILLING_UNIT_TYPE_OPTIONS,
       },
     },
   },
