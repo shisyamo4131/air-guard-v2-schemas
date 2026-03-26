@@ -106,7 +106,10 @@ export default class AgreementV2 extends WorkTimeBase {
   static logicalDelete = false;
   static classProps = {
     ...WorkTimeBase.classProps,
-    rates: defField("object", { customClass: DayTypeRates }),
+    rates: defField("object", {
+      customClass: DayTypeRates,
+      default: () => new DayTypeRates(),
+    }),
     billingUnitType: defField("billingUnitType", {
       required: true,
     }),
