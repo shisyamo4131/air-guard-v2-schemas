@@ -26,8 +26,14 @@ export class RateSet extends BaseClass {
 export class ShiftTypeRates extends BaseClass {
   static className = "勤務区分単価モデル";
   static classProps = {
-    DAY: defField("object", { customClass: RateSet }),
-    NIGHT: defField("object", { customClass: RateSet }),
+    DAY: defField("object", {
+      customClass: RateSet,
+      default: () => new RateSet(),
+    }),
+    NIGHT: defField("object", {
+      customClass: RateSet,
+      default: () => new RateSet(),
+    }),
   };
 }
 
@@ -37,10 +43,22 @@ export class ShiftTypeRates extends BaseClass {
 export class DayTypeRates extends BaseClass {
   static className = "曜日区分単価モデル";
   static classProps = {
-    WEEKDAY: defField("object", { customClass: ShiftTypeRates }),
-    SATURDAY: defField("object", { customClass: ShiftTypeRates }),
-    SUNDAY: defField("object", { customClass: ShiftTypeRates }),
-    HOLIDAY: defField("object", { customClass: ShiftTypeRates }),
+    WEEKDAY: defField("object", {
+      customClass: ShiftTypeRates,
+      default: () => new ShiftTypeRates(),
+    }),
+    SATURDAY: defField("object", {
+      customClass: ShiftTypeRates,
+      default: () => new ShiftTypeRates(),
+    }),
+    SUNDAY: defField("object", {
+      customClass: ShiftTypeRates,
+      default: () => new ShiftTypeRates(),
+    }),
+    HOLIDAY: defField("object", {
+      customClass: ShiftTypeRates,
+      default: () => new ShiftTypeRates(),
+    }),
   };
 }
 
