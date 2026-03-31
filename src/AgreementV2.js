@@ -147,6 +147,10 @@ export default class AgreementV2 extends WorkTimeBase {
    * rates プロパティを更新するためのアクセサー
    * - AirItemManager の `updateProperties` メソッドを使用してネスト構造のオブジェクトである
    *   `rates` を更新するためのアクセサーです。
+   * @property {DayTypeRates} rates - 曜日区分、勤務区分ごとの単価情報オブジェクト
+   * @property {string} dayType - 曜日区分 (WEEKDAY, SATURDAY, SUNDAY, HOLIDAY)
+   * @property {string} shiftType - 勤務区分 (DAY, NIGHT)
+   * @property {RateSet|Object} value - 設定する単価情報オブジェクト、もしくはそのオブジェクトを生成するためのプレーンオブジェクト
    */
   set rateSet({ dayType, shiftType, value } = {}) {
     if (!dayType || !this.constructor.DAY_TYPE[dayType]) {
