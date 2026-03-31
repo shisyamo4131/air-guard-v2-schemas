@@ -1,7 +1,5 @@
-/**
- * @file src/Site.js
- * @author shisyamo4131
- *
+/*****************************************************************************
+ * @file ./src/Site.js
  * NOTE: `customerId`, `customer` プロパティについて
  * - 仮登録
  *   - 取引先未定での現場登録のシチュエーションを考慮して現場情報は仮登録を可能とする。
@@ -12,12 +10,13 @@
  * - 自身の従属先データを持たせる場合に `XxxxxMinimal` クラスを使用するが、アプリ側でオブジェクト選択を行う場合に
  *   `Xxxxx` クラスにするのか `XxxxxMinimal` クラスにするのかを判断できないため、docId を持たせて
  *   `beforeCreate` フックでオブジェクトを取得するようにする。
- */
+ *****************************************************************************/
 import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import Customer from "./Customer.js";
-import Agreement from "./Agreement.js";
+// import Agreement from "./Agreement.js";
+import AgreementV2 from "./AgreementV2.js";
 import { VALUES } from "./constants/site-status.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 
@@ -57,44 +56,37 @@ const classProps = {
   building: defField("building"),
   location: defField("location"),
   remarks: defField("multipleLine", { label: "備考" }),
-  agreements: defField("array", { label: "取極め", customClass: Agreement }),
+  // agreements: defField("array", { label: "取極め", customClass: Agreement }),
+  agreementsV2: defField("array", {
+    label: "取極め",
+    customClass: AgreementV2,
+  }),
   status: defField("siteStatus", { required: true }),
 };
 
 /*****************************************************************************
+ * @class Site
+ * @author shisyamo4131
+ *
  * @property {string} customerId - 取引先ドキュメントID
  *
  * @property {object} customer - 取引先オブジェクト
- * - `beforeCreate`, `beforeUpdate` で `customerId` に該当する `Customer` オブジェクトと自動的に同期されます。
- * - `Customer` が更新された場合は Cloud Functions で同期される必要があります。
- *
  * @property {string} customerName - 取引先名
- * - `customerId` が未設定の場合に必須（仮登録状態で取引先の名前だけ登録したい場合を想定）
- *
  * @property {string} code - 現場コード
- *
  * @property {string} name - 現場名
- *
  * @property {string} nameKana - 現場名カナ
- *
  * @property {string} zipcode - Postal code.
  * @property {string} prefCode - Prefecture code.
- *
  * @property {string} prefecture - Prefecture name derived from `prefCode` (read-only)
- *
  * @property {string} city - City name.
  * @property {string} address - Address details.
  * @property {string} building - Building name.
- *
  * @property {string} fullAddress - Full address combining prefecture, city, and address (read-only)
- *
  * @property {object} location - Geographical location.
  * @property {string} remarks - Additional remarks.
- * @property {array} agreements - List of agreements (Agreement).
- * - Enhanced with custom methods: `add()`, `change()`, `remove()`
+ * @property {array} agreementsV2 - 取極めの配列（バージョン2）。`AgreementV2` クラスのインスタンスを要素とする。
  *
  * @property {string} status - Site status.
- *
  * @property {boolean} isTemporary - 仮登録状態かどうかを表すフラグ
  *
  * @function getAgreement
@@ -105,18 +97,23 @@ const classProps = {
  * @param {string} args.shiftType - Shift type (e.g., "DAY", "NIGHT").
  * @returns {Agreement|null} - Matching agreement or null if not found.
  *
+ * @deprecated `agreements` is deprecated. Use `agreementsV2` instead.
+ *
+ * @deprecated agreements property methods
  * @memberof agreements
  * @function add
  * Adds Agreement instance to agreements array.
  * @param {Agreement} agreement - Agreement instance to add.
  * @throws {Error} If argument is not an Agreement instance.
  *
+ * @deprecated agreements property methods
  * @memberof agreements
  * @function change
  * Replaces existing agreement by key matching.
  * @param {Agreement} newAgreement - New Agreement instance to replace existing one.
  * @throws {Error} If argument is not an Agreement instance or if agreement not found.
  *
+ * @deprecated agreements property methods
  * @memberof agreements
  * @function remove
  * Removes agreement from array by key matching.
@@ -255,57 +252,59 @@ export default class Site extends GeocodableMixin(FireModel) {
       },
     });
 
-    /**
-     * `Agreement` プロパティに対するカスタムメソッドを定義します。
-     * - add(agreement): `Agreement` インスタンスを追加します。
-     * - change(newAgreement): `key` プロパティを基に既存の `Agreement` を置き換えます。
-     * - remove(agreement): `key` プロパティを基に `Agreement` を削除します。
-     */
-    const self = this;
-    Object.defineProperties(this.agreements, {
-      add: {
-        value: function (agreement) {
-          if (!(agreement instanceof Agreement)) {
-            throw new Error("Argument must be an instance of Agreement");
-          }
-          self.agreements.push(agreement);
-        },
-        writable: false,
-        enumerable: false,
-      },
-      change: {
-        value: function (newAgreement) {
-          if (!(newAgreement instanceof Agreement)) {
-            throw new Error("Argument must be an instance of Agreement");
-          }
-          const index = self.agreements.findIndex(
-            (agr) => agr.key === newAgreement._beforeData.key,
-          );
-          if (index !== -1) {
-            self.agreements[index] = newAgreement;
-          } else {
-            throw new Error("Agreement not found");
-          }
-        },
-        writable: false,
-        enumerable: false,
-      },
-      remove: {
-        value: function (agreement) {
-          const index = self.agreements.findIndex(
-            (agr) => agr.key === agreement._beforeData.key,
-          );
-          if (index !== -1) {
-            self.agreements.splice(index, 1);
-          } else {
-            throw new Error("Agreement not found");
-          }
-        },
-      },
-    });
+    /** 2026-03-31 Deprecated */
+    // /**
+    //  * `Agreement` プロパティに対するカスタムメソッドを定義します。
+    //  * - add(agreement): `Agreement` インスタンスを追加します。
+    //  * - change(newAgreement): `key` プロパティを基に既存の `Agreement` を置き換えます。
+    //  * - remove(agreement): `key` プロパティを基に `Agreement` を削除します。
+    //  */
+    // const self = this;
+    // Object.defineProperties(this.agreements, {
+    //   add: {
+    //     value: function (agreement) {
+    //       if (!(agreement instanceof Agreement)) {
+    //         throw new Error("Argument must be an instance of Agreement");
+    //       }
+    //       self.agreements.push(agreement);
+    //     },
+    //     writable: false,
+    //     enumerable: false,
+    //   },
+    //   change: {
+    //     value: function (newAgreement) {
+    //       if (!(newAgreement instanceof Agreement)) {
+    //         throw new Error("Argument must be an instance of Agreement");
+    //       }
+    //       const index = self.agreements.findIndex(
+    //         (agr) => agr.key === newAgreement._beforeData.key,
+    //       );
+    //       if (index !== -1) {
+    //         self.agreements[index] = newAgreement;
+    //       } else {
+    //         throw new Error("Agreement not found");
+    //       }
+    //     },
+    //     writable: false,
+    //     enumerable: false,
+    //   },
+    //   remove: {
+    //     value: function (agreement) {
+    //       const index = self.agreements.findIndex(
+    //         (agr) => agr.key === agreement._beforeData.key,
+    //       );
+    //       if (index !== -1) {
+    //         self.agreements.splice(index, 1);
+    //       } else {
+    //         throw new Error("Agreement not found");
+    //       }
+    //     },
+    //   },
+    // });
   }
 
   /**
+   * @deprecated `getAgreement` method is deprecated. Use `getValidAgreement` instead.
    * Returns the applicable agreement based on the given date, dayType, and shiftType.
    * Filters agreements by dayType and shiftType, sorts them by startDate in descending order,
    * and returns the first agreement where date is less than or equal to the given date.
@@ -317,13 +316,49 @@ export default class Site extends GeocodableMixin(FireModel) {
    * @returns {Object|null} - The matching agreement object or null if not found.
    */
   getAgreement(args = {}) {
-    const { date, dayType, shiftType } = args;
-    if (!date || !dayType || !shiftType) return null;
-    return (
-      this.agreements
-        .filter((agr) => agr.dayType === dayType && agr.shiftType === shiftType)
-        .sort((a, b) => b.date.localeCompare(a.date))
-        .find((agr) => agr.date <= date) || null
+    // const { date, dayType, shiftType } = args;
+    // if (!date || !dayType || !shiftType) return null;
+    // return (
+    //   this.agreements
+    //     .filter((agr) => agr.dayType === dayType && agr.shiftType === shiftType)
+    //     .sort((a, b) => b.date.localeCompare(a.date))
+    //     .find((agr) => agr.date <= date) || null
+    // );
+    console.warn(
+      "Warning: `getAgreement` is deprecated. Use `getValidAgreement` instead.",
+    );
+    return null;
+  }
+
+  /**
+   * 指定された日付時点で有効な取極めオブジェクトを返します。
+   * - 日付が指定されなかった場合は、登録されている最新の取極めオブジェクトを返します。
+   * - 条件に合致する取極めオブジェクトが存在しない場合は `null` を返します。
+   * @param {string} date - 日付 (YYYY-MM-DD形式)
+   * @returns {Object|null} - 有効な取極めオブジェクトまたは `null`
+   */
+  getValidAgreement(date = null) {
+    if (this.agreementsV2.length === 0) return null;
+    const agreements = [...this.agreementsV2].sort((a, b) =>
+      b.date.localeCompare(a.date),
+    );
+    if (!date) return agreements[0];
+    return agreements.find((agr) => agr.date <= date) || null;
+  }
+
+  /***************************************************************************
+   * FOR DEPRECATED PROPERTIES
+   ***************************************************************************/
+  get agreements() {
+    console.warn(
+      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
+    );
+    return [];
+  }
+
+  set agreements(newValue) {
+    console.warn(
+      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
     );
   }
 }

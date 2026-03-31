@@ -1,11 +1,43 @@
 /*****************************************************************************
- * Company Model
+ * @class Company
+ * @extends FireModel
  * @author shisyamo4131
+ *
+ * @property {string} companyName - 会社名
+ * @property {string} companyNameKana - 会社名（カナ）
+ * @property {string} zipcode - 郵便番号
+ * @property {string} prefCode - 都道府県コード
+ * @property {string} city - 市区町村
+ * @property {string} address - 住所
+ * @property {string} building - 建物名
+ * @property {string} tel - 電話番号
+ * @property {string} fax - FAX番号
+ * @property {string} bankName - 銀行名
+ * @property {string} branchName - 支店名
+ * @property {string} accountType - 口座種別（普通、当座）
+ * @property {string} accountNumber - 口座番号
+ * @property {string} accountHolder - 口座名義
+ * @property {AgreementV2[]} agreementsV2 - 会社の既定取極めの配列（バージョン2）
+ * @property {SiteOrder[]} siteOrder - 配置管理のサイト・勤務区分ペアの表示順を管理する配列
+ * @property {SiteOrder[]} scheduleOrder - サイト・勤務区分ペアの表示順を管理する配列（スケジュール用）
+ * @property {object} location - 会社の位置情報
+ * @property {number} minuteInterval - 時刻選択間隔（分）
+ * @property {string} roundSetting - 端数処理設定
+ * @property {string} firstDayOfWeek - 週の始まり
+ * @property {string} stripeCustomerId - Stripe顧客ID
+ * @property {object} subscription - サブスクリプション情報
+ * @property {boolean} maintenanceMode - メンテナンスモードフラグ
+ * @property {string} maintenanceReason - メンテナンス理由
+ * @property {Date} maintenanceStartAt - メンテナンス開始日時
+ * @property {string} maintenanceStartedBy - メンテナンス開始者
+ *
+ * @deprecated `agreements` is deprecated. Use `agreementsV2` instead.
  *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
-import Agreement from "./Agreement.js";
+// import Agreement from "./Agreement.js";
+import AgreementV2 from "./AgreementV2.js";
 import SiteOrder from "./SiteOrder.js";
 import RoundSetting from "./RoundSetting.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
@@ -42,10 +74,17 @@ const classProps = {
   accountNumber: defField("oneLine", { label: "口座番号", length: 7 }),
   accountHolder: defField("oneLine", { label: "口座名義", length: 50 }),
 
-  /** 会社の既定取極め */
-  agreements: defField("array", {
+  /**
+   * 会社既定の取極め
+   * @deprecated `agreements` is deprecated. Use `agreementsV2` instead.
+   */
+  // agreements: defField("array", {
+  //   label: "既定の取極め",
+  //   customClass: Agreement,
+  // }),
+  agreementsV2: defField("array", {
     label: "既定の取極め",
-    customClass: Agreement,
+    customClass: AgreementV2,
   }),
 
   /**
@@ -361,6 +400,18 @@ export default class Company extends GeocodableMixin(FireModel) {
   }
 
   /***************************************************************************
-   * PUBLIC METHODS
+   * FOR DEPRECATED PROPERTIES
    ***************************************************************************/
+  get agreements() {
+    console.warn(
+      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
+    );
+    return [];
+  }
+
+  set agreements(newValue) {
+    console.warn(
+      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
+    );
+  }
 }
