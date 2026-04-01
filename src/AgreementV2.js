@@ -37,48 +37,29 @@ export class RateSet extends BaseClass {
 }
 
 /*****************************************************************************
- * @class ShiftTypeRates
- *****************************************************************************/
-export class ShiftTypeRates extends BaseClass {
-  static className = "勤務区分単価モデル";
-  static classProps = {
-    DAY: defField("object", {
-      customClass: RateSet,
-      default: () => new RateSet(),
-      required: true,
-    }),
-    NIGHT: defField("object", {
-      customClass: RateSet,
-      default: () => new RateSet(),
-      required: true,
-    }),
-  };
-}
-
-/*****************************************************************************
  * @class DayTypeRates
  *****************************************************************************/
 export class DayTypeRates extends BaseClass {
   static className = "曜日区分単価モデル";
   static classProps = {
     WEEKDAY: defField("object", {
-      customClass: ShiftTypeRates,
-      default: () => new ShiftTypeRates(),
+      customClass: RateSet,
+      default: () => new RateSet(),
       required: true,
     }),
     SATURDAY: defField("object", {
-      customClass: ShiftTypeRates,
-      default: () => new ShiftTypeRates(),
+      customClass: RateSet,
+      default: () => new RateSet(),
       required: true,
     }),
     SUNDAY: defField("object", {
-      customClass: ShiftTypeRates,
-      default: () => new ShiftTypeRates(),
+      customClass: RateSet,
+      default: () => new RateSet(),
       required: true,
     }),
     HOLIDAY: defField("object", {
-      customClass: ShiftTypeRates,
-      default: () => new ShiftTypeRates(),
+      customClass: RateSet,
+      default: () => new RateSet(),
       required: true,
     }),
   };
@@ -89,6 +70,7 @@ export class DayTypeRates extends BaseClass {
  * @extends WorkTimeBase
  *
  * @property {Date} dateAt - 日付
+ * @property {string} shiftType - 勤務区分
  * @property {string} startTime - 開始時刻 (HH:MM 形式)
  * @property {string} endTime - 終了時刻 (HH:MM 形式)
  * @property {boolean} isStartNextDay - 翌日開始フラグ
@@ -138,7 +120,7 @@ export class DayTypeRates extends BaseClass {
  * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
  *****************************************************************************/
 export default class AgreementV2 extends WorkTimeBase {
-  static className = "AgreementV2";
+  static className = "取極め";
   static collectionPath = "AgreementV2s";
   static useAutonumber = false;
   static logicalDelete = false;

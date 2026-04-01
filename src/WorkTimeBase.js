@@ -8,10 +8,10 @@
  * @class
  * @extends FireModel
  * @abstract
- * @see WorkingResult
  * @see AgreementV2
  *
  * @property {Date} dateAt - 日付
+ * @property {string} shiftType - 勤務区分
  * @property {string} startTime - 開始時刻 (HH:MM 形式)
  * @property {string} endTime - 終了時刻 (HH:MM 形式)
  * @property {boolean} isStartNextDay - 翌日開始フラグ
@@ -59,6 +59,7 @@ import { getDateAt } from "./utils/index.js";
 
 const classProps = {
   dateAt: defField("dateAt", { required: true }),
+  shiftType: defField("shiftType", { required: true }),
   startTime: defField("time", { label: "開始時刻", required: true }),
   isStartNextDay: defField("check", { label: "翌日開始" }),
   endTime: defField("time", { label: "終了時刻", required: true }),
