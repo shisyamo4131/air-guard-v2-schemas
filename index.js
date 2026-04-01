@@ -4,7 +4,6 @@ export { default as Agreement } from "./src/Agreement.js";
 export {
   default as AgreementV2,
   RateSet,
-  ShiftTypeRates,
   DayTypeRates,
 } from "./src/AgreementV2.js";
 export { default as ArrangementNotification } from "./src/ArrangementNotification.js";
