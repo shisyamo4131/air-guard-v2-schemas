@@ -13,10 +13,26 @@ import {
 export class RateSet extends BaseClass {
   static className = "単価モデル";
   static classProps = {
-    unitPriceBase: defField("price", { label: "基本単価" }),
-    overtimeUnitPriceBase: defField("price", { label: "残業単価" }),
-    unitPriceQualified: defField("price", { label: "資格者単価" }),
-    overtimeUnitPriceQualified: defField("price", { label: "資格者残業単価" }),
+    unitPriceBase: defField("price", {
+      label: "基本単価",
+      default: 0,
+      required: true,
+    }),
+    overtimeUnitPriceBase: defField("price", {
+      label: "残業単価",
+      default: 0,
+      required: true,
+    }),
+    unitPriceQualified: defField("price", {
+      label: "資格者単価",
+      default: 0,
+      required: true,
+    }),
+    overtimeUnitPriceQualified: defField("price", {
+      label: "資格者残業単価",
+      default: 0,
+      required: true,
+    }),
   };
 }
 
@@ -29,10 +45,12 @@ export class ShiftTypeRates extends BaseClass {
     DAY: defField("object", {
       customClass: RateSet,
       default: () => new RateSet(),
+      required: true,
     }),
     NIGHT: defField("object", {
       customClass: RateSet,
       default: () => new RateSet(),
+      required: true,
     }),
   };
 }
@@ -46,18 +64,22 @@ export class DayTypeRates extends BaseClass {
     WEEKDAY: defField("object", {
       customClass: ShiftTypeRates,
       default: () => new ShiftTypeRates(),
+      required: true,
     }),
     SATURDAY: defField("object", {
       customClass: ShiftTypeRates,
       default: () => new ShiftTypeRates(),
+      required: true,
     }),
     SUNDAY: defField("object", {
       customClass: ShiftTypeRates,
       default: () => new ShiftTypeRates(),
+      required: true,
     }),
     HOLIDAY: defField("object", {
       customClass: ShiftTypeRates,
       default: () => new ShiftTypeRates(),
+      required: true,
     }),
   };
 }
@@ -108,8 +130,6 @@ export class DayTypeRates extends BaseClass {
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
  * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
  *
- * @setter rateSet - `rates` プロパティを更新するためのアクセサー
- *
  * @static BILLING_UNIT_TYPE - 請求単位の定数オブジェクト
  * @static DAY_TYPE - 曜日区分の定数オブジェクト
  * @static SHIFT_TYPE - 勤務区分の定数オブジェクト
@@ -127,6 +147,7 @@ export default class AgreementV2 extends WorkTimeBase {
     rates: defField("object", {
       customClass: DayTypeRates,
       default: () => new DayTypeRates(),
+      required: true,
     }),
     billingUnitType: defField("billingUnitType", {
       required: true,
@@ -142,34 +163,4 @@ export default class AgreementV2 extends WorkTimeBase {
   static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE_VALUES;
   static DAY_TYPE = DAY_TYPE_VALUES;
   static SHIFT_TYPE = SHIFT_TYPE_VALUES;
-
-  /**
-   * rates プロパティを更新するためのアクセサー
-   * - AirItemManager の `updateProperties` メソッドを使用してネスト構造のオブジェクトである
-   *   `rates` を更新するためのアクセサーです。
-   * @property {DayTypeRates} rates - 曜日区分、勤務区分ごとの単価情報オブジェクト
-   * @property {string} dayType - 曜日区分 (WEEKDAY, SATURDAY, SUNDAY, HOLIDAY)
-   * @property {string} shiftType - 勤務区分 (DAY, NIGHT)
-   * @property {RateSet|Object} value - 設定する単価情報オブジェクト、もしくはそのオブジェクトを生成するためのプレーンオブジェクト
-   */
-  set rateSet({ dayType, shiftType, value } = {}) {
-    if (!dayType || !this.constructor.DAY_TYPE[dayType]) {
-      throw new Error(`Invalid dayType: ${dayType}`);
-    }
-    if (!shiftType || !this.constructor.SHIFT_TYPE[shiftType]) {
-      throw new Error(`Invalid shiftType: ${shiftType}`);
-    }
-
-    // value のチェック
-    // 値をセットする際に RateSet のインスタンスを作成するため、インスタンスのチェックは不要
-    if (!value || typeof value !== "object") {
-      throw new Error(`Invalid value for rateSet: ${value}`);
-    }
-    if (!this.rates) {
-      this.rates = new DayTypeRates();
-    }
-
-    this.rates[dayType][shiftType] =
-      value instanceof RateSet ? value : new RateSet(value);
-  }
 }
