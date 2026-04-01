@@ -42,6 +42,8 @@
  *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
  * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
  *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {string} key - 一意なキー (読み取り専用)
+ * - `date` と `shiftType` を組み合わせた文字列を返します。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
  * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
@@ -201,6 +203,14 @@ export default class WorkTimeBase extends FireModel {
           }
 
           return endAt;
+        },
+        set(v) {},
+      },
+      key: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return `${this.date}_${this.shiftType}`;
         },
         set(v) {},
       },
