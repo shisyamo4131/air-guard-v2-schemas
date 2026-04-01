@@ -331,19 +331,21 @@ export default class Site extends GeocodableMixin(FireModel) {
   }
 
   /**
-   * 指定された日付時点で有効な取極めオブジェクトを返します。
+   * 指定された日付、勤務区分で有効な取極めオブジェクトを返します。
    * - 日付が指定されなかった場合は、登録されている最新の取極めオブジェクトを返します。
    * - 条件に合致する取極めオブジェクトが存在しない場合は `null` を返します。
    * @param {string} date - 日付 (YYYY-MM-DD形式)
+   * @param {string} shiftType - 勤務区分
    * @returns {Object|null} - 有効な取極めオブジェクトまたは `null`
    */
-  getValidAgreement(date = null) {
-    if (this.agreementsV2.length === 0) return null;
-    const agreements = [...this.agreementsV2].sort((a, b) =>
-      b.date.localeCompare(a.date),
-    );
-    if (!date) return agreements[0];
-    return agreements.find((agr) => agr.date <= date) || null;
+  getValidAgreement({ date = null, shiftType = null } = {}) {
+    const filtered = this.agreementsV2.filter((agr) => {
+      return agr.shiftType === shiftType;
+    });
+    if (filtered.length === 0) return null;
+    filtered.sort((a, b) => b.date.localeCompare(a.date));
+    if (!date) return filtered[0];
+    return filtered.find((agr) => agr.date <= date) || null;
   }
 
   /***************************************************************************
