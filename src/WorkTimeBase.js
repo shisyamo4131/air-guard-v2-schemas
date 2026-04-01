@@ -51,6 +51,7 @@
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
  * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
  *
+ * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
  * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
  * - `BREAK_MINUTES_NEGATIVE`: `breakMinutes` が負の値である場合のエラーコード
  * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
@@ -58,6 +59,7 @@
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { getDateAt } from "./utils/index.js";
+import { VALUES as SHIFT_TYPE } from "./constants/shift-type.js";
 
 const classProps = {
   dateAt: defField("dateAt", { required: true }),
@@ -78,6 +80,8 @@ export default class WorkTimeBase extends FireModel {
   static useAutonumber = false;
   static logicalDelete = false;
   static classProps = classProps;
+
+  static SHIFT_TYPE = SHIFT_TYPE;
 
   /**
    * INVALID_REASONS
