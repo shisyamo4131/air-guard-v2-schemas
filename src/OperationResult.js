@@ -111,12 +111,6 @@
  * - `billingDateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
  * @property {string} billingMonth - 請求月 (YYYY-MM 形式) (読み取り専用)
  *
- * @property {string|false} isInvalid - バリデーションステータス (読み取り専用)
- * - 有効な場合は false を返します。
- * - 無効な場合は理由コードの文字列を返します:
- *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合。
- *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合。
- *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
  * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
@@ -165,6 +159,14 @@ import Site from "./Site.js";
 const classProps = {
   ...Operation.classProps,
   siteOperationScheduleId: defField("oneLine", { hidden: true }),
+  /**
+   * `employees`, `outsourcers` は 継承元である `Operation` クラスで定義されているが、
+   * customClass が `OperationDetail` になっているため、`OperationResultDetail` で再定義する。
+   */
+  employees: defField("array", { customClass: OperationResultDetail }),
+  outsourcers: defField("array", {
+    customClass: OperationResultDetail,
+  }),
   useAdjustedQuantity: defField("check", {
     label: "調整数量を使用",
     default: false,
@@ -186,10 +188,6 @@ const classProps = {
     default: 0,
   }),
   billingDateAt: defField("dateAt", { label: "請求締日" }),
-  employees: defField("array", { customClass: OperationResultDetail }),
-  outsourcers: defField("array", {
-    customClass: OperationResultDetail,
-  }),
   isLocked: defField("check", {
     label: "実績確定",
     default: false,
@@ -219,6 +217,9 @@ export default class OperationResult extends Operation {
 
   /**
    * INVALID_REASONS
+   * - 以下のエラーコードを追加
+   *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
+   *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
    */
   static INVALID_REASON = {
     ...Operation.INVALID_REASON,
@@ -239,6 +240,19 @@ export default class OperationResult extends Operation {
 
     /** Computed properties */
     Object.defineProperties(this, {
+      /**
+       * hasAgreement
+       * - getter 定義でも良いが、Firestore のクエリで使用する可能性があるため、
+       *   Object.defineProperty で列挙可能プロパティとして定義する。
+       */
+      hasAgreement: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.agreement != null;
+        },
+        set(v) {},
+      },
       statistics: {
         configurable: true,
         enumerable: true,
@@ -298,6 +312,7 @@ export default class OperationResult extends Operation {
           const calculateCategorySales = (category) => {
             const isQualified = category === "qualified";
             const categoryStats = this.statistics?.[category];
+            const rateSet = this.agreement?.rates?.[this.dayType];
 
             // 統計データが存在しない場合は警告を出力して初期値を返す
             if (!categoryStats) {
@@ -349,12 +364,26 @@ export default class OperationResult extends Operation {
 
             // agreementがある場合のみ単価と金額を計算
             if (this.agreement) {
+              if (!rateSet) {
+                console.warn(
+                  `[OperationResult] AgreementV2.rates for dayType '${this.dayType}' is missing.`,
+                  {
+                    docId: this.docId,
+                    dateAt: this.dateAt,
+                    siteId: this.siteId,
+                    dayType: this.dayType,
+                    agreement: this.agreement,
+                  },
+                );
+                return result;
+              }
+
               result.unitPrice = isQualified
-                ? this.agreement.unitPriceQualified || 0
-                : this.agreement.unitPriceBase || 0;
+                ? rateSet.unitPriceQualified || 0
+                : rateSet.unitPriceBase || 0;
               result.overtimeUnitPrice = isQualified
-                ? this.agreement.overtimeUnitPriceQualified || 0
-                : this.agreement.overtimeUnitPriceBase || 0;
+                ? rateSet.overtimeUnitPriceQualified || 0
+                : rateSet.overtimeUnitPriceBase || 0;
 
               // 金額計算(RoundSettingを適用)
               result.regularAmount = RoundSetting.apply(
@@ -437,14 +466,6 @@ export default class OperationResult extends Operation {
           const year = jstDate.getUTCFullYear();
           const month = jstDate.getUTCMonth() + 1;
           return `${year}-${String(month).padStart(2, "0")}`;
-        },
-        set(v) {},
-      },
-      hasAgreement: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.agreement != null;
         },
         set(v) {},
       },
