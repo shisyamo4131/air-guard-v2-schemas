@@ -15,7 +15,6 @@ import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import Customer from "./Customer.js";
-// import Agreement from "./Agreement.js";
 import AgreementV2 from "./AgreementV2.js";
 import { VALUES } from "./constants/site-status.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
@@ -96,29 +95,6 @@ const classProps = {
  * @param {string} args.dayType - Day type (e.g., "WEEKDAY", "SATURDAY").
  * @param {string} args.shiftType - Shift type (e.g., "DAY", "NIGHT").
  * @returns {Agreement|null} - Matching agreement or null if not found.
- *
- * @deprecated `agreements` is deprecated. Use `agreementsV2` instead.
- *
- * @deprecated agreements property methods
- * @memberof agreements
- * @function add
- * Adds Agreement instance to agreements array.
- * @param {Agreement} agreement - Agreement instance to add.
- * @throws {Error} If argument is not an Agreement instance.
- *
- * @deprecated agreements property methods
- * @memberof agreements
- * @function change
- * Replaces existing agreement by key matching.
- * @param {Agreement} newAgreement - New Agreement instance to replace existing one.
- * @throws {Error} If argument is not an Agreement instance or if agreement not found.
- *
- * @deprecated agreements property methods
- * @memberof agreements
- * @function remove
- * Removes agreement from array by key matching.
- * @param {Agreement} agreement - Agreement instance to remove.
- * @throws {Error} If agreement not found.
  *****************************************************************************/
 export default class Site extends GeocodableMixin(FireModel) {
   static className = "現場";
@@ -304,6 +280,46 @@ export default class Site extends GeocodableMixin(FireModel) {
   }
 
   /**
+   * 指定された日付、勤務区分で有効な取極めオブジェクトを返します。
+   * - 日付が指定されなかった場合は、登録されている最新の取極めオブジェクトを返します。
+   * - 条件に合致する取極めオブジェクトが存在しない場合は `null` を返します。
+   * @param {string} date - 日付 (YYYY-MM-DD形式)
+   * @param {string} shiftType - 勤務区分
+   * @returns {Object|null} - 有効な取極めオブジェクトまたは `null`
+   */
+  getValidAgreement({ date = null, shiftType = null } = {}) {
+    const filtered = this.agreementsV2.filter((agr) => {
+      return agr.shiftType === shiftType;
+    });
+    if (filtered.length === 0) return null;
+    filtered.sort((a, b) => b.date.localeCompare(a.date));
+    if (!date) return filtered[0];
+    return filtered.find((agr) => agr.date <= date) || null;
+  }
+
+  /***************************************************************************
+   * FOR DEPRECATED PROPERTIES
+   ***************************************************************************/
+  /**
+   * @deprecated `agreements` property is deprecated. Use `agreementsV2` instead.
+   */
+  get agreements() {
+    console.warn(
+      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
+    );
+    return [];
+  }
+
+  /**
+   * @deprecated `agreements` property is deprecated. Use `agreementsV2` instead.
+   */
+  set agreements(newValue) {
+    console.warn(
+      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
+    );
+  }
+
+  /**
    * @deprecated `getAgreement` method is deprecated. Use `getValidAgreement` instead.
    * Returns the applicable agreement based on the given date, dayType, and shiftType.
    * Filters agreements by dayType and shiftType, sorts them by startDate in descending order,
@@ -328,39 +344,5 @@ export default class Site extends GeocodableMixin(FireModel) {
       "Warning: `getAgreement` is deprecated. Use `getValidAgreement` instead.",
     );
     return null;
-  }
-
-  /**
-   * 指定された日付、勤務区分で有効な取極めオブジェクトを返します。
-   * - 日付が指定されなかった場合は、登録されている最新の取極めオブジェクトを返します。
-   * - 条件に合致する取極めオブジェクトが存在しない場合は `null` を返します。
-   * @param {string} date - 日付 (YYYY-MM-DD形式)
-   * @param {string} shiftType - 勤務区分
-   * @returns {Object|null} - 有効な取極めオブジェクトまたは `null`
-   */
-  getValidAgreement({ date = null, shiftType = null } = {}) {
-    const filtered = this.agreementsV2.filter((agr) => {
-      return agr.shiftType === shiftType;
-    });
-    if (filtered.length === 0) return null;
-    filtered.sort((a, b) => b.date.localeCompare(a.date));
-    if (!date) return filtered[0];
-    return filtered.find((agr) => agr.date <= date) || null;
-  }
-
-  /***************************************************************************
-   * FOR DEPRECATED PROPERTIES
-   ***************************************************************************/
-  get agreements() {
-    console.warn(
-      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
-    );
-    return [];
-  }
-
-  set agreements(newValue) {
-    console.warn(
-      "Warning: `agreements` is deprecated. Use `agreementsV2` instead.",
-    );
   }
 }
