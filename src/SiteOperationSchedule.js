@@ -599,19 +599,25 @@ export default class SiteOperationSchedule extends Operation {
     }
   }
 
-  /**
-   * 現在のインスタンスから稼働実績ドキュメントを作成します。
-   * - 稼働実績ドキュメントの ID は現場稼働予定ドキュメントの ID と同一になります。
-   *   既に存在する場合は上書きされます。
-   * - 現場稼働予定ドキュメントの `operationResultId` プロパティに
-   *   作成された稼働実績ドキュメントの ID が設定されます。（当該ドキュメント ID と同一）
+  /*****************************************************************************
+   * syncToOperationResult
+   * ---------------------------------------------------------
    * @param {Object} notifications - 配置通知オブジェクトのマップ。
-   *   - キー: 配置通知の一意キー（`notificationKey` プロパティ）
-   *   - 値: 配置通知ドキュメントオブジェクト
+   *   - key: 配置通知の一意キー（`notificationKey` プロパティ）
+   *   - value: 配置通知ドキュメントオブジェクト
    * @returns {Promise<void>}
-   *
-   * @update 2025-11-28 - Removed the `agreement` parameter.
-   */
+   * ---------------------------------------------------------
+   * 現在の現場稼働予定 (SiteOperationSchedule) インスタンスをもとに稼働実績 (OperationResult) ドキュメントを作成します。
+   * - `OperationResult` の `docId` は `SiteOperationSchedule` の `docId` と同一になります。既に存在する場合は上書きされます。
+   * - このインスタンスの `operationResultId` プロパティは作成された`OperationResult` の `docId` が設定されます。
+   * - つまり、現場稼働予定ドキュメントと稼働実績ドキュメントは 1 対 1 の関係になり、現場稼働予定ドキュメントの `operationResultId` は
+   *   自身の `docId` と同じ値になります。
+   * - 稼働実績ドキュメントに適用されるべき取極め (Agreement) の取得は、`OperationResult` クラスに任せられます。
+   * - 引数として `notifications` を受け取ります。これは配置通知 (ArrangementNotification) ドキュメントのマップで、
+   *   `notificationKey` をキー、配置通知ドキュメントオブジェクトを値とするオブジェクトです。
+   *   `notifications` を受け取ると、従業員・外注先の稼働実績詳細データを生成する際に、配置通知ドキュメントの実際の開始時間、終了時間、休憩時間などが
+   *   `employees` および `outsourcers` の `startTime`, `endTime`, `breakMinutes` などのプロパティに反映されます。
+   *****************************************************************************/
   async syncToOperationResult(notifications = {}) {
     // ドキュメントIDがない（現場稼働予定ドキュメントとして未作成）場合はエラー
     if (!this.docId) {
@@ -635,18 +641,24 @@ export default class SiteOperationSchedule extends Operation {
       );
     }
 
-    // 配置通知データをもとに、従業員・外注先の稼働実績詳細データを生成する関数
+    /**
+     * 配置通知データをもとに、従業員・外注先の稼働実績詳細データを変換する関数
+     * - 該当する `notification` が存在する場合、`startTime`, `endTime`, `breakMinutes`, `isStartNextDay` が
+     *   `notification` の `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, `actualIsStartNextDay` に置き換えられます。
+     * @param {string} prop - 変換対象のプロパティ名（"employees" または "outsourcers"）
+     * @returns {Array<SiteOperationScheduleDetail>} 変換後の稼働実績詳細データの配列
+     */
     const converter = (prop) => {
       return this[prop].map((w) => {
         const notification = notifications[w.notificationKey];
-        if (!notification) return w;
-        return new SiteOperationScheduleDetail({
-          ...w.toObject(),
-          startTime: notification.actualStartTime,
-          endTime: notification.actualEndTime,
-          breakMinutes: notification.actualBreakMinutes,
-          isStartNextDay: notification.actualIsStartNextDay,
-        });
+        const result = w.clone();
+        result.startTime = notification?.actualStartTime ?? w.startTime;
+        result.endTime = notification?.actualEndTime ?? w.endTime;
+        result.breakMinutes =
+          notification?.actualBreakMinutes ?? w.breakMinutes;
+        result.isStartNextDay =
+          notification?.actualIsStartNextDay ?? w.isStartNextDay;
+        return result;
       });
     };
 
@@ -658,8 +670,8 @@ export default class SiteOperationSchedule extends Operation {
       // Create OperationResult instance based on the current SiteOperationSchedule
       const operationResult = new OperationResult({
         ...this.toObject(),
-        employees,
-        outsourcers,
+        employees, // 配置通知の実際の勤務時間などを反映した従業員の稼働実績詳細データでマージ
+        outsourcers, // 配置通知の実際の勤務時間などを反映した外注先の稼働実績詳細データでマージ
         siteOperationScheduleId: this.docId,
       });
       await this.constructor.runTransaction(async (transaction) => {
@@ -674,7 +686,7 @@ export default class SiteOperationSchedule extends Operation {
       throw new ContextualError(error.message, {
         method: "syncToOperationResult()",
         className: "SiteOperationSchedule",
-        arguments: {},
+        arguments: { notifications },
         state: this.toObject(),
       });
     }
