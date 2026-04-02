@@ -57,7 +57,7 @@
  * @property {boolean} hasNotification - 配置通知が作成されているかどうかのフラグ
  * - SiteOperationSchedule クラスから設定されます。
  * @property {string} notificationKey - 通知キー (読み取り専用)
- * - `siteOperationScheduleId` と `workerId` を `-` で連結した文字列を返します。
+ * - `siteOperationScheduleId` と `workerId` を `_` で連結した文字列を返します。
  * - `ArrangementNotification` のドキュメント ID と一致します。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
@@ -98,7 +98,7 @@ export default class SiteOperationScheduleDetail extends OperationDetail {
         configurable: true,
         enumerable: true,
         get() {
-          return `${this.siteOperationScheduleId}-${this.workerId}`;
+          return `${this.siteOperationScheduleId}_${this.workerId}`;
         },
         set() {},
       },
