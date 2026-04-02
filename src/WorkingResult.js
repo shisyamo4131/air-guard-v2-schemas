@@ -43,8 +43,6 @@
  * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
  *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
  * @property {string} dayType - 曜日区分
- * @property {string} key - 一意なキー (読み取り専用)
- * - `date`, `dayType`, `shiftType` を `_` で組み合わせた文字列を返します。
  * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
  * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
  * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
@@ -54,7 +52,6 @@
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
  * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
- * @getter {boolean} isKeyChanged - `key` プロパティが変更されたかどうかを返すプロパティ
  *
  * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
  * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
@@ -104,19 +101,6 @@ export default class WorkingResult extends WorkTimeBase {
     super.afterInitialize(item);
 
     Object.defineProperties(this, {
-      /**
-       * `WorkTimeBase` クラスの `key` プロパティをオーバーライドします。
-       * - `date`, `dayType`, `shiftType` を組み合わせたユニークキーを返すようにします。
-       */
-      key: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return `${this.date}_${this.dayType}_${this.shiftType}`;
-        },
-        set(v) {},
-      },
-
       /**
        * `startAt`, `endAt`, `breakMinutes` から総労働時間を計算して返します。
        */

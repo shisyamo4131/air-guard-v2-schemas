@@ -11,6 +11,8 @@
  *
  * @class
  * @extends Operation
+ * @abstract
+ * @see OperationDetail
  *
  * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
  * @property {string} shiftType - 勤務区分 (変更されると `employees` と `outsourcers` の `shiftType` が自動的に更新されます)

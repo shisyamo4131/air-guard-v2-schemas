@@ -5,6 +5,8 @@
  *
  * @class
  * @extends OperationDetail
+ * @abstract
+ * @see ArrangementNotification
  *
  * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
  * @property {string} shiftType - 勤務区分

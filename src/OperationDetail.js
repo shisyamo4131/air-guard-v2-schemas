@@ -59,6 +59,7 @@
  * @property {string|null} employeeId - 従業員ID (該当しない場合は null) (読み取り専用)
  * @property {string|null} outsourcerId - 外注先ID (該当しない場合は null) (読み取り専用)
  *
+ * @removed
  * @deprecated
  * @property {string} key - 使用不可
  *
