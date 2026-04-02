@@ -1,33 +1,26 @@
 /**
- * Represents the order of site-shift type pairs for placement management.
+ * @file ./src/SiteOrder.js
+ * @description 現場配置順序を表すクラス
+ * - 現場と勤務区分の組み合わせの順序を管理するためのクラスです。
+ * @author shisyamo4131
  *
- * @class SiteOrder
+ * @class
  * @extends BaseClass
  *
  * @property {string} siteId - The unique identifier for the site. Required.
  * @property {string} shiftType - The type of shift associated with the site. Required.
  *
- * @property {string} key - A computed property that returns a unique key in the format `${siteId}-${shiftType}` for identifying the site-shift pair.
+ * @getter {string} key - `siteId` と `shiftType` をアンダースコアで結合した文字列を返します。
+ * @setter key - `siteId` と `shiftType` をアンダースコアで結合した文字列を受け取り、両方の値を分割して `siteId` と `shiftType` に設定します。
+ * - 受け取る値は文字列である必要があり、フォーマットは "siteId-shiftType" でなければなりません。
+ * - フォーマットが正しくない場合や、値が文字列でない場合は、プロパティの値は変更されません。
  */
 import { BaseClass } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 
-/**
- * Represents the order configuration for a site and shift type.
- *
- * @class SiteOrder
- * @extends BaseClass
- *
- * @property {string} siteId - The unique identifier for the site.
- * @property {string} shiftType - The type of shift associated with the site.
- * @property {string} key - A composite key in the format "siteId-shiftType".
- *
- * @getter
- * Returns the composite key for the site and shift type in the format "siteId-shiftType".
- *
- * @setter
- * Sets the `siteId` and `shiftType` properties from a composite key string in the format "siteId-shiftType".
- */
+/*****************************************************************************
+ * SiteOrder
+ *****************************************************************************/
 export default class SiteOrder extends BaseClass {
   static className = "現場配置順序";
   static classProps = {
@@ -36,24 +29,20 @@ export default class SiteOrder extends BaseClass {
   };
 
   /**
-   * Gets the composite key for this site and shift type.
-   * @returns {string} The key in the format "siteId-shiftType".
+   * `siteId` と `shiftType` を結合したキーを返すゲッター
+   * @returns {string} The key in the format "siteId_shiftType".
    */
   get key() {
-    return `${this.siteId}-${this.shiftType}`;
+    return `${this.siteId}_${this.shiftType}`;
   }
 
   /**
-   * Setter for the `key` property.
-   * Expects a string in the format "siteId-shiftType".
-   * Splits the input string and assigns the values to `siteId` and `shiftType` properties if both are present.
-   * Ignores the value if it is not a string.
-   *
-   * @param {string} value - The key string in the format "siteId-shiftType".
+   * `siteId` と `shiftType` を結合したキーを受け取り、両方の値を分割して `siteId` と `shiftType` に設定するセッター
+   * @param {string} value - The key string in the format "siteId_shiftType".
    */
   set key(value) {
     if (typeof value !== "string") return;
-    const [siteId, shiftType] = value.split("-");
+    const [siteId, shiftType] = value.split("_");
     if (siteId && shiftType) {
       this.siteId = siteId;
       this.shiftType = shiftType;

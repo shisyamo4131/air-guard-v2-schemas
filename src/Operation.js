@@ -1,175 +1,109 @@
 /*****************************************************************************
- * Operation Model ver 1.0.0
+ * @file ./src/Operation.js
  * @author shisyamo4131
- * ---------------------------------------------------------------------------
- * - Base class of SiteOperationSchedule and OperationResult based on WorkingResult.
- * - `dateAt` property indicates the date of operation (placement date) used for billing purposes.
- *   Actual working day may differ from this date.
- * - `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are
- *   automatically synchronized to all assigned employees and outsourcers
- *   when they are changed on the Operation instance.
- * - `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
- *   They should be synchronized at `SiteOperationSchedule` level instead.
- * ---------------------------------------------------------------------------
- * @property {string} siteId
- * - Site document ID (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
+ * @description 稼働情報クラス
+ * - 稼働情報を表す抽象クラスです。インスタンス化はできません。
  *
- * @property {number} requiredPersonnel
- * - Required number of personnel
+ * @class
+ * @extends WorkingResult
+ * @abstract
+ * @see OperationResult
+ * @see SiteOperationSchedule
  *
- * @property {boolean} qualificationRequired
- * - Qualification required flag
- *
- * @property {string} workDescription
- * - Work description
- *
- * @property {string} remarks
- * - Remarks
- *
- * @property {Array<OperationDetail>} employees
- * - Assigned employees
- * - Array of `OperationDetail` instances representing assigned employees
- *
- * @property {Array<OperationDetail>} outsourcers
- * - Assigned outsourcers
- * - Array of `OperationDetail` instances representing assigned outsourcers
- *
- * @property {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
- * - Array of employee IDs from `employees` (read-only)
- *
- * @property {Array<string>} outsourcerIds
- * - Array of outsourcer IDs from `outsourcers` (read-only)
- *
- * @property {number} employeesCount
- * - Count of assigned employees (read-only)
- *
- * @property {number} outsourcersCount
- * - Count of assigned outsourcers (sum of amounts) (read-only)
- *
- * @property {boolean} isPersonnelShortage
- * - Indicates if there is a shortage of personnel (read-only)
- * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
- *
- * @property {Array<OperationDetail>} workers
- * - Combined array of `employees` and `outsourcers`
- * - Getter: Returns concatenated array of employees and outsourcers
- * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
- *
- * @property {string} key - `siteId`, `date`, `dayType`, `shiftType` を組み合わせたキー。（読み取り専用）
- * - `WorkingResult.key` をオーバーライドして `siteId` を含めるように定義されているが、未使用。
- *
- * @property {string} agreementKey - `siteId`, `date`, `dayType`, `shiftType` を組み合わせたキー。（読み取り専用）
- * - 適用する取極めを特定するためのキーとして使用される。
- *
+ * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
+ * @property {string} shiftType - 勤務区分 (変更されると `employees` と `outsourcers` の `shiftType` が自動的に更新されます)
+ * @property {string} startTime - 開始時刻 (HH:MM 形式)
+ * @property {string} endTime - 終了時刻 (HH:MM 形式)
+ * @property {boolean} isStartNextDay - 翌日開始フラグ
+ * - `true` の場合、実際の勤務は `dateAt` の翌日であることを意味します。
+ * @property {number} breakMinutes - 休憩時間 (分)
+ * @property {string} date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
+ * - `dateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
+ * @property {Date} startAt - 開始日時 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` に基づいて `startTime` を設定した Date オブジェクトを返します。
+ * - `isStartNextDay` が true の場合、1日加算します。
+ * @property {Date} endAt - 終了日時 (Date オブジェクト) (読み取り専用)
+ * - `startAt` を起点に、最初に現れる `endTime` の Date オブジェクトを返します。
+ * @property {boolean} isSpansNextDay - 翌日跨ぎフラグ (読み取り専用)
+ * - `true` の場合、`startAt` と `endAt` の日付が異なることを意味します。
+ * @property {number} regulationWorkMinutes - 規定労働時間 (分) (変更されると `employees` と `outsourcers` の `regulationWorkMinutes` が自動的に更新されます)
+ * - `startAt` から `endAt` までの時間から `breakMinutes` を差し引いた時間のうち、
+ *   規定内として扱う労働時間（分）です。
+ * - 実際の労働時間から残業時間を算出するための基準となる値です。
+ * - この値があることで、取極めに柔軟な設定を行うことが可能になる他、労働基準法の 1 日の所定労働時間上限が変更された際に
+ *   影響を最小限に抑えることができます。
+ * 例) 8:00 から 17:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とし、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 8:00 から 16:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 7 時間 (420 分) とすると、実際の勤務が 7 時間 (420 分) を超えた分が残業時間として扱われます。
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 7:00 から 翌日 7:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
+ * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
+ *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {string} dayType - 曜日区分
+ * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
+ * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
+ * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
+ * @property {string} siteId - 現場ID (変更されると `employees` と `outsourcers` の `siteId` が自動的に更新されます)
+ * @property {number} requiredPersonnel - 必要人数
+ * @property {boolean} qualificationRequired - 資格要件フラグ
+ * @property {string} workDescription - 作業内容
+ * @property {string} remarks - 備考
+ * @property {Array<OperationDetail>} employees - 従業員の OperationDetail インスタンスの配列
+ * @property {Array<OperationDetail>} outsourcers - 外注の OperationDetail インスタンスの配列
+ * @property {Array<string>} employeeIds - 従業員の ID の配列 (読み取り専用)
+ * @property {Array<string>} outsourcerIds - 外注の ID の配列 (読み取り専用)
+ * @property {number} employeesCount - `employees` の要素数 (読み取り専用)
+ * @property {number} outsourcersCount - `outsourcers` の要素数 (読み取り専用)
+ * @property {boolean} isPersonnelShortage - 人員不足フラグ (読み取り専用)
+ * @property {Array<OperationDetail>} workers - 従業員と外注を合わせた配列
+ * - `employees` と `outsourcers` を結合した配列を返します。
+ * - Getter: `employees` と `outsourcers` を結合した配列を返します。
+ * - Setter: 配列を `isEmployee` プロパティに基づいて `employees` と `outsourcers` に分割します。
+ * @property {string} groupKey - `siteId`, `shiftType`, `date` を組み合わせたキー。（読み取り専用）
+ * @property {string} agreementKey - `date`, `shiftType` を組み合わせたキー。（読み取り専用）
  * @property {string} orderKey - `siteId`, `shiftType` を組み合わせたキー。（読み取り専用）
- * - `siteOrder` の `key` プロパティに対応するキー。稼働予測や配置管理で使用される。
  *
- * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
- * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
- * - Returns true if the employee IDs have changed compared to `_beforeData`
- * @getter {boolean} isOutsourcersChanged - Indicates whether the outsourcers have changed (read-only)
- * - Returns true if the outsourcer IDs have changed compared to `_beforeData`
- * @getter {Array<OperationDetail>} addedWorkers - An array of workers that have been added (read-only)
- * - Workers that exist in current data but not in `_beforeData`
- * @getter {Array<OperationDetail>} removedWorkers - An array of workers that have been removed (read-only)
- * - Workers that exist in `_beforeData` but not in current data
- * @getter {Array<OperationDetail>} updatedWorkers - An array of workers that have been updated (read-only)
- * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
- * ---------------------------------------------------------------------------
- * @inherited - The following properties are inherited from WorkingResult:
+ * @deprecated
+ * @property {string} key - 使用不可
  *
- * @property {Date} dateAt - Date of operation (placement date) (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @property {string} shiftType - `DAY` or `NIGHT` (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @property {string} startTime - Start time (HH:MM format)
- * @property {boolean} isStartNextDay - Next day start flag
- * - `true` if the actual work starts the day after the placement date `dateAt`
- * @property {string} endTime - End time (HH:MM format)
- * @property {number} breakMinutes - Break time (minutes)
- * @property {number} regulationWorkMinutes - Regulation work minutes (trigger property)
- * - Indicates the maximum working time treated as regular working hours.
- * - A new value will be synchronized to all `employees` and `outsourcers`.
- * ---------------------------------------------------------------------------
- * @inherited - The following computed properties are inherited from WorkingResult:
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
- * @computed {Date} startAt - Start date and time (Date object) (read-only)
- * - Returns a Date object with `startTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} endAt - End date and time (Date object) (read-only)
- * - Returns a Date object with `endTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * - If `isSpansNextDay` is true, add 1 day.
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
- * - `true` if `startTime` is later than `endTime`
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
- * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
- * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
- * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
- * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
- * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
- * ---------------------------------------------------------------------------
- * @inherited - The following getter properties are inherited from WorkingResult:
- * @getter {number} startHour - Start hour (0-23) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} startMinute - Start minute (0-59) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} endHour - End hour (0-23) (read-only)
- * - Extracted from `endTime`.
- * @getter {number} endMinute - End minute (0-59) (read-only)
- * - Extracted from `endTime`.
- * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
- * - Compares the current `key` with the `key` in `_beforeData`.
- * ---------------------------------------------------------------------------
- * @method {function} addWorker - Adds a new worker (employee or outsourcer)
- * - @param {Object} options - Options for adding a worker
- * - @param {string} options.id - The worker ID (employeeId or outsourcerId)
- * - @param {boolean} [options.isEmployee=true] - Whether the worker is an employee
- * - @param {number} [index=0] - Insertion position. If -1, adds to the end
- * @method {function} moveWorker - Moves the position of a worker (employee or outsourcer)
- * - @param {Object} options - Options for changing worker position
- * - @param {number} options.oldIndex - The original index
- * - @param {number} options.newIndex - The new index
- * - @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer
- * @method {function} changeWorker - Changes the details of a worker
- * - @param {Object} newWorker - New worker object
- * @method {function} removeWorker - Removes a worker (employee or outsourcer)
- * - @param {Object} options - Options for removing a worker
- * - @param {string} options.workerId - The ID of the employee or outsourcer
- * - @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer
- * @method {function} setSiteIdCallback - Callback method called when `siteId` is set
- * - Override this method in subclasses to add custom behavior when `siteId` changes.
- * - By default, does nothing.
- * - @param {string} v - The new `siteId` value
- * @method {function} setShiftTypeCallback - Callback method called when `shiftType` is set
- * - Override this method in subclasses to add custom behavior when `shiftType` changes.
- * - By default, does nothing.
- * - @param {string} v - The new `shiftType` value
- * @method {function} setRegulationWorkMinutesCallback - Callback method called when `regulationWorkMinutes` is set
- * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
- * - By default, does nothing.
- * - @param {number} v - The new `regulationWorkMinutes` value
- * ---------------------------------------------------------------------------
+ * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
+ * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
+ * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
+ * @method moveWorker - 従業員または外注先の位置を移動します。
+ * @method changeWorker - 従業員または外注先の詳細を変更します。
+ * @method removeWorker - 従業員または外注先を `workers` から削除します。
+ * @method setSiteIdCallback - `siteId` が変更された時に呼び出されるコールバック関数
+ * @method setShiftTypeCallback - `shiftType` が変更された時に呼び出されるコールバック関数
+ * @method setRegulationWorkMinutesCallback - `regulationWorkMinutes` が変更された時に呼び出されるコールバック関数
+ *
+ * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
+ * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {boolean} isGroupKeyChanged - `groupKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isAgreementKeyChanged - `agreementKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isEmployeesChanged - 従業員が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {boolean} isOutsourcersChanged - 外注が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {Array<OperationDetail>} addedWorkers - 追加された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} removedWorkers - 削除された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} updatedWorkers - 更新された従業員の配列 (読み取り専用)
+ *
+ * @deprecated
+ * @getter {boolean} isKeyChanged - 使用不可
+ *
+ * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
+ * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
+ * - `BREAK_MINUTES_NEGATIVE`: `breakMinutes` が負の値である場合のエラーコード
+ * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
+ * @static DAY_TYPE - 曜日区分を定義する定数オブジェクト
+ *
  * @static
- * @method groupKeyDivider
- * Returns an array dividing the key into siteId, shiftType, and date.
- * @param {Object|string} key - The combined key string or object
- * @returns {Array<string>} - Array containing [siteId, shiftType, date]
- * @throws {Error} - If the key is invalid.
- * ---------------------------------------------------------------------------
- * @inherited - The following method is inherited from WorkingResult:
- * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
- * - Override this method in subclasses to add custom behavior when `dateAt` changes.
- * - By default, updates `dayType` based on the new `dateAt` value and synchronizes to workers.
- * - @param {Date} v - The new `dateAt` value
+ * @method groupKeyDivider - `groupKey` を構成する要素を分割して返す静的メソッド
  *****************************************************************************/
 import WorkingResult from "./WorkingResult.js";
 import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { VALUES as DAY_TYPE } from "./constants/day-type.js";
-import { VALUES as SHIFT_TYPE } from "./constants/shift-type.js";
 
 const classProps = {
   siteId: defField("siteId", { required: true }),
@@ -187,23 +121,6 @@ const classProps = {
   }),
 };
 
-/**
- * Wrapper to define computed properties.
- * @param {*} obj
- * @param {*} properties
- */
-function defineComputedProperties(obj, properties) {
-  const descriptors = {};
-  for (const [key, descriptor] of Object.entries(properties)) {
-    descriptors[key] = {
-      configurable: true,
-      enumerable: true,
-      ...descriptor,
-    };
-  }
-  Object.defineProperties(obj, descriptors);
-}
-
 export default class Operation extends WorkingResult {
   static className = "稼働ベース";
   static collectionPath = "Operations";
@@ -211,12 +128,10 @@ export default class Operation extends WorkingResult {
   static logicalDelete = false;
   static classProps = classProps;
 
-  static DAY_TYPE = DAY_TYPE;
-  static SHIFT_TYPE = SHIFT_TYPE;
-
   /**
    * Constructor
-   * @param {*} item
+   * - 抽象クラスのため、直接のインスタンス化を防止します。
+   * @param {Object} item - 初期化オブジェクト
    */
   constructor(item = {}) {
     if (new.target == Operation) {
@@ -226,14 +141,6 @@ export default class Operation extends WorkingResult {
     }
     super(item);
   }
-
-  /**
-   * setSiteIdCallback
-   * - Callback method called when `siteId` is set.
-   * - Override this method in subclasses to add custom behavior when `siteId` changes.
-   * @param {*} v
-   */
-  setSiteIdCallback(v) {}
 
   /**
    * setDateAtCallback
@@ -248,12 +155,26 @@ export default class Operation extends WorkingResult {
   }
 
   /**
+   * setSiteIdCallback
+   * - Callback method called when `siteId` is set.
+   * - Override this method in subclasses to add custom behavior when `siteId` changes.
+   * @param {*} v
+   */
+  setSiteIdCallback(v) {
+    this.employees.forEach((emp) => (emp.siteId = v));
+    this.outsourcers.forEach((out) => (out.siteId = v));
+  }
+
+  /**
    * setShiftTypeCallback
    * - Callback method called when `shiftType` is set.
    * - Override this method in subclasses to add custom behavior when `shiftType` changes.
    * @param {*} v
    */
-  setShiftTypeCallback(v) {}
+  setShiftTypeCallback(v) {
+    this.employees.forEach((emp) => (emp.shiftType = v));
+    this.outsourcers.forEach((out) => (out.shiftType = v));
+  }
 
   /**
    * setRegulationWorkMinutesCallback
@@ -261,39 +182,46 @@ export default class Operation extends WorkingResult {
    * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
    * @param {*} v
    */
-  setRegulationWorkMinutesCallback(v) {}
+  setRegulationWorkMinutesCallback(v) {
+    this.employees.forEach((emp) => (emp.regulationWorkMinutes = v));
+    this.outsourcers.forEach((out) => (out.regulationWorkMinutes = v));
+  }
 
   /**
    * afterInitialize
+   * @param {Object} item - 初期化オブジェクト
    */
   afterInitialize(item = {}) {
     super.afterInitialize(item);
 
+    /***********************************************************
+     * KEY PROPERTIES
+     ***********************************************************/
     Object.defineProperties(this, {
       /**
-       * `siteId`, `date`, `dayType`, `shiftType` を組み合わせたキー。（読み取り専用）
-       * - `WorkingResult.key` をオーバーライド。
-       * - 2026-01-07 現在使用していないプロパティ。
-       * - `dayType` は請求時の単価情報を取得するために必要な情報であるため含める必要がないと思われる。
+       * `date`, `shiftType`, `siteId` を組み合わせたキー。（読み取り専用）
        */
-      key: {
+      groupKey: {
         configurable: true,
-        enumberable: true,
+        enumerable: true,
         get() {
-          return `${this.siteId}-${this.date}-${this.dayType}-${this.shiftType}`;
+          const date = this.dateAt ? this.date : "null";
+          const shiftType = this.shiftType || "null";
+          const siteId = this.siteId || "null";
+          return `${siteId}_${shiftType}_${date}`;
         },
         set() {},
       },
 
       /**
-       * `siteId`, `date`, `dayType`, `shiftType` を組み合わせたキー。（読み取り専用）
-       * - 適用する取極めを特定するためのキーとして使用される。
+       * `date`, `shiftType` を組み合わせたキー。（読み取り専用）
+       * - 適用する取極めを特定するためのキーとして使用。
        */
       agreementKey: {
         configurable: true,
-        enumberable: true,
+        enumerable: true,
         get() {
-          return `${this.siteId}-${this.date}-${this.dayType}-${this.shiftType}`;
+          return `${this.date}_${this.shiftType}`;
         },
         set() {},
       },
@@ -304,9 +232,9 @@ export default class Operation extends WorkingResult {
        */
       orderKey: {
         configurable: true,
-        enumberable: true,
+        enumerable: true,
         get() {
-          return `${this.siteId}-${this.shiftType}`;
+          return `${this.siteId}_${this.shiftType}`;
         },
         set() {},
       },
@@ -326,8 +254,10 @@ export default class Operation extends WorkingResult {
     let _siteId = this.siteId;
     let _shiftType = this.shiftType;
     let _regulationWorkMinutes = this.regulationWorkMinutes;
-    defineComputedProperties(this, {
+    Object.defineProperties(this, {
       siteId: {
+        configurable: true,
+        enumerable: true,
         get() {
           return _siteId;
         },
@@ -337,12 +267,12 @@ export default class Operation extends WorkingResult {
           }
           if (_siteId === v) return;
           _siteId = v;
-          this.employees.forEach((emp) => (emp.siteId = v));
-          this.outsourcers.forEach((out) => (out.siteId = v));
           this.setSiteIdCallback(v);
         },
       },
       shiftType: {
+        configurable: true,
+        enumerable: true,
         get() {
           return _shiftType;
         },
@@ -350,17 +280,17 @@ export default class Operation extends WorkingResult {
           if (typeof v !== "string") {
             throw new Error(`shiftType must be a string. shiftType: ${v}`);
           }
-          if (!SHIFT_TYPE[v]) {
+          if (!WorkingResult.SHIFT_TYPE[v]) {
             throw new Error(`Invalid shiftType value. shiftType: ${v}`);
           }
           if (_shiftType === v) return;
           _shiftType = v;
-          this.employees.forEach((emp) => (emp.shiftType = v));
-          this.outsourcers.forEach((out) => (out.shiftType = v));
           this.setShiftTypeCallback(v);
         },
       },
       regulationWorkMinutes: {
+        configurable: true,
+        enumerable: true,
         get() {
           return _regulationWorkMinutes;
         },
@@ -372,45 +302,69 @@ export default class Operation extends WorkingResult {
           }
           if (_regulationWorkMinutes === v) return;
           _regulationWorkMinutes = v;
-          this.employees.forEach((emp) => (emp.regulationWorkMinutes = v));
-          this.outsourcers.forEach((out) => (out.regulationWorkMinutes = v));
           this.setRegulationWorkMinutesCallback(v);
         },
       },
     });
 
-    /** define computed properies */
-    defineComputedProperties(this, {
-      /** Returns an array of employee IDs */
+    /***********************************************************
+     * OTHER PROPERTIES
+     ***********************************************************/
+    Object.defineProperties(this, {
+      /**
+       * `employeeId` の配列を返します。
+       */
       employeeIds: {
+        configurable: true,
+        enumerable: true,
         get() {
           return this.employees.map((emp) => emp.employeeId);
         },
         set(v) {},
       },
-      /** Returns an array of outsourcer IDs */
+
+      /**
+       * `outsourcerId` の配列を返します。
+       */
       outsourcerIds: {
+        configurable: true,
+        enumerable: true,
         get() {
           return this.outsourcers.map((out) => out.outsourcerId);
         },
         set(v) {},
       },
-      /** Returns the count of assigned employees */
+
+      /**
+       * `employees` に割り当てられた人数を返します。
+       */
       employeesCount: {
+        configurable: true,
+        enumerable: true,
         get() {
           return this.employees.length;
         },
         set(v) {},
       },
-      /** Returns the count of assigned outsourcers (sum of amounts) */
+
+      /**
+       * `outsourcers` に割り当てられた人数を返します。
+       */
       outsourcersCount: {
+        configurable: true,
+        enumerable: true,
         get() {
           return this.outsourcers.reduce((sum, i) => sum + i.amount, 0);
         },
         set(v) {},
       },
-      /** Returns whether there is a personnel shortage */
+
+      /**
+       * 必要人数に対して、割り当てられた従業員と外注先の合計人数が不足しているかどうかを返します。
+       */
       isPersonnelShortage: {
+        configurable: true,
+        enumerable: true,
         get() {
           const totalRequired = this.requiredPersonnel || 0;
           const totalAssigned = this.employeesCount + this.outsourcersCount;
@@ -418,8 +372,14 @@ export default class Operation extends WorkingResult {
         },
         set(v) {},
       },
-      /** Returns a combined array of employees and outsourcers */
+
+      /**
+       * `employees` と `outsourcers` を組み合わせた配列を返します。
+       * セッターは、`isEmployee` プロパティに基づいて、従業員と外注先を分割して `employees` と `outsourcers` に設定します。
+       */
       workers: {
+        configurable: true,
+        enumerable: true,
         get() {
           return this.employees.concat(this.outsourcers);
         },
@@ -432,7 +392,9 @@ export default class Operation extends WorkingResult {
       },
     });
 
-    /** Define custom methods for employees and outsourcers */
+    /***********************************************************
+     * METHODS FOR MANAGING EMPLOYEES AND OUTSOURCERS
+     ***********************************************************/
     const self = this;
     Object.defineProperties(this.employees, {
       /**
@@ -662,23 +624,41 @@ export default class Operation extends WorkingResult {
   }
 
   /***************************************************************************
-   * STATES
+   * GETTERS
    ***************************************************************************/
   /**
-   * Returns a string combining siteId, shiftType, and date.
-   * - Indicates where this operation belongs.
-   * @returns {string} - The group key.
+   * `siteId`, `shiftType`, `date` のいずれかが変更されたかどうかを返します。
+   * - いずれかが変更された場合は true を返します。
+   * - すべてが変更されていない場合は false を返します。
+   * @returns {boolean} - `siteId`, `shiftType`, `date` のいずれかが変更されたかどうか。
    */
-  get groupKey() {
-    return `${this.siteId}-${this.shiftType}-${this.date}`;
+  get isGroupKeyChanged() {
+    const currentKey = this.groupKey;
+    const beforeKey = `${this._beforeData?.siteId || ""}_${
+      this._beforeData?.shiftType || ""
+    }_${this._beforeData?.date || ""}`;
+    return currentKey !== beforeKey;
   }
 
   /**
-   * Returns whether the employees have changed.
-   * - Returns true if the employee IDs have changed.
-   * - Returns false if the employee IDs have not changed or
-   *   are the same even if the order has changed.
-   * @returns {boolean} - Whether the employees have changed.
+   * `date`, `shiftType` のいずれかが変更されたかどうかを返します。
+   * - いずれかが変更された場合は true を返します。
+   * - すべてが変更されていない場合は false を返します。
+   * @returns {boolean} - `date`, `shiftType` のいずれかが変更されたかどうか。
+   */
+  get isAgreementKeyChanged() {
+    const currentKey = this.agreementKey;
+    const beforeKey = `${this._beforeData?.date || ""}_${
+      this._beforeData?.shiftType || ""
+    }`;
+    return currentKey !== beforeKey;
+  }
+
+  /**
+   * 従業員が変更されたかどうかを返します。
+   * - 従業員IDが変更された場合は true を返します。
+   * - 従業員IDが変更されていない場合、または順序が変更されても同じ場合は false を返します。
+   * @returns {boolean} - 従業員が変更されたかどうか。
    */
   get isEmployeesChanged() {
     const current = this.employeeIds || [];
@@ -687,11 +667,10 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Returns whether the outsourcers have changed.
-   * - Returns true if the outsourcer IDs have changed.
-   * - Returns false if the outsourcer IDs have not changed or
-   *   are the same even if the order has changed.
-   * @returns {boolean} - Whether the outsourcers have changed.
+   * 外注先が変更されたかどうかを返します。
+   * - 外注先IDが変更された場合は true を返します。
+   * - 外注先IDが変更されていない場合、または順序が変更されても同じ場合は false を返します。
+   * @returns {boolean} - 外注先が変更されたかどうか。
    */
   get isOutsourcersChanged() {
     const current = this.outsourcerIds || [];
@@ -700,8 +679,8 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Returns a filtered array of workers that have been added.
-   * @returns {Array<OperationDetail>} - Array of added workers.
+   * 追加された従業員の配列を返します。
+   * @returns {Array<OperationDetail>} - 追加された従業員の配列。
    */
   get addedWorkers() {
     const current = this.workers || [];
@@ -712,9 +691,8 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Returns a filtered array of workers that have been removed.
-   * Note: The returned elements do not exist in this.workers.
-   * @returns {Array<OperationDetail>} - Array of removed workers.
+   * 削除された従業員の配列を返します。
+   * @returns {Array<OperationDetail>} - 削除された従業員の配列。
    */
   get removedWorkers() {
     const before = this._beforeData?.workers || [];
@@ -726,9 +704,9 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Returns a filtered array of workers that have been updated.
-   * - Compares `startTime`, `isStartNextDay`, `endTime`, and `breakMinutes` properties.
-   * @returns {Array<OperationDetail>} - Array of updated workers.
+   * 更新された従業員の配列を返します。
+   * - `startTime`, `isStartNextDay`, `endTime`, `breakMinutes` プロパティを比較します。
+   * @returns {Array<OperationDetail>} - 更新された従業員の配列。
    */
   get updatedWorkers() {
     const before = this._beforeData.workers || [];
@@ -754,12 +732,12 @@ export default class Operation extends WorkingResult {
    * METHODS
    ***************************************************************************/
   /**
-   * Adds a new worker.
-   * - Calls the appropriate method based on the value of `isEmployee`.
-   * @param {Object} options - Options for adding a worker.
-   * @param {string} options.id - The worker ID (employeeId or outsourcerId)
-   * @param {boolean} [options.isEmployee=true] - Whether the worker is an employee
-   * @param {number} [index=0] - Insertion position. If -1, adds to the end.
+   * `Workers` に新しい従業員または外注先を追加します。
+   * - `isEmployee` の値に応じて適切なメソッドを呼び出します。
+   * @param {Object} options - 従業員または外注先を追加するためのオプション。
+   * @param {string} options.id - 従業員IDまたは外注先ID
+   * @param {boolean} [options.isEmployee=true] - 従業員かどうか
+   * @param {number} [index=0] - 挿入位置。-1 の場合は末尾に追加。
    */
   addWorker(options = {}, index = 0) {
     const { isEmployee = true } = options;
@@ -771,11 +749,11 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Moves the position of workers.
-   * @param {Object} options - Options for changing worker position.
-   * @param {number} options.oldIndex - The original index.
-   * @param {number} options.newIndex - The new index.
-   * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
+   * 従業員または外注先の位置を移動します。
+   * @param {Object} options - 従業員または外注先の位置を変更するためのオプション。
+   * @param {number} options.oldIndex - 元のインデックス。
+   * @param {number} options.newIndex - 新しいインデックス。
+   * @param {boolean} [options.isEmployee=true] - 従業員の場合は true、外注先の場合は false。
    */
   moveWorker(options) {
     const { oldIndex, newIndex, isEmployee = true } = options;
@@ -792,8 +770,8 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Changes the details of a worker.
-   * @param {Object} newWorker - New worker object
+   * 従業員または外注先の詳細を変更します。
+   * @param {Object} newWorker - 新しい従業員オブジェクト
    */
   changeWorker(newWorker) {
     if (newWorker.isEmployee) {
@@ -804,10 +782,10 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Removes an employee or outsourcer from the schedule.
-   * @param {Object} options - Options for removing a worker.
-   * @param {string} options.workerId - The ID of the employee or outsourcer.
-   * @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer.
+   * 従業員または外注先を `workers` から削除します。
+   * @param {Object} options - 従業員または外注先を削除するためのオプション。
+   * @param {string} options.workerId - 従業員IDまたは外注先ID。
+   * @param {boolean} [options.isEmployee=true] - 従業員の場合は true、外注先の場合は false。
    */
   removeWorker(options) {
     const { workerId, isEmployee = true } = options;
@@ -819,10 +797,10 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * Returns an array dividing the key into siteId, shiftType, and date.
+   * キーを siteId、shiftType、date に分割した配列を返します。
    * @param {Object|string} key
    * @returns {Array<string>} - [siteId, shiftType, date]
-   * @throws {Error} - If the key is invalid.
+   * @throws {Error} - キーが無効な場合。
    */
   static groupKeyDivider(key = {}) {
     if (!key) throw new Error("key is required.");
@@ -836,15 +814,30 @@ export default class Operation extends WorkingResult {
         }
         return [key.siteId, key.shiftType, key.date];
       case "string":
-        const [siteId, shiftType, year, month, day] = key.split("-");
-        if (!siteId || !shiftType || !year || !month || !day) {
-          throw new Error(
-            "key must be in the format 'siteId-shiftType-year-month-day'.",
-          );
+        const [siteId, shiftType, date] = key.split("_");
+        if (!siteId || !shiftType || !date) {
+          throw new Error("key must be in the format 'siteId_shiftType_date'.");
         }
-        return [siteId, shiftType, `${year}-${month}-${day}`];
+        return [siteId, shiftType, date];
       default:
         throw new Error("Invalid key type.");
     }
+  }
+
+  /***************************************************************************
+   * FOR DEPRECATED PROPERTIES
+   ***************************************************************************/
+  get key() {
+    console.warn("Operation.key is deprecated.");
+    return null;
+  }
+
+  set key(v) {
+    console.warn("Operation.key is deprecated.");
+  }
+
+  get isKeyChanged() {
+    console.warn("Operation.isKeyChanged is deprecated.");
+    return false;
   }
 }

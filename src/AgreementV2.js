@@ -101,18 +101,19 @@ export class DayTypeRates extends BaseClass {
  *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
  * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
  *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
- * @property {string} key - 一意なキー (読み取り専用)
- * - `date` と `shiftType` を組み合わせた文字列を返します。
  * @property {DayTypeRates} rates - 曜日区分、勤務区分ごとの単価情報オブジェクト
  * @property {string} billingUnitType - 請求単位 (PER_DAY, PER_HOUR)
  * @property {boolean} includeBreakInBilling - 請求に休憩時間を含めるかどうかのフラグ
  * @property {number} cutoffDate - 締日区分 (0: 月末, 5: 5日, 10: 10日, 15: 15日, 20: 20日, 25: 25日)
+ * @property {string} key - 一意なキー (読み取り専用)
+ * - `date` と `shiftType` を組み合わせた文字列を返します。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
  * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
  * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {boolean} isKeyChanged - `key` プロパティが変更されたかどうかを返すプロパティ
  *
  * @static BILLING_UNIT_TYPE - 請求単位の定数オブジェクト
  * @static DAY_TYPE - 曜日区分の定数オブジェクト
@@ -147,4 +148,39 @@ export default class AgreementV2 extends WorkTimeBase {
   static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE_VALUES;
   static DAY_TYPE = DAY_TYPE_VALUES;
   static SHIFT_TYPE = SHIFT_TYPE_VALUES;
+
+  /**
+   * afterInitialize (override)
+   * - `key` プロパティを定義します。
+   * @param {Object} item - 初期化オブジェクト
+   */
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
+
+    Object.defineProperties(this, {
+      /**
+       * key (読み取り専用)
+       * - `date` と `shiftType` を組み合わせたユニークキーを返すようにします。
+       */
+      key: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return `${this.date}_${this.shiftType}`;
+        },
+        set(v) {},
+      },
+    });
+  }
+
+  /**
+   * `key` プロパティが変更されたかどうかを返します。
+   * - `key` は `date` と `shiftType` を組み合わせた文字列であるため、これらのいずれかが変更された場合に `true` を返します。
+   * @returns {boolean} `key` が変更された場合は `true`、変更されていない場合は `false` を返します。
+   */
+  get isKeyChanged() {
+    const current = this.key;
+    const before = this._beforeData?.key;
+    return current !== before;
+  }
 }

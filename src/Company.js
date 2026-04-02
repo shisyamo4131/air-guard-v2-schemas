@@ -290,7 +290,7 @@ export default class Company extends GeocodableMixin(FireModel) {
           if (typeof arg === "string") {
             key = arg;
           } else if (typeof arg === "object" && arg.siteId && arg.shiftType) {
-            key = `${arg.siteId}-${arg.shiftType}`;
+            key = `${arg.siteId}_${arg.shiftType}`;
           } else {
             throw new Error(
               "Invalid argument for remove. Must be a string key or an object with siteId and shiftType.",
@@ -378,7 +378,7 @@ export default class Company extends GeocodableMixin(FireModel) {
           if (typeof arg === "string") {
             key = arg;
           } else if (typeof arg === "object" && arg.siteId && arg.shiftType) {
-            key = `${arg.siteId}-${arg.shiftType}`;
+            key = `${arg.siteId}_${arg.shiftType}`;
           } else {
             throw new Error(
               "Invalid argument for remove. Must be a string key or an object with siteId and shiftType.",

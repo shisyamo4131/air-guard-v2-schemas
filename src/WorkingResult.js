@@ -1,140 +1,88 @@
 /*****************************************************************************
- * WorkingResult ver 1.0.0
+ * @file ./src/WorkingResult.js
  * @author shisyamo4131
- * ---------------------------------------------------------------------------
- * - `Agreement`, `Operation` クラスの継承元となるクラスです。
- * A class representing the working result for a specific date and shift extending FireModel.
- * - This class is intended to be inherited by other classes so, it cannot be instantiated directly.
- * - `dateAt` is defined as a trigger property. When it is set, `dayType` is automatically updated.
- * - Subclasses can override `setDateAtCallback` to add custom behavior when `dateAt` changes.
- * ---------------------------------------------------------------------------
- * @constant {Object} DAY_TYPE - 曜日区分定数オブジェクト
- * @constant {Object} SHIFT_TYPE - シフト区分定数オブジェクト
+ * @description 勤務実績クラス
+ * - 勤務実績を表す抽象クラスです。インスタンス化はできません。
  *
- * @property {Date} dateAt - Applicable start date (trigger property)
+ * @class
+ * @extends WorkTimeBase
+ * @abstract
+ * @see Operation
+ * @see OperationDetail
  *
- * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
+ * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
+ * @property {string} shiftType - 勤務区分
+ * @property {string} startTime - 開始時刻 (HH:MM 形式)
+ * @property {string} endTime - 終了時刻 (HH:MM 形式)
+ * @property {boolean} isStartNextDay - 翌日開始フラグ
+ * - `true` の場合、実際の勤務は `dateAt` の翌日であることを意味します。
+ * @property {number} breakMinutes - 休憩時間 (分)
+ * @property {string} date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
+ * - `dateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
+ * @property {Date} startAt - 開始日時 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` に基づいて `startTime` を設定した Date オブジェクトを返します。
+ * - `isStartNextDay` が true の場合、1日加算します。
+ * @property {Date} endAt - 終了日時 (Date オブジェクト) (読み取り専用)
+ * - `startAt` を起点に、最初に現れる `endTime` の Date オブジェクトを返します。
+ * @property {boolean} isSpansNextDay - 翌日跨ぎフラグ (読み取り専用)
+ * - `true` の場合、`startAt` と `endAt` の日付が異なることを意味します。
+ * @property {number} regulationWorkMinutes - 規定労働時間 (分)
+ * - `startAt` から `endAt` までの時間から `breakMinutes` を差し引いた時間のうち、
+ *   規定内として扱う労働時間（分）です。
+ * - 実際の労働時間から残業時間を算出するための基準となる値です。
+ * - この値があることで、取極めに柔軟な設定を行うことが可能になる他、労働基準法の 1 日の所定労働時間上限が変更された際に
+ *   影響を最小限に抑えることができます。
+ * 例) 8:00 から 17:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とし、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 8:00 から 16:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 7 時間 (420 分) とすると、実際の勤務が 7 時間 (420 分) を超えた分が残業時間として扱われます。
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 7:00 から 翌日 7:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
+ * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
+ *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {string} dayType - 曜日区分
+ * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
+ * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
+ * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
  *
- * @property {string} shiftType - Shift type (`DAY`, `NIGHT`)
+ * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
+ * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  *
- * @property {string} startTime - Start time (HH:MM format)
+ * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
+ * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
  *
- * @property {boolean} isStartNextDay - Next day start flag
- * - `true` if the actual work starts the day after the placement date `dateAt`
- *
- * @property {string} endTime - End time (HH:MM format)
- *
- * @property {number} breakMinutes - Break time (minutes)
- *
- * @property {number} regulationWorkMinutes - Regulation work minutes
- * - The maximum working time defined by `unitPriceBase` (or `unitPriceQualified`).
- * - Exceeding this time is considered overtime.
- *
- * @property {string} key - `date`, `dayType`, `shiftType` を組み合わせたユニークキー。（読み取り専用）
- * - 継承先である `Agreement` でデータを一意に識別するためのキーとして使用されます。
- *
- * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
- * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
- *
- * @property {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
- * - `true` if `startTime` is later than `endTime`
- *
- * @property {Date} startAt - Start date and time (Date object) (read-only)
- * - Returns a Date object with `startTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- *
- * @property {Date} endAt - End date and time (Date object) (read-only)
- * - Returns a Date object with `endTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * - If `isSpansNextDay` is true, add 1 day.
- *
- * @property {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
- * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
- * - If the difference between `endAt` and `startAt` is negative, returns 0.
- * - If `startAt` or `endAt` is not set, returns 0.
- *
- * @property {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
- * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
- * - If actual working time is less than regulation time (e.g., early leave), it equals `totalWorkMinutes`.
- * - If actual working time exceeds regulation time (overtime), it equals `regulationWorkMinutes`.
- *
- * @property {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
- * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
- * - Overtime work is not negative; the minimum is 0.
- * ---------------------------------------------------------------------------
- * @getter {number} startHour - Start hour (0-23) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} startMinute - Start minute (0-59) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} endHour - End hour (0-23) (read-only)
- * - Extracted from `endTime`.
- * @getter {number} endMinute - End minute (0-59) (read-only)
- * - Extracted from `endTime`.
- * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
- * - Compares the current `key` with the `key` in `_beforeData`.
- * ---------------------------------------------------------------------------
- * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
- * - Override this method in subclasses to add custom behavior when `dateAt` changes.
- * - By default, updates `dayType` based on the new `dateAt` value.
- * - @param {Date} v - The new `dateAt` value
+ * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
+ * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
+ * - `BREAK_MINUTES_NEGATIVE`: `breakMinutes` が負の値である場合のエラーコード
+ * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
+ * @static DAY_TYPE - 曜日区分を定義する定数オブジェクト
  *****************************************************************************/
-import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-import { getDateAt } from "./utils/index.js";
 import { getDayType } from "./constants/day-type.js";
 import { VALUES as DAY_TYPE } from "./constants/day-type.js";
-import { VALUES as SHIFT_TYPE } from "./constants/shift-type.js";
+import WorkTimeBase from "./WorkTimeBase.js";
 
 const classProps = {
-  dateAt: defField("dateAt", { required: true }),
+  ...WorkTimeBase.classProps,
   dayType: defField("dayType", { required: true }),
-  shiftType: defField("shiftType", { required: true }),
-  startTime: defField("time", {
-    label: "開始時刻",
-    required: true,
-    default: "08:00",
-  }),
-  isStartNextDay: defField("check", { label: "翌日開始" }),
-  endTime: defField("time", {
-    label: "終了時刻",
-    required: true,
-    default: "17:00",
-  }),
-  breakMinutes: defField("breakMinutes", { required: true }),
-  regulationWorkMinutes: defField("regulationWorkMinutes", { required: true }),
 };
 
-/**
- * Wrapper to define computed properties.
- * @param {*} obj
- * @param {*} properties
- */
-function defineComputedProperties(obj, properties) {
-  const descriptors = {};
-  for (const [key, descriptor] of Object.entries(properties)) {
-    descriptors[key] = {
-      configurable: true,
-      enumerable: true,
-      ...descriptor,
-    };
-  }
-  Object.defineProperties(obj, descriptors);
-}
-
-export default class WorkingResult extends FireModel {
+/*****************************************************************************
+ * WorkingResult
+ *****************************************************************************/
+export default class WorkingResult extends WorkTimeBase {
   static className = "WorkingResult";
   static collectionPath = "WorkingResults";
-  static useAutonumber = false;
-  static logicalDelete = false;
   static classProps = classProps;
 
   static DAY_TYPE = DAY_TYPE;
-  static SHIFT_TYPE = SHIFT_TYPE;
 
   /**
    * Constructor
-   * - Prevent direct instantiation of WorkingResult class.
-   * @param {*} item
+   * - 抽象クラスのため、直接のインスタンス化を防止します。
+   * @param {Object} item - 初期化オブジェクト
    */
   constructor(item = {}) {
     if (new.target === WorkingResult) {
@@ -147,104 +95,18 @@ export default class WorkingResult extends FireModel {
 
   /**
    * afterInitialize
-   * @param {*} item
+   * @param {Object} item - 初期化オブジェクト
    */
   afterInitialize(item = {}) {
     super.afterInitialize(item);
 
-    /** Define triggers */
-    let _dateAt = this.dateAt;
-    defineComputedProperties(this, {
+    Object.defineProperties(this, {
       /**
-       * dateAt - Convert `dateAt` property to use getter/setter
-       * - When `dateAt` is set, call `setDateAtCallback` to update dependent properties.
-       */
-      dateAt: {
-        get() {
-          return _dateAt;
-        },
-        set(v) {
-          if (_dateAt && v.getTime() === _dateAt.getTime()) {
-            return;
-          }
-          const newDate = new Date(v);
-          newDate.setHours(0, 0, 0, 0); // 時刻部分をクリア
-          _dateAt = newDate;
-          this.setDateAtCallback(newDate);
-        },
-      },
-    });
-
-    /** Define computed properties */
-    defineComputedProperties(this, {
-      /**
-       * key - Unique key combining date, dayType, and shiftType
-       * - A unique identifier for the working result, combining `date`, `dayType`, and `shiftType`.
-       */
-      key: {
-        get: () => {
-          return `${this.date}-${this.dayType}-${this.shiftType}`;
-        },
-        set: () => {},
-      },
-      /**
-       * date - Date string in YYYY-MM-DD format based on `dateAt`
-       * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
-       * - If `dateAt` is not set, returns an empty string.
-       */
-      date: {
-        get: () => {
-          if (!this.dateAt) return "";
-          // UTC時刻に9時間(JST)を加算してJST日付を取得
-          const jstDate = new Date(this.dateAt.getTime() + 9 * 60 * 60 * 1000);
-          const year = jstDate.getUTCFullYear();
-          const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
-          const day = String(jstDate.getUTCDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        },
-        set: (v) => {},
-      },
-      /**
-       * isSpansNextDay - Flag indicating whether the date spans from start date to end date
-       * - `true` if `startTime` is later than `endTime`
-       */
-      isSpansNextDay: {
-        get: () => this.startTime > this.endTime,
-        set: (v) => {},
-      },
-      /**
-       * startAt - Start date and time (Date object)
-       * - Returns a Date object with `startTime` set based on `dateAt`.
-       * - If `isStartNextDay` is true, add 1 day.
-       */
-      startAt: {
-        get() {
-          const dateOffset = this.isStartNextDay ? 1 : 0;
-          return getDateAt(this.dateAt, this.startTime, dateOffset);
-        },
-        set(v) {},
-      },
-      /**
-       * endAt - End date and time (Date object)
-       * - Returns a Date object with `endTime` set based on `dateAt`.
-       * - If `isStartNextDay` is true, add 1 day.
-       * - If `isSpansNextDay` is true, add 1 day.
-       */
-      endAt: {
-        get() {
-          const dateOffset =
-            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
-          return getDateAt(this.dateAt, this.endTime, dateOffset);
-        },
-        set(v) {},
-      },
-      /**
-       * totalWorkMinutes - Total working time in minutes (excluding break time)
-       * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
-       * - If the difference between `endAt` and `startAt` is negative, returns 0.
-       * - If `startAt` or `endAt` is not set, returns 0.
+       * `startAt`, `endAt`, `breakMinutes` から総労働時間を計算して返します。
        */
       totalWorkMinutes: {
+        configurable: true,
+        enumerable: true,
         get: () => {
           const start = this.startAt;
           const end = this.endAt;
@@ -254,24 +116,29 @@ export default class WorkingResult extends FireModel {
         },
         set: (v) => {},
       },
+
       /**
-       * regularTimeWorkMinutes - Regular working time in minutes
-       * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
-       * - If actual working time is less than regulation time (e.g., early leave), it equals `totalWorkMinutes`.
-       * - If actual working time exceeds regulation time (overtime), it equals `regulationWorkMinutes`.
+       * 所定労働時間を返します。
+       * - `totalWorkMinutes` のうち `regulationWorkMinutes` の範囲である部分を返します。
+       * - 実際の労働時間が所定労働時間未満の場合（早退など）は `totalWorkMinutes` と同じ値になります。
+       * - 実際の労働時間が所定労働時間を超える場合（残業など）は `regulationWorkMinutes` と同じ値になります。
        */
       regularTimeWorkMinutes: {
+        configurable: true,
+        enumerable: true,
         get: () => {
           return Math.min(this.totalWorkMinutes, this.regulationWorkMinutes);
         },
         set: (v) => {},
       },
       /**
-       * overtimeWorkMinutes - Overtime working time in minutes
-       * - The value obtained by subtracting `regulationWorkMinutes` from `totalWorkMinutes`.
-       * - Overtime working time is capped at 0 to prevent negative values.
+       * 残業時間を返します。
+       * - `totalWorkMinutes` から `regulationWorkMinutes` を引いた値を返します。
+       * - 残業時間は負の値にならないように、最小値は 0 になります。
        */
       overtimeWorkMinutes: {
+        configurable: true,
+        enumerable: true,
         get: () => {
           const diff = this.totalWorkMinutes - this.regulationWorkMinutes;
           return Math.max(0, diff);
@@ -282,54 +149,13 @@ export default class WorkingResult extends FireModel {
   }
 
   /**
-   * A function called when `dateAt` is set.
-   * - Override this method in subclasses to add custom behavior when `dateAt` changes.
-   * @param {*} v
+   * `WorkTimeBase` クラスの `setDateAtCallback` をオーバライドします。
+   * - `dayType` を更新します。
+   * @param {Date} v - 新しい `dateAt` 値
+   * @returns {void}
    */
   setDateAtCallback(v) {
+    super.setDateAtCallback(v);
     this.dayType = getDayType(v);
-  }
-
-  /**
-   * Returns the start hour extracted from `startTime`.
-   * - Returns 0 if `startTime` is not set.
-   */
-  get startHour() {
-    return this.startTime ? Number(this.startTime.split(":")[0]) : 0;
-  }
-
-  /**
-   * Returns the start minute extracted from `startTime`.
-   * - Returns 0 if `startTime` is not set.
-   */
-  get startMinute() {
-    return this.startTime ? Number(this.startTime.split(":")[1]) : 0;
-  }
-
-  /**
-   * Returns the end hour extracted from `endTime`.
-   * - Returns 0 if `endTime` is not set.
-   */
-  get endHour() {
-    return this.endTime ? Number(this.endTime.split(":")[0]) : 0;
-  }
-
-  /**
-   * Returns the end minute extracted from `endTime`.
-   * - Returns 0 if `endTime` is not set.
-   */
-  get endMinute() {
-    return this.endTime ? Number(this.endTime.split(":")[1]) : 0;
-  }
-
-  /**
-   * Returns whether the key has changed compared to the previous data.
-   * - Compares the current `key` with the `key` in `_beforeData`.
-   * - Returns `true` if they are different, otherwise `false`.
-   */
-  get isKeyChanged() {
-    const current = this.key;
-    const before = this._beforeData?.key;
-    return current !== before;
   }
 }

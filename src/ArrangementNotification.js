@@ -3,7 +3,7 @@
  * @author shisyamo4131
  * ---------------------------------------------------------------------------
  * - Model representing arrangement notifications for employees extending SiteOperationScheduleDetail.
- * - The `docId` is fixed to `${siteOperationScheduleId}-${workerId}` to allow recreation of documents.
+ * - The `docId` is fixed to `${siteOperationScheduleId}_${workerId}` to allow recreation of documents.
  * - Status-based state management with specific transition methods.
  * - Overrides `totalWorkMinutes` to use actual work times instead of scheduled times.
  * - Direct updates are disabled; use status transition methods instead.
@@ -98,7 +98,7 @@
  * @removed {string} notificationKey - Notification key (not needed in ArrangementNotification)
  * ---------------------------------------------------------------------------
  * @method {function} create - Override to fix `docId` for recreation
- * - Ensures `docId` is set to `${siteOperationScheduleId}-${workerId}`.
+ * - Ensures `docId` is set to `${siteOperationScheduleId}_${workerId}`.
  * - Allows recreation of ArrangementNotification documents.
  * - @param {Object} updateOptions - Options for creating the document
  * @method {function} update - Disabled
@@ -262,7 +262,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       if (!this.siteOperationScheduleId || !this.workerId) {
         throw new Error("siteOperationScheduleId and workerId are required");
       }
-      const docId = `${this.siteOperationScheduleId}-${this.workerId}`;
+      const docId = `${this.siteOperationScheduleId}_${this.workerId}`;
       return await super.create({ ...updateOptions, docId });
     } catch (error) {
       throw new ContextualError(error.message, context);
@@ -430,7 +430,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       if (this.type === "SERVER") {
         throw new Error(
           "fetchDocsBySiteOperationScheduleId is not supported on server side. " +
-            "Please use this method only on client side or implement server-specific logic with explicit prefix handling."
+            "Please use this method only on client side or implement server-specific logic with explicit prefix handling.",
         );
       }
 
@@ -466,7 +466,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       if (this.type === "SERVER") {
         throw new Error(
           "bulkDelete is not supported on server side. " +
-            "Please use this method only on client side or implement server-specific logic with explicit prefix handling."
+            "Please use this method only on client side or implement server-specific logic with explicit prefix handling.",
         );
       }
 
@@ -485,18 +485,18 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
           // 関数を変数に代入せず、直接呼び出す
           const docs =
             await ArrangementNotification.fetchDocsBySiteOperationScheduleId(
-              siteOperationScheduleId
+              siteOperationScheduleId,
             );
           if (docs.length === 0) return;
           await Promise.all(
-            docs.map((doc) => doc.delete({ transaction: txn }))
+            docs.map((doc) => doc.delete({ transaction: txn })),
           );
         }
 
         // Delete specific notification documents if workerIds are provided.
         else {
           const docIds = workerIds.map(
-            (id) => `${siteOperationScheduleId}-${id}`
+            (id) => `${siteOperationScheduleId}_${id}`,
           );
           const promises = docIds.map((id) => {
             const instance = new ArrangementNotification({ docId: id });
