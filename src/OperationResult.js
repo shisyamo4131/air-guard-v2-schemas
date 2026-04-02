@@ -522,7 +522,8 @@ export default class OperationResult extends Operation {
       throw new Error(message);
     }
     this.customerId = siteInstance.customerId;
-    this.agreement = siteInstance.getAgreement(this);
+    // this.agreement = siteInstance.getAgreement(this);
+    this.agreement = siteInstance.getValidAgreement(this);
   }
 
   /**
