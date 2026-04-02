@@ -1,99 +1,99 @@
 /*****************************************************************************
- * OperationDetail Model ver 1.0.0
+ * @file ./src/OperationDetail.js
  * @author shisyamo4131
- * ---------------------------------------------------------------------------
- * - Base class for SiteOperationScheduleDetail and OperationResultDetail.
- * - Extends WorkingResult class, inheriting all working time calculation functionality
- * - This class is intended to be inherited by other classes so, it cannot be instantiated directly.
- * - Employee or Outsourcer document ID is stored in the id property.
- *   This is useful for specifying as a key for tables.
- * - `amount` property is always fixed at 1 (reserved for future extension).
- * - `startTime` and `endTime` are managed as strings in HH:MM format.
- * - `isEmployee` property distinguishes between Employee and Outsourcer.
- * - `employeeId` and `outsourcerId` properties can be used to get each ID (null if not applicable).
- * --------------------------------------------------------------------------
- * @props {string} id - Employee or Outsourcer document ID
- * @props {number} index - Identifier index for Outsourcer (always 0 for Employee)
- * @props {boolean} isEmployee - Employee flag (true: Employee, false: Outsourcer)
- * @props {number} amount - Number of placements (always fixed at 1)
- * @props {string} siteId - Site ID
- * @props {boolean} isQualified - Qualified flag
- * @props {boolean} isOjt - OJT flag
- * --------------------------------------------------------------------------
- * @computed {string} workerId - Worker ID (read-only)
- * - For Employee, it's the same as `id`, for Outsourcer, it's a concatenation of `id` and `index` with ':'
- * @computed {string|null} employeeId - Employee ID (null if not applicable) (read-only)
- * @computed {string|null} outsourcerId - Outsourcer ID (null if not applicable) (read-only)
- * --------------------------------------------------------------------------
- * @inherited - The following properties are inherited from WorkingResult:
- * @props {Date} dateAt - Placement date (trigger property)
- * @props {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @props {string} shiftType - `DAY` or `NIGHT`
- * @props {string} startTime - Start time (HH:MM format)
- * @props {boolean} isStartNextDay - Next day start flag
- * @props {string} endTime - End time (HH:MM format)
- * @props {number} breakMinutes - Break time (minutes)
- * @props {number} regulationWorkMinutes - Regulation work minutes
- * --------------------------------------------------------------------------
- * @inherited - The following computed properties are inherited from WorkingResult:
- * @computed {string} key - Unique key combining `date`, `dayType`, and `shiftType` (read-only)
- * @computed {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
- * @computed {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
- * @computed {Date} startAt - Start date and time (Date object) (read-only)
- * @computed {Date} endAt - End date and time (Date object) (read-only)
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
- * @computed {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
- * @computed {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
- * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
- * - Overtime work is not negative; the minimum is 0.
- * --------------------------------------------------------------------------
- * @inherited - The following getter properties are inherited from WorkingResult:
- * @getter {number} startHour - Start hour (0-23) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} startMinute - Start minute (0-59) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} endHour - End hour (0-23) (read-only)
- * - Extracted from `endTime`.
- * @getter {number} endMinute - End minute (0-59) (read-only)
- * - Extracted from `endTime`.
- * ---------------------------------------------------------------------------
- * @inherited - The following method is inherited from WorkingResult:
- * @method {function} setDateAtCallback - Callback method called when `dateAt` is set
- * - Override this method in subclasses to add custom behavior when `dateAt` changes.
- * - By default, updates `dayType` based on the new `dateAt` value.
- * - @param {Date} v - The new `dateAt` value
+ * @description 稼働明細クラス
+ * - 稼働明細を表す抽象クラスです。インスタンス化はできません。
+ * - `OperationDetail` ドキュメント群を一意に識別するためには `workerId` を使用してください。
+ *
+ * @class
+ * @extends WorkingResult
+ * @abstract
+ * @see OperationResultDetail
+ * @see SiteOperationScheduleDetail
+ *
+ * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
+ * @property {string} shiftType - 勤務区分
+ * @property {string} startTime - 開始時刻 (HH:MM 形式)
+ * @property {string} endTime - 終了時刻 (HH:MM 形式)
+ * @property {boolean} isStartNextDay - 翌日開始フラグ
+ * - `true` の場合、実際の勤務は `dateAt` の翌日であることを意味します。
+ * @property {number} breakMinutes - 休憩時間 (分)
+ * @property {string} date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
+ * - `dateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
+ * @property {Date} startAt - 開始日時 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` に基づいて `startTime` を設定した Date オブジェクトを返します。
+ * - `isStartNextDay` が true の場合、1日加算します。
+ * @property {Date} endAt - 終了日時 (Date オブジェクト) (読み取り専用)
+ * - `startAt` を起点に、最初に現れる `endTime` の Date オブジェクトを返します。
+ * @property {boolean} isSpansNextDay - 翌日跨ぎフラグ (読み取り専用)
+ * - `true` の場合、`startAt` と `endAt` の日付が異なることを意味します。
+ * @property {number} regulationWorkMinutes - 規定労働時間 (分)
+ * - `startAt` から `endAt` までの時間から `breakMinutes` を差し引いた時間のうち、
+ *   規定内として扱う労働時間（分）です。
+ * - 実際の労働時間から残業時間を算出するための基準となる値です。
+ * - この値があることで、取極めに柔軟な設定を行うことが可能になる他、労働基準法の 1 日の所定労働時間上限が変更された際に
+ *   影響を最小限に抑えることができます。
+ * 例) 8:00 から 17:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とし、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 8:00 から 16:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 7 時間 (420 分) とすると、実際の勤務が 7 時間 (420 分) を超えた分が残業時間として扱われます。
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 7:00 から 翌日 7:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
+ * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
+ *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {string} dayType - 曜日区分
+ * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
+ * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
+ * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
+ * @property {string} id - 従業員ID または 外注先ID
+ * @property {number} index - 外注先の識別用インデックス (従業員の場合は常に0)
+ * @property {boolean} isEmployee - 従業員フラグ (true: 従業員, false: 外注先)
+ * @property {number} amount - 配置人数 (常に1で固定)
+ * @property {string} siteId - 現場ID
+ * @property {boolean} isQualified - 資格者フラグ
+ * @property {boolean} isOjt - OJTフラグ
+ * @property {string} workerId - 作業者ID (読み取り専用)
+ * - 従業員の場合は `id` と同じ、外注先の場合は `id` と `index` を `:` で結合した文字列を返します。
+ * @property {string|null} employeeId - 従業員ID (該当しない場合は null) (読み取り専用)
+ * @property {string|null} outsourcerId - 外注先ID (該当しない場合は null) (読み取り専用)
+ *
+ * @deprecated
+ * @property {string} key - 使用不可
+ *
+ * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
+ * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
+ *
+ * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
+ * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ *
+ * @deprecated
+ * @getter {boolean} isKeyChanged - 使用不可
+ *
+ * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
+ * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
+ * - `BREAK_MINUTES_NEGATIVE`: `breakMinutes` が負の値である場合のエラーコード
+ * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
+ * @static DAY_TYPE - 曜日区分を定義する定数オブジェクト
  *****************************************************************************/
 import { defField } from "./parts/fieldDefinitions.js";
 import WorkingResult from "./WorkingResult.js";
 
 const classProps = {
+  ...WorkingResult.classProps, // Inherited from WorkingResult.js
   id: defField("oneLine", { default: "" }),
   index: defField("number", { default: 0 }),
   isEmployee: defField("check", { default: true, required: true }),
   amount: defField("number", { default: 1, required: true, hidden: true }),
   siteId: defField("oneLine", { required: true }),
-  ...WorkingResult.classProps, // Inherited from WorkingResult.js
   isQualified: defField("check", { label: "資格者" }),
   isOjt: defField("check", { label: "OJT" }),
 };
 
-/**
- * Wrapper to define computed properties.
- * @param {*} obj
- * @param {*} properties
- */
-function defineComputedProperties(obj, properties) {
-  const descriptors = {};
-  for (const [key, descriptor] of Object.entries(properties)) {
-    descriptors[key] = {
-      configurable: true,
-      enumerable: true,
-      ...descriptor,
-    };
-  }
-  Object.defineProperties(obj, descriptors);
-}
-
+/*****************************************************************************
+ * OperationDetail
+ *****************************************************************************/
 export default class OperationDetail extends WorkingResult {
   static className = "稼働明細ベース";
   static collectionPath = "OperationDetails";
@@ -103,13 +103,13 @@ export default class OperationDetail extends WorkingResult {
 
   /**
    * Constructor
-   * - Prevent direct instantiation of OperationDetail class.
-   * @param {*} item
+   * - 抽象クラスのため、直接のインスタンス化を防止します。
+   * @param {Object} item - 初期化オブジェクト
    */
   constructor(item = {}) {
     if (new.target === OperationDetail) {
       throw new Error(
-        `OperationDetail is an abstract class and cannot be instantiated directly.`
+        `OperationDetail is an abstract class and cannot be instantiated directly.`,
       );
     }
     super(item);
@@ -117,31 +117,60 @@ export default class OperationDetail extends WorkingResult {
 
   /**
    * afterInitialize
-   * @param {*} item
+   * @param {Object} item - 初期化オブジェクト
    */
   afterInitialize(item = {}) {
     super.afterInitialize(item);
 
     /** Define computed properties */
-    defineComputedProperties(this, {
+    Object.defineProperties(this, {
       workerId: {
+        configurable: true,
+        enumerable: true,
         get() {
           return this.isEmployee ? this.id : `${this.id}:${this.index}`;
         },
         set() {},
       },
       employeeId: {
+        configurable: true,
+        enumerable: true,
         get() {
           return this.isEmployee ? this.id : null;
         },
         set() {},
       },
       outsourcerId: {
+        configurable: true,
+        enumerable: true,
         get() {
           return !this.isEmployee ? this.id : null;
         },
         set() {},
       },
     });
+  }
+
+  /***************************************************************************
+   * FOR DEPRECATED PROPERTIES
+   ***************************************************************************/
+  get key() {
+    console.warn(
+      "OperationDetail: `key` property is deprecated and should not be used.",
+    );
+    return null;
+  }
+
+  set key(v) {
+    console.warn(
+      "OperationDetail: `key` property is deprecated and should not be used.",
+    );
+  }
+
+  get isKeyChanged() {
+    console.warn(
+      "OperationDetail: `isKeyChanged` property is deprecated and should not be used.",
+    );
+    return false;
   }
 }

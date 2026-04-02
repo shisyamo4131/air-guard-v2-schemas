@@ -1,195 +1,156 @@
 /*****************************************************************************
- * OperationResult Model
+ * @file ./src/OperationResult.js
  * @author shisyamo4131
- *
+ * @description 稼働実績クラス
  * ### ドキュメント作成前処理
  * - `siteId` から `customerId` を同期し、関連する `agreement` を適用します。
  *
  * ### ドキュメント更新前処理
  * - 更新前および更新後の `isLocked` が true の場合は編集不可とします。（`isLocked` は `OperationBilling` クラスで更新されます。）
- * - `key` が変更された場合は `customerId` の同期と `agreement` の適用を行います。
+ * - `groupKey` が変更された場合は `customerId` の同期と `agreement` の適用を行います。
  *
- * - Extends Operation class to represent the result of an operation.
- * - Also incorporates Agreement class properties for pricing and billing information.
- * - Provides comprehensive billing calculations including statistics, sales amounts, and tax.
- * - Supports both daily and hourly billing with adjusted quantities.
- * - Automatically updates `billingDateAt` based on `dateAt` and `cutoffDate`.
- * - Introduces a lock mechanism (`isLocked`) to prevent edits when necessary.
+ * @class
+ * @extends Operation
  *
- * @property { string } key - {@link Operation#key}
+ * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
+ * @property {string} shiftType - 勤務区分 (変更されると `employees` と `outsourcers` の `shiftType` が自動的に更新されます)
+ * @property {string} startTime - 開始時刻 (HH:MM 形式)
+ * @property {string} endTime - 終了時刻 (HH:MM 形式)
+ * @property {boolean} isStartNextDay - 翌日開始フラグ
+ * - `true` の場合、実際の勤務は `dateAt` の翌日であることを意味します。
+ * @property {number} breakMinutes - 休憩時間 (分)
+ * @property {string} date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
+ * - `dateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
+ * @property {Date} startAt - 開始日時 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` に基づいて `startTime` を設定した Date オブジェクトを返します。
+ * - `isStartNextDay` が true の場合、1日加算します。
+ * @property {Date} endAt - 終了日時 (Date オブジェクト) (読み取り専用)
+ * - `startAt` を起点に、最初に現れる `endTime` の Date オブジェクトを返します。
+ * @property {boolean} isSpansNextDay - 翌日跨ぎフラグ (読み取り専用)
+ * - `true` の場合、`startAt` と `endAt` の日付が異なることを意味します。
+ * @property {number} regulationWorkMinutes - 規定労働時間 (分) (変更されると `employees` と `outsourcers` の `regulationWorkMinutes` が自動的に更新されます)
+ * - `startAt` から `endAt` までの時間から `breakMinutes` を差し引いた時間のうち、
+ *   規定内として扱う労働時間（分）です。
+ * - 実際の労働時間から残業時間を算出するための基準となる値です。
+ * - この値があることで、取極めに柔軟な設定を行うことが可能になる他、労働基準法の 1 日の所定労働時間上限が変更された際に
+ *   影響を最小限に抑えることができます。
+ * 例) 8:00 から 17:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とし、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 8:00 から 16:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 7 時間 (420 分) とすると、実際の勤務が 7 時間 (420 分) を超えた分が残業時間として扱われます。
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 7:00 から 翌日 7:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
+ * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
+ *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {string} dayType - 曜日区分
+ * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
+ * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
+ * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
+ * @property {string} siteId - 現場ID (変更されると `employees` と `outsourcers` の `siteId` が自動的に更新されます)
+ * @property {number} requiredPersonnel - 必要人数
+ * @property {boolean} qualificationRequired - 資格要件フラグ
+ * @property {string} workDescription - 作業内容
+ * @property {string} remarks - 備考
+ * @property {Array<OperationDetail>} employees - 従業員の OperationDetail インスタンスの配列
+ * @property {Array<OperationDetail>} outsourcers - 外注の OperationDetail インスタンスの配列
+ * @property {Array<string>} employeeIds - 従業員の ID の配列 (読み取り専用)
+ * @property {Array<string>} outsourcerIds - 外注の ID の配列 (読み取り専用)
+ * @property {number} employeesCount - `employees` の要素数 (読み取り専用)
+ * @property {number} outsourcersCount - `outsourcers` の要素数 (読み取り専用)
+ * @property {boolean} isPersonnelShortage - 人員不足フラグ (読み取り専用)
+ * @property {Array<OperationDetail>} workers - 従業員と外注を合わせた配列
+ * - `employees` と `outsourcers` を結合した配列を返します。
+ * - Getter: `employees` と `outsourcers` を結合した配列を返します。
+ * - Setter: 配列を `isEmployee` プロパティに基づいて `employees` と `outsourcers` に分割します。
+ * @property {string} groupKey - `siteId`, `shiftType`, `date` を組み合わせたキー。（読み取り専用）
+ * @property {string} agreementKey - `date`, `shiftType` を組み合わせたキー。（読み取り専用）
+ * @property {string} orderKey - `siteId`, `shiftType` を組み合わせたキー。（読み取り専用）
+ * @property {string|null} siteOperationScheduleId - 現場稼働予定ID
+ * - このプロパティは、OperationResult が現場稼働予定に紐づいている場合に、その現場稼働予定の ID を保持します。
+ * @property {boolean} useAdjustedQuantity - 請求に調整済み数量を使用するかどうかのフラグ
+ * @property {number} adjustedQuantityBase - 基本従業員の調整済み数量
+ * - `useAdjustedQuantity` が true の場合、基本従業員の請求に使用される数量です。
+ * @property {number} adjustedOvertimeBase - 基本従業員の調整済み残業時間
+ * - `useAdjustedQuantity` が true の場合、基本従業員の請求に使用される残業時間です。
+ * @property {number} adjustedQuantityQualified - 資格者の調整済み数量
+ * - `useAdjustedQuantity` が true の場合、資格者の請求に使用される数量です。
+ * @property {number} adjustedOvertimeQualified - 資格者の調整済み残業時間
+ * - `useAdjustedQuantity` が true の場合、資格者の請求に使用される残業時間です。
+ * @property {Date} billingDateAt - 請求日
+ * - 請求に使用される日付です。
+ * @property {boolean} isLocked - ロックフラグ
+ * - true の場合、OperationResult は OperationBilling として編集する場合を除き、編集できません。
+ * @property {Agreement|null} agreement - 関連する取極めオブジェクト
+ * - この OperationResult に関連付けられた取極めインスタンスで、価格設定や請求情報に使用されます。
+ * - 設定されている場合、単価や請求日などの計算に影響を与えます。
+ * @property {boolean} allowEmptyAgreement - 取極めが存在しない場合を許可するフラグ
+ * - true に設定されている場合、取極めが関連付けられていなくても OperationResult は有効と見なされます。
+ * @property {boolean} hasAgreement - 取極めが関連付けられているかどうかを示すフラグ (読み取り専用)
+ * - `agreement` が設定されている場合は `true`、それ以外の場合は `false`。
+ * @property {Object} statistics - 従業員の統計情報 (読み取り専用)
+ * - 基本従業員と資格者のカウントおよび総労働時間を含む統計情報。
+ * - 構造: { base: {...}, qualified: {...}, total: {...} }
+ * - 各カテゴリには以下が含まれます: quantity, regularTimeWorkMinutes, overtimeWorkMinutes, totalWorkMinutes, breakMinutes
+ * - 各カテゴリには 'ojt' サブカテゴリも同様の構造で含まれます。
+ * @property {Object} sales - 売上金額 (読み取り専用)
+ * - 基本従業員と資格者の売上計算を含む。
+ * - 構造: { base: {...}, qualified: {...} }
+ * - 各カテゴリには以下が含まれます: unitPrice, quantity, regularAmount, overtimeUnitPrice, overtimeMinutes, overtimeAmount, total
+ * - 計算は `useAdjustedQuantity`, `billingUnitType`, `includeBreakInBilling` の設定を考慮します。
+ * @property {number} salesAmount - 売上合計金額 (読み取り専用)
+ * - 基本従業員と資格者の売上金額の合計を返します。
+ * @property {number} tax - 計算された税額 (読み取り専用)
+ * - `salesAmount` と `date` に基づいて `Tax` ユーティリティを使用して計算されます。
+ * @property {number} billingAmount - 税込の請求金額 (読み取り専用)
+ * - `salesAmount` と `tax` の合計を返します。
+ * @property {string|null} billingDate - 請求日 (YYYY-MM-DD 形式) (読み取り専用)
+ * - `billingDateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
+ * @property {string} billingMonth - 請求月 (YYYY-MM 形式) (読み取り専用)
  *
- * @property {string} agreementKey - {@link Operation#agreementKey}
+ * @property {string|false} isInvalid - バリデーションステータス (読み取り専用)
+ * - 有効な場合は false を返します。
+ * - 無効な場合は理由コードの文字列を返します:
+ *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合。
+ *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合。
  *
- * @property {string} orderKey - {@link Operation#orderKey}
- *
- * @property {string} siteId - Site document ID (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {Date} dateAt - Date of operation (placement date) (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * - Used to determine `dayType`.
- * - When `dateAt` changes, `billingDateAt` is also updated based on `agreement.cutoffDate`.
- * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- * @property {string} shiftType - `DAY` or `NIGHT` (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @property {string} startTime - Start time (HH:MM format)
- * @property {boolean} isStartNextDay - Next day start flag
- * - `true` if the actual work starts the day after the placement date `dateAt`
- * @property {string} endTime - End time (HH:MM format)
- * @property {number} breakMinutes - Break time (minutes)
- * @property {number} regulationWorkMinutes - Regulation work minutes (trigger property)
- * - Indicates the maximum working time treated as regular working hours.
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- * @property {number} requiredPersonnel - Required number of personnel
- * @property {boolean} qualificationRequired - Qualification required flag
- * @property {string} workDescription - Work description
- * @property {string} remarks - Remarks
- * @property {Array<OperationResultDetail>} employees - Assigned employees
- * - Array of `OperationResultDetail` instances representing assigned employees
- * @property {Array<OperationResultDetail>} outsourcers - Assigned outsourcers
- * - Array of `OperationResultDetail` instances representing assigned outsourcers
- * @property {Array<OperationResultDetail>} workers - Combined array of `employees` and `outsourcers`
- * - Getter: Returns concatenated array of employees and outsourcers
- * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
- * @property {string|null} siteOperationScheduleId - Associated SiteOperationSchedule document ID
- * - If this OperationResult was created from a SiteOperationSchedule, this property holds that ID.
- * @property {boolean} useAdjustedQuantity - Flag to indicate if adjusted quantities are used for billing
- * @property {number} adjustedQuantityBase - Adjusted quantity for base workers
- * - Quantity used for billing base workers when `useAdjustedQuantity` is true.
- * @property {number} adjustedOvertimeBase - Adjusted overtime for base workers
- * - Overtime used for billing base workers when `useAdjustedQuantity` is true.
- * @property {number} adjustedQuantityQualified - Adjusted quantity for qualified workers
- * - Quantity used for billing qualified workers when `useAdjustedQuantity` is true.
- * @property {number} adjustedOvertimeQualified - Adjusted overtime for qualified workers
- * - Overtime used for billing qualified workers when `useAdjustedQuantity` is true.
- * @property {Date} billingDateAt - Billing date
- * - The date used for billing purposes.
- * @property {boolean} isLocked - Lock flag
- * - When set to true, the OperationResult is locked from edits exept for editing as OperationBilling.
- * @property {Agreement|null} agreement - Associated Agreement object
- * - The Agreement instance associated with this OperationResult for pricing and billing information.
- * - When set, it influences billing calculations such as unit prices and billing dates.
- * @property {boolean} allowEmptyAgreement - Flag to ignore missing Agreement
- * - When set to true, allows the OperationResult to be valid even if no Agreement is associated.
- * @readonly
- * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
- * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
- * @property {Date} startAt - Start date and time (Date object) (read-only)
- * - Returns a Date object with `startTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * @property {Date} endAt - End date and time (Date object) (read-only)
- * - Returns a Date object with `endTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * - If `isSpansNextDay` is true, add 1 day.
- * @property {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
- * - `true` if `startTime` is later than `endTime`
- * @property {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
- * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
- * @property {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
- * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
- * @property {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
- * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
- * @property {boolean} hasAgreement - Indicates if an Agreement is associated (read-only)
- * - `true` if `agreement` is set, otherwise `false`.
- * @property {string|false} isInvalid - Validation status (read-only)
- * - Returns false if valid.
- * - Returns reason code string if invalid:
- *   - `EMPTY_BILLING_DATE`: Billing date is missing.
- *   - `EMPTY_AGREEMENT`: Agreement is missing and `allowEmptyAgreement` is false.
- * @property {Object} statistics - Statistics of workers (read-only)
- * - Contains counts and total work minutes for base and qualified workers, including OJT breakdowns.
- * - Structure: { base: {...}, qualified: {...}, total: {...} }
- * - Each category contains: quantity, regularTimeWorkMinutes, overtimeWorkMinutes, totalWorkMinutes, breakMinutes
- * - Each category also has an 'ojt' subcategory with the same structure.
- * @property {Object} sales - Sales amounts (read-only)
- * - Contains sales calculations for base and qualified workers, including overtime breakdowns.
- * - Structure: { base: {...}, qualified: {...} }
- * - Each category contains: unitPrice, quantity, regularAmount, overtimeUnitPrice, overtimeMinutes, overtimeAmount, total
- * - Calculations respect `useAdjustedQuantity`, `billingUnitType`, and `includeBreakInBilling` settings.
- * @property {number} salesAmount - Total sales amount (read-only)
- * - Sum of sales amounts for base and qualified workers with rounding applied.
- * @property {number} tax - Calculated tax amount (read-only)
- * - Calculated using the `Tax` utility based on `salesAmount` and `date`.
- * @property {number} billingAmount - Total billing amount including tax (read-only)
- * - Sum of `salesAmount` and `tax`.
- * @property {string|null} billingDate - Billing date in YYYY-MM-DD format (read-only)
- * - Returns a string in the format YYYY-MM-DD based on `billingDateAt`.
- * @property {string} billingMonth - Billing month in YYYY-MM format (read-only)
- * @property {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
- * @property {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
- * @property {number} employeesCount - Count of assigned employees (read-only)
- * @property {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
- * @property {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
- * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
- *
- * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
- * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
- * - Returns true if the employee IDs have changed compared to `_beforeData`
- * @getter {boolean} isOutsourcersChanged - Indicates whether the outsourcers have changed (read-only)
- * - Returns true if the outsourcer IDs have changed compared to `_beforeData`
- * @getter {Array<OperationResultDetail>} addedWorkers - An array of workers that have been added (read-only)
- * - Workers that exist in current data but not in `_beforeData`
- * @getter {Array<OperationResultDetail>} removedWorkers - An array of workers that have been removed (read-only)
- * - Workers that exist in `_beforeData` but not in current data
- * @getter {Array<OperationResultDetail>} updatedWorkers - An array of workers that have been updated (read-only)
- * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
- * @getter {number} startHour - Start hour (0-23) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} startMinute - Start minute (0-59) (read-only)
- * - Extracted from `startTime`.
- * @getter {number} endHour - End hour (0-23) (read-only)
- * - Extracted from `endTime`.
- * @getter {number} endMinute - End minute (0-59) (read-only)
- * - Extracted from `endTime`.
- * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
- * - Compares the current `key` with the `key` in `_beforeData`.
- *
+ * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
+ * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
+ * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
+ * @method moveWorker - 従業員または外注先の位置を移動します。
+ * @method changeWorker - 従業員または外注先の詳細を変更します。
+ * @method removeWorker - 従業員または外注先を `workers` から削除します。
+ * @method setSiteIdCallback - `siteId` が変更された時に呼び出されるコールバック関数
+ * @method setShiftTypeCallback - `shiftType` が変更された時に呼び出されるコールバック関数
+ * @method setRegulationWorkMinutesCallback - `regulationWorkMinutes` が変更された時に呼び出されるコールバック関数
  * @method refreshBillingDateAt - Refresh billingDateAt based on dateAt and cutoffDate
  * - Updates `billingDateAt` based on the current `dateAt` and `cutoffDate` values.
- * @method addWorker - Adds a new worker (employee or outsourcer)
- * - @param {Object} options - Options for adding a worker
- * - @param {string} options.id - The worker ID (employeeId or outsourcerId)
- * - @param {boolean} [options.isEmployee=true] - Whether the worker is an employee
- * - @param {number} [index=0] - Insertion position. If -1, adds to the end
- * @method moveWorker - Moves the position of a worker (employee or outsourcer)
- * - @param {Object} options - Options for changing worker position
- * - @param {number} options.oldIndex - The original index
- * - @param {number} options.newIndex - The new index
- * - @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer
- * @method changeWorker - Changes the details of a worker
- * - @param {Object} newWorker - New worker object
- * @method removeWorker - Removes a worker (employee or outsourcer)
- * - @param {Object} options - Options for removing a worker
- * - @param {string} options.workerId - The ID of the employee or outsourcer
- * - @param {boolean} [options.isEmployee=true] - True for employee, false for outsourcer
- * @method setSiteIdCallback - Callback method called when `siteId` is set
- * - Override this method in subclasses to add custom behavior when `siteId` changes.
- * - By default, does nothing.
- * - @param {string} v - The new `siteId` value
- * @method setShiftTypeCallback - Callback method called when `shiftType` is set
- * - Override this method in subclasses to add custom behavior when `shiftType` changes.
- * - By default, does nothing.
- * - @param {string} v - The new `shiftType` value
- * @method setRegulationWorkMinutesCallback - Callback method called when `regulationWorkMinutes` is set
- * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
- * - By default, does nothing.
- * - @param {number} v - The new `regulationWorkMinutes` value
+ *
+ * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
+ * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {boolean} isGroupKeyChanged - `groupKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isAgreementKeyChanged - `agreementKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isEmployeesChanged - 従業員が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {boolean} isOutsourcersChanged - 外注が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {Array<OperationDetail>} addedWorkers - 追加された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} removedWorkers - 削除された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} updatedWorkers - 更新された従業員の配列 (読み取り専用)
+ *
+ * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
+ * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
+ * - `BREAK_MINUTES_NEGATIVE`: `breakMinutes` が負の値である場合のエラーコード
+ * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
+ * - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
+ * - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
+ * @static DAY_TYPE - 曜日区分を定義する定数オブジェクト
+ * @static BILLING_UNIT_TYPE - 請求単位区分を定義する定数オブジェクト
  *
  * @static
- * @method groupKeyDivider
- * - Returns an array dividing the key into siteId, shiftType, and date.
- * - @param {Object|string} key - The combined key string or object
- * - @returns {Array<string>} - Array containing [siteId, shiftType, date]
- * - @throws {Error} - If the key is invalid.
- *
- * @override
- * @method setDateAtCallback - Updates `billingDateAt` based on the new `dateAt` value.
- * @method beforeCreate - Override to sync customerId from siteId
- * @method beforeUpdate - Override to sync customerId from siteId when siteId changes
- * @method beforeDelete - Override to prevent deletion if isLocked is true
+ * @method groupKeyDivider - `groupKey` を構成する要素を分割して返す静的メソッド
  *****************************************************************************/
 import Operation from "./Operation.js";
-import Agreement from "./Agreement.js";
+import AgreementV2 from "./AgreementV2.js";
 import { ContextualError } from "./utils/ContextualError.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -231,7 +192,7 @@ const classProps = {
     label: "実績確定",
     default: false,
   }),
-  agreement: defField("object", { label: "取極め", customClass: Agreement }),
+  agreement: defField("object", { label: "取極め", customClass: AgreementV2 }),
   allowEmptyAgreement: defField("check", {
     label: "取極めなしを許容",
     default: false,
@@ -245,11 +206,6 @@ const classProps = {
   customerId: defField("customerId", { required: true, hidden: true }),
 };
 
-const INVALID_REASON = {
-  EMPTY_BILLING_DATE: "EMPTY_BILLING_DATE",
-  EMPTY_AGREEMENT: "EMPTY_AGREEMENT",
-};
-
 export default class OperationResult extends Operation {
   static className = "稼働実績";
   static collectionPath = "OperationResults";
@@ -257,12 +213,22 @@ export default class OperationResult extends Operation {
   static logicalDelete = false;
   static classProps = classProps;
 
+  static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE;
+
+  /**
+   * INVALID_REASONS
+   */
+  static INVALID_REASON = {
+    ...Operation.INVALID_REASON,
+    EMPTY_BILLING_DATE: "EMPTY_BILLING_DATE",
+    EMPTY_AGREEMENT: "EMPTY_AGREEMENT",
+  };
+
   static headers = [
     { title: "日付", key: "dateAt" },
     { title: "現場", key: "siteId", value: "siteId" },
   ];
 
-  static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE;
   /**
    * afterInitialize
    */
@@ -480,20 +446,6 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
-      isInvalid: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          if (!this.agreement && !this.allowEmptyAgreement) {
-            return INVALID_REASON.EMPTY_AGREEMENT;
-          }
-          if (!this.billingDateAt) {
-            return INVALID_REASON.EMPTY_BILLING_DATE;
-          }
-          return false;
-        },
-        set(v) {},
-      },
     });
 
     /** Triggers */
@@ -592,7 +544,7 @@ export default class OperationResult extends Operation {
   /**
    * ドキュメント更新前処理
    * - 更新前および更新後の `isLocked` が true の場合は編集不可とする。
-   * - `key` が変更された場合は `customerId` の同期と `agreement` の適用を行う。
+   * - `groupKey` が変更された場合は `customerId` の同期と `agreement` の適用を行う。
    * @param {Object} args - Creation options.
    * @param {Object} [args.transaction] - Firestore transaction.
    * @param {Function} [args.callBack] - Callback function.
@@ -608,8 +560,8 @@ export default class OperationResult extends Operation {
       throw new Error(message);
     }
 
-    // keyが変更された場合はcustomerIdの同期とagreementの適用を行う
-    if (this.key !== this._beforeData.key) {
+    // groupKeyが変更された場合はcustomerIdの同期とagreementの適用を行う
+    if (this.isGroupKeyChanged) {
       await this._syncCustomerIdAndApplyAgreement();
     }
   }
@@ -631,5 +583,24 @@ export default class OperationResult extends Operation {
       const message = `[OperationResult.js] This OperationResult (docId: ${this.docId}) is locked and cannot be deleted.`;
       throw new Error(message);
     }
+  }
+
+  /**
+   * クラス特有のエラーの有無を返すメソッド
+   * - `breakMinutes` が負の値である場合、`INVALID_REASON.BREAK_MINUTES_NEGATIVE` を返します。
+   * - `regulationWorkMinutes` が負の値である場合、`INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` を返します。
+   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`INVALID_REASON.EMPTY_AGREEMENT` を返します。
+   * - `billingDateAt` が存在しない場合、`INVALID_REASON.EMPTY_BILLING_DATE` を返します。
+   * @returns {Array<string>} エラーコードの配列
+   */
+  getInvalidReasons() {
+    const result = super.getInvalidReasons();
+    if (!this.agreement && !this.allowEmptyAgreement) {
+      result.push(INVALID_REASON.EMPTY_AGREEMENT);
+    }
+    if (!this.billingDateAt) {
+      result.push(INVALID_REASON.EMPTY_BILLING_DATE);
+    }
+    return result;
   }
 }

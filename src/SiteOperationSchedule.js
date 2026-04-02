@@ -1,223 +1,119 @@
 /*****************************************************************************
- * SiteOperationSchedule Model ver 1.1.0
- * @version 1.1.1
+ * @file ./src/SiteOperationSchedule.js
  * @author shisyamo4131
+ * @description 現場稼働予定クラス
  *
- * @update 2025-11-28 v1.1.1 - Removed the `agreement` parameter from `syncToOperationResult` method.
- * @update 2025-11-22 v1.1.0 - Moved `duplicate`, `notify`, `syncToOperationResult`,
- *                             and `toEvent` methods from client side code.
+ * @class
+ * @extends Operation
  *
- * - Extends Operation class to represent a site operation schedule.
- * - Prevents updates or deletions if an associated OperationResult exists.
- * - Automatically assigns a display order based on existing documents during creation.
- * - Clears all notifications if related data have been changed during updates.
- * - Deletes all related notifications before deleting the schedule.
- * - Synchronizes properties specified below to assigned employees and outsourcers:
- *  `startTime`, `endTime`, `breakMinutes`, `isStartNextDay`
- *   [NOTE]
- *   `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are synchronized
- *   in the parent `Operation` class.
+ * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
+ * @property {string} shiftType - 勤務区分 (変更されると `employees` と `outsourcers` の `shiftType` が自動的に更新されます)
+ * @property {string} startTime - 開始時刻 (HH:MM 形式)
+ * @property {string} endTime - 終了時刻 (HH:MM 形式)
+ * @property {boolean} isStartNextDay - 翌日開始フラグ
+ * - `true` の場合、実際の勤務は `dateAt` の翌日であることを意味します。
+ * @property {number} breakMinutes - 休憩時間 (分)
+ * @property {string} date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
+ * - `dateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
+ * @property {Date} startAt - 開始日時 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` に基づいて `startTime` を設定した Date オブジェクトを返します。
+ * - `isStartNextDay` が true の場合、1日加算します。
+ * @property {Date} endAt - 終了日時 (Date オブジェクト) (読み取り専用)
+ * - `startAt` を起点に、最初に現れる `endTime` の Date オブジェクトを返します。
+ * @property {boolean} isSpansNextDay - 翌日跨ぎフラグ (読み取り専用)
+ * - `true` の場合、`startAt` と `endAt` の日付が異なることを意味します。
+ * @property {number} regulationWorkMinutes - 規定労働時間 (分) (変更されると `employees` と `outsourcers` の `regulationWorkMinutes` が自動的に更新されます)
+ * - `startAt` から `endAt` までの時間から `breakMinutes` を差し引いた時間のうち、
+ *   規定内として扱う労働時間（分）です。
+ * - 実際の労働時間から残業時間を算出するための基準となる値です。
+ * - この値があることで、取極めに柔軟な設定を行うことが可能になる他、労働基準法の 1 日の所定労働時間上限が変更された際に
+ *   影響を最小限に抑えることができます。
+ * 例) 8:00 から 17:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とし、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 8:00 から 16:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 7 時間 (420 分) とすると、実際の勤務が 7 時間 (420 分) を超えた分が残業時間として扱われます。
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ * 例) 7:00 から 翌日 7:00 までの勤務で休憩が 60 分の場合
+ * - 規定労働時間を 8 時間 (480 分) とすると、実際の勤務が 8 時間 (480 分) を超えた分が残業時間として扱われます。
+ *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
+ * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
+ *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {string} dayType - 曜日区分
+ * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
+ * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
+ * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
+ * @property {string} siteId - 現場ID (変更されると `employees` と `outsourcers` の `siteId` が自動的に更新されます)
+ * @property {number} requiredPersonnel - 必要人数
+ * @property {boolean} qualificationRequired - 資格要件フラグ
+ * @property {string} workDescription - 作業内容
+ * @property {string} remarks - 備考
+ * @property {Array<OperationDetail>} employees - 従業員の OperationDetail インスタンスの配列
+ * @property {Array<OperationDetail>} outsourcers - 外注の OperationDetail インスタンスの配列
+ * @property {Array<string>} employeeIds - 従業員の ID の配列 (読み取り専用)
+ * @property {Array<string>} outsourcerIds - 外注の ID の配列 (読み取り専用)
+ * @property {number} employeesCount - `employees` の要素数 (読み取り専用)
+ * @property {number} outsourcersCount - `outsourcers` の要素数 (読み取り専用)
+ * @property {boolean} isPersonnelShortage - 人員不足フラグ (読み取り専用)
+ * @property {Array<OperationDetail>} workers - 従業員と外注を合わせた配列
+ * - `employees` と `outsourcers` を結合した配列を返します。
+ * - Getter: `employees` と `outsourcers` を結合した配列を返します。
+ * - Setter: 配列を `isEmployee` プロパティに基づいて `employees` と `outsourcers` に分割します。
+ * @property {string} groupKey - `siteId`, `shiftType`, `date` を組み合わせたキー。（読み取り専用）
+ * @property {string} agreementKey - `date`, `shiftType` を組み合わせたキー。（読み取り専用）
+ * @property {string} orderKey - `siteId`, `shiftType` を組み合わせたキー。（読み取り専用）
  *
- * @property { string } key - {@link Operation#key}
+ * @property {string|null} operationResultId - 関連する OperationResult ドキュメントの ID
+ * - このスケジュールを元に OperationResult が作成されている場合、このプロパティにはその OperationResult ドキュメントの ID が入ります。
+ * - このプロパティが設定されている場合、スケジュールの更新や削除はできません。逆に、関連する OperationResult が削除された場合、このプロパティを null に設定することができます。
+ * @property {number} displayOrder - 同一日付・同一勤務区分のスケジュールの表示順を制御するためのプロパティ
  *
- * @property {string} agreementKey - {@link Operation#agreementKey}
+ * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
+ * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
+ * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
+ * @method moveWorker - 従業員または外注先の位置を移動します。
+ * @method changeWorker - 従業員または外注先の詳細を変更します。
+ * @method removeWorker - 従業員または外注先を `workers` から削除します。
+ * @method setSiteIdCallback - `siteId` が変更された時に呼び出されるコールバック関数
+ * @method setShiftTypeCallback - `shiftType` が変更された時に呼び出されるコールバック関数
+ * @method setRegulationWorkMinutesCallback - `regulationWorkMinutes` が変更された時に呼び出されるコールバック関数
  *
- * @property {string} orderKey - {@link Operation#orderKey}
+ * @method duplicate - 指定された日付で SiteOperationSchedule を複製します。
+ * - 指定された日付ごとに新しい SiteOperationSchedule ドキュメントを作成します。
+ *   元の日付は除外し、重複を避けます。
+ * @method notify - 従業員に配置通知を作成します。
+ * - `hasNotification` が `false` の従業員に対して ArrangementNotification ドキュメントを作成します。
+ * - 全ての従業員と外注先の `hasNotification` フラグを `true` に更新します。
+ * - 既に通知が存在する場合は、新たに通知を作成しません。
+ * @method syncToOperationResult - 現在の SiteOperationSchedule を元に OperationResult ドキュメントを作成します。
+ * - OperationResult ドキュメントの ID は SiteOperationSchedule ドキュメントの ID と同じになります。
+ * - SiteOperationSchedule の `operationResultId` プロパティに作成された OperationResult ドキュメントの ID を設定します。
+ * - 既に OperationResult が存在する場合は、上書きされます。
+ * @method toEvent - SiteOperationSchedule インスタンスを VCalendar のイベントオブジェクトに変換します。
+ * - Vuetify の VCalendar コンポーネントでイベントを表示するために必要なプロパティを持つオブジェクトを返します。
+ * - `name`, `start`, `end`, `color`、および元の `SiteOperationSchedule` インスタンスへの参照を含みます。
  *
- * @property {string|null} operationResultId - Associated OperationResult document ID
- * - If an OperationResult has been created based on this schedule, this property
- *   holds the ID of that OperationResult document.
- * - If this property is set, the schedule cannot be updated or deleted.
- *   Conversely, if the associated OperationResult is deleted, this property can be set to null.
+ * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
+ * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {boolean} isGroupKeyChanged - `groupKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isAgreementKeyChanged - `agreementKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isEmployeesChanged - 従業員が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {boolean} isOutsourcersChanged - 外注が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {Array<OperationDetail>} addedWorkers - 追加された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} removedWorkers - 削除された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} updatedWorkers - 更新された従業員の配列 (読み取り専用)
  *
- * @property {number} displayOrder - Display order
- * - Property to control the display order of schedules on the same date and shift type.
- * - Automatically assigned during creation based on existing documents.
- *
- * @getter {boolean} isEditable - Indicates whether the instance is editable (read-only)
- * - Returns `false` if `operationResultId` is set, `true` otherwise
- *
- * @deprecated
- * @getter {boolean} isNotificatedAllWorkers - Indicates whether all workers have been notified (read-only)
- * - Returns `true` if all workers in the `workers` array have `hasNotification` set to `true`
- *
- * @getter {boolean} isNotifiedAllWorkers - Indicates whether all workers have been notified (read-only)
- * - Returns `true` if all workers in the `workers` array have `hasNotification` set to `true`
- *
- * @inherited - The following properties are inherited from Operation:
- * @property {string} siteId - Site document ID (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {number} requiredPersonnel - Required number of personnel
- *
- * @property {boolean} qualificationRequired - Qualification required flag
- *
- * @property {string} workDescription - Work description
- *
- * @property {string} remarks - Remarks
- *
- * @property {Array<SiteOperationScheduleDetail>} employees - Assigned employees
- * - Array of `SiteOperationScheduleDetail` instances representing assigned employees
- *
- * @property {Array<SiteOperationScheduleDetail>} outsourcers - Assigned outsourcers
- * - Array of `SiteOperationScheduleDetail` instances representing assigned outsourcers
- *
- * @inherited - The following properties are inherited from WorkingResult (via Operation):
- * @property {Date} dateAt - Date of operation (placement date) (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {string} dayType - Day type (e.g., `WEEKDAY`, `WEEKEND`, `HOLIDAY`)
- *
- * @property {string} shiftType - `DAY` or `NIGHT` (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {string} startTime - Start time (HH:MM format) (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {boolean} isStartNextDay - Next day start flag (trigger property)
- * - `true` if the actual work starts the day after the placement date `dateAt`
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {string} endTime - End time (HH:MM format) (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {number} breakMinutes - Break time (minutes) (trigger property)
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @property {number} regulationWorkMinutes - Regulation work minutes (trigger property)
- * - Indicates the maximum working time treated as regular working hours.
- * - Automatically synchronizes to all `employees` and `outsourcers` when changed.
- *
- * @inherited - The following computed properties are inherited from Operation:
- * @property {Array<string>} employeeIds - Array of employee IDs from `employees` (read-only)
- *
- * @property {Array<string>} outsourcerIds - Array of outsourcer IDs from `outsourcers` (read-only)
- *
- * @property {number} employeesCount - Count of assigned employees (read-only)
- *
- * @property {number} outsourcersCount - Count of assigned outsourcers (sum of amounts) (read-only)
- *
- * @property {boolean} isPersonnelShortage - Indicates if there is a shortage of personnel (read-only)
- * - `true` if the sum of `employeesCount` and `outsourcersCount` is less than `requiredPersonnel`
- *
- * @property {Array<SiteOperationScheduleDetail>} workers - Combined array of `employees` and `outsourcers`
- * - Getter: Returns concatenated array of employees and outsourcers
- * - Setter: Splits array into employees and outsourcers based on `isEmployee` property
- *
- * @inherited - The following computed properties are inherited from WorkingResult (via Operation):
- * @property {string} date - Date string in YYYY-MM-DD format based on `dateAt` (read-only)
- * - Returns a string in the format YYYY-MM-DD based on `dateAt`.
- *
- * @property {Date} startAt - Start date and time (Date object) (read-only)
- * - Returns a Date object with `startTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- *
- * @property {Date} endAt - End date and time (Date object) (read-only)
- * - Returns a Date object with `endTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * - If `isSpansNextDay` is true, add 1 day.
- *
- * @property {boolean} isSpansNextDay - Flag indicating whether the date spans from start date to end date (read-only)
- * - `true` if `startTime` is later than `endTime`
- *
- * @property {number} totalWorkMinutes - Total working time in minutes (excluding break time) (read-only)
- * - Calculated as the difference between `endAt` and `startAt` minus `breakMinutes`
- *
- * @property {number} regularTimeWorkMinutes - Regular working time in minutes (read-only)
- * - The portion of `totalWorkMinutes` that is considered within the contract's `regulationWorkMinutes`.
- *
- * @property {number} overtimeWorkMinutes - Overtime work in minutes (read-only)
- * - Calculated as `totalWorkMinutes` minus `regulationWorkMinutes`
- *
- * @inherited - The following getter properties are inherited from Operation:
- * @getter {string} groupKey - Combines `siteId`, `shiftType`, and `date` to indicate operation grouping (read-only)
- *
- * @getter {boolean} isEmployeesChanged - Indicates whether the employees have changed (read-only)
- * - Returns true if the employee IDs have changed compared to `_beforeData`
- *
- * @getter {boolean} isOutsourcersChanged - Indicates whether the outsourcers have changed (read-only)
- * - Returns true if the outsourcer IDs have changed compared to `_beforeData`
- *
- * @getter {Array<SiteOperationScheduleDetail>} addedWorkers - An array of workers that have been added (read-only)
- * - Workers that exist in current data but not in `_beforeData`
- *
- * @getter {Array<SiteOperationScheduleDetail>} removedWorkers - An array of workers that have been removed (read-only)
- * - Workers that exist in `_beforeData` but not in current data
- *
- * @getter {Array<SiteOperationScheduleDetail>} updatedWorkers - An array of workers that have been updated (read-only)
- * - Workers whose `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `isQualified`, or `isOjt` have changed
- *
- * @inherited - The following getter properties are inherited from WorkingResult (via Operation):
- * @getter {number} startHour - Start hour (0-23) (read-only)
- * - Extracted from `startTime`.
- *
- * @getter {number} startMinute - Start minute (0-59) (read-only)
- * - Extracted from `startTime`.
- *
- * @getter {number} endHour - End hour (0-23) (read-only)
- * - Extracted from `endTime`.
- *
- * @getter {number} endMinute - End minute (0-59) (read-only)
- * - Extracted from `endTime`.
- *
- * @getter {boolean} isKeyChanged - Flag indicating whether the key has changed compared to previous data (read-only)
- * - Compares the current `key` with the `key` in `_beforeData`.
- *
- * @method duplicate - Duplicates the SiteOperationSchedule for specified dates
- * - Creates new SiteOperationSchedule documents for each specified date,
- *   excluding the original date and avoiding duplicates.
- * - Returns an array of newly created SiteOperationSchedule instances.
- *
- * @method notify - Creates arrangement notifications for workers who have not been notified
- * - Creates ArrangementNotification documents for workers with `hasNotification` set to `false`.
- * - Updates the `hasNotification` flag to `true` for all employees and outsourcers.
- *
- * @method syncToOperationResult - Creates an OperationResult document based on the current SiteOperationSchedule
- * - The OperationResult document ID will be the same as the SiteOperationSchedule document ID.
- * - Sets the `operationResultId` property of the SiteOperationSchedule to the created OperationResult document ID.
- * - If an OperationResult already exists, it will be overwritten.
- * - [UPDATE 2025-11-28] Removed the `agreement` parameter. The agreement is now fetched internally.
- *
- * @method toEvent - Converts the SiteOperationSchedule instance to a VCalendar event object
- * - Returns an object with properties required for displaying events in Vuetify's VCalendar component.
- * - Includes `name`, `start`, `end`, `color`, and a reference to the original `SiteOperationSchedule` instance.
+ * @getter {boolean} isEditable - スケジュールが編集可能かどうかを返すプロパティ
+ * - `operationResultId` が設定されている場合は `false` を返し、そうでない場合は `true` を返します。
+ * - これにより、関連する OperationResult が存在する場合にスケジュールの編集を制限することができます。
+ * @getter {boolean} isNotifiedAllWorkers - 全ての従業員に配置通知が行われているかどうかを返すプロパティ
  *
  * @override
  * @method create - Creates a new SiteOperationSchedule with automatic display order assignment
- *
  * @method update - Updates the SiteOperationSchedule and manages related notifications
  * - Clears all notifications if related data have been changed during updates.
  * - Updates and deletes notifications for removed or updated employees if employee assignments have changed.
- *
  * @method delete - Deletes the SiteOperationSchedule and all related notifications
  * - Deletes all notifications associated with the schedule before deleting the schedule itself.
- *
- * @method addWorker - Adds a new worker with automatic siteOperationScheduleId assignment
- * - Overrides parent method to automatically set `siteOperationScheduleId`
- *
- * @inherited - The following methods are inherited from Operation:
- * @method moveWorker - Moves the position of a worker (employee or outsourcer)
- *
- * @method changeWorker - Changes the details of a worker
- *
- * @method removeWorker - Removes a worker (employee or outsourcer)
- *
- * @method setSiteIdCallback - Callback method called when `siteId` is set
- * - Override this method in subclasses to add custom behavior when `siteId` changes.
- *
- * @method setShiftTypeCallback - Callback method called when `shiftType` is set
- * - Override this method in subclasses to add custom behavior when `shiftType` changes.
- *
- * @method setRegulationWorkMinutesCallback - Callback method called when `regulationWorkMinutes` is set
- * - Override this method in subclasses to add custom behavior when `regulationWorkMinutes` changes.
- *
- * @static
- * @method groupKeyDivider Returns an array dividing the key into siteId, shiftType, and date.
- *
- * @inherited - The following method is inherited from WorkingResult (via Operation):
- * @method setDateAtCallback - Callback method called when `dateAt` is set
- * - Override this method in subclasses to add custom behavior when `dateAt` changes.
- * - By default, updates `dayType` based on the new `dateAt` value and synchronizes to workers.
  *****************************************************************************/
 import Operation from "./Operation.js";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -377,18 +273,6 @@ export default class SiteOperationSchedule extends Operation {
    */
   get isEditable() {
     return !this.operationResultId;
-  }
-
-  /**
-   * @deprecated
-   * Returns whether all workers have been notified.
-   * @returns {boolean} - Whether all workers have been notified.
-   */
-  get isNotificatedAllWorkers() {
-    console.warn(
-      "`isNotificatedAllWorkers` is deprecated. Use `isNotifiedAllWorkers` instead.",
-    );
-    return this.workers.every((worker) => worker.hasNotification);
   }
 
   /**
@@ -838,5 +722,20 @@ export default class SiteOperationSchedule extends Operation {
       color,
       item: this,
     };
+  }
+
+  /***************************************************************************
+   * FOR DEPRECATED PROPERTIES
+   ***************************************************************************/
+  /**
+   * @deprecated
+   * Returns whether all workers have been notified.
+   * @returns {boolean} - Whether all workers have been notified.
+   */
+  get isNotificatedAllWorkers() {
+    console.warn(
+      "`isNotificatedAllWorkers` is deprecated. Use `isNotifiedAllWorkers` instead.",
+    );
+    return this.workers.every((worker) => worker.hasNotification);
   }
 }

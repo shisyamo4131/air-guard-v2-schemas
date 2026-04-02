@@ -1,5 +1,5 @@
 /*****************************************************************************
- * @file .src/WorkTimeBase.js
+ * @file ./src/WorkTimeBase.js
  * @author shisyamo4131
  * @description 勤務実績情報の基底クラス
  * - 日付や時間に関するプロパティを持つ抽象クラスです。インスタンス化はできません。
@@ -50,6 +50,7 @@
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
  * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {boolean} isKeyChanged - `key` プロパティが変更されたかどうかを返すプロパティ
  *
  * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
  * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
@@ -263,5 +264,16 @@ export default class WorkTimeBase extends FireModel {
    */
   get invalidReasons() {
     return this.getInvalidReasons();
+  }
+
+  /**
+   * `key` プロパティが変更されたかどうかを返します。
+   * - `key` は `date` と `shiftType` を組み合わせた文字列であるため、これらのいずれかが変更された場合に `true` を返します。
+   * @returns {boolean} `key` が変更された場合は `true`、変更されていない場合は `false` を返します。
+   */
+  get isKeyChanged() {
+    const current = this.key;
+    const before = this._beforeData?.key;
+    return current !== before;
   }
 }
