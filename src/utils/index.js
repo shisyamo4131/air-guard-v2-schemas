@@ -15,14 +15,14 @@ export function getDateAt(date, time, dateOffset = 0) {
   // If date is not null/undefined and is not a string or Date, throw an error
   if (date != null && !(typeof date === "string" || date instanceof Date)) {
     throw new Error(
-      `[getDateAt] Invalid date type. Expected string or Date, got ${typeof date}`
+      `[getDateAt] Invalid date type. Expected string or Date, got ${typeof date}`,
     );
   }
 
   // If time is not null and is not a string, throw an error
   if (time != null && typeof time !== "string") {
     throw new Error(
-      `[getDateAt] Invalid time type. Expected string, got ${typeof time}`
+      `[getDateAt] Invalid time type. Expected string, got ${typeof time}`,
     );
   }
 
@@ -31,18 +31,30 @@ export function getDateAt(date, time, dateOffset = 0) {
   const [hour, minute] = time ? time.split(":").map(Number) : [0, 0];
   if (isNaN(hour) || isNaN(minute)) {
     throw new Error(
-      `[getDateAt] Invalid time format. Expected HH:MM, got ${time}`
+      `[getDateAt] Invalid time format. Expected HH:MM, got ${time}`,
     );
   }
 
   // If date is not provided, use the current date
-  const result = new Date(date || Date.now());
+  const baseDate = new Date(date || Date.now());
 
-  // JSTはUTC+9なので、UTC時刻として設定してから9時間引く
-  result.setUTCHours(hour - 9, minute, 0, 0);
-  result.setUTCDate(result.getUTCDate() + dateOffset);
+  // 入力日時から JST の日付成分を取得してから、JST時刻を合成する。
+  // これにより、UTC日付境界を跨ぐケースでも期待通りの JST 日付を保てる。
+  const jstDate = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
+  const year = jstDate.getUTCFullYear();
+  const month = jstDate.getUTCMonth();
+  const day = jstDate.getUTCDate();
 
-  return result;
+  const utcMillis = Date.UTC(
+    year,
+    month,
+    day + dateOffset,
+    hour - 9,
+    minute,
+    0,
+    0,
+  );
+  return new Date(utcMillis);
 }
 
 export { ContextualError } from "./ContextualError.js";
