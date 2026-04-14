@@ -611,19 +611,19 @@ export default class OperationResult extends Operation {
 
   /**
    * クラス特有のエラーの有無を返すメソッド
-   * - `breakMinutes` が負の値である場合、`INVALID_REASON.BREAK_MINUTES_NEGATIVE` を返します。
-   * - `regulationWorkMinutes` が負の値である場合、`INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` を返します。
-   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`INVALID_REASON.EMPTY_AGREEMENT` を返します。
-   * - `billingDateAt` が存在しない場合、`INVALID_REASON.EMPTY_BILLING_DATE` を返します。
+   * - `breakMinutes` が負の値である場合、`OperationResult.INVALID_REASON.BREAK_MINUTES_NEGATIVE` を返します。
+   * - `regulationWorkMinutes` が負の値である場合、`OperationResult.INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` を返します。
+   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`OperationResult.INVALID_REASON.EMPTY_AGREEMENT` を返します。
+   * - `billingDateAt` が存在しない場合、`OperationResult.INVALID_REASON.EMPTY_BILLING_DATE` を返します。
    * @returns {Array<string>} エラーコードの配列
    */
   getInvalidReasons() {
     const result = super.getInvalidReasons();
     if (!this.agreement && !this.allowEmptyAgreement) {
-      result.push(INVALID_REASON.EMPTY_AGREEMENT);
+      result.push(OperationResult.INVALID_REASON.EMPTY_AGREEMENT);
     }
     if (!this.billingDateAt) {
-      result.push(INVALID_REASON.EMPTY_BILLING_DATE);
+      result.push(OperationResult.INVALID_REASON.EMPTY_BILLING_DATE);
     }
     return result;
   }
