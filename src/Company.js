@@ -44,11 +44,8 @@ import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 import { DAY_OF_WEEK_OPTIONS, DAY_OF_WEEK_VALUES } from "./constants/index.js";
 
 const classProps = {
-  companyName: defField("name", { label: "会社名", required: true }),
-  companyNameKana: defField("nameKana", {
-    label: "会社名（カナ）",
-    required: true,
-  }),
+  companyName: defField("companyName", { required: true }),
+  companyNameKana: defField("companyNameKana", { required: true }),
 
   /**
    * これ以降のフィールドは管理者アカウント作成時に未入力状態で作成されるため required は未定義（false）とする

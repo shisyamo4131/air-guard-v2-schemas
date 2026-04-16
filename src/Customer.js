@@ -1,11 +1,37 @@
-/**
- * Customer
- * @version 1.1.1
- * @description This module defines the Customer model for managing customer data.
- * @hasMany Sites - related sites associated with the customer
+/*****************************************************************************
+ * @class Customer
+ * @extends FireModel
  * @author shisyamo4131
- * @update 2025-12-08 - Changed `paymentMonth` type from direct number to select field.
- */
+ *
+ * @property {string} code - customer code
+ * @property {string} name - customer name
+ * @property {string} branchName - 支店名などの会社名の補足情報
+ * @property {string} abbreviation - 会社名略称
+ * @property {string} nameKana - customer name in kana
+ * @property {string} zipcode - postal code
+ * @property {string} prefCode - prefecture code
+ * @property {string} city - city name
+ * @property {string} address - address details
+ * @property {string} building - building name
+ * @property {object} location - geographical location
+ * @property {string} tel - telephone number
+ * @property {string} fax - fax number
+ * @property {string} contractStatus - contract status
+ * @property {number} paymentMonth - payment site in months
+ * @property {string} paymentDate - payment site date
+ * @property {string} remarks - additional remarks
+ *
+ * @readonly
+ * @property {string} fullAddress - full address combining prefecture, city, and address (read-only)
+ * @property {string} prefecture - prefecture name derived from `prefCode` (read-only)
+ *
+ * @static
+ * @property {object} STATUS - constant mapping for contract statuses
+ * @property {string} STATUS_ACTIVE - constant for active contract status
+ * @property {string} STATUS_TERMINATED - constant for terminated contract status
+ *
+ * @method getPaymentDueDateAt
+ *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
@@ -16,6 +42,8 @@ import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 const classProps = {
   code: defField("code", { label: "取引先コード" }),
   name: defField("name", { label: "取引先名", required: true }),
+  branchName: defField("branchName", { required: false }),
+  abbreviation: defField("abbreviation", { required: true }),
   nameKana: defField("nameKana", { label: "取引先名（カナ）", required: true }),
   zipcode: defField("zipcode", { required: true }),
   prefCode: defField("prefCode", { required: true }),
@@ -33,34 +61,7 @@ const classProps = {
 };
 
 /*****************************************************************************
- * @prop {string} code - customer code
- * @prop {string} name - customer name
- * @prop {string} nameKana - customer name in kana
- * @prop {string} zipcode - postal code
- * @prop {string} prefCode - prefecture code
- * @prop {string} city - city name
- * @prop {string} address - address details
- * @prop {string} building - building name
- * @prop {object} location - geographical location
- * @prop {string} tel - telephone number
- * @prop {string} fax - fax number
- * @prop {string} contractStatus - contract status
- * @prop {number} paymentMonth - payment site in months
- * @prop {string} paymentDate - payment site date
- * @prop {string} remarks - additional remarks
- *
- * @readonly
- * @prop {string} fullAddress - full address combining prefecture, city, and address (read-only)
- * @prop {string} prefecture - prefecture name derived from `prefCode` (read-only)
- *
- * @static
- * @prop {object} STATUS - constant mapping for contract statuses
- * @prop {string} STATUS_ACTIVE - constant for active contract status
- * @prop {string} STATUS_TERMINATED - constant for terminated contract status
- *
- * @method getPaymentDueDateAt
- *        @param {Date} baseDate - base date in UTC (JST - 9 hours)
- *        @returns {Date} payment due date in UTC (JST - 9 hours)
+ * CUSTOMER
  *****************************************************************************/
 export default class Customer extends GeocodableMixin(FireModel) {
   static className = "取引先";

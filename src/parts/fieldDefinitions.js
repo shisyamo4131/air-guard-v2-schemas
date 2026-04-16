@@ -282,10 +282,20 @@ export const fieldDefinitions = {
    * ONE LINE
    *****************************************************************************/
   oneLine: generalDefinitions.oneLine,
+  abbreviation: {
+    ...generalDefinitions.oneLine,
+    label: "略称",
+    length: 20,
+  },
   address: {
     ...generalDefinitions.oneLine,
     label: "町域名・番地",
     length: 15,
+  },
+  branchName: {
+    ...generalDefinitions.oneLine,
+    label: "支店名など",
+    length: 20,
   },
   building: {
     ...generalDefinitions.oneLine,
@@ -296,6 +306,22 @@ export const fieldDefinitions = {
     ...generalDefinitions.oneLine,
     label: "市区町村",
     length: 10,
+  },
+  companyName: {
+    ...generalDefinitions.oneLine,
+    label: "会社名",
+    length: 20,
+  },
+  companyNameKana: {
+    ...generalDefinitions.oneLine,
+    label: "会社名（カナ）",
+    length: 40,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        inputType: "katakana",
+      },
+    },
   },
   customerId: {
     ...generalDefinitions.oneLine,
