@@ -55,6 +55,24 @@ export const MINUTES_PER_HOUR = 60;
 export const MINUTES_PER_QUARTER_HOUR = 15;
 export const MAX_SCHEDULED_WORKING_MINUTES = 480; // 8時間 * 60分
 
+/**
+ * フィールド定義のデフォルト値
+ * - `air-firebase` が提供する `FireModel (BaseClass)` において、クラスが保有するフィールドの定義および値の検証に使用されます。
+ * - `component` プロパティは `air-vuetify` の入力コンポーネント生成の為の属性として使用されます。
+ *   但し、required, label, hidden, length, validator は入力コンポーネントの属性としても使用されます。
+ * - `validator` の返り値が文字列の場合、`aif-firebase` のバリデーションの結果、その文字列がエラーメッセージとして扱われます。
+ *   返り値が true/false の場合は、従来通りのバリデーション結果として扱われます。
+ * @key {String|Number|Boolean|Object|Array|Date} type - データの型
+ * @key {any} default - 既定値
+ * @key {String} label - フィールドのラベル
+ * @key {Number} length - 入力可能な最大文字数（文字列型の場合）
+ * @key {Boolean} required - 入力必須かどうか
+ * @key {Boolean} hidden - フィールドをUI上で非表示にするかどうか
+ * @key {Function} validator - フィールドの値を検証する関数。引数に値を取り、エラーメッセージを返すか、true/falseで検証結果を返す。
+ * @key {Object} component - フィールドに対応するUIコンポーネントの定義
+ * @key {String} component.name - 使用するコンポーネントの名前（AirVuetifyコンポーネントのみ指定可能）
+ * @key {Object} component.attrs - コンポーネントに渡す属性の定義
+ */
 const defaultDefinition = {
   type: String,
   default: null,
@@ -62,6 +80,7 @@ const defaultDefinition = {
   length: undefined,
   required: undefined,
   hidden: undefined,
+  validator: undefined,
   component: {
     name: undefined,
     attrs: {},
