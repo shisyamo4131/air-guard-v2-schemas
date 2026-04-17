@@ -396,7 +396,7 @@ export const fieldDefinitions = {
   emergencyContactAddress: {
     ...generalDefinitions.oneLine,
     label: "緊急連絡先住所",
-    length: 20,
+    length: 30,
   },
   emergencyContactName: {
     ...generalDefinitions.oneLine,
