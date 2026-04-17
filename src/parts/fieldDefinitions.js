@@ -309,7 +309,7 @@ export const fieldDefinitions = {
   address: {
     ...generalDefinitions.oneLine,
     label: "町域名・番地",
-    length: 15,
+    length: 30,
   },
   branchName: {
     ...generalDefinitions.oneLine,
@@ -324,7 +324,7 @@ export const fieldDefinitions = {
   city: {
     ...generalDefinitions.oneLine,
     label: "市区町村",
-    length: 10,
+    length: 20,
   },
   companyName: {
     ...generalDefinitions.oneLine,
