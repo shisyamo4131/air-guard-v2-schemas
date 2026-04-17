@@ -216,15 +216,22 @@ export default class OperationResult extends Operation {
   static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE;
 
   /**
-   * INVALID_REASONS
+   * INVALID_REASON
+   * - Operation クラスの INVALID_REASON を継承しています。
    * - 以下のエラーコードを追加
    *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
    *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
    */
   static INVALID_REASON = {
     ...Operation.INVALID_REASON,
-    EMPTY_BILLING_DATE: "EMPTY_BILLING_DATE",
-    EMPTY_AGREEMENT: "EMPTY_AGREEMENT",
+    EMPTY_BILLING_DATE: {
+      code: "EMPTY_BILLING_DATE",
+      message: "$1 is required.",
+    },
+    EMPTY_AGREEMENT: {
+      code: "EMPTY_AGREEMENT",
+      message: "$1 is required.",
+    },
   };
 
   static headers = [
@@ -611,19 +618,29 @@ export default class OperationResult extends Operation {
 
   /**
    * クラス特有のエラーの有無を返すメソッド
-   * - `breakMinutes` が負の値である場合、`OperationResult.INVALID_REASON.BREAK_MINUTES_NEGATIVE` を返します。
-   * - `regulationWorkMinutes` が負の値である場合、`OperationResult.INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` を返します。
-   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`OperationResult.INVALID_REASON.EMPTY_AGREEMENT` を返します。
-   * - `billingDateAt` が存在しない場合、`OperationResult.INVALID_REASON.EMPTY_BILLING_DATE` を返します。
-   * @returns {Array<string>} エラーコードの配列
+   * - `breakMinutes` が負の値である場合、`OperationResult.INVALID_REASON.BREAK_MINUTES_NEGATIVE` のエラーメッセージを返します。
+   * - `regulationWorkMinutes` が負の値である場合、`OperationResult.INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` のエラーメッセージを返します。
+   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`OperationResult.INVALID_REASON.EMPTY_AGREEMENT` のエラーメッセージを返します。
+   * - `billingDateAt` が存在しない場合、`OperationResult.INVALID_REASON.EMPTY_BILLING_DATE` のエラーメッセージを返します。
+   * @returns {Array<string>} エラーメッセージの配列
    */
   getInvalidReasons() {
     const result = super.getInvalidReasons();
     if (!this.agreement && !this.allowEmptyAgreement) {
-      result.push(OperationResult.INVALID_REASON.EMPTY_AGREEMENT);
+      result.push(
+        OperationResult.formatErrorMessage(
+          OperationResult.INVALID_REASON.EMPTY_AGREEMENT,
+          "Agreement",
+        ),
+      );
     }
     if (!this.billingDateAt) {
-      result.push(OperationResult.INVALID_REASON.EMPTY_BILLING_DATE);
+      result.push(
+        OperationResult.formatErrorMessage(
+          OperationResult.INVALID_REASON.EMPTY_BILLING_DATE,
+          "Billing date",
+        ),
+      );
     }
     return result;
   }

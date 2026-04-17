@@ -87,8 +87,14 @@ export default class WorkTimeBase extends FireModel {
    */
   static INVALID_REASON = {
     ...FireModel.INVALID_REASON,
-    BREAK_MINUTES_NEGATIVE: "BREAK_MINUTES_NEGATIVE",
-    REGULATION_WORK_MINUTES_NEGATIVE: "REGULATION_WORK_MINUTES_NEGATIVE",
+    BREAK_MINUTES_NEGATIVE: {
+      code: "BREAK_MINUTES_NEGATIVE",
+      message: "$1 must not be negative.",
+    },
+    REGULATION_WORK_MINUTES_NEGATIVE: {
+      code: "REGULATION_WORK_MINUTES_NEGATIVE",
+      message: "$1 must not be negative.",
+    },
   };
 
   /**
@@ -224,36 +230,29 @@ export default class WorkTimeBase extends FireModel {
 
   /**
    * クラス特有のエラーの有無を返すメソッド
-   * - `breakMinutes` が負の値である場合、`INVALID_REASON.BREAK_MINUTES_NEGATIVE` を返します。
-   * - `regulationWorkMinutes` が負の値である場合、`INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` を返します。
-   * - 継承先のクラスでさらにエラー判定を追加する場合は、このメソッドをオーバーライドして、スーパークラスの結果に加えて独自のエラーコードを返すようにしてください。
-   * @returns {Array<string>} エラーコードの配列
+   * - `breakMinutes` が負の値である場合、`INVALID_REASON.BREAK_MINUTES_NEGATIVE` のエラーメッセージを返します。
+   * - `regulationWorkMinutes` が負の値である場合、`INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` のエラーメッセージを返します。
+   * - 継承先のクラスでさらにエラー判定を追加する場合は、このメソッドをオーバーライドして、スーパークラスの結果に加えて独自のエラーメッセージを返すようにしてください。
+   * @returns {Array<string>} エラーメッセージの配列
    */
   getInvalidReasons() {
     const result = super.getInvalidReasons();
     if (this.breakMinutes < 0) {
-      result.push(WorkTimeBase.INVALID_REASON.BREAK_MINUTES_NEGATIVE);
+      result.push(
+        WorkTimeBase.formatErrorMessage(
+          WorkTimeBase.INVALID_REASON.BREAK_MINUTES_NEGATIVE,
+          "Break minutes",
+        ),
+      );
     }
     if (this.regulationWorkMinutes < 0) {
-      result.push(WorkTimeBase.INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE);
+      result.push(
+        WorkTimeBase.formatErrorMessage(
+          WorkTimeBase.INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE,
+          "Regulation work minutes",
+        ),
+      );
     }
     return result;
   }
-
-  // /**
-  //  * クラス特有のエラーが存在するかどうかを返します。
-  //  * @returns {boolean} エラーが存在する場合は `true`、存在しない場合は `false` を返します。
-  //  */
-  // get isInvalid() {
-  //   return this.getInvalidReasons().length > 0;
-  // }
-
-  // /**
-  //  * クラス特有のエラーコードの配列を返します。
-  //  * - エラーが存在しない場合は空の配列を返します。
-  //  * @returns {Array<string>} エラーコードの配列
-  //  */
-  // get invalidReasons() {
-  //   return this.getInvalidReasons();
-  // }
 }
