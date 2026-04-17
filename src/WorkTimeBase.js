@@ -83,9 +83,10 @@ export default class WorkTimeBase extends FireModel {
   static SHIFT_TYPE = SHIFT_TYPE;
 
   /**
-   * INVALID_REASONS
+   * INVALID_REASON
    */
   static INVALID_REASON = {
+    ...FireModel.INVALID_REASON,
     BREAK_MINUTES_NEGATIVE: "BREAK_MINUTES_NEGATIVE",
     REGULATION_WORK_MINUTES_NEGATIVE: "REGULATION_WORK_MINUTES_NEGATIVE",
   };
@@ -229,7 +230,7 @@ export default class WorkTimeBase extends FireModel {
    * @returns {Array<string>} エラーコードの配列
    */
   getInvalidReasons() {
-    const result = [];
+    const result = super.getInvalidReasons();
     if (this.breakMinutes < 0) {
       result.push(WorkTimeBase.INVALID_REASON.BREAK_MINUTES_NEGATIVE);
     }
@@ -239,20 +240,20 @@ export default class WorkTimeBase extends FireModel {
     return result;
   }
 
-  /**
-   * クラス特有のエラーが存在するかどうかを返します。
-   * @returns {boolean} エラーが存在する場合は `true`、存在しない場合は `false` を返します。
-   */
-  get isInvalid() {
-    return this.getInvalidReasons().length > 0;
-  }
+  // /**
+  //  * クラス特有のエラーが存在するかどうかを返します。
+  //  * @returns {boolean} エラーが存在する場合は `true`、存在しない場合は `false` を返します。
+  //  */
+  // get isInvalid() {
+  //   return this.getInvalidReasons().length > 0;
+  // }
 
-  /**
-   * クラス特有のエラーコードの配列を返します。
-   * - エラーが存在しない場合は空の配列を返します。
-   * @returns {Array<string>} エラーコードの配列
-   */
-  get invalidReasons() {
-    return this.getInvalidReasons();
-  }
+  // /**
+  //  * クラス特有のエラーコードの配列を返します。
+  //  * - エラーが存在しない場合は空の配列を返します。
+  //  * @returns {Array<string>} エラーコードの配列
+  //  */
+  // get invalidReasons() {
+  //   return this.getInvalidReasons();
+  // }
 }
