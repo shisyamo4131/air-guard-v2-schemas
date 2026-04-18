@@ -40,6 +40,6 @@
   },
   "peerDependencies": {
     "@holiday-jp/holiday_jp": "^2.5.1",
-    "@shisyamo4131/air-firebase-v2": "^2.3.1-dev.0"
+    "@shisyamo4131/air-firebase-v2": "^2.3.1-dev.1"
   }
 }
