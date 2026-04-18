@@ -48,6 +48,7 @@ import {
   OPTIONS as SITE_STATUS_OPTIONS,
 } from "../constants/site-status.js";
 import CutoffDate from "../utils/CutoffDate.js";
+import { VALIDATION_ERRORS } from "../errorDefinitions.js";
 
 export const DEFAULT_WORKING_MINUTES = 480;
 export const DEFAULT_BREAK_MINUTES = 60;
@@ -59,8 +60,9 @@ export const MAX_SCHEDULED_WORKING_MINUTES = 480; // 8時間 * 60分
  * フィールド定義のデフォルト値
  * - `air-firebase` が提供する `FireModel (BaseClass)` において、クラスが保有するフィールドの定義および値の検証に使用されます。
  * - `component` プロパティは `air-vuetify` の入力コンポーネント生成の為の属性として使用されます。
- *   但し、required, label, hidden, length, validator は入力コンポーネントの属性としても使用されます。
- * - `validator` の返り値が文字列の場合、`aif-firebase` のバリデーションの結果、その文字列がエラーメッセージとして扱われます。
+ *   但し、required, label, hidden, length は入力コンポーネントの属性としても使用されます。
+ * - `validator` の返り値は原則オブジェクトです。文字列を返すこともでき、その文字列がエラーメッセージとして扱われますが多言語対応のためには
+ *   オブジェクトを返すことを推奨します。
  *   返り値が true/false の場合は、従来通りのバリデーション結果として扱われます。
  * @key {String|Number|Boolean|Object|Array|Date} type - データの型
  * @key {any} default - 既定値
@@ -256,7 +258,12 @@ export const fieldDefinitions = {
     ...generalDefinitions.number,
     label: "休憩時間（分）",
     default: DEFAULT_BREAK_MINUTES,
-    validator: (v) => v >= 0,
+    validator: (v) => {
+      if (v < 0) {
+        return VALIDATION_ERRORS.MIN_VALUE_ERROR(0);
+      }
+      return true;
+    },
     component: {
       ...generalDefinitions.number.component,
       attrs: {
@@ -269,7 +276,12 @@ export const fieldDefinitions = {
     ...generalDefinitions.number,
     label: "残業時間（分）",
     default: 0,
-    validator: (v) => v >= 0,
+    validator: (v) => {
+      if (v < 0) {
+        return VALIDATION_ERRORS.MIN_VALUE_ERROR(0);
+      }
+      return true;
+    },
     component: {
       ...generalDefinitions.number.component,
       attrs: {
@@ -282,7 +294,12 @@ export const fieldDefinitions = {
     ...generalDefinitions.number,
     label: "規定実働時間（分）",
     default: DEFAULT_WORKING_MINUTES,
-    validator: (v) => v >= 0,
+    validator: (v) => {
+      if (v < 0) {
+        return VALIDATION_ERRORS.MIN_VALUE_ERROR(0);
+      }
+      return true;
+    },
     component: {
       ...generalDefinitions.number.component,
       attrs: {

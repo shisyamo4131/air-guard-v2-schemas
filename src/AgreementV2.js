@@ -109,10 +109,9 @@ export class DayTypeRates extends BaseClass {
  * - `date` と `shiftType` を組み合わせた文字列を返します。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
- * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
- * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {Array<Object>} invalidReasons - エラーコード、メッセージ、多言語メッセージ、フィールド名を含む詳細情報の配列を返すプロパティ
  * @getter {boolean} isKeyChanged - `key` プロパティが変更されたかどうかを返すプロパティ
  *
  * @static BILLING_UNIT_TYPE - 請求単位の定数オブジェクト

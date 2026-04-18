@@ -112,7 +112,6 @@
  * @property {string} billingMonth - 請求月 (YYYY-MM 形式) (読み取り専用)
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
- * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
  * @method moveWorker - 従業員または外注先の位置を移動します。
  * @method changeWorker - 従業員または外注先の詳細を変更します。
@@ -124,7 +123,7 @@
  * - Updates `billingDateAt` based on the current `dateAt` and `cutoffDate` values.
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
- * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {Array<Object>} invalidReasons - エラーコード、メッセージ、多言語メッセージ、フィールド名を含む詳細情報の配列を返すプロパティ
  * @getter {boolean} isGroupKeyChanged - `groupKey` プロパティが変更されたかどうかを返すプロパティ
  * @getter {boolean} isAgreementKeyChanged - `agreementKey` プロパティが変更されたかどうかを返すプロパティ
  * @getter {boolean} isEmployeesChanged - 従業員が変更されたかどうかを示すフラグ (読み取り専用)
@@ -135,8 +134,6 @@
  *
  * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
  * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
- * - `BREAK_MINUTES_NEGATIVE`: `breakMinutes` が負の値である場合のエラーコード
- * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
  * - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
  * - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
  * @static DAY_TYPE - 曜日区分を定義する定数オブジェクト
@@ -226,11 +223,17 @@ export default class OperationResult extends Operation {
     ...Operation.INVALID_REASON,
     EMPTY_BILLING_DATE: {
       code: "EMPTY_BILLING_DATE",
-      message: "$1 is required.",
+      message: "Billing date is required.",
+      messages: {
+        ja: "請求締日は必須です。",
+      },
     },
     EMPTY_AGREEMENT: {
       code: "EMPTY_AGREEMENT",
-      message: "$1 is required.",
+      message: "Agreement is required.",
+      messages: {
+        ja: "取極めは必須です。",
+      },
     },
   };
 
@@ -617,31 +620,28 @@ export default class OperationResult extends Operation {
   }
 
   /**
-   * クラス特有のエラーの有無を返すメソッド
-   * - `breakMinutes` が負の値である場合、`OperationResult.INVALID_REASON.BREAK_MINUTES_NEGATIVE` のエラーメッセージを返します。
-   * - `regulationWorkMinutes` が負の値である場合、`OperationResult.INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` のエラーメッセージを返します。
-   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`OperationResult.INVALID_REASON.EMPTY_AGREEMENT` のエラーメッセージを返します。
-   * - `billingDateAt` が存在しない場合、`OperationResult.INVALID_REASON.EMPTY_BILLING_DATE` のエラーメッセージを返します。
-   * @returns {Array<string>} エラーメッセージの配列
+   * クラス特有のエラーを詳細情報付きで返す内部メソッド
+   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`EMPTY_AGREEMENT` エラーを返します。
+   * - `billingDateAt` が存在しない場合、`EMPTY_BILLING_DATE` エラーを返します。
+   * @returns {Array<Object>} エラー詳細オブジェクトの配列（統一フォーマット）
    */
-  getInvalidReasons() {
-    const result = super.getInvalidReasons();
+  _getInvalidReasons() {
+    const result = super._getInvalidReasons();
+
     if (!this.agreement && !this.allowEmptyAgreement) {
-      result.push(
-        OperationResult.formatErrorMessage(
-          OperationResult.INVALID_REASON.EMPTY_AGREEMENT,
-          "Agreement",
-        ),
-      );
+      result.push({
+        ...OperationResult.INVALID_REASON.EMPTY_AGREEMENT,
+        field: "agreement",
+      });
     }
+
     if (!this.billingDateAt) {
-      result.push(
-        OperationResult.formatErrorMessage(
-          OperationResult.INVALID_REASON.EMPTY_BILLING_DATE,
-          "Billing date",
-        ),
-      );
+      result.push({
+        ...OperationResult.INVALID_REASON.EMPTY_BILLING_DATE,
+        field: "billingDateAt",
+      });
     }
+
     return result;
   }
 }

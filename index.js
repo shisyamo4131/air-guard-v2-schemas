@@ -13,6 +13,7 @@ export { default as Company } from "./src/Company.js";
 export { default as Customer, CustomerMinimal } from "./src/Customer.js";
 export { default as CutoffDate } from "./src/utils/CutoffDate.js";
 export { default as Employee } from "./src/Employee.js";
+export { VALIDATION_ERRORS } from "./src/errorDefinitions.js";
 export { GeocodableMixin } from "./src/mixins/GeocodableMixin.js";
 export { default as OperationBilling } from "./src/OperationBilling.js";
 export { default as OperationResult } from "./src/OperationResult.js";

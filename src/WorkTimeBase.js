@@ -45,15 +45,11 @@
  *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
- * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
  * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
  *
  * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
- * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
- * - `BREAK_MINUTES_NEGATIVE`: `breakMinutes` が負の値である場合のエラーコード
- * - `REGULATION_WORK_MINUTES_NEGATIVE`: `regulationWorkMinutes` が負の値である場合のエラーコード
  *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -81,21 +77,6 @@ export default class WorkTimeBase extends FireModel {
   static classProps = classProps;
 
   static SHIFT_TYPE = SHIFT_TYPE;
-
-  /**
-   * INVALID_REASON
-   */
-  static INVALID_REASON = {
-    ...FireModel.INVALID_REASON,
-    BREAK_MINUTES_NEGATIVE: {
-      code: "BREAK_MINUTES_NEGATIVE",
-      message: "$1 must not be negative.",
-    },
-    REGULATION_WORK_MINUTES_NEGATIVE: {
-      code: "REGULATION_WORK_MINUTES_NEGATIVE",
-      message: "$1 must not be negative.",
-    },
-  };
 
   /**
    * Constructor
@@ -227,32 +208,4 @@ export default class WorkTimeBase extends FireModel {
    * @returns {void}
    */
   setDateAtCallback(v) {}
-
-  /**
-   * クラス特有のエラーの有無を返すメソッド
-   * - `breakMinutes` が負の値である場合、`INVALID_REASON.BREAK_MINUTES_NEGATIVE` のエラーメッセージを返します。
-   * - `regulationWorkMinutes` が負の値である場合、`INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE` のエラーメッセージを返します。
-   * - 継承先のクラスでさらにエラー判定を追加する場合は、このメソッドをオーバーライドして、スーパークラスの結果に加えて独自のエラーメッセージを返すようにしてください。
-   * @returns {Array<string>} エラーメッセージの配列
-   */
-  getInvalidReasons() {
-    const result = super.getInvalidReasons();
-    if (this.breakMinutes < 0) {
-      result.push(
-        WorkTimeBase.formatErrorMessage(
-          WorkTimeBase.INVALID_REASON.BREAK_MINUTES_NEGATIVE,
-          "Break minutes",
-        ),
-      );
-    }
-    if (this.regulationWorkMinutes < 0) {
-      result.push(
-        WorkTimeBase.formatErrorMessage(
-          WorkTimeBase.INVALID_REASON.REGULATION_WORK_MINUTES_NEGATIVE,
-          "Regulation work minutes",
-        ),
-      );
-    }
-    return result;
-  }
 }

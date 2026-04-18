@@ -109,7 +109,6 @@
  *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
- * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
  * @method moveWorker - 従業員または外注先の位置を移動します。
  * @method changeWorker - 従業員または外注先の詳細を変更します。

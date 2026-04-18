@@ -68,7 +68,6 @@
  * @property {number} displayOrder - 同一日付・同一勤務区分のスケジュールの表示順を制御するためのプロパティ
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
- * @method getInvalidReasons - クラス特有のエラーの有無を返すメソッド
  * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
  * @method moveWorker - 従業員または外注先の位置を移動します。
  * @method changeWorker - 従業員または外注先の詳細を変更します。
@@ -93,7 +92,7 @@
  * - `name`, `start`, `end`, `color`、および元の `SiteOperationSchedule` インスタンスへの参照を含みます。
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
- * @getter {Array<string>} invalidReasons - クラス特有のエラーコードの配列を返すプロパティ
+ * @getter {Array<Object>} invalidReasons - エラーコード、メッセージ、多言語メッセージ、フィールド名を含む詳細情報の配列を返すプロパティ
  * @getter {boolean} isGroupKeyChanged - `groupKey` プロパティが変更されたかどうかを返すプロパティ
  * @getter {boolean} isAgreementKeyChanged - `agreementKey` プロパティが変更されたかどうかを返すプロパティ
  * @getter {boolean} isEmployeesChanged - 従業員が変更されたかどうかを示すフラグ (読み取り専用)
