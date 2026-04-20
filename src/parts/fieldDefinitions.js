@@ -396,7 +396,7 @@ export const fieldDefinitions = {
   domicile: {
     ...generalDefinitions.oneLine,
     label: "本籍地",
-    length: 30,
+    length: 50,
   },
   email: {
     ...generalDefinitions.oneLine,
@@ -413,7 +413,7 @@ export const fieldDefinitions = {
   emergencyContactAddress: {
     ...generalDefinitions.oneLine,
     label: "緊急連絡先住所",
-    length: 30,
+    length: 50,
   },
   emergencyContactName: {
     ...generalDefinitions.oneLine,
