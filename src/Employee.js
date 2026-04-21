@@ -8,6 +8,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import { VALUES as EMPLOYMENT_STATUS_VALUES } from "./constants/employment-status.js";
 import { VALUES as BLOOD_TYPE_VALUES } from "./constants/blood-type.js";
+import { VALUES as EMERGENCY_CONTACT_RELATION_VALUES } from "./constants/emergency-contact-relation.js";
 import Certification from "./Certification.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 import { VALIDATION_ERRORS } from "./errorDefinitions.js";
@@ -80,6 +81,25 @@ const classProps = {
     },
   }),
   reasonOfTermination: defField("reasonOfTermination", {
+    validator: (value, item) => {
+      if (item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "INVALID_REASON_OF_TERMINATION",
+            "reasonOfTermination is required when employmentStatus is 'terminated'.",
+            { ja: "在職区分が '退職' の場合、退職理由は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "INVALID_REASON_OF_TERMINATION",
+            "reasonOfTermination must be a string.",
+            { ja: "退職理由は文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) =>
@@ -93,6 +113,25 @@ const classProps = {
   // Foreign related fields
   isForeigner: defField("isForeigner"),
   foreignName: defField("foreignName", {
+    validator: (value, item) => {
+      if (item.isForeigner) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "FOREIGN_NAME_REQUIRED",
+            "foreignName is required when isForeigner is true.",
+            { ja: "外国籍の場合、外国名は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "FOREIGN_NAME_INVALID",
+            "foreignName must be a string.",
+            { ja: "外国名は文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.isForeigner,
@@ -101,6 +140,25 @@ const classProps = {
     },
   }),
   nationality: defField("nationality", {
+    validator: (value, item) => {
+      if (item.isForeigner) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "NATIONALITY_REQUIRED",
+            "nationality is required when isForeigner is true.",
+            { ja: "外国籍の場合、国籍は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "NATIONALITY_INVALID",
+            "nationality must be a string.",
+            { ja: "国籍は文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.isForeigner,
@@ -109,6 +167,25 @@ const classProps = {
     },
   }),
   residenceStatus: defField("residenceStatus", {
+    validator: (value, item) => {
+      if (item.isForeigner) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "RESIDENCE_STATUS_REQUIRED",
+            "residenceStatus is required when isForeigner is true.",
+            { ja: "外国籍の場合、在留資格は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "RESIDENCE_STATUS_INVALID",
+            "residenceStatus must be a string.",
+            { ja: "在留資格は文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.isForeigner,
@@ -118,6 +195,27 @@ const classProps = {
   }),
   hasPeriodOfStayLimit: defField("hasPeriodOfStayLimit"),
   periodOfStay: defField("periodOfStay", {
+    validator: (value, item) => {
+      if (item.isForeigner && item.hasPeriodOfStayLimit) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "PERIOD_OF_STAY_REQUIRED",
+            "periodOfStay is required when isForeigner is true and hasPeriodOfStayLimit is true.",
+            {
+              ja: "外国籍で在留期間制限がある場合、在留期間満了日は必須です。",
+            },
+          );
+        }
+        if (!(value instanceof Date)) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "PERIOD_OF_STAY_INVALID",
+            "periodOfStay must be a Date.",
+            { ja: "在留期間満了日は日付である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.isForeigner && item.hasPeriodOfStayLimit,
@@ -129,6 +227,25 @@ const classProps = {
   // Security guard related fields
   hasSecurityGuardRegistration: defField("check", { label: "警備員登録" }),
   dateOfSecurityGuardRegistration: defField("dateOfSecurityGuardRegistration", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "SECURITY_GUARD_REGISTRATION_DATE_REQUIRED",
+            "dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、警備員登録日は必須です。" },
+          );
+        }
+        if (!(value instanceof Date)) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "SECURITY_GUARD_REGISTRATION_DATE_INVALID",
+            "dateOfSecurityGuardRegistration must be a Date.",
+            { ja: "警備員登録日は日付である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -137,6 +254,25 @@ const classProps = {
     },
   }),
   bloodType: defField("bloodType", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "BLOOD_TYPE_REQUIRED",
+            "bloodType is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、血液型は必須です。" },
+          );
+        }
+        if (!Object.values(BLOOD_TYPE_VALUES).some((v) => v.value === value)) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "BLOOD_TYPE_INVALID",
+            "bloodType must be a valid value.",
+            { ja: "血液型は有効な値である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -145,6 +281,25 @@ const classProps = {
     },
   }),
   emergencyContactName: defField("emergencyContactName", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_NAME_REQUIRED",
+            "emergencyContactName is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、緊急連絡先の名前は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_NAME_INVALID",
+            "emergencyContactName must be a valid string.",
+            { ja: "緊急連絡先の名前は有効な文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -153,6 +308,29 @@ const classProps = {
     },
   }),
   emergencyContactRelation: defField("emergencyContactRelation", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_RELATION_REQUIRED",
+            "emergencyContactRelation is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、緊急連絡先の関係は必須です。" },
+          );
+        }
+        if (
+          !Object.values(EMERGENCY_CONTACT_RELATION_VALUES).some(
+            (v) => v.value === value,
+          )
+        ) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_RELATION_INVALID",
+            "emergencyContactRelation must be a valid value.",
+            { ja: "緊急連絡先の関係は有効な値である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -161,6 +339,25 @@ const classProps = {
     },
   }),
   emergencyContactRelationDetail: defField("emergencyContactRelationDetail", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_RELATION_DETAIL_REQUIRED",
+            "emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、緊急連絡先の詳細は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_RELATION_DETAIL_INVALID",
+            "emergencyContactRelationDetail must be a valid string.",
+            { ja: "緊急連絡先の詳細は有効な文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -169,6 +366,25 @@ const classProps = {
     },
   }),
   emergencyContactAddress: defField("emergencyContactAddress", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_ADDRESS_REQUIRED",
+            "emergencyContactAddress is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、緊急連絡先の住所は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_ADDRESS_INVALID",
+            "emergencyContactAddress must be a valid string.",
+            { ja: "緊急連絡先の住所は有効な文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -177,6 +393,25 @@ const classProps = {
     },
   }),
   emergencyContactPhone: defField("emergencyContactPhone", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_PHONE_REQUIRED",
+            "emergencyContactPhone is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、緊急連絡先の電話番号は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "EMERGENCY_CONTACT_PHONE_INVALID",
+            "emergencyContactPhone must be a valid string.",
+            { ja: "緊急連絡先の電話番号は有効な文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -185,6 +420,25 @@ const classProps = {
     },
   }),
   domicile: defField("domicile", {
+    validator: (value, item) => {
+      if (item.hasSecurityGuardRegistration) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "DOMICILE_REQUIRED",
+            "domicile is required when hasSecurityGuardRegistration is true.",
+            { ja: "警備員登録がある場合、本籍地は必須です。" },
+          );
+        }
+        if (typeof value !== "string") {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "DOMICILE_INVALID",
+            "domicile must be a valid string.",
+            { ja: "本籍地は有効な文字列である必要があります。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) => item.hasSecurityGuardRegistration,
@@ -386,73 +640,45 @@ export default class Employee extends GeocodableMixin(FireModel) {
     return { years, months };
   }
 
-  /**
-   * 外国籍の場合の必須フィールドを検証します。
-   * - エラーがある場合は例外をスローします。
-   * - `isForeigner` が false の場合、以下のプロパティを初期化します。
-   *  - `foreignName`
-   *  - `nationality`
-   *  - `residenceStatus`
-   *  - `periodOfStay`
-   * @returns {void}
-   * @throws {Error} 外国籍の場合に必須フィールドが未入力の場合。
-   */
-  _validateForeignerRequiredFields() {
-    if (this.isForeigner) {
-      if (!this.foreignName) {
-        throw new Error(
-          "[Employee.js] foreignName is required when isForeigner is true.",
-        );
-      }
-      if (!this.nationality) {
-        throw new Error(
-          "[Employee.js] nationality is required when isForeigner is true.",
-        );
-      }
-      if (!this.residenceStatus) {
-        throw new Error(
-          "[Employee.js] residenceStatus is required when isForeigner is true.",
-        );
-      }
-      if (!this.periodOfStay) {
-        throw new Error(
-          "[Employee.js] periodOfStay is required when isForeigner is true.",
-        );
-      }
-    } else {
-      // 外国籍でない場合、関連フィールドを初期化
-      this.foreignName = null;
-      this.nationality = null;
-      this.residenceStatus = null;
-      this.periodOfStay = null;
-    }
-  }
-
   // /**
-  //  * 退職済である場合の必須フィールドを検証します。
+  //  * 外国籍の場合の必須フィールドを検証します。
   //  * - エラーがある場合は例外をスローします。
-  //  * - `employmentStatus` が `terminated` の場合、以下のプロパティを必須とします。
-  //  *  - `dateOfTermination`
-  //  *  - `reasonOfTermination`
-  //  * - `employmentStatus` が `active` の場合、`dateOfTermination`, `reasonOfTermination` を初期化します。
+  //  * - `isForeigner` が false の場合、以下のプロパティを初期化します。
+  //  *  - `foreignName`
+  //  *  - `nationality`
+  //  *  - `residenceStatus`
+  //  *  - `periodOfStay`
   //  * @returns {void}
-  //  * @throws {Error} 退職済の場合に必須フィールドが未入力の場合。
+  //  * @throws {Error} 外国籍の場合に必須フィールドが未入力の場合。
   //  */
-  // _validateTerminatedRequiredFields() {
-  //   if (this.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
-  //     if (!this.dateOfTermination) {
+  // _validateForeignerRequiredFields() {
+  //   if (this.isForeigner) {
+  //     if (!this.foreignName) {
   //       throw new Error(
-  //         "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'.",
+  //         "[Employee.js] foreignName is required when isForeigner is true.",
   //       );
   //     }
-  //     if (!this.reasonOfTermination) {
+  //     if (!this.nationality) {
   //       throw new Error(
-  //         "[Employee.js] reasonOfTermination is required when employmentStatus is 'terminated'.",
+  //         "[Employee.js] nationality is required when isForeigner is true.",
+  //       );
+  //     }
+  //     if (!this.residenceStatus) {
+  //       throw new Error(
+  //         "[Employee.js] residenceStatus is required when isForeigner is true.",
+  //       );
+  //     }
+  //     if (!this.periodOfStay) {
+  //       throw new Error(
+  //         "[Employee.js] periodOfStay is required when isForeigner is true.",
   //       );
   //     }
   //   } else {
-  //     this.dateOfTermination = null;
-  //     this.reasonOfTermination = null;
+  //     // 外国籍でない場合、関連フィールドを初期化
+  //     this.foreignName = null;
+  //     this.nationality = null;
+  //     this.residenceStatus = null;
+  //     this.periodOfStay = null;
   //   }
   // }
 
@@ -470,39 +696,46 @@ export default class Employee extends GeocodableMixin(FireModel) {
     }
   }
 
-  _validateSecurityGuardFields() {
-    if (this.hasSecurityGuardRegistration) {
-      if (!this.dateOfSecurityGuardRegistration) {
-        throw new Error(
-          "[Employee.js] dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true.",
-        );
-      }
-      if (!this.emergencyContactName) {
-        throw new Error(
-          "[Employee.js] emergencyContactName is required when hasSecurityGuardRegistration is true.",
-        );
-      }
-      if (!this.emergencyContactRelationDetail) {
-        throw new Error(
-          "[Employee.js] emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true.",
-        );
-      }
-      if (!this.emergencyContactAddress) {
-        throw new Error(
-          "[Employee.js] emergencyContactAddress is required when hasSecurityGuardRegistration is true.",
-        );
-      }
-      if (!this.emergencyContactPhone) {
-        throw new Error(
-          "[Employee.js] emergencyContactPhone is required when hasSecurityGuardRegistration is true.",
-        );
-      }
-      if (!this.domicile) {
-        throw new Error(
-          "[Employee.js] domicile is required when hasSecurityGuardRegistration is true.",
-        );
-      }
+  /**
+   * 外国籍に関連するフィールドを初期化します。
+   * - `isForeigner` が false の場合、以下のプロパティを初期化します。
+   *  - `foreignName`
+   * - `nationality`
+   * - `residenceStatus`
+   * - `hasPeriodOfStayLimit`
+   * - `periodOfStay`
+   * - `isForeigner` が true で `hasPeriodOfStayLimit` が false の場合、`periodOfStay` を初期化します。
+   * @returns {void}
+   */
+  _initForeignerFields() {
+    if (!this.isForeigner) {
+      this.foreignName = null;
+      this.nationality = null;
+      this.residenceStatus = null;
+      this.hasPeriodOfStayLimit = false;
+      this.periodOfStay = null;
     } else {
+      if (!this.hasPeriodOfStayLimit) {
+        this.periodOfStay = null;
+      }
+    }
+  }
+
+  /**
+   * 警備員登録に関連するフィールドを初期化します。
+   * - `hasSecurityGuardRegistration` が false の場合、以下のプロパティを初期化します。
+   *  - `dateOfSecurityGuardRegistration`
+   *  - `bloodType`
+   *  - `emergencyContactName`
+   *  - `emergencyContactRelation`
+   *  - `emergencyContactRelationDetail`
+   *  - `emergencyContactAddress`
+   *  - `emergencyContactPhone`
+   *  - `domicile`
+   * @returns {void}
+   */
+  _initSecurityGuardFields() {
+    if (!this.hasSecurityGuardRegistration) {
       this.dateOfSecurityGuardRegistration = null;
       this.bloodType = BLOOD_TYPE_VALUES.A.value;
       this.emergencyContactName = null;
@@ -513,6 +746,49 @@ export default class Employee extends GeocodableMixin(FireModel) {
       this.domicile = null;
     }
   }
+  // _validateSecurityGuardFields() {
+  //   if (this.hasSecurityGuardRegistration) {
+  //     if (!this.dateOfSecurityGuardRegistration) {
+  //       throw new Error(
+  //         "[Employee.js] dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true.",
+  //       );
+  //     }
+  //     if (!this.emergencyContactName) {
+  //       throw new Error(
+  //         "[Employee.js] emergencyContactName is required when hasSecurityGuardRegistration is true.",
+  //       );
+  //     }
+  //     if (!this.emergencyContactRelationDetail) {
+  //       throw new Error(
+  //         "[Employee.js] emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true.",
+  //       );
+  //     }
+  //     if (!this.emergencyContactAddress) {
+  //       throw new Error(
+  //         "[Employee.js] emergencyContactAddress is required when hasSecurityGuardRegistration is true.",
+  //       );
+  //     }
+  //     if (!this.emergencyContactPhone) {
+  //       throw new Error(
+  //         "[Employee.js] emergencyContactPhone is required when hasSecurityGuardRegistration is true.",
+  //       );
+  //     }
+  //     if (!this.domicile) {
+  //       throw new Error(
+  //         "[Employee.js] domicile is required when hasSecurityGuardRegistration is true.",
+  //       );
+  //     }
+  //   } else {
+  //     this.dateOfSecurityGuardRegistration = null;
+  //     this.bloodType = BLOOD_TYPE_VALUES.A.value;
+  //     this.emergencyContactName = null;
+  //     this.emergencyContactRelation = null;
+  //     this.emergencyContactRelationDetail = null;
+  //     this.emergencyContactAddress = null;
+  //     this.emergencyContactPhone = null;
+  //     this.domicile = null;
+  //   }
+  // }
 
   /**
    * 新しい従業員ドキュメントが作成される前に実行されるフック。
@@ -527,10 +803,11 @@ export default class Employee extends GeocodableMixin(FireModel) {
    */
   async beforeCreate(args = {}) {
     await super.beforeCreate(args);
-    this._validateForeignerRequiredFields();
-    // this._validateTerminatedRequiredFields();
+    // this._validateForeignerRequiredFields();
+    this._initForeignerFields();
     this._initTerminatedFields();
-    this._validateSecurityGuardFields();
+    // this._validateSecurityGuardFields();
+    this._initSecurityGuardFields();
   }
 
   /**
@@ -559,10 +836,11 @@ export default class Employee extends GeocodableMixin(FireModel) {
       );
     }
 
-    this._validateForeignerRequiredFields();
-    // this._validateTerminatedRequiredFields();
+    // this._validateForeignerRequiredFields();
+    this._initForeignerFields();
     this._initTerminatedFields();
-    this._validateSecurityGuardFields();
+    // this._validateSecurityGuardFields();
+    this._initSecurityGuardFields();
   }
 
   /**
