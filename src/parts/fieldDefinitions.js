@@ -186,6 +186,10 @@ export const fieldDefinitions = {
    * CHECK
    *****************************************************************************/
   check: generalDefinitions.check,
+  hasPeriodOfStayLimit: {
+    ...generalDefinitions.check,
+    label: "在留期間制限",
+  },
   isForeigner: {
     ...generalDefinitions.check,
     label: "外国籍",
@@ -232,7 +236,6 @@ export const fieldDefinitions = {
     label: "有効期限",
     default: null,
   },
-  // 2025-12-26 Added
   issueDateAt: {
     ...generalDefinitions.dateAt,
     label: "取得日",

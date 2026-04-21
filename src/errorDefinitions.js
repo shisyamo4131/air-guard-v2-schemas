@@ -162,14 +162,12 @@ export const VALIDATION_ERRORS = {
    * カスタムエラー（汎用）
    * @param {string} code - エラーコード
    * @param {string} message - 英語メッセージ
-   * @param {string} messageJa - 日本語メッセージ
+   * @param {Object} messages - 多言語メッセージオブジェクト（例: { ja: '日本語メッセージ' }）
    * @returns {Object} エラーオブジェクト
    */
-  CUSTOM_ERROR: (code, message, messageJa) => ({
+  CUSTOM_ERROR: (code, message, messages) => ({
     code,
     message,
-    messages: {
-      ja: messageJa,
-    },
+    messages,
   }),
 };

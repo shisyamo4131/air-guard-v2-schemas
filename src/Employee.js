@@ -10,6 +10,7 @@ import { VALUES as EMPLOYMENT_STATUS_VALUES } from "./constants/employment-statu
 import { VALUES as BLOOD_TYPE_VALUES } from "./constants/blood-type.js";
 import Certification from "./Certification.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
+import { VALIDATION_ERRORS } from "./errorDefinitions.js";
 
 const classProps = {
   code: defField("code", { label: "従業員コード" }),
@@ -31,7 +32,44 @@ const classProps = {
   dateOfHire: defField("dateOfHire", { required: true }),
   employmentStatus: defField("employmentStatus", { required: true }),
   title: defField("title"),
+
+  /**
+   * 退職年月日
+   * - `employmentStatus` が `TERMINATED` の場合、必須フィールド。
+   * - `employmentStatus` が `ACTIVE` の場合、入力不可（disabled）。
+   * - バリデーションルール:
+   * - `employmentStatus` が `TERMINATED` の場合、必須。
+   * - `employmentStatus` が `TERMINATED` の場合、`dateOfHire` より前の日付は不可。
+   * - `employmentStatus` が `ACTIVE` の場合、常に null でなければならない。
+   * - フロントエンドのフォームでは、`employmentStatus` の値に応じて入力フィールドの表示/非表示や必須/任意を切り替えることが推奨される。
+   */
   dateOfTermination: defField("dateOfTermination", {
+    validator: (value, item) => {
+      if (item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
+        if (!value) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "INVALID_DATE_OF_TERMINATION",
+            "dateOfTermination is required when employmentStatus is 'terminated'.",
+            { ja: "在職区分が '退職' の場合、退職年月日は必須です。" },
+          );
+        }
+        if (!(value instanceof Date)) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "INVALID_DATE_OF_TERMINATION",
+            "dateOfTermination must be a Date object.",
+            { ja: "退職年月日はDateオブジェクトである必要があります。" },
+          );
+        }
+        if (value < item.dateOfHire) {
+          return VALIDATION_ERRORS.CUSTOM_ERROR(
+            "INVALID_DATE_OF_TERMINATION",
+            "dateOfTermination cannot be earlier than dateOfHire.",
+            { ja: "退職年月日は入社日より前に設定できません。" },
+          );
+        }
+      }
+      return true;
+    },
     component: {
       attrs: {
         required: ({ item }) =>
@@ -78,11 +116,12 @@ const classProps = {
       },
     },
   }),
+  hasPeriodOfStayLimit: defField("hasPeriodOfStayLimit"),
   periodOfStay: defField("periodOfStay", {
     component: {
       attrs: {
-        required: ({ item }) => item.isForeigner,
-        disabled: ({ item }) => !item.isForeigner,
+        required: ({ item }) => item.isForeigner && item.hasPeriodOfStayLimit,
+        disabled: ({ item }) => !item.isForeigner || !item.hasPeriodOfStayLimit,
       },
     },
   }),
@@ -161,56 +200,57 @@ const classProps = {
 };
 
 /*****************************************************************************
- * @prop {string} code - Employee code.
- * @prop {string} lastName - Last name.
- * @prop {string} firstName - First name.
- * @prop {string} lastNameKana - Last name in Kana.
- * @prop {string} firstNameKana - First name in Kana.
- * @prop {string} displayName - Display name.
- * @prop {string} gender - Gender.
- * @prop {Date} dateOfBirth - Date of birth.
- * @prop {string} zipcode - Postal code.
- * @prop {string} prefCode - Prefecture code.
- * @prop {string} city - City name.
- * @prop {string} address - Address details.
- * @prop {string} building - Building name.
- * @prop {object} location - Geographical location.
- * @prop {string} mobile - Mobile phone number.
- * @prop {string} email - Email address.
- * @prop {Date} dateOfHire - Date of hire.
- * @prop {string} employmentStatus - Employment status.
- * @prop {string} title - Job title.
- * @prop {Date} dateOfTermination - Date of termination.
- * @prop {string} reasonOfTermination - Reason for termination.
- * @prop {boolean} isForeigner - Is the employee a foreigner.
- * @prop {string} foreignName - Foreign name.
- * @prop {string} nationality - Nationality.
- * @prop {string} residenceStatus - Residence status.
- * @prop {Date} periodOfStay - Period of stay expiration date.
- * @prop {boolean} hasSecurityGuardRegistration - Has security guard registration.
- * @prop {Date} dateOfSecurityGuardRegistration - Date of security guard registration.
- * @prop {string} bloodType - Blood type.
- * @prop {string} emergencyContactName - Emergency contact name.
- * @prop {string} emergencyContactRelation - Emergency contact relation.
- * @prop {string} emergencyContactRelationDetail - Emergency contact relation detail.
- * @prop {string} emergencyContactAddress - Emergency contact address.
- * @prop {string} emergencyContactPhone - Emergency contact phone number.
- * @prop {string} domicile - Domicile.
- * @prop {Array<Certification>} securityCertifications - Array of security certifications.
- * @prop {string} remarks - Additional remarks.
+ * @property {string} code - Employee code.
+ * @property {string} lastName - Last name.
+ * @property {string} firstName - First name.
+ * @property {string} lastNameKana - Last name in Kana.
+ * @property {string} firstNameKana - First name in Kana.
+ * @property {string} displayName - Display name.
+ * @property {string} gender - Gender.
+ * @property {Date} dateOfBirth - Date of birth.
+ * @property {string} zipcode - Postal code.
+ * @property {string} prefCode - Prefecture code.
+ * @property {string} city - City name.
+ * @property {string} address - Address details.
+ * @property {string} building - Building name.
+ * @property {object} location - Geographical location.
+ * @property {string} mobile - Mobile phone number.
+ * @property {string} email - Email address.
+ * @property {Date} dateOfHire - Date of hire.
+ * @property {string} employmentStatus - Employment status.
+ * @property {string} title - Job title.
+ * @property {Date} dateOfTermination - Date of termination.
+ * @property {string} reasonOfTermination - Reason for termination.
+ * @property {boolean} isForeigner - Is the employee a foreigner.
+ * @property {string} foreignName - Foreign name.
+ * @property {string} nationality - Nationality.
+ * @property {string} residenceStatus - Residence status.
+ * @property {boolean} hasPeriodOfStayLimit - 在留期間制限の有無
+ * @property {Date} periodOfStay - 在留期間満了日
+ * @property {boolean} hasSecurityGuardRegistration - Has security guard registration.
+ * @property {Date} dateOfSecurityGuardRegistration - Date of security guard registration.
+ * @property {string} bloodType - Blood type.
+ * @property {string} emergencyContactName - Emergency contact name.
+ * @property {string} emergencyContactRelation - Emergency contact relation.
+ * @property {string} emergencyContactRelationDetail - Emergency contact relation detail.
+ * @property {string} emergencyContactAddress - Emergency contact address.
+ * @property {string} emergencyContactPhone - Emergency contact phone number.
+ * @property {string} domicile - Domicile.
+ * @property {Array<Certification>} securityCertifications - Array of security certifications.
+ * @property {string} remarks - Additional remarks.
  *
- * @prop {string} fullName - Full name combining last and first names (read-only)
- * @prop {string} fullNameKana - Full name in Kana combining last and first names (read-only)
- * @prop {string} fullAddress - Full address combining prefecture, city, and address (read-only)
- * @prop {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ * @property {string} fullName - Full name combining last and first names (read-only)
+ * @property {string} fullNameKana - Full name in Kana combining last and first names (read-only)
+ * @property {string} fullAddress - Full address combining prefecture, city, and address (read-only)
+ * @property {string} prefecture - Prefecture name derived from `prefCode` (read-only)
  *
  * @getter
- * @prop {number} age - Age calculated from `dateOfBirth` (read-only)
- * @prop {number} yearsOfService - Years of service calculated from `dateOfHire` (read-only)
+ * @property {number} age - Age calculated from `dateOfBirth` (read-only)
+ * @property {number} yearsOfService - Years of service calculated from `dateOfHire` (read-only)
  *
  * @static
- * @prop {string} STATUS_ACTIVE - constant for active employment status
- * @prop {string} STATUS_TERMINATED - constant for terminated employment status
+ * @property {string} STATUS_ACTIVE - constant for active employment status
+ * @property {string} STATUS_TERMINATED - constant for terminated employment status
  *
  * @function toTerminated - Change the current employee instance to terminated status.
  *****************************************************************************/
@@ -388,29 +428,43 @@ export default class Employee extends GeocodableMixin(FireModel) {
     }
   }
 
+  // /**
+  //  * 退職済である場合の必須フィールドを検証します。
+  //  * - エラーがある場合は例外をスローします。
+  //  * - `employmentStatus` が `terminated` の場合、以下のプロパティを必須とします。
+  //  *  - `dateOfTermination`
+  //  *  - `reasonOfTermination`
+  //  * - `employmentStatus` が `active` の場合、`dateOfTermination`, `reasonOfTermination` を初期化します。
+  //  * @returns {void}
+  //  * @throws {Error} 退職済の場合に必須フィールドが未入力の場合。
+  //  */
+  // _validateTerminatedRequiredFields() {
+  //   if (this.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
+  //     if (!this.dateOfTermination) {
+  //       throw new Error(
+  //         "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'.",
+  //       );
+  //     }
+  //     if (!this.reasonOfTermination) {
+  //       throw new Error(
+  //         "[Employee.js] reasonOfTermination is required when employmentStatus is 'terminated'.",
+  //       );
+  //     }
+  //   } else {
+  //     this.dateOfTermination = null;
+  //     this.reasonOfTermination = null;
+  //   }
+  // }
+
   /**
-   * 退職済である場合の必須フィールドを検証します。
-   * - エラーがある場合は例外をスローします。
-   * - `employmentStatus` が `terminated` の場合、以下のプロパティを必須とします。
+   * 退職状態に関連するフィールドを初期化します。
+   * - `employmentStatus` が `TERMINATED` でない場合、以下のプロパティを初期化します。
    *  - `dateOfTermination`
    *  - `reasonOfTermination`
-   * - `employmentStatus` が `active` の場合、`dateOfTermination`, `reasonOfTermination` を初期化します。
    * @returns {void}
-   * @throws {Error} 退職済の場合に必須フィールドが未入力の場合。
    */
-  _validateTerminatedRequiredFields() {
-    if (this.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
-      if (!this.dateOfTermination) {
-        throw new Error(
-          "[Employee.js] dateOfTermination is required when employmentStatus is 'terminated'.",
-        );
-      }
-      if (!this.reasonOfTermination) {
-        throw new Error(
-          "[Employee.js] reasonOfTermination is required when employmentStatus is 'terminated'.",
-        );
-      }
-    } else {
+  _initTerminatedFields() {
+    if (this.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
       this.dateOfTermination = null;
       this.reasonOfTermination = null;
     }
@@ -474,7 +528,8 @@ export default class Employee extends GeocodableMixin(FireModel) {
   async beforeCreate(args = {}) {
     await super.beforeCreate(args);
     this._validateForeignerRequiredFields();
-    this._validateTerminatedRequiredFields();
+    // this._validateTerminatedRequiredFields();
+    this._initTerminatedFields();
     this._validateSecurityGuardFields();
   }
 
@@ -505,7 +560,8 @@ export default class Employee extends GeocodableMixin(FireModel) {
     }
 
     this._validateForeignerRequiredFields();
-    this._validateTerminatedRequiredFields();
+    // this._validateTerminatedRequiredFields();
+    this._initTerminatedFields();
     this._validateSecurityGuardFields();
   }
 
