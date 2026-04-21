@@ -1,8 +1,6 @@
-/**
+/*****************************************************************************
  * @file src/Employee.js
- * @author shisyamo4131
- * @version 1.0.0
- */
+ *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
@@ -13,507 +11,535 @@ import Certification from "./Certification.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 import { VALIDATION_ERRORS } from "./errorDefinitions.js";
 
-const classProps = {
-  code: defField("code", { label: "従業員コード" }),
-  lastName: defField("lastName", { required: true }),
-  firstName: defField("firstName", { required: true }),
-  lastNameKana: defField("lastNameKana", { required: true }),
-  firstNameKana: defField("firstNameKana", { required: true }),
-  displayName: defField("displayName", { required: true }),
-  gender: defField("gender", { required: true }),
-  dateOfBirth: defField("dateOfBirth", { required: true }),
-  zipcode: defField("zipcode", { required: true }),
-  prefCode: defField("prefCode", { required: true }),
-  city: defField("city", { required: true }),
-  address: defField("address", { required: true }),
-  building: defField("building"),
-  location: defField("location", { hidden: true }),
-  mobile: defField("mobile"),
-  email: defField("email", { required: false }),
-  dateOfHire: defField("dateOfHire", { required: true }),
-  employmentStatus: defField("employmentStatus", { required: true }),
-  title: defField("title"),
-
-  /**
-   * 退職年月日
-   * - `employmentStatus` が `TERMINATED` の場合、必須フィールド。
-   * - `employmentStatus` が `ACTIVE` の場合、入力不可（disabled）。
-   * - バリデーションルール:
-   * - `employmentStatus` が `TERMINATED` の場合、必須。
-   * - `employmentStatus` が `TERMINATED` の場合、`dateOfHire` より前の日付は不可。
-   * - `employmentStatus` が `ACTIVE` の場合、常に null でなければならない。
-   * - フロントエンドのフォームでは、`employmentStatus` の値に応じて入力フィールドの表示/非表示や必須/任意を切り替えることが推奨される。
-   */
-  dateOfTermination: defField("dateOfTermination", {
-    validator: (value, item) => {
-      if (item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "INVALID_DATE_OF_TERMINATION",
-            "dateOfTermination is required when employmentStatus is 'terminated'.",
-            { ja: "在職区分が '退職' の場合、退職年月日は必須です。" },
-          );
-        }
-        if (!(value instanceof Date)) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "INVALID_DATE_OF_TERMINATION",
-            "dateOfTermination must be a Date object.",
-            { ja: "退職年月日はDateオブジェクトである必要があります。" },
-          );
-        }
-        if (value < item.dateOfHire) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "INVALID_DATE_OF_TERMINATION",
-            "dateOfTermination cannot be earlier than dateOfHire.",
-            { ja: "退職年月日は入社日より前に設定できません。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) =>
-          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-        disabled: ({ item }) =>
-          item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-      },
-    },
-  }),
-  reasonOfTermination: defField("reasonOfTermination", {
-    validator: (value, item) => {
-      if (item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "INVALID_REASON_OF_TERMINATION",
-            "reasonOfTermination is required when employmentStatus is 'terminated'.",
-            { ja: "在職区分が '退職' の場合、退職理由は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "INVALID_REASON_OF_TERMINATION",
-            "reasonOfTermination must be a string.",
-            { ja: "退職理由は文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) =>
-          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-        disabled: ({ item }) =>
-          item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-      },
-    },
-  }),
-
-  // Foreign related fields
-  isForeigner: defField("isForeigner"),
-  foreignName: defField("foreignName", {
-    validator: (value, item) => {
-      if (item.isForeigner) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "FOREIGN_NAME_REQUIRED",
-            "foreignName is required when isForeigner is true.",
-            { ja: "外国籍の場合、外国名は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "FOREIGN_NAME_INVALID",
-            "foreignName must be a string.",
-            { ja: "外国名は文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.isForeigner,
-        disabled: ({ item }) => !item.isForeigner,
-      },
-    },
-  }),
-  nationality: defField("nationality", {
-    validator: (value, item) => {
-      if (item.isForeigner) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "NATIONALITY_REQUIRED",
-            "nationality is required when isForeigner is true.",
-            { ja: "外国籍の場合、国籍は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "NATIONALITY_INVALID",
-            "nationality must be a string.",
-            { ja: "国籍は文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.isForeigner,
-        disabled: ({ item }) => !item.isForeigner,
-      },
-    },
-  }),
-  residenceStatus: defField("residenceStatus", {
-    validator: (value, item) => {
-      if (item.isForeigner) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "RESIDENCE_STATUS_REQUIRED",
-            "residenceStatus is required when isForeigner is true.",
-            { ja: "外国籍の場合、在留資格は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "RESIDENCE_STATUS_INVALID",
-            "residenceStatus must be a string.",
-            { ja: "在留資格は文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.isForeigner,
-        disabled: ({ item }) => !item.isForeigner,
-      },
-    },
-  }),
-  hasPeriodOfStayLimit: defField("hasPeriodOfStayLimit"),
-  periodOfStay: defField("periodOfStay", {
-    validator: (value, item) => {
-      if (item.isForeigner && item.hasPeriodOfStayLimit) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "PERIOD_OF_STAY_REQUIRED",
-            "periodOfStay is required when isForeigner is true and hasPeriodOfStayLimit is true.",
-            {
-              ja: "外国籍で在留期間制限がある場合、在留期間満了日は必須です。",
-            },
-          );
-        }
-        if (!(value instanceof Date)) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "PERIOD_OF_STAY_INVALID",
-            "periodOfStay must be a Date.",
-            { ja: "在留期間満了日は日付である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.isForeigner && item.hasPeriodOfStayLimit,
-        disabled: ({ item }) => !item.isForeigner || !item.hasPeriodOfStayLimit,
-      },
-    },
-  }),
-
-  // Security guard related fields
-  hasSecurityGuardRegistration: defField("check", { label: "警備員登録" }),
-  dateOfSecurityGuardRegistration: defField("dateOfSecurityGuardRegistration", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "SECURITY_GUARD_REGISTRATION_DATE_REQUIRED",
-            "dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、警備員登録日は必須です。" },
-          );
-        }
-        if (!(value instanceof Date)) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "SECURITY_GUARD_REGISTRATION_DATE_INVALID",
-            "dateOfSecurityGuardRegistration must be a Date.",
-            { ja: "警備員登録日は日付である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  bloodType: defField("bloodType", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "BLOOD_TYPE_REQUIRED",
-            "bloodType is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、血液型は必須です。" },
-          );
-        }
-        if (!Object.values(BLOOD_TYPE_VALUES).some((v) => v.value === value)) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "BLOOD_TYPE_INVALID",
-            "bloodType must be a valid value.",
-            { ja: "血液型は有効な値である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  emergencyContactName: defField("emergencyContactName", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_NAME_REQUIRED",
-            "emergencyContactName is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、緊急連絡先の名前は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_NAME_INVALID",
-            "emergencyContactName must be a valid string.",
-            { ja: "緊急連絡先の名前は有効な文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  emergencyContactRelation: defField("emergencyContactRelation", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_RELATION_REQUIRED",
-            "emergencyContactRelation is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、緊急連絡先の関係は必須です。" },
-          );
-        }
-        if (
-          !Object.values(EMERGENCY_CONTACT_RELATION_VALUES).some(
-            (v) => v.value === value,
-          )
-        ) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_RELATION_INVALID",
-            "emergencyContactRelation must be a valid value.",
-            { ja: "緊急連絡先の関係は有効な値である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  emergencyContactRelationDetail: defField("emergencyContactRelationDetail", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_RELATION_DETAIL_REQUIRED",
-            "emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、緊急連絡先の詳細は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_RELATION_DETAIL_INVALID",
-            "emergencyContactRelationDetail must be a valid string.",
-            { ja: "緊急連絡先の詳細は有効な文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  emergencyContactAddress: defField("emergencyContactAddress", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_ADDRESS_REQUIRED",
-            "emergencyContactAddress is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、緊急連絡先の住所は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_ADDRESS_INVALID",
-            "emergencyContactAddress must be a valid string.",
-            { ja: "緊急連絡先の住所は有効な文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  emergencyContactPhone: defField("emergencyContactPhone", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_PHONE_REQUIRED",
-            "emergencyContactPhone is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、緊急連絡先の電話番号は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "EMERGENCY_CONTACT_PHONE_INVALID",
-            "emergencyContactPhone must be a valid string.",
-            { ja: "緊急連絡先の電話番号は有効な文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  domicile: defField("domicile", {
-    validator: (value, item) => {
-      if (item.hasSecurityGuardRegistration) {
-        if (!value) {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "DOMICILE_REQUIRED",
-            "domicile is required when hasSecurityGuardRegistration is true.",
-            { ja: "警備員登録がある場合、本籍地は必須です。" },
-          );
-        }
-        if (typeof value !== "string") {
-          return VALIDATION_ERRORS.CUSTOM_ERROR(
-            "DOMICILE_INVALID",
-            "domicile must be a valid string.",
-            { ja: "本籍地は有効な文字列である必要があります。" },
-          );
-        }
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.hasSecurityGuardRegistration,
-        disabled: ({ item }) => !item.hasSecurityGuardRegistration,
-      },
-    },
-  }),
-  securityCertifications: defField("array", {
-    label: "保有資格",
-    customClass: Certification,
-  }),
-  remarks: defField("remarks"),
-};
-
 /*****************************************************************************
- * @property {string} code - Employee code.
- * @property {string} lastName - Last name.
- * @property {string} firstName - First name.
- * @property {string} lastNameKana - Last name in Kana.
- * @property {string} firstNameKana - First name in Kana.
- * @property {string} displayName - Display name.
- * @property {string} gender - Gender.
- * @property {Date} dateOfBirth - Date of birth.
- * @property {string} zipcode - Postal code.
- * @property {string} prefCode - Prefecture code.
- * @property {string} city - City name.
- * @property {string} address - Address details.
- * @property {string} building - Building name.
- * @property {object} location - Geographical location.
- * @property {string} mobile - Mobile phone number.
- * @property {string} email - Email address.
- * @property {Date} dateOfHire - Date of hire.
- * @property {string} employmentStatus - Employment status.
- * @property {string} title - Job title.
- * @property {Date} dateOfTermination - Date of termination.
- * @property {string} reasonOfTermination - Reason for termination.
- * @property {boolean} isForeigner - Is the employee a foreigner.
- * @property {string} foreignName - Foreign name.
- * @property {string} nationality - Nationality.
- * @property {string} residenceStatus - Residence status.
+ * @class Employee
+ * @extends GeocodableMixin(FireModel)
+ *
+ * @property {string} code - 従業員コード
+ * @property {string} lastName - 姓
+ * @property {string} firstName - 名
+ * @property {string} lastNameKana - 姓（カナ）
+ * @property {string} firstNameKana - 名（カナ）
+ * @property {string} displayName - 表示名
+ * @property {string} gender - 性別
+ * @property {Date} dateOfBirth - 生年月日
+ * @property {string} zipcode - 郵便番号
+ * @property {string} prefCode - 都道府県コード
+ * @property {string} city - 市区町村
+ * @property {string} address - 住所
+ * @property {string} building - 建物名
+ * @property {object} location - 地理的な位置情報
+ * @property {string} mobile - 携帯電話番号
+ * @property {string} email - メールアドレス
+ * @property {Date} dateOfHire - 入社日
+ * @property {string} employmentStatus - 雇用状況
+ * @property {string} title - 肩書
+ * @property {Date} dateOfTermination - 退職日
+ * @property {string} reasonOfTermination - 退職理由
+ * @property {boolean} isForeigner - 外国人かどうか
+ * @property {string} foreignName - 外国人氏名
+ * @property {string} nationality - 国籍
+ * @property {string} residenceStatus - 在留資格
  * @property {boolean} hasPeriodOfStayLimit - 在留期間制限の有無
  * @property {Date} periodOfStay - 在留期間満了日
- * @property {boolean} hasSecurityGuardRegistration - Has security guard registration.
- * @property {Date} dateOfSecurityGuardRegistration - Date of security guard registration.
- * @property {string} bloodType - Blood type.
- * @property {string} emergencyContactName - Emergency contact name.
- * @property {string} emergencyContactRelation - Emergency contact relation.
- * @property {string} emergencyContactRelationDetail - Emergency contact relation detail.
- * @property {string} emergencyContactAddress - Emergency contact address.
- * @property {string} emergencyContactPhone - Emergency contact phone number.
- * @property {string} domicile - Domicile.
- * @property {Array<Certification>} securityCertifications - Array of security certifications.
- * @property {string} remarks - Additional remarks.
+ * @property {boolean} hasWorkRestrictions - 就労制限の有無
+ * @property {boolean} hasSecurityGuardRegistration - 警備員資格登録の有無
+ * @property {Date} dateOfSecurityGuardRegistration - 警備員資格登録日
+ * @property {string} bloodType - 血液型
+ * @property {string} emergencyContactName - 緊急連絡先氏名
+ * @property {string} emergencyContactRelation - 緊急連絡先との関係
+ * @property {string} emergencyContactRelationDetail - 緊急連絡先との関係詳細
+ * @property {string} emergencyContactAddress - 緊急連絡先住所
+ * @property {string} emergencyContactPhone - 緊急連絡先電話番号
+ * @property {string} domicile - 本籍地
+ * @property {Array<Certification>} securityCertifications - 警備員資格情報の配列
+ * @property {string} remarks - 備考
  *
- * @property {string} fullName - Full name combining last and first names (read-only)
- * @property {string} fullNameKana - Full name in Kana combining last and first names (read-only)
- * @property {string} fullAddress - Full address combining prefecture, city, and address (read-only)
- * @property {string} prefecture - Prefecture name derived from `prefCode` (read-only)
+ * @property {string} fullName - 姓と名を結合したフルネーム（読み取り専用）
+ * @property {string} fullNameKana - 姓と名を結合したフルネーム（カナ、読み取り専用）
+ * @property {string} fullAddress - 都道府県、市区町村、住所を結合したフルアドレス（読み取り専用）
+ * @property {string} prefecture - `prefCode` から派生した都道府県名（読み取り専用）
  *
  * @getter
- * @property {number} age - Age calculated from `dateOfBirth` (read-only)
- * @property {number} yearsOfService - Years of service calculated from `dateOfHire` (read-only)
+ * @property {number} age - `dateOfBirth` から計算された年齢（読み取り専用）
+ * @property {number} yearsOfService - `dateOfHire` から計算された勤続年数（読み取り専用）
  *
  * @static
- * @property {string} STATUS_ACTIVE - constant for active employment status
- * @property {string} STATUS_TERMINATED - constant for terminated employment status
+ * @property {Object} EMPLOYMENT_STATUS - 雇用状況の定数オブジェクト
+ * @property {string} STATUS_ACTIVE - 在職中の雇用状況を表す定数
+ * @property {string} STATUS_TERMINATED - 退職済みの雇用状況を表す定数
  *
- * @function toTerminated - Change the current employee instance to terminated status.
+ * @function toTerminated - 現在の従業員インスタンスを退職済みに変更する関数
  *****************************************************************************/
 export default class Employee extends GeocodableMixin(FireModel) {
   static className = "従業員";
   static collectionPath = "Employees";
   static useAutonumber = false;
   static logicalDelete = true;
-  static classProps = classProps;
+  static classProps = {
+    code: defField("code", { label: "従業員コード" }),
+    lastName: defField("lastName", { required: true }),
+    firstName: defField("firstName", { required: true }),
+    lastNameKana: defField("lastNameKana", { required: true }),
+    firstNameKana: defField("firstNameKana", { required: true }),
+    displayName: defField("displayName", { required: true }),
+    gender: defField("gender", { required: true }),
+    dateOfBirth: defField("dateOfBirth", { required: true }),
+    zipcode: defField("zipcode", { required: true }),
+    prefCode: defField("prefCode", { required: true }),
+    city: defField("city", { required: true }),
+    address: defField("address", { required: true }),
+    building: defField("building"),
+    location: defField("location", { hidden: true }),
+    mobile: defField("mobile"),
+    email: defField("email", { required: false }),
+    dateOfHire: defField("dateOfHire", { required: true }),
+    employmentStatus: defField("employmentStatus", { required: true }),
+    title: defField("title"),
+
+    /**
+     * 退職年月日
+     * - `employmentStatus` が `TERMINATED` の場合、必須フィールド。
+     * - `employmentStatus` が `ACTIVE` の場合、入力不可（disabled）。
+     * - バリデーションルール:
+     * - `employmentStatus` が `TERMINATED` の場合、必須。
+     * - `employmentStatus` が `TERMINATED` の場合、`dateOfHire` より前の日付は不可。
+     * - `employmentStatus` が `ACTIVE` の場合、常に null でなければならない。
+     * - フロントエンドのフォームでは、`employmentStatus` の値に応じて入力フィールドの表示/非表示や必須/任意を切り替えることが推奨される。
+     */
+    dateOfTermination: defField("dateOfTermination", {
+      validator: (value, item) => {
+        if (
+          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value
+        ) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "INVALID_DATE_OF_TERMINATION",
+              "dateOfTermination is required when employmentStatus is 'terminated'.",
+              { ja: "在職区分が '退職' の場合、退職年月日は必須です。" },
+            );
+          }
+          if (!(value instanceof Date)) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "INVALID_DATE_OF_TERMINATION",
+              "dateOfTermination must be a Date object.",
+              { ja: "退職年月日はDateオブジェクトである必要があります。" },
+            );
+          }
+          if (value < item.dateOfHire) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "INVALID_DATE_OF_TERMINATION",
+              "dateOfTermination cannot be earlier than dateOfHire.",
+              { ja: "退職年月日は入社日より前に設定できません。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) =>
+            item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+          disabled: ({ item }) =>
+            item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+        },
+      },
+    }),
+    reasonOfTermination: defField("reasonOfTermination", {
+      validator: (value, item) => {
+        if (
+          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value
+        ) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "INVALID_REASON_OF_TERMINATION",
+              "reasonOfTermination is required when employmentStatus is 'terminated'.",
+              { ja: "在職区分が '退職' の場合、退職理由は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "INVALID_REASON_OF_TERMINATION",
+              "reasonOfTermination must be a string.",
+              { ja: "退職理由は文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) =>
+            item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+          disabled: ({ item }) =>
+            item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+        },
+      },
+    }),
+
+    // Foreign related fields
+    isForeigner: defField("isForeigner"),
+    foreignName: defField("foreignName", {
+      validator: (value, item) => {
+        if (item.isForeigner) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "FOREIGN_NAME_REQUIRED",
+              "foreignName is required when isForeigner is true.",
+              { ja: "外国籍の場合、外国名は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "FOREIGN_NAME_INVALID",
+              "foreignName must be a string.",
+              { ja: "外国名は文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.isForeigner,
+          disabled: ({ item }) => !item.isForeigner,
+        },
+      },
+    }),
+    nationality: defField("nationality", {
+      validator: (value, item) => {
+        if (item.isForeigner) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "NATIONALITY_REQUIRED",
+              "nationality is required when isForeigner is true.",
+              { ja: "外国籍の場合、国籍は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "NATIONALITY_INVALID",
+              "nationality must be a string.",
+              { ja: "国籍は文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.isForeigner,
+          disabled: ({ item }) => !item.isForeigner,
+        },
+      },
+    }),
+    residenceStatus: defField("residenceStatus", {
+      validator: (value, item) => {
+        if (item.isForeigner) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "RESIDENCE_STATUS_REQUIRED",
+              "residenceStatus is required when isForeigner is true.",
+              { ja: "外国籍の場合、在留資格は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "RESIDENCE_STATUS_INVALID",
+              "residenceStatus must be a string.",
+              { ja: "在留資格は文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.isForeigner,
+          disabled: ({ item }) => !item.isForeigner,
+        },
+      },
+    }),
+    hasPeriodOfStayLimit: defField("hasPeriodOfStayLimit", {
+      component: {
+        attrs: {
+          disabled: ({ item }) => !item.isForeigner,
+        },
+      },
+    }),
+    periodOfStay: defField("periodOfStay", {
+      validator: (value, item) => {
+        if (item.isForeigner && item.hasPeriodOfStayLimit) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "PERIOD_OF_STAY_REQUIRED",
+              "periodOfStay is required when isForeigner is true and hasPeriodOfStayLimit is true.",
+              {
+                ja: "外国籍で在留期間制限がある場合、在留期間満了日は必須です。",
+              },
+            );
+          }
+          if (!(value instanceof Date)) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "PERIOD_OF_STAY_INVALID",
+              "periodOfStay must be a Date.",
+              { ja: "在留期間満了日は日付である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.isForeigner && item.hasPeriodOfStayLimit,
+          disabled: ({ item }) =>
+            !item.isForeigner || !item.hasPeriodOfStayLimit,
+        },
+      },
+    }),
+    hasWorkRestrictions: defField("hasWorkRestrictions", {
+      component: {
+        attrs: {
+          disabled: ({ item }) => !item.isForeigner,
+        },
+      },
+    }),
+    // Security guard related fields
+    hasSecurityGuardRegistration: defField("check", { label: "警備員登録" }),
+    dateOfSecurityGuardRegistration: defField(
+      "dateOfSecurityGuardRegistration",
+      {
+        validator: (value, item) => {
+          if (item.hasSecurityGuardRegistration) {
+            if (!value) {
+              return VALIDATION_ERRORS.CUSTOM_ERROR(
+                "SECURITY_GUARD_REGISTRATION_DATE_REQUIRED",
+                "dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true.",
+                { ja: "警備員登録がある場合、警備員登録日は必須です。" },
+              );
+            }
+            if (!(value instanceof Date)) {
+              return VALIDATION_ERRORS.CUSTOM_ERROR(
+                "SECURITY_GUARD_REGISTRATION_DATE_INVALID",
+                "dateOfSecurityGuardRegistration must be a Date.",
+                { ja: "警備員登録日は日付である必要があります。" },
+              );
+            }
+          }
+          return true;
+        },
+        component: {
+          attrs: {
+            required: ({ item }) => item.hasSecurityGuardRegistration,
+            disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+          },
+        },
+      },
+    ),
+    bloodType: defField("bloodType", {
+      validator: (value, item) => {
+        if (item.hasSecurityGuardRegistration) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "BLOOD_TYPE_REQUIRED",
+              "bloodType is required when hasSecurityGuardRegistration is true.",
+              { ja: "警備員登録がある場合、血液型は必須です。" },
+            );
+          }
+          if (
+            !Object.values(BLOOD_TYPE_VALUES).some((v) => v.value === value)
+          ) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "BLOOD_TYPE_INVALID",
+              "bloodType must be a valid value.",
+              { ja: "血液型は有効な値である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.hasSecurityGuardRegistration,
+          disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+        },
+      },
+    }),
+    emergencyContactName: defField("emergencyContactName", {
+      validator: (value, item) => {
+        if (item.hasSecurityGuardRegistration) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_NAME_REQUIRED",
+              "emergencyContactName is required when hasSecurityGuardRegistration is true.",
+              { ja: "警備員登録がある場合、緊急連絡先の名前は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_NAME_INVALID",
+              "emergencyContactName must be a valid string.",
+              { ja: "緊急連絡先の名前は有効な文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.hasSecurityGuardRegistration,
+          disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+        },
+      },
+    }),
+    emergencyContactRelation: defField("emergencyContactRelation", {
+      validator: (value, item) => {
+        if (item.hasSecurityGuardRegistration) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_RELATION_REQUIRED",
+              "emergencyContactRelation is required when hasSecurityGuardRegistration is true.",
+              { ja: "警備員登録がある場合、緊急連絡先の関係は必須です。" },
+            );
+          }
+          if (
+            !Object.values(EMERGENCY_CONTACT_RELATION_VALUES).some(
+              (v) => v.value === value,
+            )
+          ) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_RELATION_INVALID",
+              "emergencyContactRelation must be a valid value.",
+              { ja: "緊急連絡先の関係は有効な値である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.hasSecurityGuardRegistration,
+          disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+        },
+      },
+    }),
+    emergencyContactRelationDetail: defField("emergencyContactRelationDetail", {
+      validator: (value, item) => {
+        if (item.hasSecurityGuardRegistration) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_RELATION_DETAIL_REQUIRED",
+              "emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true.",
+              { ja: "警備員登録がある場合、緊急連絡先の詳細は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_RELATION_DETAIL_INVALID",
+              "emergencyContactRelationDetail must be a valid string.",
+              { ja: "緊急連絡先の詳細は有効な文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.hasSecurityGuardRegistration,
+          disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+        },
+      },
+    }),
+    emergencyContactAddress: defField("emergencyContactAddress", {
+      validator: (value, item) => {
+        if (item.hasSecurityGuardRegistration) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_ADDRESS_REQUIRED",
+              "emergencyContactAddress is required when hasSecurityGuardRegistration is true.",
+              { ja: "警備員登録がある場合、緊急連絡先の住所は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_ADDRESS_INVALID",
+              "emergencyContactAddress must be a valid string.",
+              { ja: "緊急連絡先の住所は有効な文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.hasSecurityGuardRegistration,
+          disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+        },
+      },
+    }),
+    emergencyContactPhone: defField("emergencyContactPhone", {
+      validator: (value, item) => {
+        if (item.hasSecurityGuardRegistration) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_PHONE_REQUIRED",
+              "emergencyContactPhone is required when hasSecurityGuardRegistration is true.",
+              { ja: "警備員登録がある場合、緊急連絡先の電話番号は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "EMERGENCY_CONTACT_PHONE_INVALID",
+              "emergencyContactPhone must be a valid string.",
+              {
+                ja: "緊急連絡先の電話番号は有効な文字列である必要があります。",
+              },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.hasSecurityGuardRegistration,
+          disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+        },
+      },
+    }),
+    domicile: defField("domicile", {
+      validator: (value, item) => {
+        if (item.hasSecurityGuardRegistration) {
+          if (!value) {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "DOMICILE_REQUIRED",
+              "domicile is required when hasSecurityGuardRegistration is true.",
+              { ja: "警備員登録がある場合、本籍地は必須です。" },
+            );
+          }
+          if (typeof value !== "string") {
+            return VALIDATION_ERRORS.CUSTOM_ERROR(
+              "DOMICILE_INVALID",
+              "domicile must be a valid string.",
+              { ja: "本籍地は有効な文字列である必要があります。" },
+            );
+          }
+        }
+        return true;
+      },
+      component: {
+        attrs: {
+          required: ({ item }) => item.hasSecurityGuardRegistration,
+          disabled: ({ item }) => !item.hasSecurityGuardRegistration,
+        },
+      },
+    }),
+    securityCertifications: defField("array", {
+      label: "保有資格",
+      customClass: Certification,
+    }),
+    remarks: defField("remarks"),
+  };
+
   static tokenFields = [
     "code",
     "lastName",
@@ -640,48 +666,6 @@ export default class Employee extends GeocodableMixin(FireModel) {
     return { years, months };
   }
 
-  // /**
-  //  * 外国籍の場合の必須フィールドを検証します。
-  //  * - エラーがある場合は例外をスローします。
-  //  * - `isForeigner` が false の場合、以下のプロパティを初期化します。
-  //  *  - `foreignName`
-  //  *  - `nationality`
-  //  *  - `residenceStatus`
-  //  *  - `periodOfStay`
-  //  * @returns {void}
-  //  * @throws {Error} 外国籍の場合に必須フィールドが未入力の場合。
-  //  */
-  // _validateForeignerRequiredFields() {
-  //   if (this.isForeigner) {
-  //     if (!this.foreignName) {
-  //       throw new Error(
-  //         "[Employee.js] foreignName is required when isForeigner is true.",
-  //       );
-  //     }
-  //     if (!this.nationality) {
-  //       throw new Error(
-  //         "[Employee.js] nationality is required when isForeigner is true.",
-  //       );
-  //     }
-  //     if (!this.residenceStatus) {
-  //       throw new Error(
-  //         "[Employee.js] residenceStatus is required when isForeigner is true.",
-  //       );
-  //     }
-  //     if (!this.periodOfStay) {
-  //       throw new Error(
-  //         "[Employee.js] periodOfStay is required when isForeigner is true.",
-  //       );
-  //     }
-  //   } else {
-  //     // 外国籍でない場合、関連フィールドを初期化
-  //     this.foreignName = null;
-  //     this.nationality = null;
-  //     this.residenceStatus = null;
-  //     this.periodOfStay = null;
-  //   }
-  // }
-
   /**
    * 退職状態に関連するフィールドを初期化します。
    * - `employmentStatus` が `TERMINATED` でない場合、以下のプロパティを初期化します。
@@ -704,6 +688,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
    * - `residenceStatus`
    * - `hasPeriodOfStayLimit`
    * - `periodOfStay`
+   * - `hasWorkRestrictions`
    * - `isForeigner` が true で `hasPeriodOfStayLimit` が false の場合、`periodOfStay` を初期化します。
    * @returns {void}
    */
@@ -714,6 +699,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
       this.residenceStatus = null;
       this.hasPeriodOfStayLimit = false;
       this.periodOfStay = null;
+      this.hasWorkRestrictions = false;
     } else {
       if (!this.hasPeriodOfStayLimit) {
         this.periodOfStay = null;
@@ -746,49 +732,6 @@ export default class Employee extends GeocodableMixin(FireModel) {
       this.domicile = null;
     }
   }
-  // _validateSecurityGuardFields() {
-  //   if (this.hasSecurityGuardRegistration) {
-  //     if (!this.dateOfSecurityGuardRegistration) {
-  //       throw new Error(
-  //         "[Employee.js] dateOfSecurityGuardRegistration is required when hasSecurityGuardRegistration is true.",
-  //       );
-  //     }
-  //     if (!this.emergencyContactName) {
-  //       throw new Error(
-  //         "[Employee.js] emergencyContactName is required when hasSecurityGuardRegistration is true.",
-  //       );
-  //     }
-  //     if (!this.emergencyContactRelationDetail) {
-  //       throw new Error(
-  //         "[Employee.js] emergencyContactRelationDetail is required when hasSecurityGuardRegistration is true.",
-  //       );
-  //     }
-  //     if (!this.emergencyContactAddress) {
-  //       throw new Error(
-  //         "[Employee.js] emergencyContactAddress is required when hasSecurityGuardRegistration is true.",
-  //       );
-  //     }
-  //     if (!this.emergencyContactPhone) {
-  //       throw new Error(
-  //         "[Employee.js] emergencyContactPhone is required when hasSecurityGuardRegistration is true.",
-  //       );
-  //     }
-  //     if (!this.domicile) {
-  //       throw new Error(
-  //         "[Employee.js] domicile is required when hasSecurityGuardRegistration is true.",
-  //       );
-  //     }
-  //   } else {
-  //     this.dateOfSecurityGuardRegistration = null;
-  //     this.bloodType = BLOOD_TYPE_VALUES.A.value;
-  //     this.emergencyContactName = null;
-  //     this.emergencyContactRelation = null;
-  //     this.emergencyContactRelationDetail = null;
-  //     this.emergencyContactAddress = null;
-  //     this.emergencyContactPhone = null;
-  //     this.domicile = null;
-  //   }
-  // }
 
   /**
    * 新しい従業員ドキュメントが作成される前に実行されるフック。

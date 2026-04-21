@@ -190,6 +190,10 @@ export const fieldDefinitions = {
     ...generalDefinitions.check,
     label: "在留期間制限",
   },
+  hasWorkRestrictions: {
+    ...generalDefinitions.check,
+    label: "就労制限",
+  },
   isForeigner: {
     ...generalDefinitions.check,
     label: "外国籍",
