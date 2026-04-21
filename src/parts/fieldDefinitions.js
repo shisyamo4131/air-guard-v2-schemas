@@ -902,6 +902,10 @@ export const defField = (key, options = {}) => {
   if (options.hasOwnProperty("required")) {
     newConfig.required = options.required;
   }
+  // validatorの処理: optionsにvalidatorがあれば設定
+  if (options.hasOwnProperty("validator")) {
+    newConfig.validator = options.validator;
+  }
   // `hidden` は options にあればその値、なければ newConfig の値 (baseConfig または defaultDefinition 由来) を維持
   // defaultDefinition.hidden は undefined なので、指定がなければ undefined のままになる
   if (options.hasOwnProperty("hidden")) {
