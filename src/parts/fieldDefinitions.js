@@ -34,6 +34,10 @@ import {
   VALUES as GENDER_VALUES,
   OPTIONS as GENDER_OPTIONS,
 } from "../constants/gender.js";
+import {
+  VALUES as INSURANCE_STATUS_VALUES,
+  OPTIONS as INSURANCE_STATUS_OPTIONS,
+} from "../constants/insurance-status.js";
 import { OPTIONS as PREFECTURES_OPTIONS } from "../constants/prefectures.js";
 import {
   VALUES as PAYMENT_MONTH_VALUES,
@@ -233,6 +237,11 @@ export const fieldDefinitions = {
     ...generalDefinitions.dateAt,
     label: "退職日",
     default: null, // 2025-12-26 Set default to null
+  },
+  enrollmentDateAt: {
+    ...generalDefinitions.dateAt,
+    label: "資格取得日",
+    default: null,
   },
   // 2025-12-26 Added
   expirationDateAt: {
@@ -485,6 +494,11 @@ export const fieldDefinitions = {
         persistentHint: true,
       },
     },
+  },
+  insuranceNumber: {
+    ...generalDefinitions.oneLine,
+    label: "被保険者番号（整理記号）",
+    length: 20,
   },
   // 2025-12-26 Added
   issuedBy: {
@@ -758,6 +772,17 @@ export const fieldDefinitions = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: GENDER_OPTIONS,
+      },
+    },
+  },
+  insuranceStatus: {
+    ...generalDefinitions.select,
+    default: INSURANCE_STATUS_VALUES.NOT_ENROLLED.value,
+    label: "保険状態",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: INSURANCE_STATUS_OPTIONS,
       },
     },
   },
