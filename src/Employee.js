@@ -542,6 +542,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
 
     // 加入保険
     employmentInsurance: defField("employmentInsurance", {
+      default: () => new Insurance(),
       customClass: Insurance,
     }),
     remarks: defField("remarks"),
