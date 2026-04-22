@@ -29,7 +29,7 @@ export const ERROR_MESSAGES = Object.freeze({
  * @method loss - 現在加入中の保険の喪失処理を行います。
  * @method rollback - 履歴から最新の状態を復元します。
  *****************************************************************************/
-export class Insurance extends BaseClass {
+export default class Insurance extends BaseClass {
   static className = "Insurance";
   static classProps = {
     status: defField("insuranceStatus", { required: true }),
