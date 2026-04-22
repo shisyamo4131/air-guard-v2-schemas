@@ -46,6 +46,10 @@ export {
   OPTIONS as GENDER_OPTIONS,
 } from "./gender.js";
 export {
+  VALUES as INSURANCE_STATUS_VALUES,
+  OPTIONS as INSURANCE_STATUS_OPTIONS,
+} from "./insurance-status.js";
+export {
   VALUES as PAYMENT_MONTH_VALUES,
   OPTIONS as PAYMENT_MONTH_OPTIONS,
 } from "./payment-month.js";
