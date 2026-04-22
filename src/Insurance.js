@@ -37,7 +37,7 @@ export default class Insurance extends BaseClass {
     enrollmentDateAt: defField("enrollmentDateAt"),
     number: defField("insuranceNumber"),
     isProcessing: defField("check", { default: false }),
-    history: defField("array", { default: [] }), // 状態遷移の履歴を記録するための配列
+    history: defField("array"), // 状態遷移の履歴を記録するための配列
   };
 
   /**
