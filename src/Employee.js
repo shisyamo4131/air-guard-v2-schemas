@@ -10,6 +10,7 @@ import { VALUES as EMERGENCY_CONTACT_RELATION_VALUES } from "./constants/emergen
 import Certification from "./Certification.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 import { VALIDATION_ERRORS } from "./errorDefinitions.js";
+import Insurance from "./Insurance.js";
 
 /*****************************************************************************
  * @class Employee
@@ -53,6 +54,7 @@ import { VALIDATION_ERRORS } from "./errorDefinitions.js";
  * @property {string} emergencyContactPhone - 緊急連絡先電話番号
  * @property {string} domicile - 本籍地
  * @property {Array<Certification>} securityCertifications - 警備員資格情報の配列
+ * @property {Insurance} employmentInsurance - 雇用保険情報
  * @property {string} remarks - 備考
  *
  * @property {string} fullName - 姓と名を結合したフルネーム（読み取り専用）
@@ -536,6 +538,11 @@ export default class Employee extends GeocodableMixin(FireModel) {
     securityCertifications: defField("array", {
       label: "保有資格",
       customClass: Certification,
+    }),
+
+    // 加入保険
+    employmentInsurance: defField("employmentInsurance", {
+      customClass: Insurance,
     }),
     remarks: defField("remarks"),
   };

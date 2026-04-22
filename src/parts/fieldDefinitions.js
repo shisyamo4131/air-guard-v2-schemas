@@ -649,6 +649,10 @@ export const fieldDefinitions = {
       },
     },
   },
+  employmentInsurance: {
+    ...generalDefinitions.object,
+    label: "雇用保険",
+  },
   location: {
     ...generalDefinitions.object,
     hidden: true,
