@@ -30,16 +30,17 @@ export const ERROR_MESSAGES = Object.freeze({
  * @property {Date|null} lossDateAt - 喪失日を表す日付オブジェクト。加入していない場合は null になります。
  * @property {string|null} lossReason - 喪失理由を表す文字列。加入していない場合は null になります。
  * @property {boolean} isProcessing - 加入手続き中であるかどうかを表す真偽値。加入手続き中の場合は true、そうでない場合は false になります。
+ * @property {boolean} isRetire - 退職による喪失であるかどうかを表す真偽値。退職による喪失の場合は true、そうでない場合は false になります。
  * @property {Array} history - 状態遷移の履歴を記録するための配列。各要素は状態遷移前の状態を表すオブジェクトです。
  *
  * @note
  * - 各プロパティは `現在の状態` を表すもので、状態の遷移には対応するメソッドを利用します。
- *   - `lossDateAt`（喪失日）と `lossReason`（喪失理由）は、`現在の状態` という意味では不要なプロパティですが、
+ *   - `lossDateAt`（喪失日）、`lossReason`（喪失理由）、`isRetire`（退職フラグ）は、`現在の状態` という意味では不要なプロパティですが、
  *     資格喪失処理の際に必要になる情報であるため、プロパティとして用意しています。
  * - 状態を遷移させるために必要な情報をこのインスタンスに設定（入力）する場合、
  *   必ず複製したインスタンスのプロパティを編集し、複製元インスタンスの
  *   状態遷移用メソッドを呼び出す際に引数として渡す、という形で利用してください。
- * - 各状態遷移メソッドでは、`lossDateAt`（喪失日）と `lossReason`（喪失理由）は必ず null に初期化されます。
+ * - 各状態遷移メソッドでは、`lossDateAt`（喪失日）、`lossReason`（喪失理由）、`isRetire`（退職フラグ）は必ず初期化されます。
  *
  * @method exempt - 現在の状態を `EXEMPT (適用除外)` に更新します。
  * @method enroll - 現在の状態を `ENROLLED (加入)` に更新します。
@@ -58,6 +59,7 @@ export default class Insurance extends BaseClass {
     lossDateAt: defField("lossDateAt"),
     lossReason: defField("lossReason"),
     isProcessing: defField("check", { label: "加入手続き中", default: false }),
+    isRetire: defField("check", { label: "退職", default: false }),
     history: defField("array"), // 状態遷移の履歴を記録するための配列
   };
 
@@ -208,6 +210,7 @@ export default class Insurance extends BaseClass {
     this.number = null;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
+    this.isRetire = false; // 念のため false に更新しておく
   }
 
   /**
@@ -252,6 +255,7 @@ export default class Insurance extends BaseClass {
     this.isProcessing = !!isProcessing;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
+    this.isRetire = false; // 念のため false に更新しておく
   }
 
   /**
@@ -282,6 +286,7 @@ export default class Insurance extends BaseClass {
     this.isProcessing = false;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
+    this.isRetire = false; // 念のため false に更新しておく
   }
 
   /**
@@ -305,6 +310,7 @@ export default class Insurance extends BaseClass {
     this.isProcessing = false;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
+    this.isRetire = false; // 念のため false に更新しておく
   }
 
   /**
@@ -323,7 +329,7 @@ export default class Insurance extends BaseClass {
    * @throws {Error} 喪失日が日付オブジェクトでない場合にエラーをスローします。
    * @throws {Error} 喪失理由が指定されていない場合にエラーをスローします。
    */
-  loss({ lossDateAt, lossReason } = {}, isRetire = false) {
+  loss({ lossDateAt, lossReason, isRetire = false } = {}) {
     // validation
     if (!this.isEnrolled()) {
       throw new Error(ERROR_MESSAGES.ENROLLED_ONLY("喪失手続き"));
@@ -348,6 +354,7 @@ export default class Insurance extends BaseClass {
     this.number = null;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
+    this.isRetire = false; // 念のため false に更新しておく
   }
 
   /**
@@ -376,5 +383,6 @@ export default class Insurance extends BaseClass {
     this.isProcessing = false; // 念のため false に戻しておく
     this.lossDateAt = null; // 念のため null に戻しておく
     this.lossReason = null; // 念のため null に戻しておく
+    this.isRetire = false; // 念のため false に戻しておく
   }
 }
