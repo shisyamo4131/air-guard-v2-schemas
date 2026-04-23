@@ -253,6 +253,11 @@ export const fieldDefinitions = {
     ...generalDefinitions.dateAt,
     label: "取得日",
   },
+  lossDateAt: {
+    ...generalDefinitions.dateAt,
+    label: "資格喪失日",
+    default: null,
+  },
   periodOfStay: {
     ...generalDefinitions.dateAt,
     label: "在留期間満了日",
@@ -521,6 +526,11 @@ export const fieldDefinitions = {
         inputType: "katakana",
       },
     },
+  },
+  lossReason: {
+    ...generalDefinitions.oneLine,
+    label: "喪失理由",
+    length: 40,
   },
   mobile: {
     ...generalDefinitions.oneLine,

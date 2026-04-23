@@ -22,6 +22,25 @@ export const ERROR_MESSAGES = Object.freeze({
 
 /*****************************************************************************
  * @class Insurance
+ *
+ * @property {string} status - 保険の状態を表す文字列。`INSURANCE_STATUS` のいずれかの値を取ります。
+ * @property {string} previousStatus - 直前の保険の状態を表す文字列。`INSURANCE_STATUS` のいずれかの値を取ります。
+ * @property {Date|null} enrollmentDateAt - 加入日を表す日付オブジェクト。加入していない場合は null になります。
+ * @property {string|null} number - 被保険者番号（整理記号）を表す文字列。加入していない場合は null になります。
+ * @property {Date|null} lossDateAt - 喪失日を表す日付オブジェクト。加入していない場合は null になります。
+ * @property {string|null} lossReason - 喪失理由を表す文字列。加入していない場合は null になります。
+ * @property {boolean} isProcessing - 加入手続き中であるかどうかを表す真偽値。加入手続き中の場合は true、そうでない場合は false になります。
+ * @property {Array} history - 状態遷移の履歴を記録するための配列。各要素は状態遷移前の状態を表すオブジェクトです。
+ *
+ * @note
+ * - 各プロパティは `現在の状態` を表すもので、状態の遷移には対応するメソッドを利用します。
+ *   - `lossDateAt`（喪失日）と `lossReason`（喪失理由）は、`現在の状態` という意味では不要なプロパティですが、
+ *     資格喪失処理の際に必要になる情報であるため、プロパティとして用意しています。
+ * - 状態を遷移させるために必要な情報をこのインスタンスに設定（入力）する場合、
+ *   必ず複製したインスタンスのプロパティを編集し、複製元インスタンスの
+ *   状態遷移用メソッドを呼び出す際に引数として渡す、という形で利用してください。
+ * - 各状態遷移メソッドでは、`lossDateAt`（喪失日）と `lossReason`（喪失理由）は必ず null に初期化されます。
+ *
  * @method exempt - 現在の状態を `EXEMPT (適用除外)` に更新します。
  * @method enroll - 現在の状態を `ENROLLED (加入)` に更新します。
  * @method enrolled - 加入手続き中の状態を加入完了の状態に更新します。
@@ -36,6 +55,8 @@ export default class Insurance extends BaseClass {
     previousStatus: defField("insuranceStatus", { default: "" }),
     enrollmentDateAt: defField("enrollmentDateAt"),
     number: defField("insuranceNumber"),
+    lossDateAt: defField("lossDateAt"),
+    lossReason: defField("lossReason"),
     isProcessing: defField("check", { default: false }),
     history: defField("array"), // 状態遷移の履歴を記録するための配列
   };
@@ -117,16 +138,16 @@ export default class Insurance extends BaseClass {
    * 履歴エントリを作成します。
    * @param {Object} options
    * @param {Date|null} options.lossDateAt 喪失日
-   * @param {String|null} options.reason 喪失理由
+   * @param {String|null} options.lossReason 喪失理由
    * @returns {Object} 履歴エントリ
    */
-  _createHistoryEntry({ lossDateAt = null, reason = null } = {}) {
+  _createHistoryEntry({ lossDateAt = null, lossReason = null } = {}) {
     return {
       status: this.status,
       previousStatus: this.previousStatus,
       enrollmentDateAt: this.enrollmentDateAt,
       lossDateAt,
-      reason,
+      lossReason,
       number: this.number,
     };
   }
@@ -136,19 +157,19 @@ export default class Insurance extends BaseClass {
    * - `NOT_ENROLLED (未加入)` または `ENROLLED (加入)` の状態でなければ加入手続きは行えません。
    * - 現在加入中の場合、加入の履歴を記録します。ただし、加入手続き中 (isProcessing が true) である場合は、加入の実態がなかったこととし、履歴に記録しません。
    *   - 手続き中である場合、状態が `ENROLLED` から `EXEMPT` に更新される実務上の取り扱いは「加入申請の取り下げ（訂正）」に該当するものとし、加入の実態がなかったこととします。
-   * - 現在加入中の場合、`lossDateAt (喪失日)` と `reason (喪失理由)` の指定が必要です。
+   * - 現在加入中の場合、`lossDateAt (喪失日)` と `lossReason (喪失理由)` の指定が必要です。
    * - `EXEMPT` 状態への更新に伴い、加入日を null に更新します。
    * - `EXEMPT` 状態への更新に伴い、加入手続き中である場合があるため `isProcessing` を false に更新します。
    * - `EXEMPT` 状態への更新に伴い、被保険者番号（整理記号）を null に更新します。
    * @param {Object} options
    * @param {Date|null} options.lossDateAt 喪失日（現在加入中の場合に必要）
-   * @param {String|null} options.reason 喪失理由（現在加入中の場合に必要）
+   * @param {String|null} options.lossReason 喪失理由（現在加入中の場合に必要）
    * @returns {void}
    * @throws {Error} `status` が `NOT_ENROLLED (未加入)` または `ENROLLED (加入)` でない場合にエラーをスローします。
    * @throws {Error} 現在加入中の場合に `lossDateAt` が日付オブジェクトでない場合にエラーをスローします。
-   * @throws {Error} 現在加入中の場合に `reason` が指定されていない場合にエラーをスローします。
+   * @throws {Error} 現在加入中の場合に `lossReason` が指定されていない場合にエラーをスローします。
    */
-  exempt({ lossDateAt, reason } = {}) {
+  exempt({ lossDateAt, lossReason } = {}) {
     // validation
     const transitionCheck = this._canTransitionTo(
       INSURANCE_STATUS.EXEMPT.value,
@@ -160,7 +181,7 @@ export default class Insurance extends BaseClass {
     }
 
     // 履歴に記録するための状態を作成
-    const currentStatus = this._createHistoryEntry({ lossDateAt, reason });
+    const currentStatus = this._createHistoryEntry({ lossDateAt, lossReason });
 
     // 加入完了している場合の検証（手続き中の場合は不要）
     if (this.isEnrollmentComplete()) {
@@ -168,7 +189,7 @@ export default class Insurance extends BaseClass {
       if (!lossDateAt || !(lossDateAt instanceof Date)) {
         throw new Error(ERROR_MESSAGES.REQUIRED_DATE("喪失日"));
       }
-      if (!reason) {
+      if (!lossReason) {
         throw new Error(ERROR_MESSAGES.REQUIRED_FIELD("喪失理由"));
       }
     }
@@ -185,6 +206,8 @@ export default class Insurance extends BaseClass {
     this.enrollmentDateAt = null;
     this.isProcessing = false; // 加入手続き中である場合があるため false に更新しておく
     this.number = null;
+    this.lossDateAt = null; // 念のため null に更新しておく
+    this.lossReason = null; // 念のため null に更新しておく
   }
 
   /**
@@ -227,6 +250,8 @@ export default class Insurance extends BaseClass {
     this.enrollmentDateAt = enrollmentDateAt;
     this.number = immediate ? number : null;
     this.isProcessing = immediate ? false : true;
+    this.lossDateAt = null; // 念のため null に更新しておく
+    this.lossReason = null; // 念のため null に更新しておく
   }
 
   /**
@@ -255,6 +280,8 @@ export default class Insurance extends BaseClass {
     // 状態を更新
     this.number = number;
     this.isProcessing = false;
+    this.lossDateAt = null; // 念のため null に更新しておく
+    this.lossReason = null; // 念のため null に更新しておく
   }
 
   /**
@@ -276,25 +303,27 @@ export default class Insurance extends BaseClass {
     this.enrollmentDateAt = null;
     this.number = null;
     this.isProcessing = false;
+    this.lossDateAt = null; // 念のため null に更新しておく
+    this.lossReason = null; // 念のため null に更新しておく
   }
 
   /**
    * 加入している保険の喪失処理を行います。
    * - `ENROLLED (加入)` の状態でなければ喪失処理は行えません。
-   * - `lossDateAt`（喪失日）、`reason`（喪失理由）の指定が必要です。
+   * - `lossDateAt`（喪失日）、`lossReason`（喪失理由）の指定が必要です。
    * - `isRetire` が true の場合、状態を `EXEMPT (適用除外)` ではなく `NOT_ENROLLED (未加入)` に更新します。
    * - `isRetire` が false の場合、状態を `EXEMPT (適用除外)` に更新します。
    * - `history` プロパティに、更新前の状態を記録します。
    * @param {*} options
    * @param {*} options.lossDateAt 喪失日
-   * @param {*} options.reason 喪失理由
+   * @param {*} options.lossReason 喪失理由
    * @param {*} options.isRetire 退職フラグ（true の場合、状態を `EXEMPT (適用除外)` ではなく `NOT_ENROLLED (未加入)` に更新します）
    * @returns {void}
    * @throws {Error} `status` が `ENROLLED (加入)` でない場合にエラーをスローします。
    * @throws {Error} 喪失日が日付オブジェクトでない場合にエラーをスローします。
    * @throws {Error} 喪失理由が指定されていない場合にエラーをスローします。
    */
-  loss({ lossDateAt, reason } = {}, isRetire = false) {
+  loss({ lossDateAt, lossReason } = {}, isRetire = false) {
     // validation
     if (!this.isEnrolled()) {
       throw new Error(ERROR_MESSAGES.ENROLLED_ONLY("喪失手続き"));
@@ -302,12 +331,12 @@ export default class Insurance extends BaseClass {
     if (!lossDateAt || !(lossDateAt instanceof Date)) {
       throw new Error(ERROR_MESSAGES.REQUIRED_DATE("喪失日"));
     }
-    if (!reason) {
+    if (!lossReason) {
       throw new Error(ERROR_MESSAGES.REQUIRED_FIELD("喪失理由"));
     }
 
     // 履歴に記録するための状態を作成
-    const currentStatus = this._createHistoryEntry({ lossDateAt, reason });
+    const currentStatus = this._createHistoryEntry({ lossDateAt, lossReason });
 
     this.history.push(currentStatus);
 
@@ -317,6 +346,8 @@ export default class Insurance extends BaseClass {
       : INSURANCE_STATUS.EXEMPT.value;
     this.enrollmentDateAt = null;
     this.number = null;
+    this.lossDateAt = null; // 念のため null に更新しておく
+    this.lossReason = null; // 念のため null に更新しておく
   }
 
   /**
@@ -343,5 +374,7 @@ export default class Insurance extends BaseClass {
     this.enrollmentDateAt = latestStatus.enrollmentDateAt;
     this.number = latestStatus.number;
     this.isProcessing = false; // 念のため false に戻しておく
+    this.lossDateAt = null; // 念のため null に戻しておく
+    this.lossReason = null; // 念のため null に戻しておく
   }
 }
