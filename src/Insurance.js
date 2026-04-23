@@ -213,17 +213,17 @@ export default class Insurance extends BaseClass {
   /**
    * 状態を `ENROLLED (加入)` に更新します。
    * - `NOT_ENROLLED (未加入)` または `EXEMPT (適用除外)` の状態でなければ加入手続きは行えません。
-   * - `immediate` が true の場合、被保険者番号（整理記号）の指定が必要です。
+   * - `isProcessing` が true の場合、被保険者番号（整理記号）の指定が必要です。
    * @param {Object} options
    * @param {Date} options.enrollmentDateAt 加入日
    * @param {String} options.number 被保険者番号（整理記号）
-   * @param {Boolean} immediate 即時加入フラグ
+   * @param {Boolean} options.isProcessing 加入手続き中フラグ（true の場合、加入手続き中の状態で更新します）
    * @returns {void}
    * @throws {Error} `status` が `NOT_ENROLLED (未加入)` または `EXEMPT (適用除外)` でない場合にエラーをスローします。
    * @throws {Error} `enrollmentDateAt` が日付オブジェクトでない場合にエラーをスローします。
-   * @throws {Error} `immediate` が true で `number` が指定されていない場合にエラーをスローします。
+   * @throws {Error} `isProcessing` が true で `number` が指定されていない場合にエラーをスローします。
    */
-  enroll({ enrollmentDateAt, number } = {}, immediate = false) {
+  enroll({ enrollmentDateAt, number, isProcessing = false } = {}) {
     // validation
     const transitionCheck = this._canTransitionTo(
       INSURANCE_STATUS.ENROLLED.value,
@@ -238,7 +238,7 @@ export default class Insurance extends BaseClass {
       throw new Error(ERROR_MESSAGES.REQUIRED_DATE("加入日"));
     }
 
-    if (immediate && !number) {
+    if (!isProcessing && !number) {
       throw new Error(
         ERROR_MESSAGES.REQUIRED_FIELD("被保険者番号（整理記号）"),
       );
@@ -248,8 +248,8 @@ export default class Insurance extends BaseClass {
     this.previousStatus = this.status;
     this.status = INSURANCE_STATUS.ENROLLED.value;
     this.enrollmentDateAt = enrollmentDateAt;
-    this.number = immediate ? number : null;
-    this.isProcessing = immediate ? false : true;
+    this.number = isProcessing ? null : number;
+    this.isProcessing = !!isProcessing;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
   }
