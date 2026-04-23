@@ -57,7 +57,7 @@ export default class Insurance extends BaseClass {
     number: defField("insuranceNumber"),
     lossDateAt: defField("lossDateAt"),
     lossReason: defField("lossReason"),
-    isProcessing: defField("check", { default: false }),
+    isProcessing: defField("check", { label: "加入手続き中", default: false }),
     history: defField("array"), // 状態遷移の履歴を記録するための配列
   };
 
@@ -215,7 +215,7 @@ export default class Insurance extends BaseClass {
    * - `NOT_ENROLLED (未加入)` または `EXEMPT (適用除外)` の状態でなければ加入手続きは行えません。
    * - `isProcessing` が true の場合、被保険者番号（整理記号）の指定が必要です。
    * @param {Object} options
-   * @param {Date} options.enrollmentDateAt 加入日
+   * @param {Date} options.enrollmentDateAt 資格取得日
    * @param {String} options.number 被保険者番号（整理記号）
    * @param {Boolean} options.isProcessing 加入手続き中フラグ（true の場合、加入手続き中の状態で更新します）
    * @returns {void}
@@ -224,6 +224,14 @@ export default class Insurance extends BaseClass {
    * @throws {Error} `isProcessing` が true で `number` が指定されていない場合にエラーをスローします。
    */
   enroll({ enrollmentDateAt, number, isProcessing = false } = {}) {
+    console.log('=== Insurance.enroll() DEBUG ===');
+    console.log('Received arguments:');
+    console.log('  enrollmentDateAt:', enrollmentDateAt);
+    console.log('  number:', number);
+    console.log('  isProcessing:', isProcessing);
+    console.log('  typeof isProcessing:', typeof isProcessing);
+    console.log('  !!isProcessing:', !!isProcessing);
+    
     // validation
     const transitionCheck = this._canTransitionTo(
       INSURANCE_STATUS.ENROLLED.value,
@@ -235,7 +243,7 @@ export default class Insurance extends BaseClass {
     }
 
     if (!enrollmentDateAt || !(enrollmentDateAt instanceof Date)) {
-      throw new Error(ERROR_MESSAGES.REQUIRED_DATE("加入日"));
+      throw new Error(ERROR_MESSAGES.REQUIRED_DATE("資格取得日"));
     }
 
     if (!isProcessing && !number) {
@@ -252,6 +260,11 @@ export default class Insurance extends BaseClass {
     this.isProcessing = !!isProcessing;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
+    
+    console.log('After setting:');
+    console.log('  this.isProcessing:', this.isProcessing);
+    console.log('  this.number:', this.number);
+    console.log('=== END Insurance.enroll() DEBUG ===');
   }
 
   /**
