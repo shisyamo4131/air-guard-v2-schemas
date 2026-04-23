@@ -170,7 +170,6 @@ export default class Insurance extends BaseClass {
    * @throws {Error} 現在加入中の場合に `lossReason` が指定されていない場合にエラーをスローします。
    */
   exempt({ lossDateAt, lossReason } = {}) {
-    console.log('[Insurance] exempt() が呼ばれました（練習用ログ）');
     // validation
     const transitionCheck = this._canTransitionTo(
       INSURANCE_STATUS.EXEMPT.value,
