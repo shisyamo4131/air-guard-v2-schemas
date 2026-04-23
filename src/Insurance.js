@@ -224,14 +224,14 @@ export default class Insurance extends BaseClass {
    * @throws {Error} `isProcessing` が true で `number` が指定されていない場合にエラーをスローします。
    */
   enroll({ enrollmentDateAt, number, isProcessing = false } = {}) {
-    console.log('=== Insurance.enroll() DEBUG ===');
-    console.log('Received arguments:');
-    console.log('  enrollmentDateAt:', enrollmentDateAt);
-    console.log('  number:', number);
-    console.log('  isProcessing:', isProcessing);
-    console.log('  typeof isProcessing:', typeof isProcessing);
-    console.log('  !!isProcessing:', !!isProcessing);
-    
+    console.log("=== Insurance.enroll() DEBUG ===");
+    console.log("Received arguments:");
+    console.log("  enrollmentDateAt:", enrollmentDateAt);
+    console.log("  number:", number);
+    console.log("  isProcessing:", isProcessing);
+    console.log("  typeof isProcessing:", typeof isProcessing);
+    console.log("  !!isProcessing:", !!isProcessing);
+
     // validation
     const transitionCheck = this._canTransitionTo(
       INSURANCE_STATUS.ENROLLED.value,
@@ -260,11 +260,11 @@ export default class Insurance extends BaseClass {
     this.isProcessing = !!isProcessing;
     this.lossDateAt = null; // 念のため null に更新しておく
     this.lossReason = null; // 念のため null に更新しておく
-    
-    console.log('After setting:');
-    console.log('  this.isProcessing:', this.isProcessing);
-    console.log('  this.number:', this.number);
-    console.log('=== END Insurance.enroll() DEBUG ===');
+
+    console.log("After setting:");
+    console.log("  this.isProcessing:", this.isProcessing);
+    console.log("  this.number:", this.number);
+    console.log("=== END Insurance.enroll() DEBUG ===");
   }
 
   /**
