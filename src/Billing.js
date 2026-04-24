@@ -28,6 +28,7 @@
 
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
+import { formatJstDate } from "./utils/index.js";
 import OperationResult from "./OperationResult.js";
 
 const STATUS = {
@@ -74,16 +75,7 @@ export default class Billing extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          if (!this.billingDateAt) return null;
-          const jstDate = new Date(
-            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
-          ); /* JST補正 */
-          const year = jstDate.getUTCFullYear();
-          const month = jstDate.getUTCMonth() + 1;
-          const day = jstDate.getUTCDate();
-          return `${year}-${String(month).padStart(2, "0")}-${String(
-            day
-          ).padStart(2, "0")}`;
+          return formatJstDate(this.billingDateAt);
         },
         set(v) {},
       },
@@ -91,13 +83,7 @@ export default class Billing extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          if (!this.billingDateAt) return null;
-          const jstDate = new Date(
-            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000
-          ); /* JST補正 */
-          const year = jstDate.getUTCFullYear();
-          const month = jstDate.getUTCMonth() + 1;
-          return `${year}-${String(month).padStart(2, "0")}`;
+          return formatJstDate(this.billingDateAt, "YYYY-MM");
         },
         set(v) {},
       },
@@ -108,16 +94,7 @@ export default class Billing extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          if (!this.paymentDueDateAt) return null;
-          const jstDate = new Date(
-            this.paymentDueDateAt.getTime() + 9 * 60 * 60 * 1000
-          ); /* JST補正 */
-          const year = jstDate.getUTCFullYear();
-          const month = jstDate.getUTCMonth() + 1;
-          const day = jstDate.getUTCDate();
-          return `${year}-${String(month).padStart(2, "0")}-${String(
-            day
-          ).padStart(2, "0")}`;
+          return formatJstDate(this.paymentDueDateAt);
         },
         set(v) {},
       },
@@ -125,13 +102,7 @@ export default class Billing extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          if (!this.paymentDueDateAt) return null;
-          const jstDate = new Date(
-            this.paymentDueDateAt.getTime() + 9 * 60 * 60 * 1000
-          ); /* JST補正 */
-          const year = jstDate.getUTCFullYear();
-          const month = jstDate.getUTCMonth() + 1;
-          return `${year}-${String(month).padStart(2, "0")}`;
+          return formatJstDate(this.paymentDueDateAt, "YYYY-MM");
         },
         set(v) {},
       },

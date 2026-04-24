@@ -147,6 +147,7 @@ import AgreementV2 from "./AgreementV2.js";
 import { ContextualError } from "./utils/ContextualError.js";
 import OperationResultDetail from "./OperationResultDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
+import { formatJstDate } from "./utils/index.js";
 import Tax from "./Tax.js";
 import { VALUES as BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
@@ -452,16 +453,7 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          if (!this.billingDateAt) return null;
-          const jstDate = new Date(
-            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000,
-          ); /* JST補正 */
-          const year = jstDate.getUTCFullYear();
-          const month = jstDate.getUTCMonth() + 1;
-          const day = jstDate.getUTCDate();
-          return `${year}-${String(month).padStart(2, "0")}-${String(
-            day,
-          ).padStart(2, "0")}`;
+          return formatJstDate(this.billingDateAt);
         },
         set(v) {},
       },
@@ -469,13 +461,7 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          if (!this.billingDateAt) return null;
-          const jstDate = new Date(
-            this.billingDateAt.getTime() + 9 * 60 * 60 * 1000,
-          ); /* JST補正 */
-          const year = jstDate.getUTCFullYear();
-          const month = jstDate.getUTCMonth() + 1;
-          return `${year}-${String(month).padStart(2, "0")}`;
+          return formatJstDate(this.billingDateAt, "YYYY-MM");
         },
         set(v) {},
       },

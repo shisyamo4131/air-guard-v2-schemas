@@ -53,7 +53,7 @@
  *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-import { getDateAt } from "./utils/index.js";
+import { getDateAt, formatJstDate } from "./utils/index.js";
 import { VALUES as SHIFT_TYPE } from "./constants/shift-type.js";
 
 const classProps = {
@@ -129,13 +129,7 @@ export default class WorkTimeBase extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          if (!this.dateAt) return "";
-          // UTC時刻に9時間(JST)を加算してJST日付を取得
-          const jstDate = new Date(this.dateAt.getTime() + 9 * 60 * 60 * 1000);
-          const year = jstDate.getUTCFullYear();
-          const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
-          const day = String(jstDate.getUTCDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
+          return formatJstDate(this.dateAt) || "";
         },
         set(v) {},
       },

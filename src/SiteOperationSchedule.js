@@ -116,7 +116,7 @@
  *****************************************************************************/
 import Operation from "./Operation.js";
 import { defField } from "./parts/fieldDefinitions.js";
-import { ContextualError } from "./utils/index.js";
+import { ContextualError, formatJstDate } from "./utils/index.js";
 import ArrangementNotification from "./ArrangementNotification.js";
 import SiteOperationScheduleDetail from "./SiteOperationScheduleDetail.js";
 import OperationResult from "./OperationResult.js";
@@ -499,11 +499,7 @@ export default class SiteOperationSchedule extends Operation {
       const targetDates = dates
         .map((date) => {
           if (date instanceof Date) {
-            const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-            const year = jstDate.getUTCFullYear();
-            const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
-            const day = String(jstDate.getUTCDate()).padStart(2, "0");
-            return `${year}-${month}-${day}`;
+            return formatJstDate(date);
           }
           return date;
         })

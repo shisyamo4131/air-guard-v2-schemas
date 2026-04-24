@@ -16,6 +16,7 @@
  * @static {function} getDisplayText - Get display text for cutoff date value
  * @static {function} isValidCutoffDate - Validate cutoff date value
  *****************************************************************************/
+import { formatJstDate } from "./index.js";
 
 export default class CutoffDate {
   /**
@@ -238,11 +239,6 @@ export default class CutoffDate {
       salesDate,
       cutoffDateValue
     );
-    // Convert UTC back to JST for string representation
-    const jstDate = new Date(cutoffDate.getTime() + 9 * 60 * 60 * 1000);
-    const year = jstDate.getUTCFullYear();
-    const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(jstDate.getUTCDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return formatJstDate(cutoffDate);
   }
 }

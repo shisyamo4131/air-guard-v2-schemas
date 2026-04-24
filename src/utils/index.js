@@ -57,4 +57,28 @@ export function getDateAt(date, time, dateOffset = 0) {
   return new Date(utcMillis);
 }
 
+/**
+ * DateオブジェクトをJST基準の文字列に変換
+ * UTCとして保存されているJST時刻を、JST日付の文字列表現に変換します。
+ * @param {Date} dateAt - UTCとして保存されたJST時刻
+ * @param {string} format - 'YYYY-MM-DD' | 'YYYY-MM'
+ * @returns {string|null} フォーマットされた日付文字列。dateAtがnull/undefinedの場合はnullを返す。
+ * @example
+ * // YYYY-MM-DD形式
+ * formatJstDate(new Date('2024-03-04T15:00:00Z')) // '2024-03-05'
+ * 
+ * // YYYY-MM形式
+ * formatJstDate(new Date('2024-03-04T15:00:00Z'), 'YYYY-MM') // '2024-03'
+ */
+export function formatJstDate(dateAt, format = "YYYY-MM-DD") {
+  if (!dateAt) return null;
+
+  const jstDate = new Date(dateAt.getTime() + 9 * 60 * 60 * 1000);
+  const year = jstDate.getUTCFullYear();
+  const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(jstDate.getUTCDate()).padStart(2, "0");
+
+  return format === "YYYY-MM" ? `${year}-${month}` : `${year}-${month}-${day}`;
+}
+
 export { ContextualError } from "./ContextualError.js";
