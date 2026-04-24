@@ -5,6 +5,7 @@
 import { BaseClass } from "@shisyamo4131/air-firebase-v2";
 import { VALUES as INSURANCE_STATUS } from "./constants/insurance-status.js";
 import { defField } from "./parts/fieldDefinitions.js";
+import { formatJstDate } from "./utils/index.js";
 
 export const ERROR_MESSAGES = Object.freeze({
   INVALID_TRANSITION: (allowedStates) =>
