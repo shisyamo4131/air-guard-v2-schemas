@@ -23,6 +23,14 @@ export const objectFields = {
     ...generalDefinitions.object,
     label: "雇用保険",
   },
+  healthInsurance: {
+    ...generalDefinitions.object,
+    label: "健康保険",
+  },
+  pensionInsurance: {
+    ...generalDefinitions.object,
+    label: "厚生年金保険",
+  },
   location: {
     ...generalDefinitions.object,
     hidden: true,

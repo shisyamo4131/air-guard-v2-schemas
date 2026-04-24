@@ -54,6 +54,8 @@ import Insurance from "./Insurance.js";
  * @property {string} emergencyContactPhone - 緊急連絡先電話番号
  * @property {string} domicile - 本籍地
  * @property {Array<Certification>} securityCertifications - 警備員資格情報の配列
+ * @property {Insurance} healthInsurance - 健康保険情報
+ * @property {Insurance} pensionInsurance - 厚生年金保険情報
  * @property {Insurance} employmentInsurance - 雇用保険情報
  * @property {string} remarks - 備考
  *
@@ -541,6 +543,14 @@ export default class Employee extends GeocodableMixin(FireModel) {
     }),
 
     // 加入保険
+    healthInsurance: defField("healthInsurance", {
+      default: () => new Insurance(),
+      customClass: Insurance,
+    }),
+    pensionInsurance: defField("pensionInsurance", {
+      default: () => new Insurance(),
+      customClass: Insurance,
+    }),
     employmentInsurance: defField("employmentInsurance", {
       default: () => new Insurance(),
       customClass: Insurance,
