@@ -61,12 +61,28 @@ test("billingMonth", op2.billingMonth, "2024-03");
 // テスト4: CutoffDate.calculateBillingDateAtString()
 console.log("【テスト4: CutoffDate.calculateBillingDateAtString()】");
 const salesDate1 = new Date("2024-03-04T15:00:00Z"); // JST 2024-03-05
-test("10日締め", CutoffDate.calculateBillingDateAtString(salesDate1, 10), "2024-03-10");
-test("15日締め", CutoffDate.calculateBillingDateAtString(salesDate1, 15), "2024-03-15");
-test("月末締め", CutoffDate.calculateBillingDateAtString(salesDate1, 0), "2024-03-31");
+test(
+  "10日締め",
+  CutoffDate.calculateBillingDateAtString(salesDate1, 10),
+  "2024-03-10",
+);
+test(
+  "15日締め",
+  CutoffDate.calculateBillingDateAtString(salesDate1, 15),
+  "2024-03-15",
+);
+test(
+  "月末締め",
+  CutoffDate.calculateBillingDateAtString(salesDate1, 0),
+  "2024-03-31",
+);
 
 const salesDate2 = new Date("2024-03-28T15:00:00Z"); // JST 2024-03-29
-test("翌月10日締め", CutoffDate.calculateBillingDateAtString(salesDate2, 10), "2024-04-10");
+test(
+  "翌月10日締め",
+  CutoffDate.calculateBillingDateAtString(salesDate2, 10),
+  "2024-04-10",
+);
 
 // テスト5: エッジケース
 console.log("【テスト5: エッジケース】");

@@ -89,7 +89,7 @@ export default class CutoffDate {
     const currentCutoffDay = CutoffDate.calculateActualCutoffDay(
       year,
       month,
-      cutoffDateValue
+      cutoffDateValue,
     );
 
     let periodStart, periodEnd, periodLabel;
@@ -103,14 +103,14 @@ export default class CutoffDate {
       const prevCutoffDay = CutoffDate.calculateActualCutoffDay(
         prevYear,
         normalizedPrevMonth,
-        cutoffDateValue
+        cutoffDateValue,
       );
 
       // Create dates in UTC representing JST dates (subtract 9 hours)
       const startJst = Date.UTC(
         prevYear,
         normalizedPrevMonth,
-        prevCutoffDay + 1
+        prevCutoffDay + 1,
       );
       const endJst = Date.UTC(year, month, currentCutoffDay);
 
@@ -126,7 +126,7 @@ export default class CutoffDate {
       const nextCutoffDay = CutoffDate.calculateActualCutoffDay(
         nextYear,
         normalizedNextMonth,
-        cutoffDateValue
+        cutoffDateValue,
       );
 
       // Create dates in UTC representing JST dates (subtract 9 hours)
@@ -137,7 +137,7 @@ export default class CutoffDate {
       periodEnd = new Date(endJst - 9 * 60 * 60 * 1000);
       periodLabel = `${nextYear}-${String(normalizedNextMonth + 1).padStart(
         2,
-        "0"
+        "0",
       )}`;
     }
 
@@ -158,7 +158,7 @@ export default class CutoffDate {
    */
   static getDisplayText(cutoffDateValue) {
     const option = CutoffDate.OPTIONS.find(
-      (opt) => opt.value === cutoffDateValue
+      (opt) => opt.value === cutoffDateValue,
     );
     return option ? option.title : "";
   }
@@ -198,7 +198,7 @@ export default class CutoffDate {
     const currentCutoffDay = CutoffDate.calculateActualCutoffDay(
       year,
       month,
-      cutoffDateValue
+      cutoffDateValue,
     );
 
     if (day <= currentCutoffDay) {
@@ -216,7 +216,7 @@ export default class CutoffDate {
       const nextCutoffDay = CutoffDate.calculateActualCutoffDay(
         nextYear,
         normalizedNextMonth,
-        cutoffDateValue
+        cutoffDateValue,
       );
 
       const cutoffJst = Date.UTC(nextYear, normalizedNextMonth, nextCutoffDay);
@@ -237,7 +237,7 @@ export default class CutoffDate {
   static calculateBillingDateAtString(salesDate, cutoffDateValue) {
     const cutoffDate = CutoffDate.calculateBillingDateAt(
       salesDate,
-      cutoffDateValue
+      cutoffDateValue,
     );
     return formatJstDate(cutoffDate);
   }
