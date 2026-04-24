@@ -33,6 +33,8 @@ export const ERROR_MESSAGES = Object.freeze({
  * @property {boolean} isRetire - 退職による喪失であるかどうかを表す真偽値。退職による喪失の場合は true、そうでない場合は false になります。
  * @property {Array} history - 状態遷移の履歴を記録するための配列。各要素は状態遷移前の状態を表すオブジェクトです。
  *
+ * @property {string} enrollmentDate - `enrollmentDateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
+ *
  * @note
  * - 各プロパティは `現在の状態` を表すもので、状態の遷移には対応するメソッドを利用します。
  *   - `lossDateAt`（喪失日）、`lossReason`（喪失理由）、`isRetire`（退職フラグ）は、`現在の状態` という意味では不要なプロパティですが、
@@ -86,6 +88,24 @@ export default class Insurance extends BaseClass {
     // `EXEMPT` -> `ENROLLED`
     [INSURANCE_STATUS.EXEMPT.value]: [INSURANCE_STATUS.ENROLLED.value],
   };
+
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
+
+    Object.defineProperties(this, {
+      /**
+       * enrollmentDate - `enrollmentDateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
+       */
+      enrollmentDate: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return formatJstDate(this.enrollmentDateAt) || "";
+        },
+        set(v) {},
+      },
+    });
+  }
 
   /**
    * 状態チェック用ヘルパーメソッド
