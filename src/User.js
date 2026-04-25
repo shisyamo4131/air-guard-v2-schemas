@@ -1,61 +1,52 @@
-/**
- * User Model
- * @version 1.1.0
- * @author shisyamo4131
- * @update 2025-12-25 Added `tagSize` property.
- *                    Added `updateProperties` method for updating multiple properties.
- * @update 2025-11-24 Added `companyId`, `isAdmin`, `isTemporary` property.
- *                    Changed to prevent deletion of admin users.
- *
- * @prop {string} email - User's email address.
- * @prop {string} displayName - User's display name.
- * @prop {string} [employeeId] - Employee ID (not required as some users may not be employees).
- * @prop {Array<string>} roles - User roles/permissions.
- * @prop {boolean} disabled - Indicates if the user is disabled.
- * @prop {string} companyId - ID of the associated company.
- * @prop {boolean} isAdmin - Indicates if the user is an administrator.
- * @prop {boolean} isTemporary - Indicates if the user is temporary.
- * @prop {string} tagSize - Size of the tag associated with the user.
- */
+/*****************************************************************************
+ * @file src/User.js
+ *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { TAG_SIZE_VALUES, TAG_SIZE_OPTIONS } from "./constants/index.js";
+import { FcmTokens } from "./FcmTokens.js";
 
-const classProps = {
-  email: defField("email", { required: true }),
-  displayName: defField("displayName", { required: true }),
-  employeeId: defField("oneLine", { label: "従業員ID", hidden: true }),
-  roles: {
-    type: Array,
-    default: () => [],
-    label: "権限",
-    required: false,
-    hidden: false,
-  },
-  disabled: defField("check", {
-    label: "使用不可",
-    default: false,
-    required: false,
-    hidden: true,
-  }),
-  companyId: defField("oneLine", { hidden: true, required: true }),
-  isAdmin: defField("check", { hidden: true, default: false }),
-  isTemporary: defField("check", { hidden: true, default: true }),
-  tagSize: defField("select", {
-    label: "タグサイズ",
-    default: TAG_SIZE_VALUES.MEDIUM.value,
-    component: {
-      attrs: {
-        items: TAG_SIZE_OPTIONS,
-      },
-    },
-  }),
-};
-
+/*****************************************************************************
+ * @class User
+ * @extends FireModel
+ *
+ * @property {string} email - メールアドレス
+ * @property {string} displayName - 表示名
+ * @property {string} [employeeId] - 従業員ID（非従業員を許容するために必須とはしない）
+ * @property {Array<string>} roles - アプリケーション利用権限
+ * @property {boolean} disabled - 有効/無効
+ * @property {string} companyId - 会社ID
+ * @property {boolean} isAdmin - 管理者であるかどうか
+ * @property {boolean} isTemporary - 仮登録状態であるかどうか
+ * @property {string} tagSize - 配置管理機能におけるタグコンポーネントの表示サイズ
+ * @property {Array<string>} fcmTokens - Firebase Cloud Messaging (FCM) のトークンの配列
+ *****************************************************************************/
 export default class User extends FireModel {
   static className = "ユーザー";
   static collectionPath = "Users";
-  static classProps = classProps;
+  static classProps = {
+    email: defField("email", { required: true }),
+    displayName: defField("displayName", { required: true }),
+    employeeId: defField("oneLine", { label: "従業員ID", hidden: true }),
+    roles: defField("roles"),
+    disabled: defField("disabled", { hidden: true }),
+    companyId: defField("companyId", { hidden: true, required: true }),
+    isAdmin: defField("isAdmin", { hidden: true }),
+    isTemporary: defField("isTemporary", { hidden: true, default: true }),
+    tagSize: defField("tagSize", { required: true }),
+    fcmTokens: defField("fcmTokens"),
+  };
+
+  /**
+   * `afterInitialize` をオーバーライド
+   * - `fcmTokens` を `FcmTokens` クラスのインスタンスとして扱う
+   * @param {*} item
+   */
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
+    // fcmTokens を FcmTokens クラスのインスタンスとして扱う
+    this.fcmTokens = new FcmTokens(...this.fcmTokens);
+  }
 
   /**
    * Deletes the user document.
@@ -86,6 +77,9 @@ export default class User extends FireModel {
    * @returns {Promise<DocumentReference>} Reference to the updated document.
    * @throws {Error} If `updateData` is not a valid object.
    * @throws {Error} If `docId` is not set, or if `updateOptions.callback` is not a function.
+   *
+   * Note: このメソッドは複数のプロパティを一括更新するためのヘルパーメソッド。BaseClass に移設しても良いかもしれない。
+   * なお、`useAuthStore` で使用中のようだ。
    */
   async updateProperties(updateData = null, updateOptions = {}) {
     if (!updateData || typeof updateData !== "object") {
