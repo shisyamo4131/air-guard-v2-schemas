@@ -52,10 +52,24 @@ import {
   VALUES as SITE_STATUS_VALUES,
   OPTIONS as SITE_STATUS_OPTIONS,
 } from "../../constants/site-status.js";
+import {
+  VALUES as TAG_SIZE_VALUES,
+  OPTIONS as TAG_SIZE_OPTIONS,
+} from "../../constants/tag-size.js";
 import CutoffDate from "../../utils/CutoffDate.js";
 
 /**
  * SELECT型のフィールド定義
+ * {
+ *   type: String,
+ *   default: null,
+ *   label: undefined,
+ *   length: undefined,
+ *   required: undefined,
+ *   hidden: undefined,
+ *   validator: undefined,
+ *   component: { name: "air-select", attrs: {} },
+ * }
  */
 export const selectFields = {
   select: generalDefinitions.select,
@@ -234,6 +248,19 @@ export const selectFields = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: SITE_STATUS_OPTIONS,
+      },
+    },
+  },
+
+  /** タグサイズ */
+  tagSize: {
+    ...generalDefinitions.select,
+    label: "タグサイズ",
+    default: TAG_SIZE_VALUES.MEDIUM.value,
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: TAG_SIZE_OPTIONS,
       },
     },
   },
