@@ -175,6 +175,12 @@ export const oneLineFields = {
     },
   },
 
+  /** 従業員ID */
+  employeeId: {
+    ...generalDefinitions.oneLine,
+    label: "従業員ID",
+  },
+
   /** FAX番号 */
   fax: {
     ...generalDefinitions.oneLine,
@@ -362,6 +368,18 @@ export const oneLineFields = {
     ...generalDefinitions.oneLine,
     label: "肩書",
     length: 20,
+  },
+
+  /** token */
+  token: {
+    ...generalDefinitions.oneLine,
+    label: "トークン",
+  },
+
+  /** ユーザーID */
+  uid: {
+    ...generalDefinitions.oneLine,
+    label: "ユーザーID",
   },
 
   /** 作業内容 */

@@ -14,6 +14,7 @@ export { default as Customer, CustomerMinimal } from "./src/Customer.js";
 export { default as CutoffDate } from "./src/utils/CutoffDate.js";
 export { default as Employee } from "./src/Employee.js";
 export { VALIDATION_ERRORS } from "./src/errorDefinitions.js";
+export { default as FcmToken } from "./src/FcmToken.js";
 export { GeocodableMixin } from "./src/mixins/GeocodableMixin.js";
 export { default as Insurance } from "./src/Insurance.js";
 export { default as Notification } from "./src/Notification.js";
