@@ -4,7 +4,6 @@
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { TAG_SIZE_VALUES, TAG_SIZE_OPTIONS } from "./constants/index.js";
-import { FcmTokens } from "./FcmTokens.js";
 
 /*****************************************************************************
  * @class User
@@ -19,7 +18,6 @@ import { FcmTokens } from "./FcmTokens.js";
  * @property {boolean} isAdmin - 管理者であるかどうか
  * @property {boolean} isTemporary - 仮登録状態であるかどうか
  * @property {string} tagSize - 配置管理機能におけるタグコンポーネントの表示サイズ
- * @property {Array<string>} fcmTokens - Firebase Cloud Messaging (FCM) のトークンの配列
  *****************************************************************************/
 export default class User extends FireModel {
   static className = "ユーザー";
@@ -34,19 +32,7 @@ export default class User extends FireModel {
     isAdmin: defField("isAdmin", { hidden: true }),
     isTemporary: defField("isTemporary", { hidden: true, default: true }),
     tagSize: defField("tagSize", { required: true }),
-    fcmTokens: defField("fcmTokens"),
   };
-
-  /**
-   * `afterInitialize` をオーバーライド
-   * - `fcmTokens` を `FcmTokens` クラスのインスタンスとして扱う
-   * @param {*} item
-   */
-  afterInitialize(item = {}) {
-    super.afterInitialize(item);
-    // fcmTokens を FcmTokens クラスのインスタンスとして扱う
-    this.fcmTokens = new FcmTokens(...this.fcmTokens);
-  }
 
   /**
    * Deletes the user document.
