@@ -51,6 +51,11 @@ export const dateAtFields = {
     label: "資格喪失日",
     default: null,
   },
+  notificationSentAt: {
+    ...generalDefinitions.dateAt,
+    label: "通知送信日時",
+    default: null,
+  },
   periodOfStay: {
     ...generalDefinitions.dateAt,
     label: "在留期間満了日",

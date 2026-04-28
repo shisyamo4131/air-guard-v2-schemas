@@ -36,4 +36,15 @@ export const arrayFields = {
     required: false,
     hidden: false,
   },
+
+  /**
+   * 通知の送信先ユーザーID配列
+   * Notification ドキュメントで使用
+   */
+  recipientUserIds: {
+    ...generalDefinitions.array,
+    label: "送信先ユーザーID",
+    required: false,
+    hidden: true,
+  },
 };

@@ -5,6 +5,10 @@ import { generalDefinitions } from "./defaultDefinition.js";
  */
 export const multipleLineFields = {
   multipleLine: generalDefinitions.multipleLine,
+  notificationError: {
+    ...generalDefinitions.multipleLine,
+    label: "通知送信エラー",
+  },
   remarks: {
     ...generalDefinitions.multipleLine,
     label: "備考",
