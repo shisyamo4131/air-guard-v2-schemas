@@ -34,10 +34,6 @@ export default class FcmToken extends FireModel {
       required: true,
       hidden: true,
     }),
-    employeeId: defField("employeeId", {
-      required: true,
-      hidden: true,
-    }),
     companyId: defField("companyId", {
       required: true,
       hidden: true,

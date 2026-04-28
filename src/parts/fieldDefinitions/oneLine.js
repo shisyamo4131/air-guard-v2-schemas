@@ -175,12 +175,6 @@ export const oneLineFields = {
     },
   },
 
-  /** 従業員ID */
-  employeeId: {
-    ...generalDefinitions.oneLine,
-    label: "従業員ID",
-  },
-
   /** FAX番号 */
   fax: {
     ...generalDefinitions.oneLine,
