@@ -27,6 +27,7 @@ export default class User extends FireModel {
      * email
      * - 登録時以外編集不可。
      * - ユーザーアカウントのメールアドレスの変更は Cloud Functions 経由とする。
+     * - ユーザーアカウントのグローバル重複チェックは Cloud Functions 経由とする。
      */
     email: defField("email", {
       required: true,
