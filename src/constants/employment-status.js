@@ -6,10 +6,10 @@
 
 export const VALUES = Object.freeze({
   ACTIVE: { value: "ACTIVE", title: "在職中" },
-  TERMINATED: { value: "TERMINATED", title: "退職済み" },
+  RESIGNED: { value: "RESIGNED", title: "退職済み" },
 });
 
 export const OPTIONS = [
   { title: VALUES.ACTIVE.title, value: VALUES.ACTIVE.value },
-  { title: VALUES.TERMINATED.title, value: VALUES.TERMINATED.value },
+  { title: VALUES.RESIGNED.title, value: VALUES.RESIGNED.value },
 ];

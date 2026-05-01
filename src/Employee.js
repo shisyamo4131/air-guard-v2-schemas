@@ -71,7 +71,7 @@ import Insurance from "./Insurance.js";
  * @static
  * @property {Object} EMPLOYMENT_STATUS - 雇用状況の定数オブジェクト
  * @property {string} STATUS_ACTIVE - 在職中の雇用状況を表す定数
- * @property {string} STATUS_TERMINATED - 退職済みの雇用状況を表す定数
+ * @property {string} STATUS_RESIGNED - 退職済みの雇用状況を表す定数
  *
  * @function toTerminated - 現在の従業員インスタンスを退職済みに変更する関数
  *****************************************************************************/
@@ -103,19 +103,17 @@ export default class Employee extends GeocodableMixin(FireModel) {
 
     /**
      * 退職年月日
-     * - `employmentStatus` が `TERMINATED` の場合、必須フィールド。
+     * - `employmentStatus` が `RESIGNED` の場合、必須フィールド。
      * - `employmentStatus` が `ACTIVE` の場合、入力不可（disabled）。
      * - バリデーションルール:
-     * - `employmentStatus` が `TERMINATED` の場合、必須。
-     * - `employmentStatus` が `TERMINATED` の場合、`dateOfHire` より前の日付は不可。
+     * - `employmentStatus` が `RESIGNED` の場合、必須。
+     * - `employmentStatus` が `RESIGNED` の場合、`dateOfHire` より前の日付は不可。
      * - `employmentStatus` が `ACTIVE` の場合、常に null でなければならない。
      * - フロントエンドのフォームでは、`employmentStatus` の値に応じて入力フィールドの表示/非表示や必須/任意を切り替えることが推奨される。
      */
     dateOfTermination: defField("dateOfTermination", {
       validator: (value, item) => {
-        if (
-          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value
-        ) {
+        if (item.employmentStatus === EMPLOYMENT_STATUS_VALUES.RESIGNED.value) {
           if (!value) {
             return VALIDATION_ERRORS.CUSTOM_ERROR(
               "INVALID_DATE_OF_TERMINATION",
@@ -143,15 +141,13 @@ export default class Employee extends GeocodableMixin(FireModel) {
       component: {
         attrs: {
           required: ({ item }) =>
-            item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+            item.employmentStatus === EMPLOYMENT_STATUS_VALUES.RESIGNED.value,
         },
       },
     }),
     reasonOfTermination: defField("reasonOfTermination", {
       validator: (value, item) => {
-        if (
-          item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value
-        ) {
+        if (item.employmentStatus === EMPLOYMENT_STATUS_VALUES.RESIGNED.value) {
           if (!value) {
             return VALIDATION_ERRORS.CUSTOM_ERROR(
               "INVALID_REASON_OF_TERMINATION",
@@ -172,7 +168,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
       component: {
         attrs: {
           required: ({ item }) =>
-            item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
+            item.employmentStatus === EMPLOYMENT_STATUS_VALUES.RESIGNED.value,
         },
       },
     }),
@@ -570,7 +566,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
   ];
 
   static STATUS_ACTIVE = EMPLOYMENT_STATUS_VALUES.ACTIVE.value;
-  static STATUS_TERMINATED = EMPLOYMENT_STATUS_VALUES.TERMINATED.value;
+  static STATUS_RESIGNED = EMPLOYMENT_STATUS_VALUES.RESIGNED.value;
 
   /** 2026-03-18 追加 */
   static EMPLOYMENT_STATUS = EMPLOYMENT_STATUS_VALUES;
@@ -682,13 +678,13 @@ export default class Employee extends GeocodableMixin(FireModel) {
 
   /**
    * 退職状態に関連するフィールドを初期化します。
-   * - `employmentStatus` が `TERMINATED` でない場合、以下のプロパティを初期化します。
+   * - `employmentStatus` が `RESIGNED` でない場合、以下のプロパティを初期化します。
    *  - `dateOfTermination`
    *  - `reasonOfTermination`
    * @returns {void}
    */
   _initTerminatedFields() {
-    if (this.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value) {
+    if (this.employmentStatus !== EMPLOYMENT_STATUS_VALUES.RESIGNED.value) {
       this.dateOfTermination = null;
       this.reasonOfTermination = null;
     }
@@ -785,7 +781,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
     // - 一度退職処理した従業員の復帰処理は現状想定していないが、将来的に必要になった場合は `toActive` メソッド等を追加実装すること。
     if (
       !this._skipToTerminatedCheck &&
-      this.employmentStatus === Employee.STATUS_TERMINATED &&
+      this.employmentStatus === Employee.STATUS_RESIGNED &&
       this._beforeData.employmentStatus === Employee.STATUS_ACTIVE
     ) {
       throw new Error(
@@ -834,7 +830,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
       );
     }
 
-    this.employmentStatus = Employee.STATUS_TERMINATED;
+    this.employmentStatus = Employee.STATUS_RESIGNED;
     this.dateOfTermination = dateOfTermination;
     this.reasonOfTermination = reasonOfTermination;
 
