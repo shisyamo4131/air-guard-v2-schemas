@@ -23,7 +23,19 @@ export default class User extends FireModel {
   static className = "ユーザー";
   static collectionPath = "Users";
   static classProps = {
-    email: defField("email", { required: true }),
+    /**
+     * email
+     * - 登録時以外編集不可。
+     * - ユーザーアカウントのメールアドレスの変更は Cloud Functions 経由とする。
+     */
+    email: defField("email", {
+      required: true,
+      component: {
+        attrs: {
+          disabled: ({ editMode, item }) => editMode !== "CREATE",
+        },
+      },
+    }),
     displayName: defField("displayName", { required: true }),
     employeeId: defField("oneLine", { label: "従業員ID", hidden: true }),
     roles: defField("roles"),
