@@ -144,8 +144,6 @@ export default class Employee extends GeocodableMixin(FireModel) {
         attrs: {
           required: ({ item }) =>
             item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-          disabled: ({ item }) =>
-            item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
         },
       },
     }),
@@ -175,8 +173,6 @@ export default class Employee extends GeocodableMixin(FireModel) {
         attrs: {
           required: ({ item }) =>
             item.employmentStatus === EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
-          disabled: ({ item }) =>
-            item.employmentStatus !== EMPLOYMENT_STATUS_VALUES.TERMINATED.value,
         },
       },
     }),
