@@ -2,6 +2,14 @@
  * @file ./src/constants/arrangement-notification-status.js
  * @description 配置通知状態定義
  *
+ * @property {string} value - 状態の識別子
+ * @property {string} title - 状態の表示名
+ * @property {number} order - 状態の順序（数値が小さいほど優先度が高い）
+ * @property {string} color - 状態に対応するカラーコード（例: "#F57C00"）
+ * @property {function} disabled - 現在の状態を引数に取り、次の状態への遷移が可能かどうかを判定する関数
+ * @property {string|null} next - 次の状態の識別子（遷移可能な場合）、遷移不可の場合はnull
+ * @property {string|null} return - 前の状態の識別子（遷移可能な場合）、遷移不可の場合はnull
+ *
  * ### 状態
  * - 配置済（ARRANGED）: 管制により配置が行われた状態で、配置通知の初期状態。作業員はまだ確認していない。
  * - 確認済（CONFIRMED）: 作業員が配置通知を確認し、了承した状態。
@@ -30,6 +38,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return true;
     },
+    next: "CONFIRMED",
+    return: null,
   },
 
   CONFIRMED: {
@@ -47,6 +57,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return !(currentStatus === "ARRANGED" || currentStatus === "ARRIVED");
     },
+    next: "ARRIVED",
+    return: "ARRANGED",
   },
 
   ARRIVED: {
@@ -63,6 +75,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return !(currentStatus === "CONFIRMED" || currentStatus === "LEAVED");
     },
+    next: "LEAVED",
+    return: "ARRIVED",
   },
 
   LEAVED: {
@@ -80,6 +94,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return !(currentStatus === "ARRIVED" || currentStatus === "LEAVED");
     },
+    next: null,
+    return: "ARRIVED",
   },
 
   /**
