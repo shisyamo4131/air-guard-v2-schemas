@@ -38,6 +38,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return true;
     },
+    text: "未確認配置です。",
+    icon: "mdi-alert-circle-outline",
     next: { status: "CONFIRMED", text: "配置了解" },
     prev: null,
   },
@@ -57,6 +59,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return !(currentStatus === "ARRANGED" || currentStatus === "ARRIVED");
     },
+    text: "確認済みの配置です。",
+    icon: "mdi-check-circle-outline",
     next: { status: "ARRIVED", text: "上番する" },
     prev: { status: "ARRANGED", text: "配置を差し戻す" },
   },
@@ -75,6 +79,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return !(currentStatus === "CONFIRMED" || currentStatus === "LEAVED");
     },
+    text: "上番済みの配置です。",
+    icon: "mdi-account-check-outline",
     next: { status: "LEAVED", text: "下番する" },
     prev: { status: "CONFIRMED", text: "上番を取り消す" },
   },
@@ -94,6 +100,8 @@ export const VALUES = Object.freeze({
     disabled: (currentStatus) => {
       return !(currentStatus === "ARRIVED" || currentStatus === "LEAVED");
     },
+    text: "下番済みの配置です。",
+    icon: "mdi-account-off-outline",
     next: null,
     prev: { status: "ARRIVED", text: "下番を取り消す" },
   },
