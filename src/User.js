@@ -38,7 +38,7 @@ export default class User extends FireModel {
       },
     }),
     displayName: defField("displayName", { required: true }),
-    employeeId: defField("oneLine", { label: "従業員ID", hidden: true }),
+    employeeId: defField("employeeId", { hidden: true }),
     roles: defField("roles"),
     disabled: defField("disabled", { hidden: true }),
     companyId: defField("companyId", { hidden: true, required: true }),

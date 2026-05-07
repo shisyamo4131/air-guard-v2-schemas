@@ -91,7 +91,6 @@ export const oneLineFields = {
       name: "air-autocomplete-api",
       attrs: {
         itemValue: "docId",
-        itemTitle: "name",
         noFilter: true,
       },
     },
@@ -171,6 +170,25 @@ export const oneLineFields = {
         counter: true,
         inputType: "tel",
         inputmode: "tel",
+      },
+    },
+  },
+
+  /**
+   * 従業員ID
+   * - アプリ側で `useFetchXxxx` コンポーザブルを使用するため
+   *   使用するクラス側で api 関連の設定は不要。
+   */
+  employeeId: {
+    ...generalDefinitions.oneLine,
+    label: "従業員",
+    // アプリ側で `useFetchXxxx` コンポーザブルを使用するため
+    // 使用するクラス側で api 関連の設定は不要。
+    component: {
+      name: "air-autocomplete-api",
+      attrs: {
+        itemValue: "docId",
+        noFilter: true,
       },
     },
   },
@@ -336,7 +354,6 @@ export const oneLineFields = {
       name: "air-autocomplete-api",
       attrs: {
         itemValue: "docId",
-        itemTitle: "name",
         noFilter: true,
       },
     },
