@@ -17,6 +17,7 @@
  * @property {string} tel - telephone number
  * @property {string} fax - fax number
  * @property {string} contractStatus - contract status
+ * @property {string} cutoffDate - cutoff date for billing
  * @property {number} paymentMonth - payment site in months
  * @property {string} paymentDate - payment site date
  * @property {string} remarks - additional remarks
