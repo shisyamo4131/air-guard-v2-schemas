@@ -58,7 +58,7 @@ const classProps = {
   cutoffDate: defField("cutoffDate", { required: true }),
   paymentMonth: defField("paymentMonth", { required: true }),
   paymentDate: defField("paymentDate", { required: true }),
-  remarks: defField("multipleLine", { label: "備考" }),
+  remarks: defField("remarks"),
 };
 
 /*****************************************************************************

@@ -54,8 +54,7 @@ const classProps = {
   address: defField("address", { required: true }),
   building: defField("building"),
   location: defField("location"),
-  remarks: defField("multipleLine", { label: "備考" }),
-  // agreements: defField("array", { label: "取極め", customClass: Agreement }),
+  remarks: defField("remarks"),
   agreementsV2: defField("array", {
     label: "取極め",
     customClass: AgreementV2,

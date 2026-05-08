@@ -55,7 +55,7 @@ const classProps = {
       description: "",
     },
   }),
-  remarks: defField("multipleLine"),
+  remarks: defField("remarks"),
 };
 
 export default class Billing extends FireModel {

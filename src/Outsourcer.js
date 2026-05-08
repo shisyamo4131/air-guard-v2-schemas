@@ -13,7 +13,7 @@ const classProps = {
   nameKana: defField("nameKana", { required: true }),
   displayName: defField("displayName", { label: "略称", required: true }),
   contractStatus: defField("contractStatus", { required: true }),
-  remarks: defField("multipleLine", { label: "備考" }),
+  remarks: defField("remarks"),
 };
 
 /**

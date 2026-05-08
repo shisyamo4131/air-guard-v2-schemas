@@ -113,7 +113,7 @@ const classProps = {
   }),
   qualificationRequired: defField("check", { label: "要資格者" }),
   workDescription: defField("workDescription"),
-  remarks: defField("multipleLine", { label: "備考" }),
+  remarks: defField("remarks"),
   employees: defField("array", { customClass: OperationDetail }),
   outsourcers: defField("array", {
     customClass: OperationDetail,
