@@ -45,6 +45,10 @@ import {
   OPTIONS as PAYMENT_MONTH_OPTIONS,
 } from "../../constants/payment-month.js";
 import {
+  VALUES as SECURITY_TYPE_VALUES,
+  OPTIONS as SECURITY_TYPE_OPTIONS,
+} from "../../constants/security-type.js";
+import {
   VALUES as SHIFT_TYPE_VALUES,
   OPTIONS as SHIFT_TYPE_OPTIONS,
 } from "../../constants/shift-type.js";
@@ -226,6 +230,17 @@ export const selectFields = {
       name: generalDefinitions.select.component.name,
       attrs: {
         items: PREFECTURES_OPTIONS,
+      },
+    },
+  },
+  securityType: {
+    ...generalDefinitions.select,
+    default: SECURITY_TYPE_VALUES.UNSET.value,
+    label: "警備種別",
+    component: {
+      name: generalDefinitions.select.component.name,
+      attrs: {
+        items: SECURITY_TYPE_OPTIONS,
       },
     },
   },

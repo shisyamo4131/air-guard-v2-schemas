@@ -53,6 +53,7 @@ const classProps = {
   city: defField("city", { required: true }),
   address: defField("address", { required: true }),
   building: defField("building"),
+  securityType: defField("securityType", { required: true }),
   location: defField("location"),
   remarks: defField("remarks"),
   agreementsV2: defField("array", {
