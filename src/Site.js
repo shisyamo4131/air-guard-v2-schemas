@@ -15,9 +15,11 @@ import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { defAccessor } from "./parts/accessorDefinitions.js";
 import Customer from "./Customer.js";
+import SiteOperationSchedule from "./SiteOperationSchedule.js";
 import AgreementV2 from "./AgreementV2.js";
 import { VALUES } from "./constants/site-status.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
+import { formatJstDate } from "./utils/index.js";
 
 const classProps = {
   customerId: defField("customerId", {
@@ -344,5 +346,48 @@ export default class Site extends GeocodableMixin(FireModel) {
       "Warning: `getAgreement` is deprecated. Use `getValidAgreement` instead.",
     );
     return null;
+  }
+
+  /**
+   * 現場を稼働終了状態に更新します。
+   * @returns {Promise<DocumentReference>} 更新されたドキュメントリファレンス
+   * @throws {Error} ドキュメントが読み込まれていない場合、既に稼働終了している場合、または稼働予定が存在する場合にスローされます。
+   */
+  async terminate() {
+    // 自身が `docId` を持っていない場合はエラーをスロー（インスタンスにドキュメントが読み込まれていない）
+    if (!this.docId) {
+      throw new Error(
+        "ドキュメントが読み込まれていないため、現場を稼働終了できません。",
+      );
+    }
+
+    // 既に稼働終了している場合はエラーをスロー
+    if (this.status === Site.STATUS_TERMINATED) {
+      throw new Error("既に稼働終了している現場です。");
+    }
+
+    // 現在日時の JST 日付文字列を取得
+    const nowJst = formatJstDate(new Date(), "YYYY-MM-DD");
+
+    // 現在日付以降の SiteOperationSchedule ドキュメントを取得
+    const scheduleInstance = new SiteOperationSchedule();
+    const futureScheduleDocs = await scheduleInstance.fetchDocs({
+      constraints: [
+        ["where", "siteId", "==", this.docId],
+        ["where", "date", ">=", nowJst],
+        ["limit", 1],
+      ],
+    });
+
+    // SiteOperationSchedule ドキュメントが存在する場合はエラーをスロー
+    if (futureScheduleDocs.length > 0) {
+      throw new Error(
+        "稼働予定が存在するため、現場を終了させることはできません。先に稼働予定を削除する必要があります。",
+      );
+    }
+
+    // 状態を稼働終了に更新して保存
+    this.status = Site.STATUS_TERMINATED;
+    return await this.update();
   }
 }
