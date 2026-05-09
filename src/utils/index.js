@@ -58,6 +58,40 @@ export function getDateAt(date, time, dateOffset = 0) {
 }
 
 /**
+ * 現在のJST時刻をUTCとして保存されたDateオブジェクトとして返す
+ * システム時刻（UTC）をJST時刻に変換し、その時刻をUTCとして保存します。
+ * @returns {Date} 現在のJST時刻をUTCとして保存したDateオブジェクト
+ * @example
+ * // 現在のJST時刻が 2024-03-05 10:30:45 の場合
+ * const now = getCurrentJstDate()
+ * // now は内部的に 2024-03-05T10:30:45.000Z として保存される
+ * formatJstDate(now) // '2024-03-05'
+ */
+export function getCurrentJstDate() {
+  const now = new Date();
+  const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+  const year = jstDate.getUTCFullYear();
+  const month = jstDate.getUTCMonth();
+  const day = jstDate.getUTCDate();
+  const hour = jstDate.getUTCHours();
+  const minute = jstDate.getUTCMinutes();
+  const second = jstDate.getUTCSeconds();
+  const millisecond = jstDate.getUTCMilliseconds();
+
+  const utcMillis = Date.UTC(
+    year,
+    month,
+    day,
+    hour,
+    minute,
+    second,
+    millisecond,
+  );
+  return new Date(utcMillis);
+}
+
+/**
  * DateオブジェクトをJST基準の文字列に変換
  * UTCとして保存されているJST時刻を、JST日付の文字列表現に変換します。
  * @param {Date} dateAt - UTCとして保存されたJST時刻
@@ -66,7 +100,7 @@ export function getDateAt(date, time, dateOffset = 0) {
  * @example
  * // YYYY-MM-DD形式
  * formatJstDate(new Date('2024-03-04T15:00:00Z')) // '2024-03-05'
- * 
+ *
  * // YYYY-MM形式
  * formatJstDate(new Date('2024-03-04T15:00:00Z'), 'YYYY-MM') // '2024-03'
  */
