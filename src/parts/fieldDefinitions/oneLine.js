@@ -72,7 +72,7 @@ export const oneLineFields = {
     component: {
       name: generalDefinitions.oneLine.component.name,
       attrs: {
-        inputType: "katakana",
+        inputType: "katakana-numeric",
       },
     },
   },
@@ -223,7 +223,7 @@ export const oneLineFields = {
     component: {
       name: generalDefinitions.oneLine.component.name,
       attrs: {
-        inputType: "katakana",
+        inputType: "katakana-numeric",
       },
     },
   },
@@ -271,7 +271,7 @@ export const oneLineFields = {
     component: {
       name: generalDefinitions.oneLine.component.name,
       attrs: {
-        inputType: "katakana",
+        inputType: "katakana-numeric",
       },
     },
   },
@@ -313,7 +313,7 @@ export const oneLineFields = {
     component: {
       name: generalDefinitions.oneLine.component.name,
       attrs: {
-        inputType: "katakana",
+        inputType: "katakana-numeric",
       },
     },
   },
