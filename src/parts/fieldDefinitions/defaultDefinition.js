@@ -1,3 +1,5 @@
+import { getDateAt } from "../../utils/index.js";
+
 /**
  * フィールド定義のデフォルト値
  * - `air-firebase` が提供する `FireModel (BaseClass)` において、クラスが保有するフィールドの定義および値の検証に使用されます。
@@ -55,11 +57,7 @@ export const generalDefinitions = {
     ...defaultDefinition,
     type: Object,
     label: "日付",
-    default: () => {
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-      return date;
-    },
+    default: () => getDateAt(new Date(), "00:00"),
     component: {
       name: "air-date-input",
     },
