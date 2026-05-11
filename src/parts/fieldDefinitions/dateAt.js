@@ -5,6 +5,14 @@ import { generalDefinitions } from "./defaultDefinition.js";
  */
 export const dateAtFields = {
   dateAt: generalDefinitions.dateAt,
+  constructionPeriodEndAt: {
+    ...generalDefinitions.dateAt,
+    label: "工期（終了日）",
+  },
+  constructionPeriodStartAt: {
+    ...generalDefinitions.dateAt,
+    label: "工期（開始日）",
+  },
   dateOfBirth: {
     ...generalDefinitions.dateAt,
     label: "生年月日",

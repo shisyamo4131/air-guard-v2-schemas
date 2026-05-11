@@ -56,6 +56,12 @@ const classProps = {
   address: defField("address", { required: true }),
   building: defField("building"),
   securityType: defField("securityType", { required: true }),
+  constructionPeriodStartAt: defField("constructionPeriodStartAt", {
+    required: true,
+  }),
+  constructionPeriodEndAt: defField("constructionPeriodEndAt", {
+    required: true,
+  }),
   location: defField("location"),
   remarks: defField("remarks"),
   agreementsV2: defField("array", {
@@ -76,18 +82,22 @@ const classProps = {
  * @property {string} code - 現場コード
  * @property {string} name - 現場名
  * @property {string} nameKana - 現場名カナ
- * @property {string} zipcode - Postal code.
- * @property {string} prefCode - Prefecture code.
- * @property {string} prefecture - Prefecture name derived from `prefCode` (read-only)
- * @property {string} city - City name.
- * @property {string} address - Address details.
- * @property {string} building - Building name.
- * @property {string} fullAddress - Full address combining prefecture, city, and address (read-only)
+ * @property {string} zipcode - 郵便番号
+ * @property {string} prefCode - 都道府県コード
+ * @property {string} prefecture - 都道府県名（`prefCode` から派生）（読み取り専用）
+ * @property {string} city - 市区町村名
+ * @property {string} address - 町域名・番地
+ * @property {string} building - 建物名
+ * @property {string} fullAddress - 住所（郵便番号、都道府県、市区町村、番地、建物名を結合したもの）（読み取り専用）
  * @property {object} location - Geographical location.
- * @property {string} remarks - Additional remarks.
+ * @property {string} securityType - 警備種別
+ * @property {string} constructionPeriodStartAt - 工期開始日
+ * @property {string} constructionPeriodEndAt - 工期終了日
+ * @property {boolean} hasConstructionPeriod - 工期が設定されているかどうかを表すフラグ（読み取り専用）
+ * @property {string} remarks - 備考
  * @property {array} agreementsV2 - 取極めの配列（バージョン2）。`AgreementV2` クラスのインスタンスを要素とする。
  *
- * @property {string} status - Site status.
+ * @property {string} status - 現場のステータス（例: "ACTIVE", "TERMINATED"）
  * @property {boolean} isTemporary - 仮登録状態かどうかを表すフラグ
  *
  * @function getAgreement
@@ -225,6 +235,19 @@ export default class Site extends GeocodableMixin(FireModel) {
         enumerable: true,
         get() {
           return !this.customerId;
+        },
+        set() {},
+      },
+
+      /**
+       * 工期が設定されているかどうかを表すアクセサー
+       * - `constructionPeriodStartAt` または `constructionPeriodEndAt` のいずれかが設定されている場合に `true` を返します。
+       */
+      hasConstructionPeriod: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.constructionPeriodStartAt || this.constructionPeriodEndAt;
         },
         set() {},
       },
