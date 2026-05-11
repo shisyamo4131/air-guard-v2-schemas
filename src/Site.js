@@ -56,8 +56,12 @@ const classProps = {
   address: defField("address", { required: true }),
   building: defField("building"),
   securityType: defField("securityType", { required: true }),
-  constructionPeriodStartAt: defField("constructionPeriodStartAt"),
-  constructionPeriodEndAt: defField("constructionPeriodEndAt"),
+  constructionPeriodStartAt: defField("constructionPeriodStartAt", {
+    component: { attrs: { clearable: true } },
+  }),
+  constructionPeriodEndAt: defField("constructionPeriodEndAt", {
+    component: { attrs: { clearable: true } },
+  }),
   location: defField("location"),
   remarks: defField("remarks"),
   agreementsV2: defField("array", {
