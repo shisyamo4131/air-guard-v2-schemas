@@ -11,6 +11,7 @@ import Certification from "./Certification.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 import { VALIDATION_ERRORS } from "./errorDefinitions.js";
 import Insurance from "./Insurance.js";
+import User from "./User.js";
 
 /*****************************************************************************
  * @class Employee
@@ -798,16 +799,29 @@ export default class Employee extends GeocodableMixin(FireModel) {
 
   /**
    * 現在インスタンスに読み込まれている従業員を退職状態に変更します。
+   * - この処理は従業員ドキュメントの更新と、紐づいているユーザーアカウントの削除をトランザクション内で実行します。
+   * - サーバーサイド（ServerAdapter）からの呼び出しはサポートしていません。
+   * - Firestoreトランザクションの制約上、ユーザー検索はトランザクション外で実行されます。
+   *
    * @param {Date} dateOfTermination - 退職日（Dateオブジェクト）
    * @param {string} reasonOfTermination - 退職理由
-   * @param {Object} options - パラメータオブジェクト
-   * @param {Function|null} [options.transaction=null] - Firestore トランザクション関数
-   * @param {Function|null} [options.callBack=null] - カスタム処理用コールバック
-   * @param {string|null} [options.prefix=null] - パスのプレフィックス
-   * @returns {Promise<DocumentReference>} 更新されたドキュメントの参照
-   * @throws {Error} docIdが存在しない場合、または有効なdateOfTerminationが提供されていない場合。
+   * @returns {Promise<void>} 処理完了時に解決されるPromise
+   * @throws {Error} サーバーサイドから呼び出された場合
+   * @throws {Error} docIdが存在しない場合
+   * @throws {Error} 有効なdateOfTerminationが提供されていない場合
+   * @throws {Error} dateOfTerminationがdateOfHireより前の日付の場合
+   * @throws {Error} 有効なreasonOfTerminationが提供されていない場合
+   * @throws {Error} 従業員が管理者アカウントと紐づいている場合
    */
-  async toTerminated(dateOfTermination, reasonOfTermination, options = {}) {
+  async toTerminated(dateOfTermination, reasonOfTermination) {
+    // サーバーサイドからの呼び出しチェック
+    if (Employee.type === "SERVER") {
+      throw new Error(
+        "[Employee.js] toTerminated cannot be called from server-side adapter. Use separate Employee.update() and User.delete() operations with explicit prefix instead.",
+      );
+    }
+
+    // バリデーション
     if (!this.docId) {
       throw new Error(
         "[Employee.js] docId is required to terminate an employee.",
@@ -823,21 +837,45 @@ export default class Employee extends GeocodableMixin(FireModel) {
         "[Employee.js] dateOfTermination cannot be earlier than dateOfHire.",
       );
     }
-
     if (!reasonOfTermination || typeof reasonOfTermination !== "string") {
       throw new Error(
         "[Employee.js] A valid reasonOfTermination is required to terminate an employee.",
       );
     }
 
+    // User検索（トランザクション外で実行）
+    const userInstance = new User();
+    const users = await userInstance.fetchDocs({
+      constraints: [["where", "employeeId", "==", this.docId]],
+    });
+
+    const user = users.length > 0 ? users[0] : null;
+
+    // 管理者アカウントチェック
+    if (user && user.isAdmin) {
+      throw new Error(
+        "[Employee.js] Cannot terminate employee with administrator user account. Remove admin privileges first.",
+      );
+    }
+
+    // 退職情報をインスタンスにセット
     this.employmentStatus = Employee.STATUS_RESIGNED;
     this.dateOfTermination = dateOfTermination;
     this.reasonOfTermination = reasonOfTermination;
 
+    // update メソッドで弾かれないようにフラグをセット
     this._skipToTerminatedCheck = true;
 
     try {
-      return await this.update(options);
+      // トランザクション内でWrite操作のみ実行
+      await Employee.runTransaction(async (transaction) => {
+        await this.update({ transaction });
+
+        // 紐づいているユーザーアカウントを削除
+        if (user) {
+          await user.delete({ transaction });
+        }
+      });
     } catch (error) {
       this.rollback();
       throw error;
