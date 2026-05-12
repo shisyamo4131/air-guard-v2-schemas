@@ -20,6 +20,7 @@ import AgreementV2 from "./AgreementV2.js";
 import { VALUES } from "./constants/site-status.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
 import { formatJstDate } from "./utils/index.js";
+import { VALIDATION_ERRORS } from "./errorDefinitions.js";
 
 const classProps = {
   customerId: defField("customerId", {
@@ -57,10 +58,38 @@ const classProps = {
   building: defField("building"),
   securityType: defField("securityType", { required: true }),
   constructionPeriodStartAt: defField("constructionPeriodStartAt", {
-    component: { attrs: { clearable: true } },
+    validator: (value, item) => {
+      if (!value || !item.constructionPeriodEndAt) return true;
+      if (value > item.constructionPeriodEndAt) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "CONSTRUCTION_PERIOD_START_AT_MUST_BE_BEFORE_END_AT",
+          "工期開始日は工期終了日以前の日付を指定してください。",
+        );
+      }
+      return true;
+    },
+    component: {
+      attrs: {
+        clearable: true,
+      },
+    },
   }),
   constructionPeriodEndAt: defField("constructionPeriodEndAt", {
-    component: { attrs: { clearable: true } },
+    validator: (value, item) => {
+      if (!value || !item.constructionPeriodStartAt) return true;
+      if (value < item.constructionPeriodStartAt) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "CONSTRUCTION_PERIOD_END_AT_MUST_BE_AFTER_START_AT",
+          "工期終了日は工期開始日以降の日付を指定してください。",
+        );
+      }
+      return true;
+    },
+    component: {
+      attrs: {
+        clearable: true,
+      },
+    },
   }),
   location: defField("location"),
   remarks: defField("remarks"),
