@@ -70,4 +70,37 @@ export default class FcmToken extends FireModel {
       "FCMトークンは更新できません。新しいトークンでドキュメントを作成してください。",
     );
   }
+
+  /**
+   * 指定されたUIDに関連するすべてのFCMトークンドキュメントを削除します。
+   * - ドキュメントIDはトークンそのものなので、uidフィールドでクエリして削除します。
+   * - Firebase Authentication ユーザー削除時のクリーンアップ処理などで使用されます。
+   * @param {string} uid - ユーザーID（Firebase Authentication UID）
+   * @param {Object} [options] - オプション
+   * @param {import('firebase-admin/firestore').Firestore} [options.firestore] - Firestoreインスタンス（省略時は自動取得）
+   * @returns {Promise<number>} 削除されたドキュメントの数
+   * @throws {Error} uidが指定されていない場合
+   */
+  static async deleteByUid(uid, options = {}) {
+    if (!uid) {
+      throw new Error("UIDが指定されていません。");
+    }
+
+    // FcmTokenインスタンスを生成
+    const instance = new this();
+
+    // fetchDocsでuidに該当するドキュメントのインスタンス配列を取得
+    const tokens = await instance.fetchDocs({
+      constraints: [["where", "uid", "==", uid]],
+    });
+
+    if (tokens.length === 0) {
+      return 0;
+    }
+
+    // 各インスタンスのdeleteメソッドを使って削除
+    await Promise.all(tokens.map((token) => token.delete()));
+
+    return tokens.length;
+  }
 }
