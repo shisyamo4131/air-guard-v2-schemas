@@ -276,7 +276,9 @@ export default class Site extends GeocodableMixin(FireModel) {
         configurable: true,
         enumerable: true,
         get() {
-          return this.constructionPeriodStartAt || this.constructionPeriodEndAt;
+          return (
+            !!this.constructionPeriodStartAt || !!this.constructionPeriodEndAt
+          );
         },
         set() {},
       },
