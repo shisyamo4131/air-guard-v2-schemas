@@ -550,6 +550,26 @@ export default class Employee extends GeocodableMixin(FireModel) {
     }),
     remarks: defField("remarks"),
   };
+  static hasMany = [
+    {
+      collectionPath: "SiteOperationSchedules",
+      field: "employeeIds",
+      condition: "array-contains",
+      type: "collection",
+    },
+    {
+      collectionPath: "OperationResults",
+      field: "employeeIds",
+      condition: "array-contains",
+      type: "collection",
+    },
+    {
+      collectionPath: "ArrangementNotifications",
+      field: "employeeId",
+      condition: "==",
+      type: "collection",
+    },
+  ];
 
   static tokenFields = [
     "code",

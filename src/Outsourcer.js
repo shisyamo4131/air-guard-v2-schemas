@@ -32,6 +32,20 @@ export default class Outsourcer extends FireModel {
   static useAutonumber = false;
   static logicalDelete = true;
   static classProps = classProps;
+  static hasMany = [
+    {
+      collectionPath: "SiteOperationSchedules",
+      field: "outsourcerIds",
+      condition: "array-contains",
+      type: "collection",
+    },
+    {
+      collectionPath: "OperationResults",
+      field: "outsourcerIds",
+      condition: "array-contains",
+      type: "collection",
+    },
+  ];
 
   static tokenFields = ["name", "nameKana", "displayName"];
 

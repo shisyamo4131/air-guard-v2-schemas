@@ -151,6 +151,18 @@ export default class Site extends GeocodableMixin(FireModel) {
       condition: "==",
       type: "collection",
     },
+    {
+      collectionPath: "OperationResults",
+      field: "siteId",
+      condition: "==",
+      type: "collection",
+    },
+    {
+      collectionPath: "ArrangementNotifications",
+      field: "siteId",
+      condition: "==",
+      type: "collection",
+    },
   ];
 
   static headers = [
