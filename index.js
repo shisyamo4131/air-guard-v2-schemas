@@ -20,6 +20,7 @@ export { default as Insurance } from "./src/Insurance.js";
 export { default as Notification } from "./src/Notification.js";
 export { default as NotificationRecipient } from "./src/NotificationRecipient.js";
 export { default as OperationBilling } from "./src/OperationBilling.js";
+export { default as OperationDetail } from "./src/OperationDetail.js";
 export { default as OperationResult } from "./src/OperationResult.js";
 export { default as OperationResultDetail } from "./src/OperationResultDetail.js";
 export { default as Outsourcer } from "./src/Outsourcer.js";
