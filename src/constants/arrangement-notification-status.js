@@ -31,12 +31,12 @@ export const VALUES = Object.freeze({
     order: 1,
     color: "#F57C00", // 🟠 配置通知済み（待機中）
     /**
-     * 現在の状態に関わらず、常に使用不可。配置通知の初期状態であり、ユーザーが手動で「配置済」に設定することはないため。
+     * 現在の状態に関わらず、常に使用可。
      * @param {*} currentStatus
      * @returns {boolean}
      */
     disabled: (currentStatus) => {
-      return true;
+      return false;
     },
     text: "未確認配置です。",
     icon: "mdi-alert-circle-outline",
