@@ -30,14 +30,6 @@ export const VALUES = Object.freeze({
     title: "配置済",
     order: 1,
     color: "#F57C00", // 🟠 配置通知済み（待機中）
-    /**
-     * 現在の状態に関わらず、常に使用可。
-     * @param {*} currentStatus
-     * @returns {boolean}
-     */
-    disabled: (currentStatus) => {
-      return false;
-    },
     text: "未確認配置です。",
     icon: "mdi-alert-circle-outline",
     next: { status: "CONFIRMED", text: "配置了解", transition: "toConfirmed" },
@@ -49,16 +41,6 @@ export const VALUES = Object.freeze({
     title: "確認済",
     order: 2,
     color: "#2196F3", // 🔵 作業員が了承済み（準備中）
-    /**
-     * 現在の状態が「配置済」または「上番済」でなければ使用不可。
-     * - 「配置済」-> 「確認済」への遷移は可能。
-     * - 「上番済」-> 「確認済」への遷移は不可。
-     * @param {*} currentStatus
-     * @returns {boolean}
-     */
-    disabled: (currentStatus) => {
-      return !(currentStatus === "ARRANGED" || currentStatus === "ARRIVED");
-    },
     text: "確認済みの配置です。",
     icon: "mdi-check-circle-outline",
     next: { status: "ARRIVED", text: "上番する", transition: "toArrived" },
@@ -74,15 +56,6 @@ export const VALUES = Object.freeze({
     title: "上番済",
     order: 3,
     color: "#4CAF50", // 🟢 現場到着、作業開始可能
-    /**
-     * 現在の状態が「確認済」または「下番済」でなければ使用不可。
-     * - 「下番済」から「上番済」への遷移は可能（誤って下番してしまった場合に再度上番に戻すことを許容）。
-     * @param {*} currentStatus
-     * @returns {boolean}
-     */
-    disabled: (currentStatus) => {
-      return !(currentStatus === "CONFIRMED" || currentStatus === "LEAVED");
-    },
     text: "上番済みの配置です。",
     icon: "mdi-account-check-outline",
     next: { status: "LEAVED", text: "下番する", transition: "toLeaved" },
@@ -98,16 +71,6 @@ export const VALUES = Object.freeze({
     title: "下番済",
     order: 4,
     color: "#607D8B", // ⚫ 作業完了、離脱済み
-    /**
-     * 現在の状態が「上番済」または「下番済」でなければ使用不可。
-     * - 「上番済」-> 「下番済」への遷移は可能。
-     * - 「下番済」-> 「下番済」への遷移は可能（誤って下番してしまった場合に再度下番することを許容）。
-     * @param {*} currentStatus
-     * @returns {boolean}
-     */
-    disabled: (currentStatus) => {
-      return !(currentStatus === "ARRIVED" || currentStatus === "LEAVED");
-    },
     text: "下番済みの配置です。",
     icon: "mdi-account-off-outline",
     next: null,
