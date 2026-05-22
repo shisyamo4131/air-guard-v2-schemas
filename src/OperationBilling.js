@@ -102,11 +102,6 @@
  * @property {string|null} billingDate - 請求日 (YYYY-MM-DD 形式) (読み取り専用)
  * - `billingDateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
  * @property {string} billingMonth - 請求月 (YYYY-MM 形式) (読み取り専用)
- * @property {string|false} isInvalid - バリデーションステータス (読み取り専用)
- * - 有効な場合は false を返します。
- * - 無効な場合は理由コードの文字列を返します:
- *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合。
- *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
  * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
@@ -118,16 +113,31 @@
  * @method setRegulationWorkMinutesCallback - `regulationWorkMinutes` が変更された時に呼び出されるコールバック関数
  * @method refreshBillingDateAt - 請求日を `dateAt` と `cutoffDate` に基づいて更新します。
  * - 現在の `dateAt` と `cutoffDate` の値に基づいて `billingDateAt` を更新します。
- *
  * @method toggleLock - OperationResult ドキュメントのロック状態を切り替える
  * - 指定されたドキュメント ID の OperationResult ドキュメントを取得し、その `isLocked` プロパティを指定された値に更新します。
  * - ドキュメントが存在しない場合や、無効な引数が提供された場合はエラーをスローします。
- *
  * @override
  * @method create - このクラスのインスタンスは `create` メソッドを使用できません。
  * - 稼働請求のレコードは通常、OperationResult クラスを通じて生成されるため、OperationBilling クラスのインスタンスの作成は実装されていません。
  * @method delete - このクラスのインスタンスは `delete` メソッドを使用できません。
  * - 稼働請求のレコードは通常、OperationResult クラスを通じて生成されるため、OperationBilling クラスのインスタンスの削除は実装されていません。
+ *
+ * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
+ * @getter {Array<Object>} invalidReasons - エラーコード、メッセージ、多言語メッセージ、フィールド名を含む詳細情報の配列を返すプロパティ
+ * @getter {boolean} isGroupKeyChanged - `groupKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isAgreementKeyChanged - `agreementKey` プロパティが変更されたかどうかを返すプロパティ
+ * @getter {boolean} isEmployeesChanged - 従業員が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {boolean} isOutsourcersChanged - 外注が変更されたかどうかを示すフラグ (読み取り専用)
+ * @getter {Array<OperationDetail>} addedWorkers - 追加された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} removedWorkers - 削除された従業員の配列 (読み取り専用)
+ * @getter {Array<OperationDetail>} updatedWorkers - 更新された従業員の配列 (読み取り専用)
+ *
+ * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
+ * @static DAY_TYPE - 曜日区分を定義する定数オブジェクト
+ * @static BILLING_UNIT_TYPE - 請求単位区分を定義する定数オブジェクト
+ *
+ * @static
+ * @method groupKeyDivider - `groupKey` を構成する要素を分割して返す静的メソッド
  *****************************************************************************/
 import OperationResult from "./OperationResult.js";
 
