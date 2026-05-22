@@ -213,30 +213,33 @@ export default class OperationResult extends Operation {
 
   static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE;
 
-  /**
-   * INVALID_REASON
-   * - Operation クラスの INVALID_REASON を継承しています。
-   * - 以下のエラーコードを追加
-   *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
-   *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
-   */
-  static INVALID_REASON = {
-    ...Operation.INVALID_REASON,
-    EMPTY_BILLING_DATE: {
-      code: "EMPTY_BILLING_DATE",
-      message: "Billing date is required.",
-      messages: {
-        ja: "請求締日は必須です。",
-      },
-    },
-    EMPTY_AGREEMENT: {
-      code: "EMPTY_AGREEMENT",
-      message: "Agreement is required.",
-      messages: {
-        ja: "取極めは必須です。",
-      },
-    },
-  };
+  // 2026-05-22
+  // 取極めがない場合も実績としては確定できるため、稼働実績ドキュメントは作成されべき。
+  // -> エラー定数が不要。
+  // /**
+  //  * INVALID_REASON
+  //  * - Operation クラスの INVALID_REASON を継承しています。
+  //  * - 以下のエラーコードを追加
+  //  *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
+  //  *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
+  //  */
+  // static INVALID_REASON = {
+  //   ...Operation.INVALID_REASON,
+  //   EMPTY_BILLING_DATE: {
+  //     code: "EMPTY_BILLING_DATE",
+  //     message: "Billing date is required.",
+  //     messages: {
+  //       ja: "請求締日は必須です。",
+  //     },
+  //   },
+  //   EMPTY_AGREEMENT: {
+  //     code: "EMPTY_AGREEMENT",
+  //     message: "Agreement is required.",
+  //     messages: {
+  //       ja: "取極めは必須です。",
+  //     },
+  //   },
+  // };
 
   static headers = [
     { title: "日付", key: "dateAt" },
@@ -605,29 +608,32 @@ export default class OperationResult extends Operation {
     }
   }
 
-  /**
-   * クラス特有のエラーを詳細情報付きで返す内部メソッド
-   * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`EMPTY_AGREEMENT` エラーを返します。
-   * - `billingDateAt` が存在しない場合、`EMPTY_BILLING_DATE` エラーを返します。
-   * @returns {Array<Object>} エラー詳細オブジェクトの配列（統一フォーマット）
-   */
-  _getInvalidReasons() {
-    const result = super._getInvalidReasons();
+  // 2026-05-22
+  // 取極めがない場合も実績としては確定できるため、稼働実績ドキュメントは作成できるべき。
+  // 稼働請求ドキュメント（`OperationBilling`）は Cloud Functions で作成される。
+  // /**
+  //  * クラス特有のエラーを詳細情報付きで返す内部メソッド
+  //  * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`EMPTY_AGREEMENT` エラーを返します。
+  //  * - `billingDateAt` が存在しない場合、`EMPTY_BILLING_DATE` エラーを返します。
+  //  * @returns {Array<Object>} エラー詳細オブジェクトの配列（統一フォーマット）
+  //  */
+  // _getInvalidReasons() {
+  //   const result = super._getInvalidReasons();
 
-    if (!this.agreement && !this.allowEmptyAgreement) {
-      result.push({
-        ...OperationResult.INVALID_REASON.EMPTY_AGREEMENT,
-        field: "agreement",
-      });
-    }
+  //   if (!this.agreement && !this.allowEmptyAgreement) {
+  //     result.push({
+  //       ...OperationResult.INVALID_REASON.EMPTY_AGREEMENT,
+  //       field: "agreement",
+  //     });
+  //   }
 
-    if (!this.billingDateAt) {
-      result.push({
-        ...OperationResult.INVALID_REASON.EMPTY_BILLING_DATE,
-        field: "billingDateAt",
-      });
-    }
+  //   if (!this.billingDateAt) {
+  //     result.push({
+  //       ...OperationResult.INVALID_REASON.EMPTY_BILLING_DATE,
+  //       field: "billingDateAt",
+  //     });
+  //   }
 
-    return result;
-  }
+  //   return result;
+  // }
 }
