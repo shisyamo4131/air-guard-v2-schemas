@@ -133,9 +133,6 @@
  * @getter {Array<OperationDetail>} updatedWorkers - 更新された従業員の配列 (読み取り専用)
  *
  * @static SHIFT_TYPE - 勤務区分を定義する定数オブジェクト
- * @static INVALID_REASON - クラス特有のエラーコードを定義する定数オブジェクト
- * - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
- * - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
  * @static DAY_TYPE - 曜日区分を定義する定数オブジェクト
  * @static BILLING_UNIT_TYPE - 請求単位区分を定義する定数オブジェクト
  *
