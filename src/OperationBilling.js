@@ -2,7 +2,8 @@
  * @file ./src/OperationBilling.js
  * @author shisyamo4131
  * @description 稼働請求クラス
- *
+ * - `OperationResult` クラスを継承し、稼働請求に特化したプロパティやメソッドを追加しています。
+ * - Firestore のコレクションは `OperationResults` を使用します。
  * @class
  * @extends OperationResult
  *
