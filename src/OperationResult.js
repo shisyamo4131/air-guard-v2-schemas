@@ -95,8 +95,6 @@
  * @property {Agreement|null} agreement - 関連する取極めオブジェクト
  * - この OperationResult に関連付けられた取極めインスタンスで、価格設定や請求情報に使用されます。
  * - 設定されている場合、単価や請求日などの計算に影響を与えます。
- * @property {boolean} allowEmptyAgreement - 取極めが存在しない場合を許可するフラグ
- * - true に設定されている場合、取極めが関連付けられていなくても OperationResult は有効と見なされます。
  * @property {boolean} hasAgreement - 取極めが関連付けられているかどうかを示すフラグ (読み取り専用)
  * - `agreement` が設定されている場合は `true`、それ以外の場合は `false`。
  * @property {Object} statistics - 従業員の統計情報 (読み取り専用)
@@ -214,10 +212,6 @@ const classProps = {
     default: false,
   }),
   agreement: defField("object", { label: "取極め", customClass: AgreementV2 }),
-  allowEmptyAgreement: defField("check", {
-    label: "取極めなしを許容",
-    default: false,
-  }),
 
   /**
    * siteId から自動同期されるプロパティ
@@ -579,7 +573,6 @@ export default class OperationResult extends Operation {
           const newKey = v ? v.key : null;
           if (oldKey === newKey) return;
           _agreement = v;
-          this.allowEmptyAgreement = false; // 取極めが設定された場合は許容を解除
           this.refreshBillingDateAt();
         },
       },
