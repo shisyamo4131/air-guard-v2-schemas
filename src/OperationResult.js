@@ -71,15 +71,23 @@
  * @property {string} orderKey - `siteId`, `shiftType` を組み合わせたキー。（読み取り専用）
  * @property {string|null} siteOperationScheduleId - 現場稼働予定ID
  * - このプロパティは、OperationResult が現場稼働予定に紐づいている場合に、その現場稼働予定の ID を保持します。
- * @property {boolean} useAdjustedQuantity - 請求に調整済み数量を使用するかどうかのフラグ
+ * @property {boolean} useAdjusted - 請求に調整済み数量を使用するかどうかのフラグ
  * @property {number} adjustedQuantityBase - 基本従業員の調整済み数量
- * - `useAdjustedQuantity` が true の場合、基本従業員の請求に使用される数量です。
+ * - `useAdjusted` が true の場合、基本従業員の請求に使用される数量です。
  * @property {number} adjustedOvertimeBase - 基本従業員の調整済み残業時間
- * - `useAdjustedQuantity` が true の場合、基本従業員の請求に使用される残業時間です。
+ * - `useAdjusted` が true の場合、基本従業員の請求に使用される残業時間です。
  * @property {number} adjustedQuantityQualified - 資格者の調整済み数量
- * - `useAdjustedQuantity` が true の場合、資格者の請求に使用される数量です。
+ * - `useAdjusted` が true の場合、資格者の請求に使用される数量です。
  * @property {number} adjustedOvertimeQualified - 資格者の調整済み残業時間
- * - `useAdjustedQuantity` が true の場合、資格者の請求に使用される残業時間です。
+ * - `useAdjusted` が true の場合、資格者の請求に使用される残業時間です。
+ * @property {number} adjustedUnitPriceBase - 基本従業員の調整済み単価
+ * - `useAdjusted` が true の場合、基本従業員の請求に使用される単価です。
+ * @property {number} adjustedOvertimeUnitPriceBase - 基本従業員の調整済み残業単価
+ * - `useAdjusted` が true の場合、基本従業員の請求に使用される残業単価です。
+ * @property {number} adjustedUnitPriceQualified - 資格者の調整済み単価
+ * - `useAdjusted` が true の場合、資格者の請求に使用される単価です。
+ * @property {number} adjustedOvertimeUnitPriceQualified - 資格者の調整済み残業単価
+ * - `useAdjusted` が true の場合、資格者の請求に使用される残業単価です。
  * @property {Date} billingDateAt - 請求日
  * - 請求に使用される日付です。
  * @property {boolean} isLocked - ロックフラグ
@@ -100,7 +108,7 @@
  * - 基本従業員と資格者の売上計算を含む。
  * - 構造: { base: {...}, qualified: {...} }
  * - 各カテゴリには以下が含まれます: unitPrice, quantity, regularAmount, overtimeUnitPrice, overtimeMinutes, overtimeAmount, total
- * - 計算は `useAdjustedQuantity`, `billingUnitType`, `includeBreakInBilling` の設定を考慮します。
+ * - 計算は `useAdjusted`, `billingUnitType`, `includeBreakInBilling` の設定を考慮します。
  * @property {number} salesAmount - 売上合計金額 (読み取り専用)
  * - 基本従業員と資格者の売上金額の合計を返します。
  * @property {number} tax - 計算された税額 (読み取り専用)
@@ -162,7 +170,7 @@ const classProps = {
   outsourcers: defField("array", {
     customClass: OperationResultDetail,
   }),
-  useAdjustedQuantity: defField("check", {
+  useAdjusted: defField("check", {
     label: "調整数量を使用",
     default: false,
   }),
@@ -180,6 +188,22 @@ const classProps = {
   }),
   adjustedOvertimeQualified: defField("number", {
     label: "資格残業（調整）",
+    default: 0,
+  }),
+  adjustedUnitPriceBase: defField("number", {
+    label: "基本単価（調整）",
+    default: 0,
+  }),
+  adjustedOvertimeUnitPriceBase: defField("number", {
+    label: "基本残業単価（調整）",
+    default: 0,
+  }),
+  adjustedUnitPriceQualified: defField("number", {
+    label: "資格単価（調整）",
+    default: 0,
+  }),
+  adjustedOvertimeUnitPriceQualified: defField("number", {
+    label: "資格残業単価（調整）",
     default: 0,
   }),
   billingDateAt: defField("dateAt", { label: "請求締日" }),
@@ -343,7 +367,7 @@ export default class OperationResult extends Operation {
             const result = createInitialValues();
 
             // agreementの有無に関わらず数量と残業時間を計算
-            if (this.useAdjustedQuantity) {
+            if (this.useAdjusted) {
               result.quantity = isQualified
                 ? this.adjustedQuantityQualified || 0
                 : this.adjustedQuantityBase || 0;
@@ -373,8 +397,25 @@ export default class OperationResult extends Operation {
               result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
             }
 
-            // agreementがある場合のみ単価と金額を計算
-            if (this.agreement) {
+            // 単価と金額を計算
+            if (this.useAdjusted) {
+              // 調整済み単価を使用（agreementがなくても計算可能）
+              result.unitPrice = isQualified
+                ? this.adjustedUnitPriceQualified || 0
+                : this.adjustedUnitPriceBase || 0;
+              result.overtimeUnitPrice = isQualified
+                ? this.adjustedOvertimeUnitPriceQualified || 0
+                : this.adjustedOvertimeUnitPriceBase || 0;
+
+              // 金額計算(RoundSettingを適用)
+              result.regularAmount = RoundSetting.apply(
+                result.quantity * result.unitPrice,
+              );
+              result.overtimeAmount = RoundSetting.apply(
+                (result.overtimeMinutes * result.overtimeUnitPrice) / 60,
+              );
+              result.total = result.regularAmount + result.overtimeAmount;
+            } else if (this.agreement) {
               if (!rateSet) {
                 console.warn(
                   `[OperationResult] AgreementV2.rates for dayType '${this.dayType}' is missing.`,
