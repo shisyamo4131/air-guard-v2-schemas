@@ -180,7 +180,7 @@ const classProps = {
     customClass: OperationResultDetail,
   }),
   useAdjusted: defField("check", {
-    label: "数量・金額を調整する",
+    label: "数量・単価・請求締日を調整する",
     default: false,
   }),
   adjustedQuantityBase: defField("number", {
@@ -395,6 +395,7 @@ const classProps = {
   }),
   billingDateAt: defField("dateAt", {
     label: "請求締日",
+    default: null,
     validator: (value, item) => {
       if (item.useAdjusted && !value) {
         return VALIDATION_ERRORS.REQUIRED_FIELD_ERROR("billingDateAt");
