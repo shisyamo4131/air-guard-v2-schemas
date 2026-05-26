@@ -105,12 +105,14 @@
  * - 各カテゴリには以下が含まれます: quantity, regularTimeWorkMinutes, overtimeWorkMinutes, totalWorkMinutes, breakMinutes
  * - 各カテゴリには 'ojt' サブカテゴリも同様の構造で含まれます。
  * @property {Object} sales - 売上金額 (読み取り専用)
- * - 基本従業員と資格者の売上計算を含む。
- * - 構造: { base: {...}, qualified: {...} }
+ * - 実績ベース（original）と調整済み（adjusted）の2層構造。
+ * - 構造: { original: { base, qualified }, adjusted: { base, qualified } }
+ * - `useAdjusted` に関係なく常に両方が計算される。
+ * - original: agreement の rates と statistics から算出。
+ * - adjusted: adjusted* フィールドから算出。
  * - 各カテゴリには以下が含まれます: unitPrice, quantity, regularAmount, overtimeUnitPrice, overtimeMinutes, overtimeAmount, total
- * - 計算は `useAdjusted`, `billingUnitType`, `includeBreakInBilling` の設定を考慮します。
  * @property {number} salesAmount - 売上合計金額 (読み取り専用)
- * - 基本従業員と資格者の売上金額の合計を返します。
+ * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用して合計を算出。
  * @property {number} tax - 計算された税額 (読み取り専用)
  * - `salesAmount` と `date` に基づいて `Tax` ユーティリティを使用して計算されます。
  * @property {number} billingAmount - 税込の請求金額 (読み取り専用)
@@ -288,6 +290,10 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+
+      /**
+       * 統計情報
+       */
       statistics: {
         configurable: true,
         enumerable: true,
@@ -330,6 +336,15 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+
+      /**
+       * 売上情報
+       * - 実績ベース（original）と調整済み（adjusted）の2層構造。
+       * - 構造: { original: { base, qualified }, adjusted: { base, qualified } }
+       * - `useAdjusted` に関係なく常に両方を計算する。
+       * - original: agreement の rates と statistics から算出。
+       * - adjusted: adjusted* フィールドから算出。
+       */
       sales: {
         configurable: true,
         enumerable: true,
@@ -344,12 +359,12 @@ export default class OperationResult extends Operation {
             total: 0,
           });
 
-          const calculateCategorySales = (category) => {
+          // 実績ベース（agreement の rates を使用）での計算
+          const calculateOriginalCategorySales = (category) => {
             const isQualified = category === "qualified";
             const categoryStats = this.statistics?.[category];
             const rateSet = this.agreement?.rates?.[this.dayType];
 
-            // 統計データが存在しない場合は警告を出力して初期値を返す
             if (!categoryStats) {
               console.warn(
                 `[OperationResult] Statistics data for category '${category}' is missing.`,
@@ -366,56 +381,24 @@ export default class OperationResult extends Operation {
 
             const result = createInitialValues();
 
-            // agreementの有無に関わらず数量と残業時間を計算
-            if (this.useAdjusted) {
-              result.quantity = isQualified
-                ? this.adjustedQuantityQualified || 0
-                : this.adjustedQuantityBase || 0;
-              result.overtimeMinutes = isQualified
-                ? this.adjustedOvertimeQualified || 0
-                : this.adjustedOvertimeBase || 0;
-            } else {
-              // agreementがある場合のみbillingUnitTypeとincludeBreakInBillingを使用
-              const isPerHour =
-                this.agreement?.billingUnitType ===
-                BILLING_UNIT_TYPE.PER_HOUR.value;
+            // 数量と残業時間を実績から計算
+            const isPerHour =
+              this.agreement?.billingUnitType ===
+              BILLING_UNIT_TYPE.PER_HOUR.value;
 
-              if (isPerHour) {
-                // 時間単位請求の場合
-                let totalMinutes = categoryStats.totalWorkMinutes || 0;
-
-                // 休憩時間を請求に含める場合は休憩時間を追加
-                if (this.agreement?.includeBreakInBilling) {
-                  totalMinutes += categoryStats.breakMinutes || 0;
-                }
-
-                result.quantity = totalMinutes / 60;
-              } else {
-                // 日単位請求の場合(休憩時間は関係なし)
-                result.quantity = categoryStats.quantity || 0;
+            if (isPerHour) {
+              let totalMinutes = categoryStats.totalWorkMinutes || 0;
+              if (this.agreement?.includeBreakInBilling) {
+                totalMinutes += categoryStats.breakMinutes || 0;
               }
-              result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
+              result.quantity = totalMinutes / 60;
+            } else {
+              result.quantity = categoryStats.quantity || 0;
             }
+            result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
 
-            // 単価と金額を計算
-            if (this.useAdjusted) {
-              // 調整済み単価を使用（agreementがなくても計算可能）
-              result.unitPrice = isQualified
-                ? this.adjustedUnitPriceQualified || 0
-                : this.adjustedUnitPriceBase || 0;
-              result.overtimeUnitPrice = isQualified
-                ? this.adjustedOvertimeUnitPriceQualified || 0
-                : this.adjustedOvertimeUnitPriceBase || 0;
-
-              // 金額計算(RoundSettingを適用)
-              result.regularAmount = RoundSetting.apply(
-                result.quantity * result.unitPrice,
-              );
-              result.overtimeAmount = RoundSetting.apply(
-                (result.overtimeMinutes * result.overtimeUnitPrice) / 60,
-              );
-              result.total = result.regularAmount + result.overtimeAmount;
-            } else if (this.agreement) {
+            // agreementがある場合のみ単価と金額を計算
+            if (this.agreement) {
               if (!rateSet) {
                 console.warn(
                   `[OperationResult] AgreementV2.rates for dayType '${this.dayType}' is missing.`,
@@ -437,7 +420,6 @@ export default class OperationResult extends Operation {
                 ? rateSet.overtimeUnitPriceQualified || 0
                 : rateSet.overtimeUnitPriceBase || 0;
 
-              // 金額計算(RoundSettingを適用)
               result.regularAmount = RoundSetting.apply(
                 result.quantity * result.unitPrice,
               );
@@ -450,22 +432,85 @@ export default class OperationResult extends Operation {
             return result;
           };
 
-          const base = calculateCategorySales("base");
-          const qualified = calculateCategorySales("qualified");
+          // 調整済みフィールドでの計算
+          const calculateAdjustedCategorySales = (category) => {
+            const isQualified = category === "qualified";
+            const categoryStats = this.statistics?.[category];
 
-          return { base, qualified };
+            if (!categoryStats) {
+              console.warn(
+                `[OperationResult] Statistics data for category '${category}' is missing.`,
+                {
+                  docId: this.docId,
+                  dateAt: this.dateAt,
+                  siteId: this.siteId,
+                  category,
+                  statistics: this.statistics,
+                },
+              );
+              return createInitialValues();
+            }
+
+            const result = createInitialValues();
+
+            result.quantity = isQualified
+              ? this.adjustedQuantityQualified || 0
+              : this.adjustedQuantityBase || 0;
+            result.overtimeMinutes = isQualified
+              ? this.adjustedOvertimeQualified || 0
+              : this.adjustedOvertimeBase || 0;
+            result.unitPrice = isQualified
+              ? this.adjustedUnitPriceQualified || 0
+              : this.adjustedUnitPriceBase || 0;
+            result.overtimeUnitPrice = isQualified
+              ? this.adjustedOvertimeUnitPriceQualified || 0
+              : this.adjustedOvertimeUnitPriceBase || 0;
+
+            result.regularAmount = RoundSetting.apply(
+              result.quantity * result.unitPrice,
+            );
+            result.overtimeAmount = RoundSetting.apply(
+              (result.overtimeMinutes * result.overtimeUnitPrice) / 60,
+            );
+            result.total = result.regularAmount + result.overtimeAmount;
+
+            return result;
+          };
+
+          return {
+            original: {
+              base: calculateOriginalCategorySales("base"),
+              qualified: calculateOriginalCategorySales("qualified"),
+            },
+            adjusted: {
+              base: calculateAdjustedCategorySales("base"),
+              qualified: calculateAdjustedCategorySales("qualified"),
+            },
+          };
         },
         set(v) {},
       },
+
+      /**
+       * 売上金額
+       * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用する。
+       */
       salesAmount: {
         configurable: true,
         enumerable: true,
         get() {
-          const amount = this.sales.base.total + this.sales.qualified.total;
+          const target = this.useAdjusted
+            ? this.sales.adjusted
+            : this.sales.original;
+          const amount = target.base.total + target.qualified.total;
           return RoundSetting.apply(amount);
         },
         set(v) {},
       },
+
+      /**
+       * 消費税額
+       */
       tax: {
         configurable: true,
         enumerable: true,
@@ -482,6 +527,10 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+
+      /**
+       * 税込請求額
+       */
       billingAmount: {
         configurable: true,
         enumerable: true,
@@ -490,6 +539,10 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+
+      /**
+       * 請求日
+       */
       billingDate: {
         configurable: true,
         enumerable: true,
@@ -498,6 +551,10 @@ export default class OperationResult extends Operation {
         },
         set(v) {},
       },
+
+      /**
+       * 請求年月
+       */
       billingMonth: {
         configurable: true,
         enumerable: true,
