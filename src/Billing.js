@@ -146,32 +146,40 @@ export default class Billing extends FireModel {
     // 表示用の明細サマリーを生成
     Object.defineProperty(this, "summary", {
       get() {
-        return this.operationResults.map((item) => ({
-          operationResultId: item.docId,
-          workDate: item.dateAt,
-          shiftType: item.shiftType,
-          dayType: item.dayType,
-          base: {
-            quantity: item.statistics?.base?.quantity || 0,
-            unitPrice: item.unitPriceBase || 0,
-            regularAmount: item.sales?.base?.regularAmount || 0,
-            overtimeMinutes: item.statistics?.base?.overtimeMinutes || 0,
-            overtimeUnitPrice: item.overtimeUnitPriceBase || 0,
-            overtimeAmount: item.sales?.base?.overtimeAmount || 0,
-            total: item.sales?.base?.total || 0,
-          },
-          qualified: {
-            quantity: item.statistics?.qualified?.quantity || 0,
-            unitPrice: item.unitPriceQualified || 0,
-            regularAmount: item.sales?.qualified?.regularAmount || 0,
-            overtimeMinutes: item.statistics?.qualified?.overtimeMinutes || 0,
-            overtimeUnitPrice: item.overtimeUnitPriceQualified || 0,
-            overtimeAmount: item.sales?.qualified?.overtimeAmount || 0,
-            total: item.sales?.qualified?.total || 0,
-          },
-          subtotal: item.salesAmount || 0,
-          remarks: item.remarks || "",
-        }));
+        return this.operationResults.map((item) => {
+          // useAdjusted に応じて参照する sales を切り替える
+          const salesData = item.useAdjusted
+            ? item.sales?.adjusted
+            : item.sales?.original;
+
+          return {
+            operationResultId: item.docId,
+            workDate: item.dateAt,
+            shiftType: item.shiftType,
+            dayType: item.dayType,
+            useAdjusted: item.useAdjusted,
+            base: {
+              quantity: salesData?.base?.quantity || 0,
+              unitPrice: salesData?.base?.unitPrice || 0,
+              regularAmount: salesData?.base?.regularAmount || 0,
+              overtimeMinutes: salesData?.base?.overtimeMinutes || 0,
+              overtimeUnitPrice: salesData?.base?.overtimeUnitPrice || 0,
+              overtimeAmount: salesData?.base?.overtimeAmount || 0,
+              total: salesData?.base?.total || 0,
+            },
+            qualified: {
+              quantity: salesData?.qualified?.quantity || 0,
+              unitPrice: salesData?.qualified?.unitPrice || 0,
+              regularAmount: salesData?.qualified?.regularAmount || 0,
+              overtimeMinutes: salesData?.qualified?.overtimeMinutes || 0,
+              overtimeUnitPrice: salesData?.qualified?.overtimeUnitPrice || 0,
+              overtimeAmount: salesData?.qualified?.overtimeAmount || 0,
+              total: salesData?.qualified?.total || 0,
+            },
+            subtotal: item.salesAmount || 0,
+            remarks: item.remarks || "",
+          };
+        });
       },
       set() {},
       enumerable: true,
