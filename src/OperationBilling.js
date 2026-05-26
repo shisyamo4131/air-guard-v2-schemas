@@ -67,11 +67,11 @@
  * @property {boolean} useAdjustedQuantity - 請求に調整済み数量を使用するかどうかのフラグ
  * @property {number} adjustedQuantityBase - 基本従業員の調整済み数量
  * - `useAdjustedQuantity` が true の場合、基本従業員の請求に使用される数量です。
- * @property {number} adjustedOvertimeBase - 基本従業員の調整済み残業時間
+ * @property {number} adjustedOvertimeMinutesBase - 基本従業員の調整済み残業時間
  * - `useAdjustedQuantity` が true の場合、基本従業員の請求に使用される残業時間です。
  * @property {number} adjustedQuantityQualified - 資格者の調整済み数量
  * - `useAdjustedQuantity` が true の場合、資格者の請求に使用される数量です。
- * @property {number} adjustedOvertimeQualified - 資格者の調整済み残業時間
+ * @property {number} adjustedOvertimeMinutesQualified - 資格者の調整済み残業時間
  * - `useAdjustedQuantity` が true の場合、資格者の請求に使用される残業時間です。
  * @property {Date} billingDateAt - 請求日
  * - 請求に使用される日付です。

@@ -9,6 +9,12 @@
  * - 更新前および更新後の `isLocked` が true の場合は編集不可とします。（`isLocked` は `OperationBilling` クラスで更新されます。）
  * - `groupKey` が変更された場合は `customerId` の同期と `agreement` の適用を行います。
  *
+ * ### 備考
+ * - `OperationResult` ドキュメントは `agreement` プロパティが設定されていると、その内容をもとに `sales` プロパティを計算します。
+ * - `agreement` プロパティが設定されておらず、かつ `useAdjusted` プロパティが true の場合、`adjusted*` フィールドをもとに `sales` プロパティを計算します。
+ * - `agreement` プロパティが設定されている、または `useAdjusted` プロパティが true の場合に `isBillable` が true になります。
+ * - `billingDateAt` は必須フィールドにしていません。これは、`agreement` が設定されていない場合に、`useAdjusted` を true にして手動で設定すべきだからです。
+ *
  * @class
  * @extends Operation
  * @abstract
@@ -74,11 +80,11 @@
  * @property {boolean} useAdjusted - 請求に調整済み数量を使用するかどうかのフラグ
  * @property {number} adjustedQuantityBase - 基本従業員の調整済み数量
  * - `useAdjusted` が true の場合、基本従業員の請求に使用される数量です。
- * @property {number} adjustedOvertimeBase - 基本従業員の調整済み残業時間
+ * @property {number} adjustedOvertimeMinutesBase - 基本従業員の調整済み残業時間
  * - `useAdjusted` が true の場合、基本従業員の請求に使用される残業時間です。
  * @property {number} adjustedQuantityQualified - 資格者の調整済み数量
  * - `useAdjusted` が true の場合、資格者の請求に使用される数量です。
- * @property {number} adjustedOvertimeQualified - 資格者の調整済み残業時間
+ * @property {number} adjustedOvertimeMinutesQualified - 資格者の調整済み残業時間
  * - `useAdjusted` が true の場合、資格者の請求に使用される残業時間です。
  * @property {number} adjustedUnitPriceBase - 基本従業員の調整済み単価
  * - `useAdjusted` が true の場合、基本従業員の請求に使用される単価です。
@@ -160,6 +166,7 @@ import { VALUES as BILLING_UNIT_TYPE } from "./constants/billing-unit-type.js";
 import RoundSetting from "./RoundSetting.js";
 import CutoffDate from "./utils/CutoffDate.js";
 import Site from "./Site.js";
+import { VALIDATION_ERRORS } from "./errorDefinitions.js";
 
 const classProps = {
   ...Operation.classProps,
@@ -173,45 +180,229 @@ const classProps = {
     customClass: OperationResultDetail,
   }),
   useAdjusted: defField("check", {
-    label: "調整数量を使用",
+    label: "数量・金額を調整する",
     default: false,
   }),
   adjustedQuantityBase: defField("number", {
-    label: "基本人工（調整）",
+    label: "基本数量（調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedQuantityBase must be a number",
+          {
+            ja: "基本数量（調整後）は、数値でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
-  adjustedOvertimeBase: defField("number", {
-    label: "基本残業（調整）",
+  adjustedOvertimeMinutesBase: defField("number", {
+    label: "基本残業時間（分/調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedOvertimeMinutesBase must be a number",
+          {
+            ja: "基本残業時間（分/調整後）は、数値でなければなりません",
+          },
+        );
+      }
+      if (value % 15 !== 0) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedOvertimeMinutesBase must be a multiple of 15",
+          {
+            ja: "基本残業時間（分/調整後）は、15 分単位でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
   adjustedQuantityQualified: defField("number", {
-    label: "資格人工（調整）",
+    label: "資格数量（調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedQuantityQualified must be a number",
+          {
+            ja: "資格数量（調整後）は、数値でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
-  adjustedOvertimeQualified: defField("number", {
-    label: "資格残業（調整）",
+  adjustedOvertimeMinutesQualified: defField("number", {
+    label: "資格残業時間（分/調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedOvertimeMinutesQualified must be a number",
+          {
+            ja: "資格残業時間（分/調整後）は、数値でなければなりません",
+          },
+        );
+      }
+      if (value % 15 !== 0) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedOvertimeMinutesQualified must be a multiple of 15",
+          {
+            ja: "資格残業時間（分/調整後）は、15 分単位でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
   adjustedUnitPriceBase: defField("number", {
-    label: "基本単価（調整）",
+    label: "基本単価（調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedUnitPriceBase must be a number",
+          {
+            ja: "基本単価（調整後）は、数値でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
   adjustedOvertimeUnitPriceBase: defField("number", {
-    label: "基本残業単価（調整）",
+    label: "基本残業単価（調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedOvertimeUnitPriceBase must be a number",
+          {
+            ja: "基本残業単価（調整後）は、数値でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
   adjustedUnitPriceQualified: defField("number", {
-    label: "資格単価（調整）",
+    label: "資格単価（調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedUnitPriceQualified must be a number",
+          {
+            ja: "資格単価（調整後）は、数値でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
   adjustedOvertimeUnitPriceQualified: defField("number", {
-    label: "資格残業単価（調整）",
+    label: "資格残業単価（調整後）",
     default: 0,
+    required: true,
+    validator: (value, item) => {
+      if (value === null || value === undefined) return true; // required でエラーになる
+      if (typeof value !== "number" || isNaN(value)) {
+        return VALIDATION_ERRORS.CUSTOM_ERROR(
+          "INVALID_VALUE",
+          "adjustedOvertimeUnitPriceQualified must be a number",
+          {
+            ja: "資格残業単価（調整後）は、数値でなければなりません",
+          },
+        );
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
   }),
-  billingDateAt: defField("dateAt", { label: "請求締日" }),
+  billingDateAt: defField("dateAt", {
+    label: "請求締日",
+    validator: (value, item) => {
+      if (item.useAdjusted && !value) {
+        return VALIDATION_ERRORS.REQUIRED_FIELD_ERROR("billingDateAt");
+      }
+    },
+    component: {
+      attrs: {
+        required: ({ item }) => item.useAdjusted,
+        disabled: ({ item }) => !item.useAdjusted,
+      },
+    },
+  }),
   isLocked: defField("check", {
     label: "実績確定",
     default: false,
+    hidden: true,
   }),
   agreement: defField("object", { label: "取極め", customClass: AgreementV2 }),
 
@@ -231,34 +422,6 @@ export default class OperationResult extends Operation {
   static classProps = classProps;
 
   static BILLING_UNIT_TYPE = BILLING_UNIT_TYPE;
-
-  // 2026-05-22
-  // 取極めがない場合も実績としては確定できるため、稼働実績ドキュメントは作成されべき。
-  // -> エラー定数が不要。
-  // /**
-  //  * INVALID_REASON
-  //  * - Operation クラスの INVALID_REASON を継承しています。
-  //  * - 以下のエラーコードを追加
-  //  *   - `EMPTY_AGREEMENT`: 取極めが存在せず、`allowEmptyAgreement` が false の場合のエラーコード
-  //  *   - `EMPTY_BILLING_DATE`: 請求日が存在しない場合のエラーコード
-  //  */
-  // static INVALID_REASON = {
-  //   ...Operation.INVALID_REASON,
-  //   EMPTY_BILLING_DATE: {
-  //     code: "EMPTY_BILLING_DATE",
-  //     message: "Billing date is required.",
-  //     messages: {
-  //       ja: "請求締日は必須です。",
-  //     },
-  //   },
-  //   EMPTY_AGREEMENT: {
-  //     code: "EMPTY_AGREEMENT",
-  //     message: "Agreement is required.",
-  //     messages: {
-  //       ja: "取極めは必須です。",
-  //     },
-  //   },
-  // };
 
   static headers = [
     { title: "日付", key: "dateAt" },
@@ -468,8 +631,8 @@ export default class OperationResult extends Operation {
               ? this.adjustedQuantityQualified || 0
               : this.adjustedQuantityBase || 0;
             result.overtimeMinutes = isQualified
-              ? this.adjustedOvertimeQualified || 0
-              : this.adjustedOvertimeBase || 0;
+              ? this.adjustedOvertimeMinutesQualified || 0
+              : this.adjustedOvertimeMinutesBase || 0;
             result.unitPrice = isQualified
               ? this.adjustedUnitPriceQualified || 0
               : this.adjustedUnitPriceBase || 0;
@@ -712,33 +875,4 @@ export default class OperationResult extends Operation {
       throw new Error(message);
     }
   }
-
-  // 2026-05-22
-  // 取極めがない場合も実績としては確定できるため、稼働実績ドキュメントは作成できるべき。
-  // 稼働請求ドキュメント（`OperationBilling`）は Cloud Functions で作成される。
-  // /**
-  //  * クラス特有のエラーを詳細情報付きで返す内部メソッド
-  //  * - `agreement` が存在せず、`allowEmptyAgreement` が false の場合、`EMPTY_AGREEMENT` エラーを返します。
-  //  * - `billingDateAt` が存在しない場合、`EMPTY_BILLING_DATE` エラーを返します。
-  //  * @returns {Array<Object>} エラー詳細オブジェクトの配列（統一フォーマット）
-  //  */
-  // _getInvalidReasons() {
-  //   const result = super._getInvalidReasons();
-
-  //   if (!this.agreement && !this.allowEmptyAgreement) {
-  //     result.push({
-  //       ...OperationResult.INVALID_REASON.EMPTY_AGREEMENT,
-  //       field: "agreement",
-  //     });
-  //   }
-
-  //   if (!this.billingDateAt) {
-  //     result.push({
-  //       ...OperationResult.INVALID_REASON.EMPTY_BILLING_DATE,
-  //       field: "billingDateAt",
-  //     });
-  //   }
-
-  //   return result;
-  // }
 }
