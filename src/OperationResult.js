@@ -198,6 +198,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -230,6 +231,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -253,6 +255,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -285,6 +288,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -308,6 +312,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -331,6 +336,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -354,6 +360,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -377,6 +384,7 @@ const classProps = {
           },
         );
       }
+      return true;
     },
     component: {
       attrs: {
@@ -391,6 +399,7 @@ const classProps = {
       if (item.useAdjusted && !value) {
         return VALIDATION_ERRORS.REQUIRED_FIELD_ERROR("billingDateAt");
       }
+      return true;
     },
     component: {
       attrs: {
