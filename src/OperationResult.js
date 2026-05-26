@@ -97,6 +97,8 @@
  * - 設定されている場合、単価や請求日などの計算に影響を与えます。
  * @property {boolean} hasAgreement - 取極めが関連付けられているかどうかを示すフラグ (読み取り専用)
  * - `agreement` が設定されている場合は `true`、それ以外の場合は `false`。
+ * @property {boolean} isBillable - OperationBilling ドキュメントが作成される条件を満たしているかどうかを示すフラグ (読み取り専用)
+ * - `hasAgreement` が true または `useAdjusted` が true の場合に `true`。それ以外は `false`。
  * @property {Object} statistics - 従業員の統計情報 (読み取り専用)
  * - 基本従業員と資格者のカウントおよび総労働時間を含む統計情報。
  * - 構造: { base: {...}, qualified: {...}, total: {...} }
@@ -281,6 +283,21 @@ export default class OperationResult extends Operation {
         enumerable: true,
         get() {
           return this.agreement != null;
+        },
+        set(v) {},
+      },
+
+      /**
+       * isBillable
+       * - OperationBilling ドキュメントが作成される条件を満たしているかどうかを示すフラグ。
+       * - `hasAgreement` が true または `useAdjusted` が true の場合に true を返す。
+       * - Firestore のクエリで使用する可能性があるため、Object.defineProperty で列挙可能プロパティとして定義する。
+       */
+      isBillable: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.hasAgreement || this.useAdjusted;
         },
         set(v) {},
       },
