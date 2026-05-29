@@ -159,6 +159,7 @@ import Operation from "./Operation.js";
 import AgreementV2 from "./AgreementV2.js";
 import { ContextualError } from "./utils/ContextualError.js";
 import OperationResultDetail from "./OperationResultDetail.js";
+import ArticleDetail from "./ArticleDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import { formatJstDate } from "./utils/index.js";
 import Tax from "./Tax.js";
@@ -422,6 +423,13 @@ const classProps = {
    * - 但し、siteId が変更された時は再取得する必要がある。
    */
   customerId: defField("customerId", { required: true, hidden: true }),
+
+  /**
+   * 稼働外売上（商品明細）
+   * - 稼働実績に紐づく商品（物品・役務等）の売上明細。
+   * - Article ドキュメントを参照し、price × quantity の合計が salesAmount に加算される。
+   */
+  articles: defField("array", { customClass: ArticleDetail }),
 };
 
 export default class OperationResult extends Operation {
@@ -678,6 +686,7 @@ export default class OperationResult extends Operation {
       /**
        * 売上金額
        * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用する。
+       * - `articles`（稼働外売上）の price × quantity の合計も加算する。
        */
       salesAmount: {
         configurable: true,
@@ -686,8 +695,12 @@ export default class OperationResult extends Operation {
           const target = this.useAdjusted
             ? this.sales.adjusted
             : this.sales.original;
-          const amount = target.base.total + target.qualified.total;
-          return RoundSetting.apply(amount);
+          const workerAmount = target.base.total + target.qualified.total;
+          const articlesAmount = (this.articles ?? []).reduce(
+            (sum, a) => sum + (a.price ?? 0) * (a.quantity ?? 0),
+            0,
+          );
+          return RoundSetting.apply(workerAmount + articlesAmount);
         },
         set(v) {},
       },
