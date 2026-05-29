@@ -12,8 +12,9 @@
  * ### 備考
  * - `OperationResult` ドキュメントは `agreement` プロパティが設定されていると、その内容をもとに `sales` プロパティを計算します。
  * - `agreement` プロパティが設定されておらず、かつ `useAdjusted` プロパティが true の場合、`adjusted*` フィールドをもとに `sales` プロパティを計算します。
- * - `agreement` プロパティが設定されている、または `useAdjusted` プロパティが true の場合に `isBillable` が true になります。
- * - `billingDateAt` は必須フィールドにしていません。これは、`agreement` が設定されていない場合に、`useAdjusted` を true にして手動で設定すべきだからです。
+ * - `billingDateAt` が null でない場合に `isBillable` が true になります。
+ * - 取極めが設定されると `refreshBillingDateAt` により `billingDateAt` が自動計算されます。
+ * - `useAdjusted` が true の場合も請求締日はユーザーが手動で設定します。
  *
  * @class
  * @extends Operation
@@ -104,7 +105,7 @@
  * @property {boolean} hasAgreement - 取極めが関連付けられているかどうかを示すフラグ (読み取り専用)
  * - `agreement` が設定されている場合は `true`、それ以外の場合は `false`。
  * @property {boolean} isBillable - OperationBilling ドキュメントが作成される条件を満たしているかどうかを示すフラグ (読み取り専用)
- * - `hasAgreement` が true または `useAdjusted` が true の場合に `true`。それ以外は `false`。
+ * - `billingDateAt` が null でない場合に `true`。それ以外は `false`。
  * @property {Object} statistics - 従業員の統計情報 (読み取り専用)
  * - 基本従業員と資格者のカウントおよび総労働時間を含む統計情報。
  * - 構造: { base: {...}, qualified: {...}, total: {...} }
@@ -397,18 +398,6 @@ const classProps = {
   billingDateAt: defField("dateAt", {
     label: "請求締日",
     default: null,
-    validator: (value, item) => {
-      if (item.useAdjusted && !value) {
-        return VALIDATION_ERRORS.REQUIRED_FIELD_ERROR("billingDateAt");
-      }
-      return true;
-    },
-    component: {
-      attrs: {
-        required: ({ item }) => item.useAdjusted,
-        disabled: ({ item }) => !item.useAdjusted,
-      },
-    },
   }),
   isLocked: defField("check", {
     label: "実績確定",
@@ -478,7 +467,7 @@ export default class OperationResult extends Operation {
         configurable: true,
         enumerable: true,
         get() {
-          return this.hasAgreement || this.useAdjusted;
+          return this.billingDateAt != null;
         },
         set(v) {},
       },
