@@ -1,6 +1,8 @@
 import { RateSet } from "./src/AgreementV2.js";
 
+export { defField } from "./src/parts/fieldDefinitions.js";
 export { default as Agreement } from "./src/Agreement.js";
+export { default as Article } from "./src/Article.js";
 export {
   default as AgreementV2,
   RateSet,

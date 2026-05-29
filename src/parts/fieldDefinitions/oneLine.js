@@ -393,6 +393,13 @@ export const oneLineFields = {
     label: "ユーザーID",
   },
 
+  /** 説明 */
+  description: {
+    ...generalDefinitions.oneLine,
+    label: "説明",
+    length: 50,
+  },
+
   /** 作業内容 */
   workDescription: {
     ...generalDefinitions.oneLine,
