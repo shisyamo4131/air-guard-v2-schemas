@@ -822,7 +822,6 @@ export default class OperationResult extends Operation {
       throw new Error(message);
     }
     this.customerId = siteInstance.customerId;
-    // this.agreement = siteInstance.getAgreement(this);
     this.agreement = siteInstance.getValidAgreement(this);
   }
 
@@ -845,6 +844,16 @@ export default class OperationResult extends Operation {
   }
 
   /**
+   * ロックチェックを行うかどうかを返すメソッド
+   * - サブクラスでオーバーライドすることで、ロック中でも更新・削除を許可できます。
+   * - デフォルトは `true`（ロックチェックを行う）。
+   * @returns {boolean}
+   */
+  _shouldCheckLock() {
+    return true;
+  }
+
+  /**
    * ドキュメント更新前処理
    * - 更新前および更新後の `isLocked` が true の場合は編集不可とする。
    * - `groupKey` が変更された場合は `customerId` の同期と `agreement` の適用を行う。
@@ -858,7 +867,7 @@ export default class OperationResult extends Operation {
     await super.beforeUpdate(args);
 
     // 更新前および更新後の `isLocked` が true の場合は編集不可とする。
-    if (this._beforeData.isLocked && this.isLocked) {
+    if (this._shouldCheckLock() && this._beforeData.isLocked && this.isLocked) {
       const message = `[OperationResult.js] This OperationResult (docId: ${this.docId}) is locked and cannot be edited.`;
       throw new Error(message);
     }
@@ -882,7 +891,7 @@ export default class OperationResult extends Operation {
     await super.beforeDelete(args);
 
     // 更新前および更新後の `isLocked` が true の場合は削除不可とする。
-    if (this._beforeData.isLocked && this.isLocked) {
+    if (this._shouldCheckLock() && this._beforeData.isLocked && this.isLocked) {
       const message = `[OperationResult.js] This OperationResult (docId: ${this.docId}) is locked and cannot be deleted.`;
       throw new Error(message);
     }

@@ -152,6 +152,14 @@ export default class OperationBilling extends OperationResult {
   ];
 
   /**
+   * OperationBilling はロック中でも更新・削除を許可する
+   * @returns {boolean}
+   */
+  _shouldCheckLock() {
+    return false;
+  }
+
+  /**
    * Override create method to disallow creation of OperationBilling instances
    * @returns
    */
