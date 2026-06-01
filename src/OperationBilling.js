@@ -176,23 +176,11 @@ export default class OperationBilling extends OperationResult {
   }
 
   /**
-   * Toggle the lock status of an OperationResult document
-   * @param {string} docId - Document ID
-   * @param {boolean} value - Lock status value
+   * Toggle the lock status of the current instance
+   * @param {boolean} [value] - Optional lock status value. If not provided, the lock status will be toggled.
    */
-  static async toggleLock(docId, value) {
-    if (!docId || typeof docId !== "string") {
-      throw new Error("Invalid docId provided to toggleLock method");
-    }
-    if (typeof value !== "boolean") {
-      throw new Error("Invalid value provided to toggleLock method");
-    }
-    const instance = new OperationBilling();
-    const doc = await instance.fetchDoc({ docId });
-    if (!doc) {
-      throw new Error(`OperationResult document with ID ${docId} not found`);
-    }
-    doc.isLocked = value;
-    await doc.update();
+  async toggleLock(value) {
+    this.islocked = typeof value === "boolean" ? value : !this.islocked;
+    await this.update();
   }
 }
