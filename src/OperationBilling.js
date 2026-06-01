@@ -180,7 +180,7 @@ export default class OperationBilling extends OperationResult {
    * @param {boolean} [value] - Optional lock status value. If not provided, the lock status will be toggled.
    */
   async toggleLock(value) {
-    this.islocked = typeof value === "boolean" ? value : !this.islocked;
+    this.isLocked = typeof value === "boolean" ? value : !this.isLocked;
     await this.update();
   }
 }
