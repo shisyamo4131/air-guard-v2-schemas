@@ -118,8 +118,11 @@
  * - original: agreement の rates と statistics から算出。
  * - adjusted: adjusted* フィールドから算出。
  * - 各カテゴリには以下が含まれます: unitPrice, quantity, regularAmount, overtimeUnitPrice, overtimeMinutes, overtimeAmount, total
+ * @property {number} salesArticles - 稼働外売上金額（articles）(読み取り専用)
+ * - `articles` の price × quantity の合計を返す。
  * @property {number} salesAmount - 売上合計金額 (読み取り専用)
  * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用して合計を算出。
+ * - `salesArticles` も加算される。
  * @property {number} tax - 計算された税額 (読み取り専用)
  * - `salesAmount` と `date` に基づいて `Tax` ユーティリティを使用して計算されます。
  * @property {number} billingAmount - 税込の請求金額 (読み取り専用)
@@ -673,9 +676,25 @@ export default class OperationResult extends Operation {
       },
 
       /**
+       * 稼働外売上金額（articles）
+       * - `articles` の price × quantity の合計を返す。
+       */
+      salesArticles: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return (this.articles ?? []).reduce(
+            (sum, a) => sum + (a.price ?? 0) * (a.quantity ?? 0),
+            0,
+          );
+        },
+        set(v) {},
+      },
+
+      /**
        * 売上金額
        * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用する。
-       * - `articles`（稼働外売上）の price × quantity の合計も加算する。
+       * - `salesArticles`（稼働外売上）の合計も加算する。
        */
       salesAmount: {
         configurable: true,
@@ -685,11 +704,7 @@ export default class OperationResult extends Operation {
             ? this.sales.adjusted
             : this.sales.original;
           const workerAmount = target.base.total + target.qualified.total;
-          const articlesAmount = (this.articles ?? []).reduce(
-            (sum, a) => sum + (a.price ?? 0) * (a.quantity ?? 0),
-            0,
-          );
-          return RoundSetting.apply(workerAmount + articlesAmount);
+          return RoundSetting.apply(workerAmount + this.salesArticles);
         },
         set(v) {},
       },
