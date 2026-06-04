@@ -365,53 +365,53 @@ export default class SiteOperationSchedule extends Operation {
    */
   async update(updateOptions = {}) {
     try {
-      // Returns whether the notifications should be cleared.
-      // - All notifications should be cleared if any of the following properties have changed:
-      //   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, or `breakMinutes`.
-      // - Returns false if there are no changes.
-      const shouldClearNotifications = () => {
-        const keys1 = ["siteId", "date", "shiftType"];
-        const keys2 = ["startTime", "isStartNextDay", "endTime"];
-        const keys3 = ["breakMinutes"];
-        const changes = {};
-        for (const key of [...keys1, ...keys2, ...keys3]) {
-          if (this._beforeData?.[key] !== this[key]) {
-            changes[key] = {
-              before: this._beforeData?.[key],
-              after: this[key],
-            };
-          }
-        }
-        return Object.keys(changes).length > 0 ? changes : false;
-      };
+      // // Returns whether the notifications should be cleared.
+      // // - All notifications should be cleared if any of the following properties have changed:
+      // //   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, or `breakMinutes`.
+      // // - Returns false if there are no changes.
+      // const shouldClearNotifications = () => {
+      //   const keys1 = ["siteId", "date", "shiftType"];
+      //   const keys2 = ["startTime", "isStartNextDay", "endTime"];
+      //   const keys3 = ["breakMinutes"];
+      //   const changes = {};
+      //   for (const key of [...keys1, ...keys2, ...keys3]) {
+      //     if (this._beforeData?.[key] !== this[key]) {
+      //       changes[key] = {
+      //         before: this._beforeData?.[key],
+      //         after: this[key],
+      //       };
+      //     }
+      //   }
+      //   return Object.keys(changes).length > 0 ? changes : false;
+      // };
 
       // Perform the update within a transaction.
       // - All notifications will be deleted if `shouldClearNotifications` returns not false.
       // - Notifications for removed or updated workers will be deleted.
       const performTransaction = async (txn) => {
-        // Prepare arguments for bulk deletion of notifications.
-        const args = { siteOperationScheduleId: this.docId };
+        // // Prepare arguments for bulk deletion of notifications.
+        // const args = { siteOperationScheduleId: this.docId };
 
-        // Delete all notifications if related data have been changed.
-        if (shouldClearNotifications()) {
-          this.employees.forEach((emp) => (emp.hasNotification = false));
-          this.outsourcers.forEach((out) => (out.hasNotification = false));
-          await ArrangementNotification.bulkDelete(args, txn);
-        }
-        // Delete notifications for removed or updated workers that have been notified
-        else {
-          const updatedWorkers = this.updatedWorkers;
-          const removedWorkers = this.removedWorkers;
-          const workerIds = updatedWorkers
-            .map((w) => w.workerId)
-            .concat(removedWorkers.map((w) => w.workerId));
-          args.workerIds = Array.from(new Set(workerIds));
-          updatedWorkers.forEach((w) => (w.hasNotification = false));
-          if (args.workerIds.length !== 0) {
-            await ArrangementNotification.bulkDelete(args, txn);
-          }
-        }
-        await super.update({ ...updateOptions, transaction: txn });
+        // // Delete all notifications if related data have been changed.
+        // if (shouldClearNotifications()) {
+        this.employees.forEach((emp) => (emp.hasNotification = false));
+        this.outsourcers.forEach((out) => (out.hasNotification = false));
+        await ArrangementNotification.bulkDelete(args, txn);
+        // }
+        // // Delete notifications for removed or updated workers that have been notified
+        // else {
+        //   const updatedWorkers = this.updatedWorkers;
+        //   const removedWorkers = this.removedWorkers;
+        //   const workerIds = updatedWorkers
+        //     .map((w) => w.workerId)
+        //     .concat(removedWorkers.map((w) => w.workerId));
+        //   args.workerIds = Array.from(new Set(workerIds));
+        //   updatedWorkers.forEach((w) => (w.hasNotification = false));
+        //   if (args.workerIds.length !== 0) {
+        //     await ArrangementNotification.bulkDelete(args, txn);
+        //   }
+        // }
+        // await super.update({ ...updateOptions, transaction: txn });
       };
 
       if (updateOptions.transaction) {
