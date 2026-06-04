@@ -1,6 +1,11 @@
 /*****************************************************************************
  * ArrangementNotification Model ver 1.0.0
  * @author shisyamo4131
+ * @note
+ * `SiteOperationSchedule` ドキュメントと 1 対多の関係を持つドキュメントで、親ドキュメントと
+ * 同期削除されるように設計されているが、`fetchDocsBySiteOperationScheduleId` メソッドが
+ * サーバー側で利用できないため、メンテナンスによる `SiteOperationSchedule` ドキュメントの削除に伴う
+ * 自動削除はサーバー側で個別に実装する必要があります。
  * ---------------------------------------------------------------------------
  * - Model representing arrangement notifications for employees extending SiteOperationScheduleDetail.
  * - The `docId` is fixed to `${siteOperationScheduleId}_${workerId}` to allow recreation of documents.
@@ -471,6 +476,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
     };
     try {
       // サーバー側での実行を禁止
+      // 後に使用する `fetchDocsBySiteOperationScheduleId` がサーバー側で利用することのできないメソッドのため
       if (this.type === "SERVER") {
         throw new Error(
           "bulkDelete is not supported on server side. " +
