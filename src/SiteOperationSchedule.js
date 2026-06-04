@@ -161,6 +161,22 @@ export default class SiteOperationSchedule extends Operation {
     { title: "現場", key: "siteId", value: "siteId" },
   ];
 
+  constructor(item = {}) {
+    super(item);
+
+    // trap
+    let __beforeData = JSON.parse(JSON.stringify(this._beforeData));
+    Object.defineProperty(this, "_beforeData", {
+      get() {
+        return __beforeData;
+      },
+      set(v) {
+        console.log("'_beforeData' is updated.", v);
+        __beforeData = v;
+      },
+    });
+  }
+
   /***************************************************************************
    * Override `afterInitialize`
    ***************************************************************************/
@@ -260,18 +276,6 @@ export default class SiteOperationSchedule extends Operation {
           _isStartNextDay = v;
           synchronizeToWorkers("isStartNextDay", v);
         },
-      },
-    });
-
-    // trap
-    let __beforeData = JSON.parse(JSON.stringify(this._beforeData));
-    Object.defineProperty(this, "_beforeData", {
-      get() {
-        return __beforeData;
-      },
-      set(v) {
-        console.log("'_beforeData' is updated.", v);
-        __beforeData = v;
       },
     });
   }
