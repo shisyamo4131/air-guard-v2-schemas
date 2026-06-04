@@ -161,22 +161,6 @@ export default class SiteOperationSchedule extends Operation {
     { title: "現場", key: "siteId", value: "siteId" },
   ];
 
-  constructor(item = {}) {
-    super(item);
-
-    // trap
-    let __beforeData = JSON.parse(JSON.stringify(this._beforeData));
-    Object.defineProperty(this, "_beforeData", {
-      get() {
-        return __beforeData;
-      },
-      set(v) {
-        console.log("'_beforeData' is updated.", v);
-        __beforeData = v;
-      },
-    });
-  }
-
   /***************************************************************************
    * Override `afterInitialize`
    ***************************************************************************/
@@ -371,7 +355,10 @@ export default class SiteOperationSchedule extends Operation {
 
   /**
    * `update` メソッドをオーバーライド
-   * - ドキュメントの更新時、作成されている可能性のある配置通知ドキュメントをすべて削除します。
+   * - ドキュメントの更新時、以下の要件に該当する配置通知ドキュメントも同期削除します。
+   *   1. スケジュールに関連するデータ（`siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, `regulationWorkMinutes`）が変更された場合、
+   *      そのスケジュールに関連する全ての配置通知を削除します。
+   *   2. 作業員の配置が変更された場合（削除、更新のいずれか）、変更された作業員に関連する配置通知を削除します。
    *
    * @note
    * 2026-06-04 データが更新された、または削除された作業員のみ、配置通知を削除する処理を実装していたが、
@@ -386,74 +373,74 @@ export default class SiteOperationSchedule extends Operation {
    *            更新されることはないため、コンポーネント側でそれに準じた処理が行われているかを確認したが存在せず。
    *            ちなみに、このメソッドを呼び出している `SiteOperationScheduleManager` の `useIndex` 内で
    *            更新前後の `workers` の状態を console.table で出力しているが、そちらは正常に出力されていた。
-   *
+   *            [原因判明]
+   *            Firestore の runTransaction は、トランザクション処理対象のドキュメントを「保留中」状態に更新する。
+   *            そのため、onSnapshot リスナーが反応し、結果、インスタンスの `initialize` が実行される。
+   *            つまり、`updatedWorkers` や `removedWorkers` を参照する場合は、`performTransaction` の外からでなければならない。
    * @param {Object} updateOptions - Options for updating the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
    * @param {function} updateOptions.callback - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
    */
   async update(updateOptions = {}) {
-    /******************************************************************
-     * [NOTE] 2026-06-04 の症状について
-     * `worker1` が削除された時の例
-     * console.log(this._beforeData.workers); -> ['worker1'] が出力される。
-     ******************************************************************/
-    console.log("start", this._beforeData.workers);
+    // Returns whether the notifications should be cleared.
+    // - All notifications should be cleared if any of the following properties have changed:
+    //   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, or `regulationWorkMinutes`.
+    // - Returns false if there are no changes.
+    const shouldClearNotifications = () => {
+      const keys1 = ["siteId", "date", "shiftType"];
+      const keys2 = ["startTime", "isStartNextDay", "endTime"];
+      const keys3 = ["breakMinutes", "regulationWorkMinutes"];
+      const changes = {};
+      for (const key of [...keys1, ...keys2, ...keys3]) {
+        if (this._beforeData?.[key] !== this[key]) {
+          changes[key] = {
+            before: this._beforeData?.[key],
+            after: this[key],
+          };
+        }
+      }
+      return Object.keys(changes).length > 0 ? changes : false;
+    };
+
+    const shouldClear = shouldClearNotifications();
+    const updatedWorkers = this.updatedWorkers;
+    const removedWorkers = this.removedWorkers;
+    const workerIds = updatedWorkers
+      .map((w) => w.workerId)
+      .concat(removedWorkers.map((w) => w.workerId));
 
     try {
-      // // Returns whether the notifications should be cleared.
-      // // - All notifications should be cleared if any of the following properties have changed:
-      // //   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, or `breakMinutes`.
-      // // - Returns false if there are no changes.
-      // const shouldClearNotifications = () => {
-      //   const keys1 = ["siteId", "date", "shiftType"];
-      //   const keys2 = ["startTime", "isStartNextDay", "endTime"];
-      //   const keys3 = ["breakMinutes"];
-      //   const changes = {};
-      //   for (const key of [...keys1, ...keys2, ...keys3]) {
-      //     if (this._beforeData?.[key] !== this[key]) {
-      //       changes[key] = {
-      //         before: this._beforeData?.[key],
-      //         after: this[key],
-      //       };
-      //     }
-      //   }
-      //   return Object.keys(changes).length > 0 ? changes : false;
-      // };
-
       // Perform the update within a transaction.
       // - All notifications will be deleted if `shouldClearNotifications` returns not false.
       // - Notifications for removed or updated workers will be deleted.
       const performTransaction = async (txn) => {
-        /******************************************************************
-         * [NOTE] 2026-06-04 の症状について
-         * `worker1` が削除された時の例
-         * console.log(this._beforeData.workers); -> [] が出力されてしまう。
-         ******************************************************************/
-        console.log("inner", this._beforeData.workers);
-
         // Prepare arguments for bulk deletion of notifications.
         const args = { siteOperationScheduleId: this.docId };
 
-        // // Delete all notifications if related data have been changed.
-        // if (shouldClearNotifications()) {
-        this.employees.forEach((emp) => (emp.hasNotification = false));
-        this.outsourcers.forEach((out) => (out.hasNotification = false));
-        await ArrangementNotification.bulkDelete(args, txn);
-        // }
-        // // Delete notifications for removed or updated workers that have been notified
-        // else {
-        //   const updatedWorkers = this.updatedWorkers;
-        //   const removedWorkers = this.removedWorkers;
-        //   const workerIds = updatedWorkers
-        //     .map((w) => w.workerId)
-        //     .concat(removedWorkers.map((w) => w.workerId));
-        //   args.workerIds = Array.from(new Set(workerIds));
-        //   updatedWorkers.forEach((w) => (w.hasNotification = false));
-        //   if (args.workerIds.length !== 0) {
-        //     await ArrangementNotification.bulkDelete(args, txn);
-        //   }
-        // }
+        // Delete all notifications if related data have been changed.
+        if (shouldClear) {
+          this.employees.forEach((emp) => (emp.hasNotification = false));
+          this.outsourcers.forEach((out) => (out.hasNotification = false));
+          await ArrangementNotification.bulkDelete(args, txn);
+        }
+        // Delete notifications for removed or updated workers that have been notified
+        else {
+          args.workerIds = Array.from(new Set(workerIds));
+          if (args.workerIds.length !== 0) {
+            // 従業員の配置通知フラグを初期化
+            this.employees.forEach((emp) => {
+              if (args.workerIds.includes(emp.workerId))
+                emp.hasNotification = false;
+            });
+            // 外注先の配置通知フラグを初期化
+            this.outsourcers.forEach((out) => {
+              if (args.workerIds.includes(out.workerId))
+                out.hasNotification = false;
+            });
+            await ArrangementNotification.bulkDelete(args, txn);
+          }
+        }
         await super.update({ ...updateOptions, transaction: txn });
       };
 
