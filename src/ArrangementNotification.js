@@ -21,8 +21,6 @@
  * @prop {string} actualEndTime - Actual end time (HH:MM format)
  * @prop {number} actualBreakMinutes - Actual break time (minutes)
  * @prop {string} status - Arrangement notification status
- * @prop {Date} notificationSentAt - Push notification sent date and time
- * @prop {string} notificationError - Push notification send error message
  * ---------------------------------------------------------------------------
  * @computed {Date} actualStartAt - Actual start date and time (Date object) (read-only)
  * - Returns a Date object with `actualStartTime` set based on `dateAt`.
@@ -165,12 +163,6 @@ const classProps = {
   actualBreakMinutes: defField("breakMinutes", {
     default: 60,
     required: true,
-  }),
-  notificationSentAt: defField("notificationSentAt", {
-    hidden: true,
-  }),
-  notificationError: defField("notificationError", {
-    hidden: true,
   }),
 };
 
