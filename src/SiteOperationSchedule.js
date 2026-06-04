@@ -262,6 +262,18 @@ export default class SiteOperationSchedule extends Operation {
         },
       },
     });
+
+    // trap
+    let __beforeData = JSON.parse(JSON.stringify(this._beforeData));
+    Object.defineProperty(this, "_beforeData", {
+      get() {
+        return __beforeData;
+      },
+      set(v) {
+        console.log("'_beforeData' is updated.", v);
+        __beforeData = v;
+      },
+    });
   }
   /***************************************************************************
    * STATES
@@ -354,16 +366,35 @@ export default class SiteOperationSchedule extends Operation {
   }
 
   /**
-   * Override update method.
-   * - Updates and clears notifications if related data have been changed.
-   * - Updates and deletes notifications for removed or updated employees if employee assignments have changed.
-   * - Just updates if no changes detected.
+   * `update` メソッドをオーバーライド
+   * - ドキュメントの更新時、作成されている可能性のある配置通知ドキュメントをすべて削除します。
+   *
+   * @note
+   * 2026-06-04 データが更新された、または削除された作業員のみ、配置通知を削除する処理を実装していたが、
+   *            `this._beforeData.workers` が `performTransaction` の中と外とで異なる値を返してしまい
+   *            うまく動作しなかったため、一旦全ての配置通知を削除する処理に変更。
+   *            具体的には、作業員が削除された際、`performTransaction` の外では `_beforeData.workers` には
+   *            削除前の作業員が含まれているが、中では空配列になってしまった。つまり、`removedWorkers` が
+   *            正しく抽出できず、配置通知の削除が行われなかった。
+   *            原因の追究が難航し、「何かしらの情報が更新された」以上、配置通知を送信しなおすフローは
+   *            業務上も問題ないため、一旦全ての配置通知を削除する処理に変更した。
+   *            FireModel を継承したクラスインスタンスの場合、`initialize` が呼び出されなければ `_beforeData` が
+   *            更新されることはないため、コンポーネント側でそれに準じた処理が行われているかを確認したが存在せず。
+   *            ちなみに、このメソッドを呼び出している `SiteOperationScheduleManager` の `useIndex` 内で
+   *            更新前後の `workers` の状態を console.table で出力しているが、そちらは正常に出力されていた。
+   *
    * @param {Object} updateOptions - Options for updating the notification.
    * @param {Object} updateOptions.transaction - The Firestore transaction object.
    * @param {function} updateOptions.callback - The callback function.
    * @param {string} updateOptions.prefix - The prefix.
    */
   async update(updateOptions = {}) {
+    /******************************************************************
+     * [NOTE] 2026-06-04 の症状について
+     * `worker1` が削除された時の例
+     * console.log(this._beforeData.workers); -> ['worker1'] が出力される。
+     ******************************************************************/
+
     try {
       // // Returns whether the notifications should be cleared.
       // // - All notifications should be cleared if any of the following properties have changed:
@@ -389,6 +420,12 @@ export default class SiteOperationSchedule extends Operation {
       // - All notifications will be deleted if `shouldClearNotifications` returns not false.
       // - Notifications for removed or updated workers will be deleted.
       const performTransaction = async (txn) => {
+        /******************************************************************
+         * [NOTE] 2026-06-04 の症状について
+         * `worker1` が削除された時の例
+         * console.log(this._beforeData.workers); -> [] が出力されてしまう。
+         ******************************************************************/
+
         // Prepare arguments for bulk deletion of notifications.
         const args = { siteOperationScheduleId: this.docId };
 
@@ -417,8 +454,6 @@ export default class SiteOperationSchedule extends Operation {
       if (updateOptions.transaction) {
         await performTransaction(updateOptions.transaction);
       } else {
-        // const firestore = this.constructor.getAdapter().firestore;
-        // await runTransaction(firestore, performTransaction);
         await this.constructor.runTransaction(performTransaction);
       }
     } catch (error) {
