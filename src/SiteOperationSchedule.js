@@ -411,7 +411,7 @@ export default class SiteOperationSchedule extends Operation {
         //     await ArrangementNotification.bulkDelete(args, txn);
         //   }
         // }
-        // await super.update({ ...updateOptions, transaction: txn });
+        await super.update({ ...updateOptions, transaction: txn });
       };
 
       if (updateOptions.transaction) {
