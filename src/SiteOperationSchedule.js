@@ -398,6 +398,7 @@ export default class SiteOperationSchedule extends Operation {
      * `worker1` が削除された時の例
      * console.log(this._beforeData.workers); -> ['worker1'] が出力される。
      ******************************************************************/
+    console.log("start", this._beforeData.workers);
 
     try {
       // // Returns whether the notifications should be cleared.
@@ -429,6 +430,7 @@ export default class SiteOperationSchedule extends Operation {
          * `worker1` が削除された時の例
          * console.log(this._beforeData.workers); -> [] が出力されてしまう。
          ******************************************************************/
+        console.log("inner", this._beforeData.workers);
 
         // Prepare arguments for bulk deletion of notifications.
         const args = { siteOperationScheduleId: this.docId };
