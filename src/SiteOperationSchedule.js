@@ -389,8 +389,8 @@ export default class SiteOperationSchedule extends Operation {
       // - All notifications will be deleted if `shouldClearNotifications` returns not false.
       // - Notifications for removed or updated workers will be deleted.
       const performTransaction = async (txn) => {
-        // // Prepare arguments for bulk deletion of notifications.
-        // const args = { siteOperationScheduleId: this.docId };
+        // Prepare arguments for bulk deletion of notifications.
+        const args = { siteOperationScheduleId: this.docId };
 
         // // Delete all notifications if related data have been changed.
         // if (shouldClearNotifications()) {
