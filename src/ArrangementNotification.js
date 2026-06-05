@@ -6,6 +6,9 @@
  * 同期削除されるように設計されているが、`fetchDocsBySiteOperationScheduleId` メソッドが
  * サーバー側で利用できないため、メンテナンスによる `SiteOperationSchedule` ドキュメントの削除に伴う
  * 自動削除はサーバー側で個別に実装する必要があります。
+ *
+ * [更新履歴]
+ * 2026-06-05 `shouldNotify` フィールドを追加
  * ---------------------------------------------------------------------------
  * - Model representing arrangement notifications for employees extending SiteOperationScheduleDetail.
  * - The `docId` is fixed to `${siteOperationScheduleId}_${workerId}` to allow recreation of documents.
@@ -13,33 +16,32 @@
  * - Overrides `totalWorkMinutes` to use actual work times instead of scheduled times.
  * - Direct updates are disabled; use status transition methods instead.
  * ---------------------------------------------------------------------------
- * @prop {Date} confirmedAt - Confirmation date and time
- * @prop {string} arrivedAt - Arrival time (HH:MM format)
- * @prop {string} leavedAt - Leave time (HH:MM format)
- * @prop {string} actualStartTime - Actual start time (HH:MM format)
- * @prop {boolean} actualIsStartNextDay - Actual next day start flag
- * @prop {string} actualEndTime - Actual end time (HH:MM format)
- * @prop {number} actualBreakMinutes - Actual break time (minutes)
- * @prop {string} status - Arrangement notification status
- * ---------------------------------------------------------------------------
- * @computed {Date} actualStartAt - Actual start date and time (Date object) (read-only)
+ * @property {Date} confirmedAt - Confirmation date and time
+ * @property {string} arrivedAt - Arrival time (HH:MM format)
+ * @property {string} leavedAt - Leave time (HH:MM format)
+ * @property {string} actualStartTime - Actual start time (HH:MM format)
+ * @property {Date} actualStartAt - Actual start date and time (Date object) (read-only)
  * - Returns a Date object with `actualStartTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
- * @computed {Date} actualEndAt - Actual end date and time (Date object) (read-only)
+ * @property {boolean} actualIsStartNextDay - Actual next day start flag
+ * @property {string} actualEndTime - Actual end time (HH:MM format)
+ * @property {Date} actualEndAt - Actual end date and time (Date object) (read-only)
  * - Returns a Date object with `actualEndTime` set based on `dateAt`.
  * - If `isStartNextDay` is true, add 1 day.
  * - If `isSpansNextDay` is true, add 1 day.
- * @computed {number} totalWorkMinutes - Total working time in minutes (excluding actual break time) (read-only)
+ * @property {number} actualBreakMinutes - Actual break time (minutes)
+ * @property {boolean} shouldNotify - push 通知を送るべきかどうかのフラグ（デフォルト: true, hidden: true）
+ * @property {string} status - Arrangement notification status
+ * @property {number} totalWorkMinutes - Total working time in minutes (excluding actual break time) (read-only)
  * - **OVERRIDE**: Calculated using actual times instead of scheduled times.
  * - Calculated as the difference between `actualEndAt` and `actualStartAt` minus `actualBreakMinutes`
- * ---------------------------------------------------------------------------
- * @getter {boolean} isArranged - Arranged status flag (read-only)
+ * @property {boolean} isArranged - Arranged status flag (read-only)
  * - Returns `true` if status is `ARRANGED`
- * @getter {boolean} isConfirmed - Confirmed status flag (read-only)
+ * @property {boolean} isConfirmed - Confirmed status flag (read-only)
  * - Returns `true` if status is `CONFIRMED`
- * @getter {boolean} isArrived - Arrived status flag (read-only)
+ * @property {boolean} isArrived - Arrived status flag (read-only)
  * - Returns `true` if status is `ARRIVED`
- * @getter {boolean} isLeaved - Leaved status flag (read-only)
+ * @property {boolean} isLeaved - Leaved status flag (read-only)
  * - Returns `true` if status is `LEAVED`
  * ---------------------------------------------------------------------------
  * @inherited - The following properties are inherited from SiteOperationScheduleDetail:
@@ -164,6 +166,7 @@ const classProps = {
     default: 60,
     required: true,
   }),
+  shouldNotify: defField("check", { default: true, hidden: true }),
 };
 
 export default class ArrangementNotification extends SiteOperationScheduleDetail {
