@@ -6,6 +6,9 @@
  * @class
  * @extends Operation
  *
+ * [更新履歴]
+ * 2026-06-05 - `notify` メソッドに `shouldNotify` 引数を追加。
+ *
  * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
  * @property {string} shiftType - 勤務区分 (変更されると `employees` と `outsourcers` の `shiftType` が自動的に更新されます)
  * @property {string} startTime - 開始時刻 (HH:MM 形式)
@@ -83,6 +86,7 @@
  * - `hasNotification` が `false` の従業員に対して ArrangementNotification ドキュメントを作成します。
  * - 全ての従業員と外注先の `hasNotification` フラグを `true` に更新します。
  * - 既に通知が存在する場合は、新たに通知を作成しません。
+ * - `shouldNotify` に `false` を指定した場合、配置通知ドキュメントは作成されますが、Cloud Functions 側でプッシュ通知が送信されません。
  * @method syncToOperationResult - 現在の SiteOperationSchedule を元に OperationResult ドキュメントを作成します。
  * - OperationResult ドキュメントの ID は SiteOperationSchedule ドキュメントの ID と同じになります。
  * - SiteOperationSchedule の `operationResultId` プロパティに作成された OperationResult ドキュメントの ID を設定します。
@@ -383,6 +387,8 @@ export default class SiteOperationSchedule extends Operation {
    * @param {string} updateOptions.prefix - The prefix.
    */
   async update(updateOptions = {}) {
+    const backupInstance = this.clone(); // 失敗した場合に元の状態に戻すためのバックアップインスタンス
+
     // Returns whether the notifications should be cleared.
     // - All notifications should be cleared if any of the following properties have changed:
     //   `siteId`, `date`, `shiftType`, `startTime`, `isStartNextDay`, `endTime`, `breakMinutes`, or `regulationWorkMinutes`.
@@ -450,7 +456,7 @@ export default class SiteOperationSchedule extends Operation {
         await this.constructor.runTransaction(performTransaction);
       }
     } catch (error) {
-      this.undo();
+      this.initialize(backupInstance); // 更新前の状態に戻す
       throw new ContextualError(error.message, {
         method: "update",
         className: "SiteOperationSchedule",
@@ -571,13 +577,18 @@ export default class SiteOperationSchedule extends Operation {
     }
   }
 
-  /**
-   * 配置通知を作成します。
-   * - 現在配置通知がなされてない作業員に対してのみ配置通知ドキュメントを作成します。
-   * - 全作業員の配置通知フラグが true に更新されます。
-   * @returns {Promise<void>}
-   */
-  async notify() {
+  /*****************************************************************************
+   * notify
+   * 当該現場稼働予定の配置通知がなされていない作業員の配置通知ドキュメントを作成し、
+   * 当該作業員の配置通知フラグを true に更新します。
+   * 配置通知ドキュメントは作成するが、push 通知を行わない場合は `shouldNotify` に false を指定します。
+   * [NOTE]
+   * - `shouldNotify` が false の場合、Cloud Functions 側で `notification` ドキュメントが作成されません。
+   * @param {boolean} shouldNotify - 配置通知を行うかどうかのフラグ
+   * @return {Promise<void>}
+   *****************************************************************************/
+  async notify(shouldNotify = true) {
+    const backupInstance = this.clone(); // catch ブロック内のコメントを参照
     try {
       // 未通知である作業員を抽出
       const targetWorkers = this.workers.filter((w) => !w.hasNotification);
@@ -589,6 +600,7 @@ export default class SiteOperationSchedule extends Operation {
           actualStartTime: worker.startTime,
           actualEndTime: worker.endTime,
           actualBreakMinutes: worker.breakMinutes,
+          shouldNotify,
         });
       });
 
@@ -609,13 +621,19 @@ export default class SiteOperationSchedule extends Operation {
         ]);
       });
     } catch (error) {
-      this.undo();
+      // undo について
+      // 当該メソッド内でエラーが発生した場合に、当該インスタンスの状態をエラー発生前に戻すために呼び出していますが、
+      // 当該インスタンスが `onSnaphsot` リスナーによって取得されたものである場合に、
+      // `this.constructor.runTransaction` が呼び出されることにより `保留中` 状態に更新されたドキュメントが再取得されるため、
+      // `initialize` が呼び出されて `this._beforeData` が更新されてしまい、エラー発生前の状態に戻すことができません。
+      this.initialize(backupInstance);
+
       throw new ContextualError(
         `配置通知作成処理に失敗しました。: ${error.message}`,
         {
           method: "notify",
           className: "SiteOperationSchedule",
-          arguments: {},
+          arguments: { shouldNotify },
           state: this.toObject(),
         },
       );
