@@ -1,6 +1,6 @@
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
-import OperationResultDetail from "./OperationResultDetail.js";
+import OperationResult from "./OperationResultDetail.js";
 import { formatJstDate } from "./utils/index.js";
 
 /*****************************************************************************
@@ -13,7 +13,9 @@ import { formatJstDate } from "./utils/index.js";
  * @property {string|null} endTime - 勤怠の終了時間 (HH:MM 形式) (読み取り専用)
  * @property {number} breakMinutes - 勤怠の休憩時間 (分) (読み取り専用)
  * @property {boolean} isAttended - 勤怠が存在するかどうか (読み取り専用)
- * @property {Array<OperationResultDetail>} operationResultDetails - 稼働実績明細の配列
+ * @property {Array<OperationResult>} operationResults - 稼働実績の配列
+ *
+ * @getter details - 当該クラスで管理する従業員の稼働実績明細の配列 (読み取り専用)
  *****************************************************************************/
 export default class DailyAttendance extends FireModel {
   static className = "勤怠";
@@ -23,8 +25,8 @@ export default class DailyAttendance extends FireModel {
   static classProps = {
     dateAt: defField("dateAt", { required: true }),
     employeeId: defField("employeeId", { required: true }),
-    operationResultDetails: defField("array", {
-      customClass: OperationResultDetail,
+    operationResults: defField("array", {
+      customClass: OperationResult,
     }),
   };
 
@@ -36,16 +38,33 @@ export default class DailyAttendance extends FireModel {
 
     Object.defineProperties(this, {
       /**
+       * 当該クラスで管理する従業員の稼働実績明細の配列を返します。
+       * - `operationResults` 配列内の OperationResult から、
+       *   `employeeId` と一致する `id` を持つ明細をすべて返します。（読み取り専用）
+       */
+      details: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return (this.operationResults ?? [])
+            .flatMap((operationResult) => operationResult.details)
+            .filter((detail) => detail.id === this.employeeId);
+        },
+        set(v) {},
+      },
+
+      /**
        * date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
        */
       date: {
         configurable: true,
         enumerable: true,
         get() {
-          return formatJstDate(this.dateAt) || "";
+          return formatJstDate(this.dateAt);
         },
         set(v) {},
       },
+
       /**
        * 勤怠の開始時間は、関連する稼働実績明細の中で最も早い開始時間を返す。
        */
@@ -53,13 +72,11 @@ export default class DailyAttendance extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          const details = this.operationResultDetails || [];
-          const times = details.map((detail) => detail.startTime);
-          const earliestTime = times.reduce(
-            (min, time) => (time < min ? time : min),
-            Infinity,
-          );
-          return earliestTime === Infinity ? null : earliestTime;
+          const times = this.details.map((detail) => detail.startTime);
+          const earliestTime = times.length
+            ? times.reduce((min, time) => (time < min ? time : min))
+            : null;
+          return earliestTime;
         },
         set(v) {},
       },
@@ -71,13 +88,11 @@ export default class DailyAttendance extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          const details = this.operationResultDetails || [];
-          const times = details.map((detail) => detail.endTime);
-          const latestTime = times.reduce(
-            (max, time) => (time > max ? time : max),
-            -Infinity,
-          );
-          return latestTime === -Infinity ? null : latestTime;
+          const times = this.details.map((detail) => detail.endTime);
+          const latestTime = times.length
+            ? times.reduce((max, time) => (time > max ? time : max))
+            : null;
+          return latestTime;
         },
         set(v) {},
       },
@@ -89,8 +104,7 @@ export default class DailyAttendance extends FireModel {
         configurable: true,
         enumerable: true,
         get() {
-          const details = this.operationResultDetails || [];
-          return details.reduce(
+          return this.details.reduce(
             (total, detail) => total + (detail.breakMinutes || 0),
             0,
           );
@@ -98,11 +112,26 @@ export default class DailyAttendance extends FireModel {
         set(v) {},
       },
 
+      /**
+       * 稼働実績ID の配列を返します。（読み取り専用）
+       */
+      operationResultIds: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return (this.operationResults ?? []).map((result) => result.docId);
+        },
+        set(v) {},
+      },
+
+      /**
+       * 勤怠が存在するかどうかを返します。`employeeId` が存在しない場合は常に `false` を返します。（読み取り専用）
+       */
       isAttended: {
         configurable: true,
         enumerable: true,
         get() {
-          return this.operationResultDetails.length !== 0;
+          return (this.details ?? []).length > 0;
         },
         set(v) {},
       },
@@ -151,6 +180,7 @@ export default class DailyAttendance extends FireModel {
 
   /*****************************************************************************
    * DELETE [OVERRIDE]
+   * - 将来、独自処理が追加される可能性があるため、オーバーライドして定義しておきます。
    * @param {Object} options - Options for deleting the document.
    * @param {Object} options.transaction - The Firestore transaction object.
    * @param {function} options.callBack - The callback function.
