@@ -66,6 +66,11 @@
  * @prop {string} endTime - End time (HH:MM format)
  * @prop {number} breakMinutes - Break time (minutes)
  * @prop {number} regulationWorkMinutes - Regulation work minutes
+ * @property {Date} attendanceDateAt - 勤務日付 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` を基に、勤務日付を Date オブジェクトで返します。
+ * - `isStartNextDay` が true の場合、1日加算した日付を返します。
+ * @property {string} attendanceDate - 勤務日付 (YYYY-MM-DD 形式の文字列) (読み取り専用)
+ * - `attendanceDateAt` を基に、勤務日付を文字列で返します。
  * ---------------------------------------------------------------------------
  * @inherited - The following computed properties are inherited from OperationDetail (via SiteOperationScheduleDetail):
  * @computed {string} workerId - Worker ID (read-only)

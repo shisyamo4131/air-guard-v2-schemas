@@ -5,6 +5,9 @@
  * - 日付や時間に関するプロパティを持つ抽象クラスです。インスタンス化はできません。
  * - 24時間を超える勤務は管理できません。`startTime` と `endTime` に同時刻が設定された場合は、24時間勤務と見做されます。
  *
+ * [更新履歴]
+ * 2026-06-09 - `attendanceDateAt` と `attendanceDate` を追加。
+ *
  * @class
  * @extends FireModel
  * @abstract
@@ -43,6 +46,11 @@
  *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
  * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
  *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {Date} attendanceDateAt - 勤務日付 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` を基に、勤務日付を Date オブジェクトで返します。
+ * - `isStartNextDay` が true の場合、1日加算した日付を返します。
+ * @property {string} attendanceDate - 勤務日付 (YYYY-MM-DD 形式の文字列) (読み取り専用)
+ * - `attendanceDateAt` を基に、勤務日付を文字列で返します。
  *
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
  *
@@ -92,10 +100,9 @@ export default class WorkTimeBase extends FireModel {
     super(item);
   }
 
-  /**
-   * afterInitialize
-   * @param {Object} item - 初期化オブジェクト
-   */
+  /*****************************************************************************
+   * AFTER INITIALIZE [OVERRIDE]
+   *****************************************************************************/
   afterInitialize(item = {}) {
     super.afterInitialize(item);
 
@@ -148,6 +155,40 @@ export default class WorkTimeBase extends FireModel {
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(0, 0, 0, 0);
           return endDate.getTime() > startDate.getTime();
+        },
+        set(v) {},
+      },
+
+      /**
+       * attendanceDateAt - 勤務日付 (Date オブジェクト) (読み取り専用)
+       * - `dateAt` を基に、勤務日付を Date オブジェクトで返します。
+       * - `isStartNextDay` が true の場合、1日加算した日付を返します。
+       */
+      attendanceDateAt: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!this.dateAt) return null;
+          const result = new Date(this.dateAt);
+          if (this.isStartNextDay) {
+            result.setDate(result.getDate() + 1);
+          }
+          return result;
+        },
+        set(v) {},
+      },
+
+      /**
+       * attendanceDate - 勤務日付 (YYYY-MM-DD 形式の文字列) (読み取り専用)
+       * - `attendanceDateAt` を基に、勤務日付を文字列で返します。
+       */
+      attendanceDate: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.attendanceDateAt
+            ? formatJstDate(this.attendanceDateAt)
+            : null;
         },
         set(v) {},
       },

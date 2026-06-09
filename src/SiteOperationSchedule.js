@@ -41,6 +41,11 @@
  *   この場合、最初の 8 時間までは基本単価が適用され、残りの 8 時間は残業単価が適用されるといった設定が可能になります。
  * - 規定労働時間を 24 時間 (1440 分) とすると、実際の勤務が 24 時間 (1440 分) を超えた分が残業時間として扱われます。
  *   この場合、全ての勤務時間が基本単価で扱われるといった設定が可能になります。
+ * @property {Date} attendanceDateAt - 勤務日付 (Date オブジェクト) (読み取り専用)
+ * - `dateAt` を基に、勤務日付を Date オブジェクトで返します。
+ * - `isStartNextDay` が true の場合、1日加算した日付を返します。
+ * @property {string} attendanceDate - 勤務日付 (YYYY-MM-DD 形式の文字列) (読み取り専用)
+ * - `attendanceDateAt` を基に、勤務日付を文字列で返します。
  * @property {string} dayType - 曜日区分
  * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
  * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
