@@ -47,8 +47,8 @@ export default class DailyAttendance extends FireModel {
         enumerable: true,
         get() {
           return (this.operationResults ?? [])
-            .flatMap((operationResult) => operationResult.details)
-            .filter((detail) => detail.id === this.employeeId);
+            .flatMap((operationResult) => operationResult.workers ?? [])
+            .filter((worker) => worker.id === this.employeeId);
         },
         set(v) {},
       },
