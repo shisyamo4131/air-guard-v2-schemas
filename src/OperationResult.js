@@ -111,7 +111,7 @@
  * @property {boolean} hasAgreement - 取極めが関連付けられているかどうかを示すフラグ (読み取り専用)
  * - `agreement` が設定されている場合は `true`、それ以外の場合は `false`。
  * @property {boolean} isBillable - OperationBilling ドキュメントが作成される条件を満たしているかどうかを示すフラグ (読み取り専用)
- * - `billingDateAt` が null でない場合に `true`。それ以外は `false`。
+ * - `billingDateAt` が null でなく、かつ `customerId` が存在する場合に true を返します。
  * @property {Object} statistics - 従業員の統計情報 (読み取り専用)
  * - 基本従業員と資格者のカウントおよび総労働時間を含む統計情報。
  * - 構造: { base: {...}, qualified: {...}, total: {...} }
@@ -528,14 +528,14 @@ export default class OperationResult extends Operation {
 
     /**
      * isBillable
-     * - `billingDateAt` プロパティが null でない場合に true を返します。
+     * - `billingDateAt` プロパティが null でなく、かつ `customerId` が存在する場合に true を返します。
      * - Firestore のクエリで使用する可能性があるため、列挙可能プロパティとしてます。
      */
     Object.defineProperty(this, "isBillable", {
       configurable: true,
       enumerable: true,
       get() {
-        return this.billingDateAt != null;
+        return this.billingDateAt != null && !!this.customerId;
       },
       set(v) {},
     });
@@ -909,7 +909,7 @@ export default class OperationResult extends Operation {
       const message = `[OperationResult.js] The specified siteId (${this.siteId}) does not exist.`;
       throw new Error(message);
     }
-    this.customerId = siteInstance.customerId;
+    this.customerId = siteInstance.customerId || null;
     this.agreement = siteInstance.getValidAgreement(this);
   }
 
