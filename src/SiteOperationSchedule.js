@@ -173,8 +173,8 @@ export default class SiteOperationSchedule extends Operation {
   /***************************************************************************
    * Override `afterInitialize`
    ***************************************************************************/
-  afterInitialize() {
-    super.afterInitialize();
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
     const synchronizeToWorkers = (key, value) => {
       this.employees.forEach((emp) => {
         emp[key] = value;

@@ -178,7 +178,9 @@ export default class Company extends GeocodableMixin(FireModel) {
   static classProps = classProps;
 
   // Override `afterInitialize` to define computed properties.
-  afterInitialize() {
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
+
     Object.defineProperties(this, {
       fullAddress: defAccessor("fullAddress"),
       prefecture: defAccessor("prefecture"),

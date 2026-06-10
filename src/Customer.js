@@ -140,8 +140,8 @@ export default class Customer extends GeocodableMixin(FireModel) {
  * lightweight data handling.
  *****************************************************************************/
 export class CustomerMinimal extends Customer {
-  afterInitialize() {
-    super.afterInitialize();
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
     delete this.remarks;
     delete this.tokenMap;
     delete this.uid;

@@ -60,6 +60,7 @@
  * @property {number} totalWorkMinutes - 総労働時間 (休憩時間を除く) (分) (読み取り専用)
  * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
  * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
+ * @property {string} customerId - 取引先ID（`beforeCreate`, `beforeUpdate` で `siteId` から同期されます）
  * @property {string} siteId - 現場ID (変更されると `employees` と `outsourcers` の `siteId` が自動的に更新されます)
  * @property {number} requiredPersonnel - 必要人数
  * @property {boolean} qualificationRequired - 資格要件フラグ
@@ -79,6 +80,7 @@
  * @property {string} groupKey - `siteId`, `shiftType`, `date` を組み合わせたキー。（読み取り専用）
  * @property {string} agreementKey - `date`, `shiftType` を組み合わせたキー。（読み取り専用）
  * @property {string} orderKey - `siteId`, `shiftType` を組み合わせたキー。（読み取り専用）
+ * @property {string|null} billingKey - `customerId`, `siteId`, `billingDate` を組み合わせたキー。（読み取り専用）
  * @property {string|null} siteOperationScheduleId - 現場稼働予定ID
  * - このプロパティは、OperationResult が現場稼働予定に紐づいている場合に、その現場稼働予定の ID を保持します。
  * @property {boolean} useAdjusted - 請求に調整済み数量を使用するかどうかのフラグ
@@ -102,9 +104,10 @@
  * - 請求に使用される日付です。
  * @property {boolean} isLocked - ロックフラグ
  * - true の場合、OperationResult は OperationBilling として編集する場合を除き、編集できません。
- * @property {Agreement|null} agreement - 関連する取極めオブジェクト
+ * @property {AgreementV2|null} agreement - 関連する取極めオブジェクト
  * - この OperationResult に関連付けられた取極めインスタンスで、価格設定や請求情報に使用されます。
  * - 設定されている場合、単価や請求日などの計算に影響を与えます。
+ * - 値が変更されると `refreshBillingDateAt` メソッドが呼び出され、`billingDateAt` が再計算されます。
  * @property {boolean} hasAgreement - 取極めが関連付けられているかどうかを示すフラグ (読み取り専用)
  * - `agreement` が設定されている場合は `true`、それ以外の場合は `false`。
  * @property {boolean} isBillable - OperationBilling ドキュメントが作成される条件を満たしているかどうかを示すフラグ (読み取り専用)
@@ -142,8 +145,9 @@
  * @method setSiteIdCallback - `siteId` が変更された時に呼び出されるコールバック関数
  * @method setShiftTypeCallback - `shiftType` が変更された時に呼び出されるコールバック関数
  * @method setRegulationWorkMinutesCallback - `regulationWorkMinutes` が変更された時に呼び出されるコールバック関数
- * @method refreshBillingDateAt - Refresh billingDateAt based on dateAt and cutoffDate
- * - Updates `billingDateAt` based on the current `dateAt` and `cutoffDate` values.
+ * @method refreshBillingDateAt - `billingDateAt` を `dateAt` と `agreement.cutoffDate` に基づいて更新します。
+ * - `dateAt` または `agreement` が存在しない場合、`billingDateAt` を null に設定します。
+ * - `agreement.cutoffDate` が 0 以外で存在しない場合も `billingDateAt` を null に設定します。
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
  * @getter {Array<Object>} invalidReasons - エラーコード、メッセージ、多言語メッセージ、フィールド名を含む詳細情報の配列を返すプロパティ
@@ -401,10 +405,7 @@ const classProps = {
       },
     },
   }),
-  billingDateAt: defField("dateAt", {
-    label: "請求締日",
-    default: null,
-  }),
+  billingDateAt: defField("billingDateAt"),
   isLocked: defField("check", {
     label: "実績確定",
     default: false,
@@ -441,217 +442,198 @@ export default class OperationResult extends Operation {
     { title: "現場", key: "siteId", value: "siteId" },
   ];
 
-  /**
-   * afterInitialize
-   */
-  afterInitialize() {
-    super.afterInitialize();
+  /*****************************************************************************
+   * AFTER INITIALIZE [OVERRIDE]
+   *****************************************************************************/
+  afterInitialize(item = {}) {
+    super.afterInitialize(item);
 
-    /** Computed properties */
-    Object.defineProperties(this, {
-      /**
-       * hasAgreement
-       * - getter 定義でも良いが、Firestore のクエリで使用する可能性があるため、
-       *   Object.defineProperty で列挙可能プロパティとして定義する。
-       */
-      hasAgreement: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.agreement != null;
-        },
-        set(v) {},
+    /**
+     * billingAmount
+     * - 当該稼働実績の税込請求額を返します。
+     * @returns {number} 税込請求額
+     */
+    Object.defineProperty(this, "billingAmount", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return this.salesAmount + this.tax;
       },
+      set(v) {},
+    });
 
-      /**
-       * isBillable
-       * - OperationBilling ドキュメントが作成される条件を満たしているかどうかを示すフラグ。
-       * - `hasAgreement` が true または `useAdjusted` が true の場合に true を返す。
-       * - Firestore のクエリで使用する可能性があるため、Object.defineProperty で列挙可能プロパティとして定義する。
-       */
-      isBillable: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.billingDateAt != null;
-        },
-        set(v) {},
+    /**
+     * billingDate
+     * - `billingDateAt` を基に、請求日を YYYY-MM-DD 形式の文字列で返します。
+     * - `billingDateAt` が null の場合は null を返します。
+     * - Firestore のクエリで使用する可能性があるため、列挙可能プロパティとしてます。
+     * @returns {string|null} `billingDateAt` が null でない場合は YYYY-MM-DD 形式の文字列、null の場合は null を返します。
+     */
+    Object.defineProperty(this, "billingDate", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return formatJstDate(this.billingDateAt);
       },
+      set(v) {},
+    });
 
-      /**
-       * 統計情報
-       */
-      statistics: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const initialValues = {
-            quantity: 0,
-            regularTimeWorkMinutes: 0,
-            overtimeWorkMinutes: 0,
-            totalWorkMinutes: 0,
-            breakMinutes: 0,
-          };
-          const result = {
-            base: { ...initialValues, ojt: { ...initialValues } },
-            qualified: { ...initialValues, ojt: { ...initialValues } },
-            total: { ...initialValues, ojt: { ...initialValues } },
-          };
-
-          // 各カテゴリに値を追加する関数
-          const addToCategory = (categoryObj, worker, isOjt) => {
-            const target = isOjt ? categoryObj.ojt : categoryObj;
-            target.quantity += 1;
-            target.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
-            target.overtimeWorkMinutes += worker.overtimeWorkMinutes;
-            target.totalWorkMinutes += worker.totalWorkMinutes;
-            target.breakMinutes += worker.breakMinutes;
-          };
-
-          this.workers.forEach((worker) => {
-            const category = worker.isQualified ? "qualified" : "base";
-            const isOjt = worker.isOjt;
-
-            // 該当カテゴリ（base/qualified）に追加
-            addToCategory(result[category], worker, isOjt);
-
-            // 全体合計に追加
-            addToCategory(result.total, worker, isOjt);
-          });
-
-          return result;
-        },
-        set(v) {},
+    /**
+     * billingKey
+     * - `customerId`, `siteId`, `billingDate` を組み合わせたキーを返します。
+     * - いずれかの値が null の場合は null を返します。
+     * - Firestore のクエリで使用する可能性があるため、列挙可能プロパティとしてます。
+     * @returns {string|null}
+     */
+    Object.defineProperty(this, "billingKey", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        if (!this.customerId || !this.siteId || !this.billingDate) return null;
+        return `${this.customerId}_${this.siteId}_${this.billingDate}`;
       },
+      set(v) {},
+    });
 
-      /**
-       * 売上情報
-       * - 実績ベース（original）と調整済み（adjusted）の2層構造。
-       * - 構造: { original: { base, qualified }, adjusted: { base, qualified } }
-       * - `useAdjusted` に関係なく常に両方を計算する。
-       * - original: agreement の rates と statistics から算出。
-       * - adjusted: adjusted* フィールドから算出。
-       */
-      sales: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const createInitialValues = () => ({
-            unitPrice: 0,
-            quantity: 0,
-            regularAmount: 0,
-            overtimeUnitPrice: 0,
-            overtimeMinutes: 0,
-            overtimeAmount: 0,
-            total: 0,
-          });
+    /**
+     * billingMonth
+     * - `billingDateAt` を基に、請求月を YYYY-MM 形式の文字列で返します。
+     * - `billingDateAt` が null の場合は null を返します。
+     * - Firestore のクエリで使用する可能性があるため、列挙可能プロパティとしてます。
+     * @returns {string|null} `billingDateAt` が null でない場合は YYYY-MM 形式の文字列、null の場合は null を返します。
+     */
+    Object.defineProperty(this, "billingMonth", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return formatJstDate(this.billingDateAt, "YYYY-MM");
+      },
+      set(v) {},
+    });
 
-          // 実績ベース（agreement の rates を使用）での計算
-          const calculateOriginalCategorySales = (category) => {
-            const isQualified = category === "qualified";
-            const categoryStats = this.statistics?.[category];
-            const rateSet = this.agreement?.rates?.[this.dayType];
+    /**
+     * hasAgreement
+     * - `agreement` プロパティに値が設定されているかどうかを返します。
+     * - Firestore のクエリで使用する可能性があるため、列挙可能プロパティとしてます。
+     * @returns {boolean} `agreement` プロパティが null でない場合は true、それ以外は false を返します。
+     */
+    Object.defineProperty(this, "hasAgreement", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return this.agreement != null;
+      },
+      set(v) {},
+    });
 
-            if (!categoryStats) {
+    /**
+     * isBillable
+     * - `billingDateAt` プロパティが null でない場合に true を返します。
+     * - Firestore のクエリで使用する可能性があるため、列挙可能プロパティとしてます。
+     */
+    Object.defineProperty(this, "isBillable", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return this.billingDateAt != null;
+      },
+      set(v) {},
+    });
+
+    /**
+     * sales
+     * - 当該稼働実績の売上情報を返します。
+     *   { original: { base, qualified }, adjusted: { base, qualified } }
+     * - 実績ベース（original）と調整済み（adjusted）の2層構造で、`useAdjusted` に関係なく常に両方を計算します。
+     * - original: agreement の rates と statistics から算出。
+     * - adjusted: adjusted* フィールドから算出。
+     *
+     * [各カテゴリの構造]
+     * {
+     *   unitPrice: number, // 単価
+     *   quantity: number, // 数量
+     *   regularAmount: number, // 金額（unitPrice × quantity）
+     *   overtimeUnitPrice: number, // 残業単価
+     *   overtimeMinutes: number, // 残業時間（分）
+     *   overtimeAmount: number, // 残業金額（overtimeUnitPrice × overtimeMinutes / 60）
+     *   total: number, // 合計金額
+     * }
+     * @returns {Object} 売上情報を含むオブジェクトを返します。
+     */
+    Object.defineProperty(this, "sales", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        const createInitialValues = () => ({
+          unitPrice: 0,
+          quantity: 0,
+          regularAmount: 0,
+          overtimeUnitPrice: 0,
+          overtimeMinutes: 0,
+          overtimeAmount: 0,
+          total: 0,
+        });
+
+        // 実績ベース（agreement の rates を使用）での計算
+        const calculateOriginalCategorySales = (category) => {
+          const isQualified = category === "qualified";
+          const categoryStats = this.statistics?.[category];
+          const rateSet = this.agreement?.rates?.[this.dayType];
+
+          if (!categoryStats) {
+            console.warn(
+              `[OperationResult] Statistics data for category '${category}' is missing.`,
+              {
+                docId: this.docId,
+                dateAt: this.dateAt,
+                siteId: this.siteId,
+                category,
+                statistics: this.statistics,
+              },
+            );
+            return createInitialValues();
+          }
+
+          const result = createInitialValues();
+
+          // 数量と残業時間を実績から計算
+          const isPerHour =
+            this.agreement?.billingUnitType ===
+            BILLING_UNIT_TYPE.PER_HOUR.value;
+
+          if (isPerHour) {
+            let totalMinutes = categoryStats.totalWorkMinutes || 0;
+            if (this.agreement?.includeBreakInBilling) {
+              totalMinutes += categoryStats.breakMinutes || 0;
+            }
+            result.quantity = totalMinutes / 60;
+          } else {
+            result.quantity = categoryStats.quantity || 0;
+          }
+          result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
+
+          // agreementがある場合のみ単価と金額を計算
+          if (this.agreement) {
+            if (!rateSet) {
               console.warn(
-                `[OperationResult] Statistics data for category '${category}' is missing.`,
+                `[OperationResult] AgreementV2.rates for dayType '${this.dayType}' is missing.`,
                 {
                   docId: this.docId,
                   dateAt: this.dateAt,
                   siteId: this.siteId,
-                  category,
-                  statistics: this.statistics,
+                  dayType: this.dayType,
+                  agreement: this.agreement,
                 },
               );
-              return createInitialValues();
+              return result;
             }
 
-            const result = createInitialValues();
-
-            // 数量と残業時間を実績から計算
-            const isPerHour =
-              this.agreement?.billingUnitType ===
-              BILLING_UNIT_TYPE.PER_HOUR.value;
-
-            if (isPerHour) {
-              let totalMinutes = categoryStats.totalWorkMinutes || 0;
-              if (this.agreement?.includeBreakInBilling) {
-                totalMinutes += categoryStats.breakMinutes || 0;
-              }
-              result.quantity = totalMinutes / 60;
-            } else {
-              result.quantity = categoryStats.quantity || 0;
-            }
-            result.overtimeMinutes = categoryStats.overtimeWorkMinutes || 0;
-
-            // agreementがある場合のみ単価と金額を計算
-            if (this.agreement) {
-              if (!rateSet) {
-                console.warn(
-                  `[OperationResult] AgreementV2.rates for dayType '${this.dayType}' is missing.`,
-                  {
-                    docId: this.docId,
-                    dateAt: this.dateAt,
-                    siteId: this.siteId,
-                    dayType: this.dayType,
-                    agreement: this.agreement,
-                  },
-                );
-                return result;
-              }
-
-              result.unitPrice = isQualified
-                ? rateSet.unitPriceQualified || 0
-                : rateSet.unitPriceBase || 0;
-              result.overtimeUnitPrice = isQualified
-                ? rateSet.overtimeUnitPriceQualified || 0
-                : rateSet.overtimeUnitPriceBase || 0;
-
-              result.regularAmount = RoundSetting.apply(
-                result.quantity * result.unitPrice,
-              );
-              result.overtimeAmount = RoundSetting.apply(
-                (result.overtimeMinutes * result.overtimeUnitPrice) / 60,
-              );
-              result.total = result.regularAmount + result.overtimeAmount;
-            }
-
-            return result;
-          };
-
-          // 調整済みフィールドでの計算
-          const calculateAdjustedCategorySales = (category) => {
-            const isQualified = category === "qualified";
-            const categoryStats = this.statistics?.[category];
-
-            if (!categoryStats) {
-              console.warn(
-                `[OperationResult] Statistics data for category '${category}' is missing.`,
-                {
-                  docId: this.docId,
-                  dateAt: this.dateAt,
-                  siteId: this.siteId,
-                  category,
-                  statistics: this.statistics,
-                },
-              );
-              return createInitialValues();
-            }
-
-            const result = createInitialValues();
-
-            result.quantity = isQualified
-              ? this.adjustedQuantityQualified || 0
-              : this.adjustedQuantityBase || 0;
-            result.overtimeMinutes = isQualified
-              ? this.adjustedOvertimeMinutesQualified || 0
-              : this.adjustedOvertimeMinutesBase || 0;
             result.unitPrice = isQualified
-              ? this.adjustedUnitPriceQualified || 0
-              : this.adjustedUnitPriceBase || 0;
+              ? rateSet.unitPriceQualified || 0
+              : rateSet.unitPriceBase || 0;
             result.overtimeUnitPrice = isQualified
-              ? this.adjustedOvertimeUnitPriceQualified || 0
-              : this.adjustedOvertimeUnitPriceBase || 0;
+              ? rateSet.overtimeUnitPriceQualified || 0
+              : rateSet.overtimeUnitPriceBase || 0;
 
             result.regularAmount = RoundSetting.apply(
               result.quantity * result.unitPrice,
@@ -660,116 +642,199 @@ export default class OperationResult extends Operation {
               (result.overtimeMinutes * result.overtimeUnitPrice) / 60,
             );
             result.total = result.regularAmount + result.overtimeAmount;
-
-            return result;
-          };
-
-          return {
-            original: {
-              base: calculateOriginalCategorySales("base"),
-              qualified: calculateOriginalCategorySales("qualified"),
-            },
-            adjusted: {
-              base: calculateAdjustedCategorySales("base"),
-              qualified: calculateAdjustedCategorySales("qualified"),
-            },
-          };
-        },
-        set(v) {},
-      },
-
-      /**
-       * 稼働外売上金額（articles）
-       * - `articles` の price × quantity の合計を返す。
-       */
-      salesArticles: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return (this.articles ?? []).reduce(
-            (sum, a) => sum + (a.price ?? 0) * (a.quantity ?? 0),
-            0,
-          );
-        },
-        set(v) {},
-      },
-
-      /**
-       * 売上金額
-       * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用する。
-       * - `salesArticles`（稼働外売上）の合計も加算する。
-       */
-      salesAmount: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          const target = this.useAdjusted
-            ? this.sales.adjusted
-            : this.sales.original;
-          const workerAmount = target.base.total + target.qualified.total;
-          return RoundSetting.apply(workerAmount + this.salesArticles);
-        },
-        set(v) {},
-      },
-
-      /**
-       * 消費税額
-       */
-      tax: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          try {
-            return Tax.calc(this.salesAmount, this.date);
-          } catch (error) {
-            throw new ContextualError("Failed to calculate tax", {
-              method: "OperationResult.tax (computed)",
-              arguments: { amount: this.salesAmount, date: this.date },
-              error,
-            });
           }
-        },
-        set(v) {},
-      },
 
-      /**
-       * 税込請求額
-       */
-      billingAmount: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return this.salesAmount + this.tax;
-        },
-        set(v) {},
-      },
+          return result;
+        };
 
-      /**
-       * 請求日
-       */
-      billingDate: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return formatJstDate(this.billingDateAt);
-        },
-        set(v) {},
-      },
+        // 調整済みフィールドでの計算
+        const calculateAdjustedCategorySales = (category) => {
+          const isQualified = category === "qualified";
+          const categoryStats = this.statistics?.[category];
 
-      /**
-       * 請求年月
-       */
-      billingMonth: {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return formatJstDate(this.billingDateAt, "YYYY-MM");
-        },
-        set(v) {},
+          if (!categoryStats) {
+            console.warn(
+              `[OperationResult] Statistics data for category '${category}' is missing.`,
+              {
+                docId: this.docId,
+                dateAt: this.dateAt,
+                siteId: this.siteId,
+                category,
+                statistics: this.statistics,
+              },
+            );
+            return createInitialValues();
+          }
+
+          const result = createInitialValues();
+
+          result.quantity = isQualified
+            ? this.adjustedQuantityQualified || 0
+            : this.adjustedQuantityBase || 0;
+          result.overtimeMinutes = isQualified
+            ? this.adjustedOvertimeMinutesQualified || 0
+            : this.adjustedOvertimeMinutesBase || 0;
+          result.unitPrice = isQualified
+            ? this.adjustedUnitPriceQualified || 0
+            : this.adjustedUnitPriceBase || 0;
+          result.overtimeUnitPrice = isQualified
+            ? this.adjustedOvertimeUnitPriceQualified || 0
+            : this.adjustedOvertimeUnitPriceBase || 0;
+
+          result.regularAmount = RoundSetting.apply(
+            result.quantity * result.unitPrice,
+          );
+          result.overtimeAmount = RoundSetting.apply(
+            (result.overtimeMinutes * result.overtimeUnitPrice) / 60,
+          );
+          result.total = result.regularAmount + result.overtimeAmount;
+
+          return result;
+        };
+
+        return {
+          original: {
+            base: calculateOriginalCategorySales("base"),
+            qualified: calculateOriginalCategorySales("qualified"),
+          },
+          adjusted: {
+            base: calculateAdjustedCategorySales("base"),
+            qualified: calculateAdjustedCategorySales("qualified"),
+          },
+        };
       },
+      set(v) {},
     });
 
-    /** Triggers */
+    /**
+     * salesAmount
+     * - 当該稼働実績の売上合計金額を返します。
+     * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用する。
+     * - `salesArticles`（稼働外売上）の合計も加算されます。
+     * @returns {number} 売上合計金額
+     */
+    Object.defineProperty(this, "salesAmount", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        const target = this.useAdjusted
+          ? this.sales.adjusted
+          : this.sales.original;
+        const workerAmount = target.base.total + target.qualified.total;
+        return RoundSetting.apply(workerAmount + this.salesArticles);
+      },
+      set(v) {},
+    });
+
+    /**
+     * salesArticles
+     * - 稼働外売上の金額を返します。
+     * - `articles` の price × quantity の合計を返す。
+     * @returns {number} 稼働外売上の合計金額
+     */
+    Object.defineProperty(this, "salesArticles", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return (this.articles ?? []).reduce(
+          (sum, a) => sum + (a.price ?? 0) * (a.quantity ?? 0),
+          0,
+        );
+      },
+      set(v) {},
+    });
+
+    /**
+     * statistics
+     * - 当該 OperationResult の 統計情報を返します。
+     *   { base: 一般警備員の統計情報, qualified: 資格警備員の統計情報, total: 全体の統計情報 }
+     *
+     * [各統計情報の構造]
+     * {
+     *   quantity: number, // 人数
+     *   regularTimeWorkMinutes: number, // 所定内労働時間
+     *   overtimeWorkMinutes: number, // 残業時間
+     *   totalWorkMinutes: number, // 総労働時間
+     *   breakMinutes: number, // 休憩時間
+     *   ojt: { // OJT の統計情報（上記と同構造）
+     *     quantity: number, // 人数
+     *     regularTimeWorkMinutes: number, // 所定内労働時間
+     *     overtimeWorkMinutes: number, // 残業時間
+     *     totalWorkMinutes: number, // 総労働時間
+     *     breakMinutes: number, // 休憩時間
+     *   }
+     * }
+     * @returns {Object} 統計情報オブジェクト
+     */
+    Object.defineProperty(this, "statistics", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        const initialValues = {
+          quantity: 0,
+          regularTimeWorkMinutes: 0,
+          overtimeWorkMinutes: 0,
+          totalWorkMinutes: 0,
+          breakMinutes: 0,
+        };
+        const result = {
+          base: { ...initialValues, ojt: { ...initialValues } },
+          qualified: { ...initialValues, ojt: { ...initialValues } },
+          total: { ...initialValues, ojt: { ...initialValues } },
+        };
+
+        // 各カテゴリに値を追加する関数
+        const addToCategory = (categoryObj, worker, isOjt) => {
+          const target = isOjt ? categoryObj.ojt : categoryObj;
+          target.quantity += 1;
+          target.regularTimeWorkMinutes += worker.regularTimeWorkMinutes;
+          target.overtimeWorkMinutes += worker.overtimeWorkMinutes;
+          target.totalWorkMinutes += worker.totalWorkMinutes;
+          target.breakMinutes += worker.breakMinutes;
+        };
+
+        this.workers.forEach((worker) => {
+          const category = worker.isQualified ? "qualified" : "base";
+          const isOjt = worker.isOjt;
+
+          // 該当カテゴリ（base/qualified）に追加
+          addToCategory(result[category], worker, isOjt);
+
+          // 全体合計に追加
+          addToCategory(result.total, worker, isOjt);
+        });
+
+        return result;
+      },
+      set(v) {},
+    });
+
+    /**
+     * tax
+     * - 当該稼働実績の消費税額を返します。
+     * @returns {number} 消費税額
+     */
+    Object.defineProperty(this, "tax", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        try {
+          return Tax.calc(this.salesAmount, this.date);
+        } catch (error) {
+          throw new ContextualError("Failed to calculate tax", {
+            method: "OperationResult.tax (computed)",
+            arguments: { amount: this.salesAmount, date: this.date },
+            error,
+          });
+        }
+      },
+      set(v) {},
+    });
+
+    /**
+     * Triggers.agreement
+     * - `agreement` プロパティが変更されると `refreshBillingDateAt` メソッドを呼び出します。
+     */
     let _agreement = this.agreement;
     Object.defineProperties(this, {
       agreement: {
@@ -789,8 +854,13 @@ export default class OperationResult extends Operation {
     });
   }
 
+  /*****************************************************************************
+   * METHODS
+   *****************************************************************************/
   /**
-   * Refresh billingDateAt based on dateAt and cutoffDate
+   * `billingDateAt` を `dateAt` と `agreement.cutoffDate` に基づいて更新します。
+   * - `dateAt` または `agreement` が存在しない場合、`billingDateAt` を null に設定します。
+   * - `agreement.cutoffDate` が 0 以外で存在しない場合も `billingDateAt` を null に設定します。
    * @returns {void}
    */
   refreshBillingDateAt() {

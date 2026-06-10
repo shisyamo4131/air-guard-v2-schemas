@@ -6,6 +6,13 @@ import { generalDefinitions } from "./defaultDefinition.js";
 export const dateAtFields = {
   dateAt: generalDefinitions.dateAt,
 
+  /** 請求締日 */
+  billingDateAt: {
+    ...generalDefinitions.dateAt,
+    label: "請求締日",
+    default: null,
+  },
+
   /** 工期（終了日） */
   constructionPeriodEndAt: {
     ...generalDefinitions.dateAt,
