@@ -249,6 +249,20 @@ export const oneLineFields = {
     length: 20,
   },
 
+  /** インボイス登録番号 */
+  invoiceNumber: {
+    ...generalDefinitions.oneLine,
+    label: "インボイス登録番号",
+    length: 13,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        prefix: "T",
+        inputmode: "tel",
+      },
+    },
+  },
+
   /** 発行元 */
   issuedBy: {
     ...generalDefinitions.oneLine,

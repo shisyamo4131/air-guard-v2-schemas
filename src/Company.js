@@ -12,6 +12,7 @@
  * @property {string} building - 建物名
  * @property {string} tel - 電話番号
  * @property {string} fax - FAX番号
+ * @property {string} invoiceNumber - インボイス登録番号
  * @property {string} bankName - 銀行名
  * @property {string} branchName - 支店名
  * @property {string} accountType - 口座種別（普通、当座）
@@ -59,6 +60,8 @@ const classProps = {
   building: defField("building"),
   tel: defField("tel"),
   fax: defField("fax"),
+
+  invoiceNumber: defField("invoiceNumber"),
 
   /** 振込先情報 */
   bankName: defField("oneLine", { label: "銀行名", length: 20 }),
