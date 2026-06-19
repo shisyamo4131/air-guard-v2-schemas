@@ -689,8 +689,8 @@ export default class SiteOperationSchedule extends Operation {
 
     /**
      * 配置通知データをもとに、従業員・外注先の稼働実績詳細データを変換する関数
-     * - 該当する `notification` が存在する場合、`startTime`, `endTime`, `breakMinutes`, `isStartNextDay` が
-     *   `notification` の `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, `actualIsStartNextDay` に置き換えられます。
+     * - 該当する `notification` が存在する場合、`startTime`, `endTime`, `breakMinutes`, `isStartNextDay`, `isQualified`, `isOjt` が
+     *   `notification` の `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, `actualIsStartNextDay`, `isQualified`, `isOjt` に置き換えられます。
      * @param {string} prop - 変換対象のプロパティ名（"employees" または "outsourcers"）
      * @returns {Array<SiteOperationScheduleDetail>} 変換後の稼働実績詳細データの配列
      */
@@ -704,6 +704,10 @@ export default class SiteOperationSchedule extends Operation {
           notification?.actualBreakMinutes ?? w.breakMinutes;
         result.isStartNextDay =
           notification?.actualIsStartNextDay ?? w.isStartNextDay;
+        result.isQualified = notification
+          ? notification.isQualified
+          : w.isQualified;
+        result.isOjt = notification ? notification.isOjt : w.isOjt;
         return result;
       });
     };
