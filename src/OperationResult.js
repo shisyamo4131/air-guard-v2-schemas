@@ -73,6 +73,7 @@
  * @property {number} employeesCount - `employees` の要素数 (読み取り専用)
  * @property {number} outsourcersCount - `outsourcers` の要素数 (読み取り専用)
  * @property {boolean} isPersonnelShortage - 人員不足フラグ (読み取り専用)
+ * @property {boolean} isPersonnelSurplus - 人員余剰フラグ (読み取り専用)
  * @property {Array<OperationDetail>} workers - 従業員と外注を合わせた配列
  * - `employees` と `outsourcers` を結合した配列を返します。
  * - Getter: `employees` と `outsourcers` を結合した配列を返します。
