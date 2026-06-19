@@ -378,6 +378,20 @@ export default class Operation extends WorkingResult {
       },
 
       /**
+       * 必要人数に対して、割り当てられた従業員と外注先の合計人数余剰があるかどうかを返します。
+       */
+      isPersonnelSurplus: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const totalRequired = this.requiredPersonnel || 0;
+          const totalAssigned = this.employeesCount + this.outsourcersCount;
+          return totalAssigned > totalRequired;
+        },
+        set(v) {},
+      },
+
+      /**
        * `employees` と `outsourcers` を組み合わせた配列を返します。
        * セッターは、`isEmployee` プロパティに基づいて、従業員と外注先を分割して `employees` と `outsourcers` に設定します。
        */
