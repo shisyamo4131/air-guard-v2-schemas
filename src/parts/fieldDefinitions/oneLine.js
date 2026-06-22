@@ -373,6 +373,33 @@ export const oneLineFields = {
     },
   },
 
+  /** 現場名 */
+  siteName: {
+    ...generalDefinitions.oneLine,
+    label: "現場名",
+    length: 40,
+  },
+
+  /** 現場名（カナ） */
+  siteNameKana: {
+    ...generalDefinitions.oneLine,
+    label: "現場名（カナ）",
+    length: 60,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        inputType: "katakana-numeric",
+      },
+    },
+  },
+
+  /** 現場番号 */
+  siteNumber: {
+    ...generalDefinitions.oneLine,
+    label: "現場番号",
+    length: 40,
+  },
+
   /** 電話番号 */
   tel: {
     ...generalDefinitions.oneLine,

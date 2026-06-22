@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @file ./src/Site.js
- * NOTE: `customerId`, `customer` プロパティについて
+ * @note `customerId`, `customer` プロパティについて
  * - 仮登録
  *   - 取引先未定での現場登録のシチュエーションを考慮して現場情報は仮登録を可能とする。
  *   - 仮登録状態の現場は `isTemporary` プロパティが `true` となる。
@@ -10,6 +10,13 @@
  * - 自身の従属先データを持たせる場合に `XxxxxMinimal` クラスを使用するが、アプリ側でオブジェクト選択を行う場合に
  *   `Xxxxx` クラスにするのか `XxxxxMinimal` クラスにするのかを判断できないため、docId を持たせて
  *   `beforeCreate` フックでオブジェクトを取得するようにする。
+ *
+ * @note `siteNumber` プロパティについて
+ * - 現場番号は、受注した現場を取引先が識別するための任意の番号。アプリ内では特に意味を持たない。
+ *
+ * [更新履歴]
+ * 2026-06-22 - `siteNumber` を追加。
+ *
  *****************************************************************************/
 import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -41,22 +48,15 @@ const classProps = {
    */
   customerName: defField("customerName"),
   code: defField("code", { label: "現場コード" }),
-  name: defField("name", {
-    label: "現場名",
-    length: 40,
-    required: true,
-  }),
-  nameKana: defField("nameKana", {
-    label: "現場名（カナ）",
-    length: 60,
-    required: true,
-  }),
+  name: defField("siteName", { required: true }),
+  nameKana: defField("siteNameKana", { required: true }),
   zipcode: defField("zipcode"),
   prefCode: defField("prefCode", { required: true }),
   city: defField("city", { required: true }),
   address: defField("address", { required: true }),
   building: defField("building"),
   securityType: defField("securityType", { required: true }),
+  siteNumber: defField("siteNumber"),
   constructionPeriodStartAt: defField("constructionPeriodStartAt", {
     validator: (value, item) => {
       if (!value || !item.constructionPeriodEndAt) return true;
@@ -120,6 +120,7 @@ const classProps = {
  * @property {string} fullAddress - 住所（郵便番号、都道府県、市区町村、番地、建物名を結合したもの）（読み取り専用）
  * @property {object} location - Geographical location.
  * @property {string} securityType - 警備種別
+ * @property {string} siteNumber - 現場番号
  * @property {string} constructionPeriodStartAt - 工期開始日
  * @property {string} constructionPeriodEndAt - 工期終了日
  * @property {boolean} hasConstructionPeriod - 工期が設定されているかどうかを表すフラグ（読み取り専用）
