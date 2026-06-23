@@ -45,6 +45,18 @@ export default class User extends FireModel {
     isAdmin: defField("isAdmin", { hidden: true }),
     isTemporary: defField("isTemporary", { hidden: true, default: true }),
     tagSize: defField("tagSize", { required: true }),
+    receiveConfirmedArrangementNotification: defField("check", {
+      label: "配置確認通知を受け取る",
+      default: false,
+    }),
+    receiveArrivedArrangementNotification: defField("check", {
+      label: "上番通知を受け取る",
+      default: false,
+    }),
+    receiveLeavedArrangementNotification: defField("check", {
+      label: "下番通知を受け取る",
+      default: false,
+    }),
   };
 
   /**
