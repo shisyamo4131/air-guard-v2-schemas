@@ -14,9 +14,12 @@
  * @note `siteNumber` プロパティについて
  * - 現場番号は、受注した現場を取引先が識別するための任意の番号。アプリ内では特に意味を持たない。
  *
+ * @note `hasAbbreviation`, `abbreviation`, `displayName` プロパティについて
+ * - `hasAbbreviation` が true かつ `abbreviation` が有効な値である場合に `abbreviation` を、そうでない場合は `name` を返す。
+ *
  * [更新履歴]
  * 2026-06-22 - `siteNumber` を追加。
- *
+ * 2026-06-25 - `hasAbbreviation`, `abbreviation`, `displayName` を追加。
  *****************************************************************************/
 import { default as FireModel } from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
@@ -49,6 +52,18 @@ const classProps = {
   customerName: defField("customerName"),
   code: defField("code", { label: "現場コード" }),
   name: defField("siteName", { required: true }),
+  hasAbbreviation: defField("check", {
+    label: "略称を使用する",
+    default: false,
+  }),
+  abbreviation: defField("abbreviation", {
+    length: 40,
+    component: {
+      attrs: {
+        required: ({ item }) => item.hasAbbreviation || false,
+      },
+    },
+  }),
   nameKana: defField("siteNameKana", { required: true }),
   zipcode: defField("zipcode"),
   prefCode: defField("prefCode", { required: true }),
@@ -110,6 +125,8 @@ const classProps = {
  * @property {string} customerName - 取引先名
  * @property {string} code - 現場コード
  * @property {string} name - 現場名
+ * @property {boolean} hasAbbreviation - 略称を使用するかどうかのフラグ
+ * @property {string} abbreviation - 略称
  * @property {string} nameKana - 現場名カナ
  * @property {string} zipcode - 郵便番号
  * @property {string} prefCode - 都道府県コード
@@ -294,6 +311,22 @@ export default class Site extends GeocodableMixin(FireModel) {
           );
         },
         set() {},
+      },
+
+      /*****************************************************************************
+       * `displayName`
+       * - `hasAbbreviation` が true かつ `abbreviation` が有効な値である場合に
+       *   `abbreviation` を、そうでない場合は `name` を返します。
+       *****************************************************************************/
+      displayName: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this.hasAbbreviation && this.abbreviation
+            ? this.abbreviation
+            : this.name;
+        },
+        set(v) {},
       },
     });
 

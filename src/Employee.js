@@ -1,5 +1,7 @@
 /*****************************************************************************
  * @file src/Employee.js
+ * [更新履歴]
+ * 2026-06-25 - `displayNameKana` を追加。
  *****************************************************************************/
 import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
