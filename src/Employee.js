@@ -23,6 +23,7 @@ import User from "./User.js";
  * @property {string} lastNameKana - 姓（カナ）
  * @property {string} firstNameKana - 名（カナ）
  * @property {string} displayName - 表示名
+ * @property {string} displayNameKana - 表示名（カナ）
  * @property {string} gender - 性別
  * @property {Date} dateOfBirth - 生年月日
  * @property {string} zipcode - 郵便番号
@@ -88,6 +89,7 @@ export default class Employee extends GeocodableMixin(FireModel) {
     lastNameKana: defField("lastNameKana", { required: true }),
     firstNameKana: defField("firstNameKana", { required: true }),
     displayName: defField("displayName", { required: true }),
+    displayNameKana: defField("displayNameKana", { required: true }),
     gender: defField("gender", { required: true }),
     dateOfBirth: defField("dateOfBirth", { required: true }),
     zipcode: defField("zipcode", { required: true }),

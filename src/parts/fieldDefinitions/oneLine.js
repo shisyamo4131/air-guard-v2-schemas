@@ -117,6 +117,19 @@ export const oneLineFields = {
     length: 6,
   },
 
+  /** 表示名（カナ） */
+  displayNameKana: {
+    ...generalDefinitions.oneLine,
+    label: "表示名（カナ）",
+    length: 10,
+    component: {
+      name: generalDefinitions.oneLine.component.name,
+      attrs: {
+        inputType: "katakana-numeric",
+      },
+    },
+  },
+
   /** 本籍地 */
   domicile: {
     ...generalDefinitions.oneLine,
