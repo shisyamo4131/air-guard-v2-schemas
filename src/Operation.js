@@ -119,7 +119,6 @@ import WorkingResult from "./WorkingResult.js";
 import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
 import { SECURITY_TYPE_VALUES } from "./constants/index.js";
-import Site from "./Site.js";
 
 const classProps = {
   siteId: defField("siteId", { required: true }),
@@ -207,20 +206,20 @@ export default class Operation extends WorkingResult {
     this.outsourcers.forEach((out) => (out.regulationWorkMinutes = v));
   }
 
-  /**
-   * `securityType` が `UNSET` である場合に、`siteId` に基づいた `securityType` に初期化します。
-   * - `siteId` が設定されていない場合は何も行いません。
-   * - `siteId` に基づく `securityType` の取得には、`Site` クラスの `fetch` メソッドを使用します。
-   * @returns {Promise<void>}
-   */
-  async initializeSecurityType() {
-    if (!this.siteId) return;
-    if (this.securityType !== SECURITY_TYPE_VALUES.UNSET.value) return;
-    const siteInstance = new Site();
-    const siteIsExist = await siteInstance.fetch(this.siteId);
-    if (!siteIsExist || !siteInstance.securityType) return;
-    this.securityType = siteInstance.securityType;
-  }
+  // /**
+  //  * `securityType` が `UNSET` である場合に、`siteId` に基づいた `securityType` に初期化します。
+  //  * - `siteId` が設定されていない場合は何も行いません。
+  //  * - `siteId` に基づく `securityType` の取得には、`Site` クラスの `fetch` メソッドを使用します。
+  //  * @returns {Promise<void>}
+  //  */
+  // async initializeSecurityType() {
+  //   if (!this.siteId) return;
+  //   if (this.securityType !== SECURITY_TYPE_VALUES.UNSET.value) return;
+  //   const siteInstance = new Site();
+  //   const siteIsExist = await siteInstance.fetch(this.siteId);
+  //   if (!siteIsExist || !siteInstance.securityType) return;
+  //   this.securityType = siteInstance.securityType;
+  // }
 
   /*****************************************************************************
    * AFTER INITIALIZE (OVERRIDE)
@@ -671,23 +670,23 @@ export default class Operation extends WorkingResult {
     });
   }
 
-  /*****************************************************************************
-   * BEFORE CREATE (OVERRIDE)
-   * - `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
-   *****************************************************************************/
-  async beforeCreate(args) {
-    await super.beforeCreate(args);
-    await this.initializeSecurityType();
-  }
+  // /*****************************************************************************
+  //  * BEFORE CREATE (OVERRIDE)
+  //  * - `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
+  //  *****************************************************************************/
+  // async beforeCreate(args) {
+  //   await super.beforeCreate(args);
+  //   await this.initializeSecurityType();
+  // }
 
-  /*****************************************************************************
-   * BEFORE UPDATE (OVERRIDE)
-   * - `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
-   *****************************************************************************/
-  async beforeUpdate(args) {
-    await super.beforeUpdate(args);
-    await this.initializeSecurityType();
-  }
+  // /*****************************************************************************
+  //  * BEFORE UPDATE (OVERRIDE)
+  //  * - `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
+  //  *****************************************************************************/
+  // async beforeUpdate(args) {
+  //   await super.beforeUpdate(args);
+  //   await this.initializeSecurityType();
+  // }
 
   /***************************************************************************
    * GETTERS
