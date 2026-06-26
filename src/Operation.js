@@ -53,7 +53,7 @@
  * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
  * @property {string} siteId - 現場ID (変更されると `employees` と `outsourcers` の `siteId` が自動的に更新されます)
  * @property {string} securityType - 警備種別
- * - ドキュメントの作成または更新時、この値に何も設定されていない場合は `siteId` に基づいた `securityType` に初期化されます。
+ * - ドキュメントの作成または更新時、この値が `UNSET` の場合は `siteId` に基づいた `securityType` に初期化されます。
  * - `setSiteIdCallback` メソッドでは `securityType` の初期化は行われません。 `beforeCreate`, `beforeUpdate` で行われます。
  * - `siteId` が設定されていない場合は何も行いません。（`siteId` が設定されていない場合、必須入力チェックエラーになります）
  * @property {number} requiredPersonnel - 必要人数
@@ -118,6 +118,8 @@
 import WorkingResult from "./WorkingResult.js";
 import OperationDetail from "./OperationDetail.js";
 import { defField } from "./parts/fieldDefinitions.js";
+import { SECURITY_TYPE_VALUES } from "./constants/index.js";
+import Site from "./Site.js";
 
 const classProps = {
   siteId: defField("siteId", { required: true }),
@@ -206,14 +208,14 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
+   * `securityType` が `UNSET` である場合に、`siteId` に基づいた `securityType` に初期化します。
    * - `siteId` が設定されていない場合は何も行いません。
    * - `siteId` に基づく `securityType` の取得には、`Site` クラスの `fetch` メソッドを使用します。
    * @returns {Promise<void>}
    */
   async initializeSecurityType() {
-    if (this.securityType) return;
     if (!this.siteId) return;
+    if (this.securityType !== SECURITY_TYPE_VALUES.UNSET.value) return;
     const siteInstance = new Site();
     const siteIsExist = await siteInstance.fetch(this.siteId);
     if (!siteIsExist || !siteInstance.securityType) return;
