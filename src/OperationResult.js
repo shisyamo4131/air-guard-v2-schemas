@@ -63,9 +63,6 @@
  * @property {string} customerId - 取引先ID（`beforeCreate`, `beforeUpdate` で `siteId` から同期されます）
  * @property {string} siteId - 現場ID (変更されると `employees` と `outsourcers` の `siteId` が自動的に更新されます)
  * @property {string} securityType - 警備種別
- * - ドキュメントの作成または更新時、この値が `UNSET` の場合は `siteId` に基づいた `securityType` に初期化されます。
- * - `setSiteIdCallback` メソッドでは `securityType` の初期化は行われません。 `beforeCreate`, `beforeUpdate` で行われます。
- * - `siteId` が設定されていない場合は何も行いません。（`siteId` が設定されていない場合、必須入力チェックエラーになります）
  * @property {number} requiredPersonnel - 必要人数
  * @property {boolean} qualificationRequired - 資格要件フラグ
  * @property {string} workDescription - 作業内容
@@ -170,11 +167,6 @@
  *
  * @static
  * @method groupKeyDivider - `groupKey` を構成する要素を分割して返す静的メソッド
- *
- * [更新履歴]
- * 2026-06-26 - `securityType` を追加（Operation クラスからの継承）
- *            - `initializeSecurityType` メソッドを追加（Operation クラスからの継承）
- *            - `beforeCreate`, `beforeUpdate` で `initializeSecurityType` を呼び出すように修正（Operation クラスからの継承）
  *****************************************************************************/
 import Operation from "./Operation.js";
 import AgreementV2 from "./AgreementV2.js";
