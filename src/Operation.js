@@ -52,6 +52,10 @@
  * @property {number} regularTimeWorkMinutes - 所定労働時間 (分) (読み取り専用)
  * @property {number} overtimeWorkMinutes - 残業時間 (分) (読み取り専用)
  * @property {string} siteId - 現場ID (変更されると `employees` と `outsourcers` の `siteId` が自動的に更新されます)
+ * @property {string} securityType - 警備種別
+ * - ドキュメントの作成または更新時、この値に何も設定されていない場合は `siteId` に基づいた `securityType` に初期化されます。
+ * - `setSiteIdCallback` メソッドでは `securityType` の初期化は行われません。 `beforeCreate`, `beforeUpdate` で行われます。
+ * - `siteId` が設定されていない場合は何も行いません。（`siteId` が設定されていない場合、必須入力チェックエラーになります）
  * @property {number} requiredPersonnel - 必要人数
  * @property {boolean} qualificationRequired - 資格要件フラグ
  * @property {string} workDescription - 作業内容
@@ -105,6 +109,11 @@
  *
  * @static
  * @method groupKeyDivider - `groupKey` を構成する要素を分割して返す静的メソッド
+ *
+ * [更新履歴]
+ * 2026-06-26 - `securityType` を追加
+ *            - `initializeSecurityType` メソッドを追加
+ *            - `beforeCreate`, `beforeUpdate` で `initializeSecurityType` を呼び出すように修正
  *****************************************************************************/
 import WorkingResult from "./WorkingResult.js";
 import OperationDetail from "./OperationDetail.js";
@@ -112,6 +121,7 @@ import { defField } from "./parts/fieldDefinitions.js";
 
 const classProps = {
   siteId: defField("siteId", { required: true }),
+  securityType: defField("securityType", { required: true }),
   ...WorkingResult.classProps, // Inherited from WorkingResult.js
   requiredPersonnel: defField("number", {
     label: "必要人数",
@@ -147,6 +157,9 @@ export default class Operation extends WorkingResult {
     super(item);
   }
 
+  /*****************************************************************************
+   * METHODS
+   *****************************************************************************/
   /**
    * setDateAtCallback
    * - Callback method called when `dateAt` is set.
@@ -193,9 +206,23 @@ export default class Operation extends WorkingResult {
   }
 
   /**
-   * afterInitialize
-   * @param {Object} item - 初期化オブジェクト
+   * `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
+   * - `siteId` が設定されていない場合は何も行いません。
+   * - `siteId` に基づく `securityType` の取得には、`Site` クラスの `fetch` メソッドを使用します。
+   * @returns {Promise<void>}
    */
+  async initializeSecurityType() {
+    if (this.securityType) return;
+    if (!this.siteId) return;
+    const siteInstance = new Site();
+    const siteIsExist = await siteInstance.fetch(this.siteId);
+    if (!siteIsExist || !siteInstance.securityType) return;
+    this.securityType = siteInstance.securityType;
+  }
+
+  /*****************************************************************************
+   * AFTER INITIALIZE (OVERRIDE)
+   *****************************************************************************/
   afterInitialize(item = {}) {
     super.afterInitialize(item);
 
@@ -640,6 +667,24 @@ export default class Operation extends WorkingResult {
         enumerable: false,
       },
     });
+  }
+
+  /*****************************************************************************
+   * BEFORE CREATE (OVERRIDE)
+   * - `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
+   *****************************************************************************/
+  async beforeCreate(args) {
+    await super.beforeCreate(args);
+    await this.initializeSecurityType();
+  }
+
+  /*****************************************************************************
+   * BEFORE UPDATE (OVERRIDE)
+   * - `securityType` が設定されていない場合に、`siteId` に基づいた `securityType` に初期化します。
+   *****************************************************************************/
+  async beforeUpdate(args) {
+    await super.beforeUpdate(args);
+    await this.initializeSecurityType();
   }
 
   /***************************************************************************
