@@ -119,8 +119,10 @@ const classProps = {
  * @class Site
  * @author shisyamo4131
  *
- * @property {string} customerId - 取引先ドキュメントID
+ * [更新履歴]
+ * 2026-07-02 - `hasConstructionPeriodStartAt`, `hasConstructionPeriodEndAt` を追加。
  *
+ * @property {string} customerId - 取引先ドキュメントID
  * @property {object} customer - 取引先オブジェクト
  * @property {string} customerName - 取引先名
  * @property {string} code - 現場コード
@@ -141,6 +143,8 @@ const classProps = {
  * @property {string} constructionPeriodStartAt - 工期開始日
  * @property {string} constructionPeriodEndAt - 工期終了日
  * @property {boolean} hasConstructionPeriod - 工期が設定されているかどうかを表すフラグ（読み取り専用）
+ * @property {boolean} hasConstructionPeriodStartAt - 工期開始日が設定されているかどうかを表すフラグ（読み取り専用）
+ * @property {boolean} hasConstructionPeriodEndAt - 工期終了日が設定されているかどうかを表すフラグ（読み取り専用）
  * @property {string} remarks - 備考
  * @property {array} agreementsV2 - 取極めの配列（バージョン2）。`AgreementV2` クラスのインスタンスを要素とする。
  *
@@ -309,6 +313,24 @@ export default class Site extends GeocodableMixin(FireModel) {
           return (
             !!this.constructionPeriodStartAt || !!this.constructionPeriodEndAt
           );
+        },
+        set() {},
+      },
+
+      hasConstructionPeriodStartAt: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return !!this.constructionPeriodStartAt;
+        },
+        set() {},
+      },
+
+      hasConstructionPeriodEndAt: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return !!this.constructionPeriodEndAt;
         },
         set() {},
       },
