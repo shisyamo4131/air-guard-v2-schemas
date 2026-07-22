@@ -63,6 +63,7 @@
  * @property {Array<string>} outsourcerIds - 外注の ID の配列 (読み取り専用)
  * @property {number} employeesCount - `employees` の要素数 (読み取り専用)
  * @property {number} outsourcersCount - `outsourcers` の要素数 (読み取り専用)
+ * @property {number} assignedPersonnelCount - OJTを除いた配置人数 (読み取り専用)
  * @property {boolean} isPersonnelShortage - 人員不足フラグ (読み取り専用)
  * @property {boolean} isPersonnelSurplus - 人員余剰フラグ (読み取り専用)
  * @property {Array<OperationDetail>} workers - 従業員と外注を合わせた配列
@@ -369,29 +370,45 @@ export default class Operation extends WorkingResult {
       },
 
       /**
-       * 必要人数に対して、割り当てられた従業員と外注先の合計人数が不足しているかどうかを返します。
+       * OJTを除いた、必要人数に算入する配置人数を返します。
+       */
+      assignedPersonnelCount: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const employeesCount = this.employees.filter(
+            (employee) => !employee.isOjt,
+          ).length;
+          const outsourcersCount = this.outsourcers
+            .filter((outsourcer) => !outsourcer.isOjt)
+            .reduce((sum, outsourcer) => sum + outsourcer.amount, 0);
+          return employeesCount + outsourcersCount;
+        },
+        set(v) {},
+      },
+
+      /**
+       * 必要人数に対して、OJTを除いた配置人数が不足しているかどうかを返します。
        */
       isPersonnelShortage: {
         configurable: true,
         enumerable: true,
         get() {
           const totalRequired = this.requiredPersonnel || 0;
-          const totalAssigned = this.employeesCount + this.outsourcersCount;
-          return totalAssigned < totalRequired;
+          return this.assignedPersonnelCount < totalRequired;
         },
         set(v) {},
       },
 
       /**
-       * 必要人数に対して、割り当てられた従業員と外注先の合計人数余剰があるかどうかを返します。
+       * 必要人数に対して、OJTを除いた配置人数に余剰があるかどうかを返します。
        */
       isPersonnelSurplus: {
         configurable: true,
         enumerable: true,
         get() {
           const totalRequired = this.requiredPersonnel || 0;
-          const totalAssigned = this.employeesCount + this.outsourcersCount;
-          return totalAssigned > totalRequired;
+          return this.assignedPersonnelCount > totalRequired;
         },
         set(v) {},
       },
