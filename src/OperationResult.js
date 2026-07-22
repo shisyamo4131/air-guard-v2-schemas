@@ -133,6 +133,9 @@
  * - `salesArticles` も加算される。
  * @property {number} tax - 計算された税額 (読み取り専用)
  * - `salesAmount` と `date` に基づいて `Tax` ユーティリティを使用して計算されます。
+ * @property {number} taxRate - `date` に適用される消費税率 (読み取り専用)
+ * @property {number} unroundedTaxAmount - 端数処理前の消費税額 (読み取り専用)
+ * @property {number} billingCalculationVersion - Billing の税額計算バージョン
  * @property {number} billingAmount - 税込の請求金額 (読み取り専用)
  * - `salesAmount` と `tax` の合計を返します。
  * @property {string|null} billingDate - 請求日 (YYYY-MM-DD 形式) (読み取り専用)
@@ -408,6 +411,10 @@ const classProps = {
     },
   }),
   billingDateAt: defField("billingDateAt"),
+  billingCalculationVersion: defField("number", {
+    default: 2,
+    hidden: true,
+  }),
   isLocked: defField("check", {
     label: "実績確定",
     default: false,
@@ -829,6 +836,43 @@ export default class OperationResult extends Operation {
             error,
           });
         }
+      },
+      set(v) {},
+    });
+
+    /**
+     * taxRate
+     * - 当該稼働実績の日付に適用される消費税率を返します。
+     * @returns {number} 消費税率
+     */
+    Object.defineProperty(this, "taxRate", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        try {
+          return Tax.getRate(this.date);
+        } catch (error) {
+          throw new ContextualError("Failed to get tax rate", {
+            method: "OperationResult.taxRate (computed)",
+            arguments: { date: this.date },
+            error,
+          });
+        }
+      },
+      set(v) {},
+    });
+
+    /**
+     * unroundedTaxAmount
+     * - 当該稼働実績の端数処理前の消費税額を返します。
+     * - 請求書ではこの値を直接丸めず、税率ごとの課税対象額を合計してから端数処理します。
+     * @returns {number} 端数処理前の消費税額
+     */
+    Object.defineProperty(this, "unroundedTaxAmount", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return this.salesAmount * this.taxRate;
       },
       set(v) {},
     });
