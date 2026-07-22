@@ -22,9 +22,7 @@
  * @prop {Date} paymentDueDate - payment due date (YYYY-MM-DD format) (read-only)
  * @prop {number} subtotal - subtotal (excluding tax) (computed-readonly)
  * @prop {Array<Object>} taxBreakdown - tax breakdown grouped by rate (computed-readonly)
- * @prop {number} legacyTaxAmount - tax calculated per operation result (computed-readonly)
  * @prop {number} calculatedTaxAmount - tax calculated per rate (computed-readonly)
- * @prop {number} taxCalculationDifference - difference between new and legacy tax (computed-readonly)
  * @prop {number} taxAmount - tax amount (computed-readonly)
  * @prop {number} totalAmount - total amount (including tax) (computed-readonly)
  * @prop {Array<Object>} summary - summary for display (computed-readonly)
@@ -143,34 +141,12 @@ export default class Billing extends FireModel {
       configurable: true,
     });
 
-    // 稼働実績ごとに端数処理していた旧方式の消費税額を計算
-    Object.defineProperty(this, "legacyTaxAmount", {
-      get() {
-        return this.operationResults.reduce((sum, item) => {
-          return sum + (item.tax || 0);
-        }, 0);
-      },
-      set() {},
-      enumerable: true,
-      configurable: true,
-    });
-
     // 現場内の課税対象額を税率ごとに合計して算出した消費税額を計算
     Object.defineProperty(this, "calculatedTaxAmount", {
       get() {
         return this.taxBreakdown.reduce((sum, item) => {
           return sum + item.taxAmount;
         }, 0);
-      },
-      set() {},
-      enumerable: true,
-      configurable: true,
-    });
-
-    // 新旧の税額差を計算
-    Object.defineProperty(this, "taxCalculationDifference", {
-      get() {
-        return this.calculatedTaxAmount - this.legacyTaxAmount;
       },
       set() {},
       enumerable: true,

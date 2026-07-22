@@ -131,13 +131,8 @@
  * @property {number} salesAmount - 売上合計金額 (読み取り専用)
  * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用して合計を算出。
  * - `salesArticles` も加算される。
- * @property {number} tax - 計算された税額 (読み取り専用)
- * - `salesAmount` と `date` に基づいて `Tax` ユーティリティを使用して計算されます。
  * @property {number} taxRate - `date` に適用される消費税率 (読み取り専用)
- * @property {number} unroundedTaxAmount - 端数処理前の消費税額 (読み取り専用)
  * @property {number} billingCalculationVersion - Billing の税額計算バージョン
- * @property {number} billingAmount - 税込の請求金額 (読み取り専用)
- * - `salesAmount` と `tax` の合計を返します。
  * @property {string|null} billingDate - 請求日 (YYYY-MM-DD 形式) (読み取り専用)
  * - `billingDateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
  * @property {string} billingMonth - 請求月 (YYYY-MM 形式) (読み取り専用)
@@ -456,20 +451,6 @@ export default class OperationResult extends Operation {
    *****************************************************************************/
   afterInitialize(item = {}) {
     super.afterInitialize(item);
-
-    /**
-     * billingAmount
-     * - 当該稼働実績の税込請求額を返します。
-     * @returns {number} 税込請求額
-     */
-    Object.defineProperty(this, "billingAmount", {
-      configurable: true,
-      enumerable: true,
-      get() {
-        return this.salesAmount + this.tax;
-      },
-      set(v) {},
-    });
 
     /**
      * billingDate
@@ -819,28 +800,6 @@ export default class OperationResult extends Operation {
     });
 
     /**
-     * tax
-     * - 当該稼働実績の消費税額を返します。
-     * @returns {number} 消費税額
-     */
-    Object.defineProperty(this, "tax", {
-      configurable: true,
-      enumerable: true,
-      get() {
-        try {
-          return Tax.calc(this.salesAmount, this.date);
-        } catch (error) {
-          throw new ContextualError("Failed to calculate tax", {
-            method: "OperationResult.tax (computed)",
-            arguments: { amount: this.salesAmount, date: this.date },
-            error,
-          });
-        }
-      },
-      set(v) {},
-    });
-
-    /**
      * taxRate
      * - 当該稼働実績の日付に適用される消費税率を返します。
      * @returns {number} 消費税率
@@ -858,21 +817,6 @@ export default class OperationResult extends Operation {
             error,
           });
         }
-      },
-      set(v) {},
-    });
-
-    /**
-     * unroundedTaxAmount
-     * - 当該稼働実績の端数処理前の消費税額を返します。
-     * - 請求書ではこの値を直接丸めず、税率ごとの課税対象額を合計してから端数処理します。
-     * @returns {number} 端数処理前の消費税額
-     */
-    Object.defineProperty(this, "unroundedTaxAmount", {
-      configurable: true,
-      enumerable: true,
-      get() {
-        return this.salesAmount * this.taxRate;
       },
       set(v) {},
     });
