@@ -101,10 +101,6 @@
  * - 計算は `useAdjustedQuantity`, `billingUnitType`, `includeBreakInBilling` の設定を考慮します。
  * @property {number} salesAmount - 売上合計金額 (読み取り専用)
  * - 基本従業員と資格者の売上金額の合計を返します。
- * @property {number} tax - 計算された税額 (読み取り専用)
- * - `salesAmount` と `date` に基づいて `Tax` ユーティリティを使用して計算されます。
- * @property {number} billingAmount - 税込の請求金額 (読み取り専用)
- * - `salesAmount` と `tax` の合計を返します。
  * @property {string|null} billingDate - 請求日 (YYYY-MM-DD 形式) (読み取り専用)
  * - `billingDateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
  * @property {string} billingMonth - 請求月 (YYYY-MM 形式) (読み取り専用)

@@ -131,10 +131,8 @@
  * @property {number} salesAmount - 売上合計金額 (読み取り専用)
  * - `useAdjusted` が true の場合は `sales.adjusted`、false の場合は `sales.original` を使用して合計を算出。
  * - `salesArticles` も加算される。
- * @property {number} tax - 計算された税額 (読み取り専用)
- * - `salesAmount` と `date` に基づいて `Tax` ユーティリティを使用して計算されます。
- * @property {number} billingAmount - 税込の請求金額 (読み取り専用)
- * - `salesAmount` と `tax` の合計を返します。
+ * @property {number} taxRate - `date` に適用される消費税率 (読み取り専用)
+ * @property {number} billingCalculationVersion - Billing の税額計算バージョン
  * @property {string|null} billingDate - 請求日 (YYYY-MM-DD 形式) (読み取り専用)
  * - `billingDateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
  * @property {string} billingMonth - 請求月 (YYYY-MM 形式) (読み取り専用)
@@ -408,6 +406,10 @@ const classProps = {
     },
   }),
   billingDateAt: defField("billingDateAt"),
+  billingCalculationVersion: defField("number", {
+    default: 2,
+    hidden: true,
+  }),
   isLocked: defField("check", {
     label: "実績確定",
     default: false,
@@ -449,20 +451,6 @@ export default class OperationResult extends Operation {
    *****************************************************************************/
   afterInitialize(item = {}) {
     super.afterInitialize(item);
-
-    /**
-     * billingAmount
-     * - 当該稼働実績の税込請求額を返します。
-     * @returns {number} 税込請求額
-     */
-    Object.defineProperty(this, "billingAmount", {
-      configurable: true,
-      enumerable: true,
-      get() {
-        return this.salesAmount + this.tax;
-      },
-      set(v) {},
-    });
 
     /**
      * billingDate
@@ -812,20 +800,20 @@ export default class OperationResult extends Operation {
     });
 
     /**
-     * tax
-     * - 当該稼働実績の消費税額を返します。
-     * @returns {number} 消費税額
+     * taxRate
+     * - 当該稼働実績の日付に適用される消費税率を返します。
+     * @returns {number} 消費税率
      */
-    Object.defineProperty(this, "tax", {
+    Object.defineProperty(this, "taxRate", {
       configurable: true,
       enumerable: true,
       get() {
         try {
-          return Tax.calc(this.salesAmount, this.date);
+          return Tax.getRate(this.date);
         } catch (error) {
-          throw new ContextualError("Failed to calculate tax", {
-            method: "OperationResult.tax (computed)",
-            arguments: { amount: this.salesAmount, date: this.date },
+          throw new ContextualError("Failed to get tax rate", {
+            method: "OperationResult.taxRate (computed)",
+            arguments: { date: this.date },
             error,
           });
         }

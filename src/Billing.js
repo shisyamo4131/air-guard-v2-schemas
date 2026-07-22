@@ -21,6 +21,8 @@
  * @prop {string} paymentDueMonth - payment due month (YYYY-MM format) (read-only)
  * @prop {Date} paymentDueDate - payment due date (YYYY-MM-DD format) (read-only)
  * @prop {number} subtotal - subtotal (excluding tax) (computed-readonly)
+ * @prop {Array<Object>} taxBreakdown - tax breakdown grouped by rate (computed-readonly)
+ * @prop {number} calculatedTaxAmount - tax calculated per rate (computed-readonly)
  * @prop {number} taxAmount - tax amount (computed-readonly)
  * @prop {number} totalAmount - total amount (including tax) (computed-readonly)
  * @prop {Array<Object>} summary - summary for display (computed-readonly)
@@ -30,6 +32,7 @@ import FireModel from "@shisyamo4131/air-firebase-v2";
 import { defField } from "./parts/fieldDefinitions.js";
 import { formatJstDate } from "./utils/index.js";
 import OperationResult from "./OperationResult.js";
+import Tax from "./Tax.js";
 
 const STATUS = {
   DRAFT: "DRAFT",
@@ -123,12 +126,37 @@ export default class Billing extends FireModel {
       configurable: true,
     });
 
-    // 消費税額を計算
+    // 税率ごとの消費税額内訳を計算
+    Object.defineProperty(this, "taxBreakdown", {
+      get() {
+        return Tax.calculateBreakdown(
+          this.operationResults.map((item) => ({
+            amount: item.salesAmount || 0,
+            taxRate: item.taxRate,
+          })),
+        );
+      },
+      set() {},
+      enumerable: true,
+      configurable: true,
+    });
+
+    // 現場内の課税対象額を税率ごとに合計して算出した消費税額を計算
+    Object.defineProperty(this, "calculatedTaxAmount", {
+      get() {
+        return this.taxBreakdown.reduce((sum, item) => {
+          return sum + item.taxAmount;
+        }, 0);
+      },
+      set() {},
+      enumerable: true,
+      configurable: true,
+    });
+
+    // 消費税額を計算（現場・税率単位で端数処理）
     Object.defineProperty(this, "taxAmount", {
       get() {
-        return this.operationResults.reduce((sum, item) => {
-          return sum + (item.tax || 0);
-        }, 0);
+        return this.calculatedTaxAmount;
       },
       set() {},
       enumerable: true,
