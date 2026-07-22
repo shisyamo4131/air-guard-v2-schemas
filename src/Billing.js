@@ -49,6 +49,8 @@ const classProps = {
 
   status: defField("oneLine", { default: STATUS.DRAFT }),
   operationResults: defField("array", { customClass: OperationResult }),
+
+  // 請求額の調整を行うケースが発生した場合に使用。現在未使用。
   adjustment: defField("object", {
     default: {
       amount: 0,
