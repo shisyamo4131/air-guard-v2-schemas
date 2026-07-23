@@ -3,6 +3,16 @@ import { defField } from "./parts/fieldDefinitions.js";
 import OperationResult from "./OperationResultDetail.js";
 import { formatJstDate } from "./utils/index.js";
 
+const EXPORT_INVALID_REASON = Object.freeze({
+  OVERLAPPING_OPERATION_RESULTS: () => ({
+    code: "OVERLAPPING_OPERATION_RESULTS",
+    message: "Operation result time ranges overlap.",
+    messages: {
+      ja: "稼働実績の勤務時間帯が重複しています。",
+    },
+  }),
+});
+
 /*****************************************************************************
  * @class DailyAttendance
  *
@@ -16,12 +26,15 @@ import { formatJstDate } from "./utils/index.js";
  * @property {Array<OperationResult>} operationResults - 稼働実績の配列
  *
  * @getter details - 当該クラスで管理する従業員の稼働実績明細の配列 (読み取り専用)
+ * @getter exportInvalidReasons - エクスポートできない理由の配列
+ * @getter isExportable - 勤怠データとしてエクスポート可能かどうか
  *****************************************************************************/
 export default class DailyAttendance extends FireModel {
   static className = "勤怠";
   static collectionPath = "DailyAttendances";
   static useAutonumber = false;
   static logicalDelete = false;
+  static EXPORT_INVALID_REASON = EXPORT_INVALID_REASON;
   static classProps = {
     dateAt: defField("dateAt", { required: true }),
     employeeId: defField("employeeId", { required: true }),
@@ -136,6 +149,47 @@ export default class DailyAttendance extends FireModel {
         set(v) {},
       },
     });
+  }
+
+  /**
+   * 勤怠データをエクスポートできない理由を返します。
+   * 勤務区間は開始日時を含み、終了日時を含まない半開区間として比較します。
+   *
+   * @returns {Array<{
+   *   code: string,
+   *   message: string,
+   *   messages: Object,
+   * }>}
+   */
+  get exportInvalidReasons() {
+    const details = [...(this.details ?? [])]
+      .filter(
+        ({ startAt, endAt }) =>
+          startAt instanceof Date && endAt instanceof Date,
+      )
+      .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
+
+    for (let index = 1; index < details.length; index += 1) {
+      const previous = details[index - 1];
+      const current = details[index];
+
+      if (current.startAt.getTime() < previous.endAt.getTime()) {
+        return [
+          this.constructor.EXPORT_INVALID_REASON.OVERLAPPING_OPERATION_RESULTS(),
+        ];
+      }
+    }
+
+    return [];
+  }
+
+  /**
+   * 勤怠データとしてエクスポート可能かどうかを返します。
+   *
+   * @returns {boolean}
+   */
+  get isExportable() {
+    return this.exportInvalidReasons.length === 0;
   }
 
   /*****************************************************************************
