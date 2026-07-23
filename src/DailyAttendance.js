@@ -26,8 +26,8 @@ const EXPORT_INVALID_REASON = Object.freeze({
  * @property {Array<OperationResult>} operationResults - 稼働実績の配列
  *
  * @getter details - 当該クラスで管理する従業員の稼働実績明細の配列 (読み取り専用)
- * @getter exportInvalidReasons - エクスポートできない理由の配列
- * @getter isExportable - 勤怠データとしてエクスポート可能かどうか
+ * @getter exportInvalidReasons - エクスポートできない理由の配列（Firestore には保存されない）
+ * @getter isExportable - 勤怠データとしてエクスポート可能かどうか（Firestore には保存されない）
  *****************************************************************************/
 export default class DailyAttendance extends FireModel {
   static className = "勤怠";
