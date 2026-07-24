@@ -11,11 +11,11 @@
  *
  * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
  * @property {string} shiftType - 勤務区分 (変更されると `employees` と `outsourcers` の `shiftType` が自動的に更新されます)
- * @property {string} startTime - 開始時刻 (HH:MM 形式)
- * @property {string} endTime - 終了時刻 (HH:MM 形式)
- * @property {boolean} isStartNextDay - 翌日開始フラグ
+ * @property {string} startTime - 開始時刻 (HH:MM 形式) (変更されると `employees` と `outsourcers` の `startTime` が自動的に更新されます)
+ * @property {string} endTime - 終了時刻 (HH:MM 形式) (変更されると `employees` と `outsourcers` の `endTime` が自動的に更新されます)
+ * @property {boolean} isStartNextDay - 翌日開始フラグ (変更されると `employees` と `outsourcers` の `isStartNextDay` が自動的に更新されます)
  * - `true` の場合、実際の勤務は `dateAt` の翌日であることを意味します。
- * @property {number} breakMinutes - 休憩時間 (分)
+ * @property {number} breakMinutes - 休憩時間 (分) (変更されると `employees` と `outsourcers` の `breakMinutes` が自動的に更新されます)
  * @property {string} date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
  * - `dateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
  * @property {Date} startAt - 開始日時 (Date オブジェクト) (読み取り専用)
@@ -85,6 +85,10 @@
  * @method removeWorker - 従業員または外注先を `workers` から削除します。
  * @method setSiteIdCallback - `siteId` が変更された時に呼び出されるコールバック関数
  * @method setShiftTypeCallback - `shiftType` が変更された時に呼び出されるコールバック関数
+ * @method setStartTimeCallback - `startTime` が変更された時に呼び出されるコールバック関数
+ * @method setEndTimeCallback - `endTime` が変更された時に呼び出されるコールバック関数
+ * @method setIsStartNextDayCallback - `isStartNextDay` が変更された時に呼び出されるコールバック関数
+ * @method setBreakMinutesCallback - `breakMinutes` が変更された時に呼び出されるコールバック関数
  * @method setRegulationWorkMinutesCallback - `regulationWorkMinutes` が変更された時に呼び出されるコールバック関数
  *
  * @method duplicate - 指定された日付で SiteOperationSchedule を複製します。
@@ -178,34 +182,17 @@ export default class SiteOperationSchedule extends Operation {
    ***************************************************************************/
   afterInitialize(item = {}) {
     super.afterInitialize(item);
-    const synchronizeToWorkers = (key, value) => {
-      this.employees.forEach((emp) => {
-        emp[key] = value;
-      });
-      this.outsourcers.forEach((out) => {
-        out[key] = value;
-      });
-    };
 
     /***********************************************************
-     * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
+     * TRIGGERS FOR SYNCHRONIZATION TO EMPLOYEES AND OUTSOURCERS
      * ---------------------------------------------------------
-     * When `docId`, `startTime`, `endTime`, `breakMinutes`, and
-     * `isStartNextDay` are changed on the SiteOperationSchedule
-     * instance, the corresponding properties on all employees
-     * and outsourcers are automatically updated to keep them in sync.
-     * Especially important is that when `docId` changes, the
-     * `siteOperationScheduleId` on all employees and outsourcers
-     * is updated accordingly.
+     * When `docId` changes, `siteOperationScheduleId` on all employees
+     * and outsourcers is updated accordingly.
      * [NOTE]
-     * `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes` are
-     * synchronized in the parent `Operation` class.
+     * Other shared properties are synchronized in the parent
+     * `Operation` class.
      ***********************************************************/
     let _docId = this.docId;
-    let _startTime = this.startTime;
-    let _endTime = this.endTime;
-    let _breakMinutes = this.breakMinutes;
-    let _isStartNextDay = this.isStartNextDay;
     defineComputedProperties(this, {
       docId: {
         get() {
@@ -214,63 +201,7 @@ export default class SiteOperationSchedule extends Operation {
         set(v) {
           if (_docId === v) return;
           _docId = v;
-          synchronizeToWorkers("siteOperationScheduleId", v);
-        },
-      },
-      startTime: {
-        get() {
-          return _startTime;
-        },
-        set(v) {
-          if (typeof v !== "string") {
-            throw new Error(`startTime must be a string. startTime: ${v}`);
-          }
-          if (_startTime === v) return;
-          _startTime = v;
-          synchronizeToWorkers("startTime", v);
-        },
-      },
-      endTime: {
-        get() {
-          return _endTime;
-        },
-        set(v) {
-          if (typeof v !== "string") {
-            throw new Error(`endTime must be a string. endTime: ${v}`);
-          }
-          if (_endTime === v) return;
-          _endTime = v;
-          synchronizeToWorkers("endTime", v);
-        },
-      },
-      breakMinutes: {
-        get() {
-          return _breakMinutes;
-        },
-        set(v) {
-          if (typeof v !== "number" || isNaN(v) || v < 0) {
-            throw new Error(
-              `breakMinutes must be a non-negative number. breakMinutes: ${v}`,
-            );
-          }
-          if (_breakMinutes === v) return;
-          _breakMinutes = v;
-          synchronizeToWorkers("breakMinutes", v);
-        },
-      },
-      isStartNextDay: {
-        get() {
-          return _isStartNextDay;
-        },
-        set(v) {
-          if (typeof v !== "boolean") {
-            throw new Error(
-              `isStartNextDay must be a boolean. isStartNextDay: ${v}`,
-            );
-          }
-          if (_isStartNextDay === v) return;
-          _isStartNextDay = v;
-          synchronizeToWorkers("isStartNextDay", v);
+          this._synchronizeToWorkers("siteOperationScheduleId", v);
         },
       },
     });

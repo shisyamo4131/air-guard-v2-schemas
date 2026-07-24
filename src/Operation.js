@@ -12,11 +12,11 @@
  *
  * @property {Date} dateAt - 日付 (変更されると `dayType` が自動的に更新されます)
  * @property {string} shiftType - 勤務区分 (変更されると `employees` と `outsourcers` の `shiftType` が自動的に更新されます)
- * @property {string} startTime - 開始時刻 (HH:MM 形式)
- * @property {string} endTime - 終了時刻 (HH:MM 形式)
- * @property {boolean} isStartNextDay - 翌日開始フラグ
+ * @property {string} startTime - 開始時刻 (HH:MM 形式) (変更されると `employees` と `outsourcers` の `startTime` が自動的に更新されます)
+ * @property {string} endTime - 終了時刻 (HH:MM 形式) (変更されると `employees` と `outsourcers` の `endTime` が自動的に更新されます)
+ * @property {boolean} isStartNextDay - 翌日開始フラグ (変更されると `employees` と `outsourcers` の `isStartNextDay` が自動的に更新されます)
  * - `true` の場合、実際の勤務は `dateAt` の翌日であることを意味します。
- * @property {number} breakMinutes - 休憩時間 (分)
+ * @property {number} breakMinutes - 休憩時間 (分) (変更されると `employees` と `outsourcers` の `breakMinutes` が自動的に更新されます)
  * @property {string} date - `dateAt` に基づく YYYY-MM-DD 形式の日付文字列 (読み取り専用)
  * - `dateAt` に基づいて YYYY-MM-DD 形式の文字列を返します。
  * @property {Date} startAt - 開始日時 (Date オブジェクト) (読み取り専用)
@@ -77,6 +77,7 @@
  * @deprecated
  * @property {string} key - 使用不可
  *
+ * @method _synchronizeToWorkers - 指定された親プロパティの値を全ての `employees` と `outsourcers` へ同期します。
  * @method setDateAtCallback - `dateAt` が設定されたときに呼び出されるコールバック関数
  * @method addWorker - `Workers` に新しい従業員または外注先を追加します。
  * @method moveWorker - 従業員または外注先の位置を移動します。
@@ -84,6 +85,10 @@
  * @method removeWorker - 従業員または外注先を `workers` から削除します。
  * @method setSiteIdCallback - `siteId` が変更された時に呼び出されるコールバック関数
  * @method setShiftTypeCallback - `shiftType` が変更された時に呼び出されるコールバック関数
+ * @method setStartTimeCallback - `startTime` が変更された時に呼び出されるコールバック関数
+ * @method setEndTimeCallback - `endTime` が変更された時に呼び出されるコールバック関数
+ * @method setIsStartNextDayCallback - `isStartNextDay` が変更された時に呼び出されるコールバック関数
+ * @method setBreakMinutesCallback - `breakMinutes` が変更された時に呼び出されるコールバック関数
  * @method setRegulationWorkMinutesCallback - `regulationWorkMinutes` が変更された時に呼び出されるコールバック関数
  *
  * @getter {boolean} isInvalid - クラス特有のエラーが存在するかどうかを返すプロパティ
@@ -154,6 +159,17 @@ export default class Operation extends WorkingResult {
    * METHODS
    *****************************************************************************/
   /**
+   * `employees` と `outsourcers` の指定されたプロパティを同じ値へ更新します。
+   * 親の稼働情報を変更した際に、全ての稼働明細へ変更内容を反映するために使用します。
+   * @param {string} property - 同期するプロパティ名
+   * @param {*} value - 稼働明細へ設定する値
+   */
+  _synchronizeToWorkers(property, value) {
+    this.employees.forEach((emp) => (emp[property] = value));
+    this.outsourcers.forEach((out) => (out[property] = value));
+  }
+
+  /**
    * setDateAtCallback
    * - Callback method called when `dateAt` is set.
    * - Override this method in subclasses to add custom behavior when `dateAt` changes.
@@ -161,8 +177,7 @@ export default class Operation extends WorkingResult {
    */
   setDateAtCallback(v) {
     super.setDateAtCallback(v);
-    this.employees.forEach((emp) => (emp.dateAt = v));
-    this.outsourcers.forEach((out) => (out.dateAt = v));
+    this._synchronizeToWorkers("dateAt", v);
   }
 
   /**
@@ -172,8 +187,7 @@ export default class Operation extends WorkingResult {
    * @param {*} v
    */
   setSiteIdCallback(v) {
-    this.employees.forEach((emp) => (emp.siteId = v));
-    this.outsourcers.forEach((out) => (out.siteId = v));
+    this._synchronizeToWorkers("siteId", v);
   }
 
   /**
@@ -183,8 +197,7 @@ export default class Operation extends WorkingResult {
    * @param {*} v
    */
   setShiftTypeCallback(v) {
-    this.employees.forEach((emp) => (emp.shiftType = v));
-    this.outsourcers.forEach((out) => (out.shiftType = v));
+    this._synchronizeToWorkers("shiftType", v);
   }
 
   /**
@@ -194,8 +207,47 @@ export default class Operation extends WorkingResult {
    * @param {*} v
    */
   setRegulationWorkMinutesCallback(v) {
-    this.employees.forEach((emp) => (emp.regulationWorkMinutes = v));
-    this.outsourcers.forEach((out) => (out.regulationWorkMinutes = v));
+    this._synchronizeToWorkers("regulationWorkMinutes", v);
+  }
+
+  /**
+   * setStartTimeCallback
+   * - Callback method called when `startTime` is set.
+   * - Override this method in subclasses to add custom behavior when `startTime` changes.
+   * @param {*} v
+   */
+  setStartTimeCallback(v) {
+    this._synchronizeToWorkers("startTime", v);
+  }
+
+  /**
+   * setEndTimeCallback
+   * - Callback method called when `endTime` is set.
+   * - Override this method in subclasses to add custom behavior when `endTime` changes.
+   * @param {*} v
+   */
+  setEndTimeCallback(v) {
+    this._synchronizeToWorkers("endTime", v);
+  }
+
+  /**
+   * setIsStartNextDayCallback
+   * - Callback method called when `isStartNextDay` is set.
+   * - Override this method in subclasses to add custom behavior when `isStartNextDay` changes.
+   * @param {*} v
+   */
+  setIsStartNextDayCallback(v) {
+    this._synchronizeToWorkers("isStartNextDay", v);
+  }
+
+  /**
+   * setBreakMinutesCallback
+   * - Callback method called when `breakMinutes` is set.
+   * - Override this method in subclasses to add custom behavior when `breakMinutes` changes.
+   * @param {*} v
+   */
+  setBreakMinutesCallback(v) {
+    this._synchronizeToWorkers("breakMinutes", v);
   }
 
   /*****************************************************************************
@@ -251,19 +303,25 @@ export default class Operation extends WorkingResult {
     });
 
     /***********************************************************
-     * TRIGGERS FOR SYNCRONIZATION TO EMPLOYEES AND OUTSOURCERS
+     * TRIGGERS FOR SYNCHRONIZATION TO EMPLOYEES AND OUTSOURCERS
      * ---------------------------------------------------------
-     * When `siteId`, `dateAt`, `shiftType`, and `regulationWorkMinutes`
+     * When `siteId`, `dateAt`, `shiftType`, `startTime`, `endTime`,
+     * `isStartNextDay`, `breakMinutes`, and `regulationWorkMinutes`
      * are changed on the Operation instance,
      * the corresponding properties on all employees and outsourcers
      * are automatically updated to keep them in sync.
      * [NOTE]
-     * `startTime`, `endTime`, and `breakMinutes` are NOT synchronized here.
-     * They should be synchronized at `SiteOperationSchedule` level instead.
+     * Worker-specific values can be set after synchronization. If a parent
+     * property is changed again, the corresponding worker property is
+     * overwritten with the parent's latest value.
      ***********************************************************/
     let _siteId = this.siteId;
     let _shiftType = this.shiftType;
     let _regulationWorkMinutes = this.regulationWorkMinutes;
+    let _startTime = this.startTime;
+    let _endTime = this.endTime;
+    let _isStartNextDay = this.isStartNextDay;
+    let _breakMinutes = this.breakMinutes;
     Object.defineProperties(this, {
       siteId: {
         configurable: true,
@@ -313,6 +371,70 @@ export default class Operation extends WorkingResult {
           if (_regulationWorkMinutes === v) return;
           _regulationWorkMinutes = v;
           this.setRegulationWorkMinutesCallback(v);
+        },
+      },
+      startTime: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _startTime;
+        },
+        set(v) {
+          if (typeof v !== "string") {
+            throw new Error(`startTime must be a string. startTime: ${v}`);
+          }
+          if (_startTime === v) return;
+          _startTime = v;
+          this.setStartTimeCallback(v);
+        },
+      },
+      endTime: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _endTime;
+        },
+        set(v) {
+          if (typeof v !== "string") {
+            throw new Error(`endTime must be a string. endTime: ${v}`);
+          }
+          if (_endTime === v) return;
+          _endTime = v;
+          this.setEndTimeCallback(v);
+        },
+      },
+      isStartNextDay: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _isStartNextDay;
+        },
+        set(v) {
+          if (typeof v !== "boolean") {
+            throw new Error(
+              `isStartNextDay must be a boolean. isStartNextDay: ${v}`,
+            );
+          }
+          if (_isStartNextDay === v) return;
+          _isStartNextDay = v;
+          this.setIsStartNextDayCallback(v);
+        },
+      },
+      breakMinutes: {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return _breakMinutes;
+        },
+        set(v) {
+          if (typeof v !== "number" || isNaN(v) || v < 0) {
+            throw new Error(
+              `breakMinutes must be a non-negative number. breakMinutes: ${v}`,
+            );
+          }
+          if (_breakMinutes === v) return;
+          _breakMinutes = v;
+          this.setBreakMinutesCallback(v);
         },
       },
     });
