@@ -31,6 +31,7 @@ export { default as OperationResult } from "./src/OperationResult.js";
 export { default as OperationResultDetail } from "./src/OperationResultDetail.js";
 export { default as Outsourcer } from "./src/Outsourcer.js";
 export { default as RoundSetting } from "./src/RoundSetting.js";
+export { default as SecurityReportIndex } from "./src/SecurityReportIndex.js";
 export { default as Site } from "./src/Site.js";
 export { default as SiteEmployeeHistory } from "./src/SiteEmployeeHistory.js";
 export { default as SiteOperationSchedule } from "./src/SiteOperationSchedule.js";
