@@ -19,6 +19,7 @@ export { default as Company } from "./src/Company.js";
 export { default as Customer, CustomerMinimal } from "./src/Customer.js";
 export { default as CutoffDate } from "./src/utils/CutoffDate.js";
 export { default as DailyAttendance } from "./src/DailyAttendance.js";
+export { default as DailyOperationByEmployee } from "./src/DailyOperationByEmployee.js";
 export { default as Employee } from "./src/Employee.js";
 export { default as FcmToken } from "./src/FcmToken.js";
 export { default as Insurance } from "./src/Insurance.js";
