@@ -157,7 +157,6 @@ const classProps = {
   attendanceManagementMode: defField("select", {
     label: "勤怠管理方式",
     default: ATTENDANCE_MANAGEMENT_MODE_VALUES.ACTUAL_DATE.value,
-    hidden: true,
     component: {
       name: "air-select",
       attrs: {
