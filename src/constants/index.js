@@ -3,6 +3,10 @@ export {
   OPTIONS as ARRANGEMENT_NOTIFICATION_STATUS_OPTIONS,
 } from "./arrangement-notification-status.js";
 export {
+  VALUES as ATTENDANCE_MANAGEMENT_MODE_VALUES,
+  OPTIONS as ATTENDANCE_MANAGEMENT_MODE_OPTIONS,
+} from "./attendanceManagementMode.js";
+export {
   VALUES as BILLING_UNIT_TYPE_VALUES,
   OPTIONS as BILLING_UNIT_TYPE_OPTIONS,
 } from "./billing-unit-type.js";

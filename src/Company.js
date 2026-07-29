@@ -25,6 +25,7 @@
  * @property {number} minuteInterval - 時刻選択間隔（分）
  * @property {string} roundSetting - 端数処理設定
  * @property {string} firstDayOfWeek - 週の始まり
+ * @property {string} attendanceManagementMode - 勤怠管理方式
  * @property {string} stripeCustomerId - Stripe顧客ID
  * @property {object} subscription - サブスクリプション情報
  * @property {boolean} maintenanceMode - メンテナンスモードフラグ
@@ -42,7 +43,12 @@ import AgreementV2 from "./AgreementV2.js";
 import SiteOrder from "./SiteOrder.js";
 import RoundSetting from "./RoundSetting.js";
 import { GeocodableMixin } from "./mixins/GeocodableMixin.js";
-import { DAY_OF_WEEK_OPTIONS, DAY_OF_WEEK_VALUES } from "./constants/index.js";
+import {
+  ATTENDANCE_MANAGEMENT_MODE_OPTIONS,
+  ATTENDANCE_MANAGEMENT_MODE_VALUES,
+  DAY_OF_WEEK_OPTIONS,
+  DAY_OF_WEEK_VALUES,
+} from "./constants/index.js";
 
 const classProps = {
   companyName: defField("companyName", { required: true }),
@@ -143,6 +149,19 @@ const classProps = {
         items: DAY_OF_WEEK_OPTIONS,
         hint: "勤怠管理などで週の始まりとする曜日を設定します。",
         persistentHint: true,
+      },
+    },
+  }),
+
+  /** 勤怠管理方式 */
+  attendanceManagementMode: defField("select", {
+    label: "勤怠管理方式",
+    default: ATTENDANCE_MANAGEMENT_MODE_VALUES.ACTUAL_DATE.value,
+    hidden: true,
+    component: {
+      name: "air-select",
+      attrs: {
+        items: ATTENDANCE_MANAGEMENT_MODE_OPTIONS,
       },
     },
   }),
