@@ -2,7 +2,7 @@
 
 - Date: 2026-08-26
 - Status: Accepted
-- Implementation status: Implemented and published beginning with verified 2.4.2-dev.165; local 2.4.2-dev.166 documentation-only corrective candidate and consumer adoption pending
+- Implementation status: Implemented and available in verified published 2.4.2-dev.166; consumer adoption pending
 - Related specification: Shared Role Preset Contract
 - Related decisions: [0001](0001-shared-domain-boundary.md), [0002](0002-cross-project-ownership-and-versioned-integration.md), [0003](0003-release-and-rollback-approval-boundaries.md)
 - Supersedes: None
@@ -15,7 +15,7 @@ Schemas already owns environment-independent role, permission, constant, and dis
 
 ## Decision
 
-Add the accepted shared role preset contract to the existing public `@shisyamo4131/air-guard-v2-schemas/constants` subpath. The contract is implemented and published beginning with verified 2.4.2-dev.165. Local 2.4.2-dev.166 corrects packaged README and repository release-status wording only; the contract data and behavior are unchanged, and consumer adoption remains pending.
+Add the accepted shared role preset contract to the existing public `@shisyamo4131/air-guard-v2-schemas/constants` subpath. The contract is implemented and available in verified published 2.4.2-dev.166. This version corrects packaged README and repository release-status wording only relative to 2.4.2-dev.165; the contract API, data, and behavior are unchanged, and consumer adoption remains pending.
 
 The internal module is `src/constants/role-presets.js`. It exposes internal `VALUES` and `IDS`, which `src/constants/index.js` maps to `ROLE_PRESETS` and `ROLE_PRESET_IDS`. It also exports `isRolePresetId`. The package root does not re-export these names.
 
@@ -54,9 +54,9 @@ A single immutable package catalog prevents client/server drift while preserving
 
 - Users: Client and server consumers can use the same catalog version and content after separate publication and adoption.
 - Data: No production data, migration, role assignment, claim, or authorization state changes are authorized by this decision.
-- Implementation: Version 2.4.2-dev.165 added the constants module, index exports, targeted test, and version files and is verified published. Local 2.4.2-dev.166 changes release-status documentation and package version metadata only. Consumer coordinators separately update dependency and application files only after publication confirmation for the version they adopt.
+- Implementation: Version 2.4.2-dev.165 added the constants module, index exports, targeted test, and version files. Verified published 2.4.2-dev.166 changes release-status documentation and package version metadata only. Consumer coordinators separately own dependency and application adoption.
 - Compatibility: Adding named exports to the existing `./constants` subpath is structurally additive. Consumer import migration requires the published package version and must not precede publication confirmation.
-- Tests: A targeted `node:test` check verifies the public self-reference, exact catalog, immutable shape, mutation rejection, unknown and prototype-key handling, and runtime independence. Node 24 direct-test, import, and local package dry-run evidence exists. It is not a whole-package formal runner, and the known legacy diagnostic failure remains separate and unresolved.
+- Tests: A targeted `node:test` check verifies the public self-reference, exact catalog, immutable shape, mutation rejection, unknown and prototype-key handling, and runtime independence. Node 24 targeted, canonical package, registry-integrity, and peer-inclusive fresh public-import evidence exists. It is not a whole-package formal runner, and the known legacy diagnostic failure remains separate and unresolved.
 - Runtime: Node 24 is the formal package evidence candidate, not the sole supported runtime. Firebase Functions Node 22 compatibility is consumer evidence.
 - Progress: Acceptance of this contract does not complete a predefined roadmap milestone; official readiness remains 25 percent.
 - Operations: Each tag, push, npm publication, consumer adoption, main merge, deployment, remote operation, and data operation remains a separate approval boundary.
@@ -65,15 +65,15 @@ A single immutable package catalog prevents client/server drift while preserving
 
 Version 2.4.2-dev.165 is verified on main and its annotated tag, successful workflow run 32930098774, npm registry version and `dev` dist-tag, canonical shasum `0b828c4b8c585bbc276043c8321d53f889aaabd3`, integrity `sha512-mXZQgF90t8pwGzbglwfh4X8xkZ1Hoi58NsOOlkYxR6By0vnk+KYakKxToPCN0lAkf146J9A8eS3y4vgrKW8Rhg==`, and peer-inclusive fresh public import. Published 2.4.2-dev.165 remains immutable.
 
-The local development version is 2.4.2-dev.166. It is a documentation-only corrective candidate with no role preset API, data, authorization-boundary, implementation-code, or test change. It is not tagged, pushed, published, or remote-registry confirmed.
+Version 2.4.2-dev.166 is verified at commit `1a6024ceedd03684020ef82af55fda2b73579eb1`, annotated tag object `fb36b67b1cd79b50e9d5dcf8a542196801b0c642`, workflow run `32932703563`, publish job `98067873113`, npm registry shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`, and peer-inclusive fresh public import. It has no role preset API, data, authorization-boundary, implementation-code, or test change relative to 2.4.2-dev.165.
 
-The approved order is aligned contract documentation and bounded package implementation/test/version work in a local commit, release evidence, separate tag and push approvals, npm publication confirmation, and then consumer-owned adoption. Confirmed consumers must use and verify the same exact version and content. AirGuardV2 root and Functions adoption, exact version pins, same-content confirmation, and local catalog deletion have not been performed; the current adoption plan should use 2.4.2-dev.166 only after its publication is verified.
+The approved release steps are complete through publication confirmation. Confirmed consumers must use and verify the same exact version and content. AirGuardV2 root and Functions adoption, exact version pins, same-content confirmation, and local catalog deletion have not been performed; the recommended consumer target is exact 2.4.2-dev.166.
 
 ## Migration and Rollback
 
 After publication confirmation, each consumer coordinator updates dependencies and locks before replacing local catalog imports and deleting duplicate files. Package and consumer tests must preserve exact records, strict unknown-role behavior, existing consumer authorization semantics, and same-version/content evidence.
 
-Rollback does not depend on npm unpublish, tag deletion, history rewrite, deployment, or data action. Before publication, correct local package work through an approved non-history-rewriting change. After publication, an unadopted candidate may remain published and be superseded by a corrected version; 2.4.2-dev.165 follows this immutable-release rule. If adoption fails, consumer repositories restore their previously verified exact package version and local catalog/import implementation, rerun compatibility evidence, and accept the rollback locally.
+Rollback does not depend on npm unpublish, tag deletion or movement, history rewrite, deployment, or data action. Published 2.4.2-dev.165 and 2.4.2-dev.166 remain immutable and may be superseded only by a later version. If adoption fails, consumer repositories restore their previously verified exact package version and local catalog/import implementation, rerun compatibility evidence, and accept the rollback locally.
 
 ## Reconsider When
 

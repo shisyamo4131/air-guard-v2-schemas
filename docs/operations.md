@@ -8,14 +8,13 @@ Implemented:
 - development-tag publish workflow using Node 24, npm ci, and npm publish --tag dev
 - governance renderer and validators after bootstrap
 - root diagnostic scripts
-- published 2.4.2-dev.165 shared role preset catalog and public `./constants` exports
+- published 2.4.2-dev.166 shared role preset catalog and public `./constants` exports
 - targeted `test:role-presets` check through the public package self-reference
-- verified 2.4.2-dev.165 main and annotated tag, successful workflow run 32930098774, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
+- verified 2.4.2-dev.166 main and annotated tag, successful workflow run 32932703563 and publish job 98067873113, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - Node 24 direct-test, public-import, and package evidence for the role preset catalog
 
 Planned or not yet verified:
 
-- validation, tag, push, npm publication, and remote-registry confirmation for the local documentation-only 2.4.2-dev.166 corrective candidate
 - AirGuardV2 root and Functions adoption, same-version/content confirmation, and local catalog deletion
 - supported Node range
 - formal package test runner
@@ -100,9 +99,9 @@ Parallel work requires independent scopes, a common baseline, checkpoint IDs, di
 
 ## Shared Role Preset Contract Delivery
 
-The shared role preset contract in [ADR 0004](decisions/0004-shared-role-permission-catalog.md) is implemented, published, and verified beginning with version 2.4.2-dev.165. Verification covers its main commit and annotated tag, successful workflow run 32930098774, npm registry version and `dev` dist-tag, canonical shasum `0b828c4b8c585bbc276043c8321d53f889aaabd3`, integrity `sha512-mXZQgF90t8pwGzbglwfh4X8xkZ1Hoi58NsOOlkYxR6By0vnk+KYakKxToPCN0lAkf146J9A8eS3y4vgrKW8Rhg==`, and peer-inclusive fresh public import.
+The shared role preset contract in [ADR 0004](decisions/0004-shared-role-permission-catalog.md) is implemented, published, and verified in version 2.4.2-dev.166. Verification covers commit `1a6024ceedd03684020ef82af55fda2b73579eb1`, annotated tag object `fb36b67b1cd79b50e9d5dcf8a542196801b0c642`, successful workflow run `32932703563` and publish job `98067873113`, npm registry version and `dev` dist-tag, canonical shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`, and peer-inclusive fresh public import with schemas 2.4.2-dev.166, `@holiday-jp/holiday_jp` 2.5.1, and `@shisyamo4131/air-firebase-v2` 2.3.1-dev.6.
 
-Local version 2.4.2-dev.166 is a documentation-only corrective candidate for packaged README and repository release-status wording. It does not change the role preset API, data, tests, dependencies, exports, scripts, or authorization boundary, and it is not tagged, pushed, published, or remote-registry confirmed.
+Version 2.4.2-dev.166 is a documentation/version-metadata-only correction relative to immutable 2.4.2-dev.165. It does not change the role preset API, data, tests, dependencies, exports, scripts, or authorization boundary. Published consumer availability is true.
 
 The local public imports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` from `@shisyamo4131/air-guard-v2-schemas/constants`. Package implementation is limited to catalog data and prototype-safe membership validation. Consumer authorization evaluators, write-to-read implication, and strict or general policy semantics remain consumer-owned.
 
@@ -115,9 +114,9 @@ Deliver and verify the contract in this order:
 3. Review and locally commit only the approved files. Produce release evidence before any remote action.
 4. Obtain separate explicit approvals for tag creation, push, and the push-triggered npm publication. A local version or tag is not publication evidence.
 5. Confirm the published version and content before asking consumer coordinators to adopt it.
-6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. For the current corrective sequence, AirGuardV2 root and Functions adoption should use the same exact 2.4.2-dev.166 version only after its publication is verified, with matching resolved content and integrity; local catalog deletion occurs only in that consumer-owned adoption.
+6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. AirGuardV2 root and Functions adoption should use exact version 2.4.2-dev.166 with matching resolved content and integrity; local catalog deletion occurs only in that consumer-owned adoption.
 
-Rollback does not depend on npm unpublish, tag deletion, history rewrite, deployment, or data action. Published 2.4.2-dev.165 remains immutable. Before publication, correct or revert local work through an approved non-history-rewriting Git change. If a published candidate is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
+Rollback does not depend on npm unpublish, tag deletion or movement, history rewrite, deployment, or data action. Published 2.4.2-dev.165 and 2.4.2-dev.166 remain immutable. If a published version is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
 
 ## Release, Publish, Adoption, and Rollback
 

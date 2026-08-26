@@ -2,14 +2,17 @@
 
 ## Unreleased
 
-### 2.4.2-dev.166 corrective candidate
+No changes are recorded after the verified 2.4.2-dev.166 publication.
 
-#### Changed
+## 2.4.2-dev.166 - 2026-08-26
 
-- Prepared local package metadata version 2.4.2-dev.166 as a documentation-only corrective candidate that removes stale publication-state wording from the packaged README and aligns repository release evidence. Package code, tests, exports, scripts, dependencies, role preset data, and authorization boundaries are unchanged.
-- Version 2.4.2-dev.166 has not been tagged, pushed, published, or confirmed in a remote registry. Consumer adoption remains pending and must follow separate publication verification.
+### Changed
 
-### Verified 2.4.2-dev.165 publication
+- Published the documentation/version-metadata-only correction relative to 2.4.2-dev.165. Package code, tests, exports, scripts, dependencies, role preset data, and authorization boundaries are unchanged.
+- Verified commit `1a6024ceedd03684020ef82af55fda2b73579eb1`, annotated tag object `fb36b67b1cd79b50e9d5dcf8a542196801b0c642`, workflow run `32932703563`, publish job `98067873113`, npm version and `dev` dist-tag 2.4.2-dev.166, shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, and integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`.
+- Verified a peer-inclusive fresh install with schemas 2.4.2-dev.166, `@holiday-jp/holiday_jp` 2.5.1, and `@shisyamo4131/air-firebase-v2` 2.3.1-dev.6, followed by the public `./constants` import and immutability checks. AirGuardV2 adoption is not implied and remains consumer-owned.
+
+## 2.4.2-dev.165 - 2026-08-26
 
 ### Added
 
