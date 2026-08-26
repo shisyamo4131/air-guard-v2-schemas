@@ -102,3 +102,15 @@ Every required command below was run independently. The local governance commit 
 ## Approval Boundaries Preserved
 
 This bootstrap does not authorize package implementation or test changes, the known failure fix, tag, push, main merge, history rewrite, npm publish, deployment, remote services, real-data operations, network access, or alternate worktrees.
+
+## Coordinator Turnover Verification
+
+- Date: 2026-08-26
+- A replacement Schemas primary coordinator resumed from repository sources of truth using governance bootstrap commit `8e667da51938a7320f07ec48685113a008b290f5` as the baseline.
+- Read-only checks confirmed that cwd and Git top-level were `C:\Users\seven\projects\AirGuard\air-guard-v2-schemas`, the branch was `codex/governance-bootstrap`, HEAD was the baseline commit, the worktree was clean, and the registry contained only the primary repository with no linked worktree.
+- The replacement coordinator restored managed common-governance version 1.3.0 and SHA-256 `d2cdb79f86e034a533e880ec7c4dddc51ca1e40bbeb16cfde497f1abf41d4e10`, the active repository instruction sources, permissions, coordinator-owned Git integration, one-shot callback behavior, task turnover, and the 300 MiB coordinator session lifecycle.
+- The durable cross-project roles remain the Schemas primary coordinator and each consumer project primary coordinator. This ownership boundary is not specific to one numbered consumer checkpoint.
+- Package-code and test writes require an explicitly approved file and behavior scope. Tag creation, push, main merge, npm publish, deployment, remote-service operations, and real-data operations retain their separate explicit approval boundaries.
+- The required no-change callback route succeeded without embedding temporary routing identifiers in durable documentation.
+- Shared-package readiness remains at 25 percent, the package version remains `2.4.2-dev.164`, and the known `test-error-definitions.js` failure remains unmodified and separate from governance validation.
+- After this file-limited local commit succeeds, ownership may retire from the former coordinator. Former task deletion remains a user-only action; Codex does not archive or delete it.
