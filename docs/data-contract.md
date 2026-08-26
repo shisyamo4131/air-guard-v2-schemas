@@ -2,14 +2,15 @@
 
 - Status: Partially confirmed
 - Last verified: 2026-08-26
-- Authority: Inventory of the existing public package surface and separately labeled local unreleased additions; unresolved compatibility items remain open in the specification.
+- Authority: Inventory of the existing public package surface and separately labeled local release candidates; unresolved compatibility items remain open in the specification.
 - Related roadmap: [Shared-package readiness](roadmaps/shared-package-readiness.md)
 - Related decisions: [ADR index](decisions/README.md)
 
 ## Package Identity
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
-- current local version: 2.4.2-dev.165; not tagged, pushed, published, or remote-registry confirmed
+- current local version: 2.4.2-dev.166 documentation-only corrective candidate; not tagged, pushed, published, or remote-registry confirmed
+- role preset publication baseline: 2.4.2-dev.165 verified on main, annotated tag, successful publish workflow, npm registry and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2
@@ -23,13 +24,13 @@
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
 
-## Locally Implemented `./constants` Additions
+## Published `./constants` Additions
 
-- Status: Accepted contract implemented and validated in the current local branch; not tagged, pushed, published, remote-registry confirmed, or adopted by consumers.
-- Local development version: 2.4.2-dev.165.
+- Status: Accepted contract implemented and published beginning with 2.4.2-dev.165; consumer adoption remains pending.
+- Local corrective candidate: 2.4.2-dev.166 changes release-status documentation and package metadata only; the role preset contract is unchanged and this candidate is not tagged, pushed, published, or remote-registry confirmed.
 - Related decision: [ADR 0004](decisions/0004-shared-role-permission-catalog.md)
 
-The existing `./constants` subpath exports `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` in the current branch. They are implemented in `src/constants/role-presets.js` as internal `VALUES`, `IDS`, and the membership helper, then mapped by `src/constants/index.js`. They are not re-exported from the package root.
+The existing `./constants` subpath exports `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. They are implemented in `src/constants/role-presets.js` as internal `VALUES`, `IDS`, and the membership helper, then mapped by `src/constants/index.js`. They are not re-exported from the package root.
 
 `ROLE_PRESET_IDS` is a deeply frozen ordered array containing `manager`, `controller`, `accountant`, `human-resource`, `labor`, and `legal` in that order.
 
@@ -48,7 +49,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This is an additive local unreleased public API. Node 24 targeted-test, public self-reference import, and package dry-run evidence exists, but a whole-package formal runner and the supported Node range remain open. The known legacy diagnostic failure remains separate and unresolved. Published consumer availability is false, and AirGuardV2 root and Functions adoption, same-version/content verification, and local catalog deletion have not been performed. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This is an additive published public API beginning with 2.4.2-dev.165. That version's main commit, annotated tag, successful workflow, registry metadata and canonical integrity, and peer-inclusive fresh public import are verified. Node 24 targeted-test and package evidence exists, but a whole-package formal runner and the supported Node range remain open. The known legacy diagnostic failure remains separate and unresolved. AirGuardV2 root and Functions adoption, same-version/content verification, and local catalog deletion have not been performed. Local 2.4.2-dev.166 corrects release-status documentation only and should be adopted only after its publication is separately verified. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 

@@ -53,8 +53,8 @@ The Schemas primary coordinator owns this repository and package evidence. Each 
 
 ## Shared Role Preset Contract
 
-- Status: Accepted and implemented locally on 2026-08-26; tag, push, npm publication, remote-registry confirmation, and consumer adoption remain pending.
-- Current availability: The exports in this section are present in the current branch at local package version 2.4.2-dev.165. They are not available from a confirmed published package.
+- Status: Accepted, implemented, and published beginning with 2.4.2-dev.165 on 2026-08-26; consumer adoption remains pending.
+- Current availability: The exports in this section are available from confirmed published package version 2.4.2-dev.165. Local version 2.4.2-dev.166 is a documentation-only corrective candidate and does not change this contract.
 - Related decision: [ADR 0004](decisions/0004-shared-role-permission-catalog.md)
 
 The public location is `@shisyamo4131/air-guard-v2-schemas/constants`. The named exports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. The implementation module is `src/constants/role-presets.js`, with internal `VALUES` and `IDS` exports mapped by `src/constants/index.js` to the public names. The package root does not re-export them.
@@ -84,7 +84,7 @@ Adding or removing a permission on an existing preset is an authorization-sensit
 
 The targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed only as the `test:role-presets` package script. It imports through the public `./constants` self-reference and verifies exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. Node 24 direct-test, public-import, and local package dry-run evidence exists. This targeted check does not establish a whole-package formal runner. Node 24 remains the formal package evidence candidate; the sole supported range remains open, Firebase Functions compatibility under Node 22 remains separate consumer evidence, and the known legacy diagnostic failure remains unresolved.
 
-The current branch uses local development version 2.4.2-dev.165 for this implementation. No tag, push, npm publication, or remote-registry confirmation has been performed. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and local catalog deletion have not been performed. Publication order remains local implementation and validation, release evidence, separately approved tag and push, npm publication confirmation, and only then consumer-owned adoption of the same exact version and content.
+Version 2.4.2-dev.165 is verified on main and its annotated tag, successful workflow run 32930098774, npm registry version and `dev` dist-tag, canonical shasum `0b828c4b8c585bbc276043c8321d53f889aaabd3`, integrity `sha512-mXZQgF90t8pwGzbglwfh4X8xkZ1Hoi58NsOOlkYxR6By0vnk+KYakKxToPCN0lAkf146J9A8eS3y4vgrKW8Rhg==`, and peer-inclusive fresh public import. Local version 2.4.2-dev.166 corrects packaged README and repository release-status wording only; it is not tagged, pushed, published, or remote-registry confirmed. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and local catalog deletion remain pending and should use 2.4.2-dev.166 only after its publication is separately verified. Published 2.4.2-dev.165 remains immutable; correction and rollback do not depend on npm unpublish, tag deletion, or history rewrite.
 
 ## Functional Requirements
 

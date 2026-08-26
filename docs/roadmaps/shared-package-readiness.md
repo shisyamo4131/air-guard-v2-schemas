@@ -11,15 +11,15 @@
 | Milestone | Weight | Earned | Status | Completion evidence and remaining work |
 | --- | ---: | ---: | --- | --- |
 | Governance and source-of-truth baseline | 25 | 25 | Complete | Sub-gates completed: managed/project governance 10; zero-unmapped inventory 5; all governance checks 5; local commit and clean worktree 5 |
-| Public API and data-contract inventory | 25 | 0 | In progress | The ADR 0004 role preset contract is implemented locally at 2.4.2-dev.165, but the complete public inventory remains unfinished; inventory every exported model, field, method, serialization rule, constant, error, calculation, inherited surface, and compatibility class |
+| Public API and data-contract inventory | 25 | 0 | In progress | The ADR 0004 role preset contract is published beginning with 2.4.2-dev.165 and is unchanged by the local 2.4.2-dev.166 corrective candidate, but the complete public inventory remains unfinished; inventory every exported model, field, method, serialization rule, constant, error, calculation, inherited surface, and compatibility class |
 | Repeatable package validation and test baseline | 25 | 0 | Not started | Confirm Node support, formal runner, existing diagnostic treatment, failure correction, and repeatable package evidence |
-| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | Local role preset implementation and package evidence exists, but tag, push, publication, registry confirmation, adoption, and rollback remain unverified |
+| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | The 2.4.2-dev.165 tag, main, workflow, registry integrity, and fresh import are verified, but the whole milestone gate remains incomplete: 2.4.2-dev.166 corrective publication, consumer adoption, same-version/content confirmation, and rollback evidence remain pending; no predefined partial sub-gate exists |
 | Two-consumer compatibility and adoption evidence | 10 | 0 | Not started | Both confirmed consumers verify the same package version and content |
 | **Total** | **100** | **25** |  |  |
 
 ## Next Work
 
-1. Review the local 2.4.2-dev.165 implementation commit and prepare a bounded release-evidence proposal without performing tag, push, publication, registry, deployment, or data actions.
+1. Validate and release the local documentation-only 2.4.2-dev.166 corrective candidate, then complete AirGuardV2 root and Functions same-version/content adoption.
 2. Continue the complete public API inventory and compatibility policy across all existing exports.
 
 ## Deliverables and Verification Evidence
@@ -27,9 +27,9 @@
 | Milestone | Design or decision | Implementation | Tests, review, release, or acceptance evidence |
 | --- | --- | --- | --- |
 | Governance baseline | [Specification](../specification.md), [ADRs](../decisions/README.md) | [Project rules](../../governance/project-rules.md), generated AGENTS.md | [Bootstrap evidence](../evidence/governance-bootstrap.md) |
-| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md) | Local 2.4.2-dev.165 role preset module and `./constants` exports implemented | Complete inventory not yet available; publication and consumer evidence absent |
+| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md) | Role preset module and `./constants` exports published beginning with 2.4.2-dev.165; local 2.4.2-dev.166 changes documentation/version metadata only | Complete inventory and consumer adoption evidence not yet available |
 | Package validation | [Operations](../operations.md) | Targeted role preset `node:test`; whole-package formal runner not implemented | Node 24 targeted test/import/package dry-run evidence exists; known diagnostic failure remains open |
-| Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | Verified end-to-end evidence not yet available |
+| Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | 2.4.2-dev.165 publication and fresh import verified; 2.4.2-dev.166 release, two-consumer adoption, and rollback evidence remain incomplete |
 | Consumer evidence | [ADR 0002](../decisions/0002-cross-project-ownership-and-versioned-integration.md) | Consumer-owned repositories | Not yet recorded |
 
 ## Unresolved Problems and Decisions
@@ -42,7 +42,7 @@
 - Legacy ./apis compatibility
 - Stable release policy
 - Missing two-consumer evidence
-- Shared role preset publication, remote-registry confirmation, AirGuardV2 root/Functions adoption, same-version/content confirmation, and local catalog deletion remain pending
+- 2.4.2-dev.166 publication and registry confirmation, AirGuardV2 root/Functions adoption, same-version/content confirmation, and local catalog deletion remain pending
 
 ## Definition of Done
 
@@ -60,3 +60,4 @@
 | 2026-08-26 | 25% | +25 | All four predefined governance sub-gates completed; see bootstrap evidence and the local governance commit |
 | 2026-08-26 | 25% | +0 | Shared role preset contract and delivery order approved and documented; no predefined implementation, validation, release, or consumer-evidence gate completed |
 | 2026-08-26 | 25% | +0 | Local 2.4.2-dev.165 catalog implementation and targeted Node 24 evidence completed; no full inventory, formal package baseline, release, or consumer-evidence milestone completed |
+| 2026-08-26 | 25% | +0 | Verified 2.4.2-dev.165 publication, registry integrity, and peer-inclusive fresh import, and prepared local 2.4.2-dev.166 corrective release documentation; the release milestone has no predefined partial sub-gate and consumer integration remains incomplete |
