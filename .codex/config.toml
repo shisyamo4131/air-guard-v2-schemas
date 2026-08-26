@@ -1,0 +1,8 @@
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+interrupt_message = true
+
+# Project-owned hybrid configuration.
+# Models inherit the current Codex default unless the user approves a measured exception.
+# Network and external writes remain disabled unless separately approved.

@@ -2,3 +2,15 @@
 node_modules/
 node_modules/**
 *.md
+
+# Authoritative project governance and documentation
+!README.md
+!AGENTS.md
+!CHANGELOG.md
+!INITIAL_PROMPT.md
+!governance/
+!governance/*.md
+!governance/**/*.md
+!docs/
+!docs/*.md
+!docs/**/*.md
