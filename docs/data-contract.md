@@ -2,7 +2,7 @@
 
 - Status: Partially confirmed
 - Last verified: 2026-08-26
-- Authority: Inventory of the existing public package surface; unresolved compatibility items remain open in the specification.
+- Authority: Inventory of the existing public package surface and separately labeled approved planned additions; unresolved compatibility items remain open in the specification.
 - Related roadmap: [Shared-package readiness](roadmaps/shared-package-readiness.md)
 - Related decisions: [ADR index](decisions/README.md)
 
@@ -22,6 +22,33 @@
 | ./constants | src/constants/index.js | Existing public contract |
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
+
+## Approved Planned `./constants` Additions
+
+- Status: Approved contract; not implemented, versioned, published, or available in 2.4.2-dev.164.
+- Planned development version: 2.4.2-dev.165 candidate; local tag and remote registry availability unverified.
+- Related decision: [ADR 0004](decisions/0004-shared-role-permission-catalog.md)
+
+The existing `./constants` subpath will add the named exports `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. They will be implemented in `src/constants/role-presets.js` as internal `VALUES`, `IDS`, and the membership helper, then mapped by `src/constants/index.js`. They will not be re-exported from the package root.
+
+`ROLE_PRESET_IDS` will be a deeply frozen ordered array containing `manager`, `controller`, `accountant`, `human-resource`, `labor`, and `legal` in that order.
+
+`ROLE_PRESETS` will be a deeply frozen null-prototype readonly record. Its own keys are the canonical identifiers. Each value has exactly `label`, `description`, `icon`, and `permissions`; there is no redundant identifier field. Every entry and permission array is frozen, and every permission is a unique, trimmed, non-empty string within its preset.
+
+| Identifier | Exact entry |
+| --- | --- |
+| `manager` | label `統括`; description `統括管理`; icon `mdi-hammer-wrench`; permissions `customers:write`, `sites:write`, `employees:write`, `users:provision`, `users:write`, `outsourcers:write`, `site-operation-schedules:write`, `operation-results:write`, `billings:write` |
+| `controller` | label `管制`; description `現場・スケジュール管理`; icon `mdi-hammer-wrench`; permissions `customers:read`, `sites:write`, `employees:read`, `outsourcers:read`, `site-operation-schedules:write`, `operation-results:write` |
+| `accountant` | label `経理`; description `請求・集計管理`; icon `mdi-calculator`; permissions `customers:read`, `sites:read`, `employees:read`, `outsourcers:read`, `operation-results:read`, `operation-billings:write`, `billings:write` |
+| `human-resource` | label `人事`; description `人事管理`; icon `mdi-account-tie`; permissions `customers:read`, `sites:read`, `employees:write`, `employees:terminate`, `users:provision`, `operation-results:read` |
+| `labor` | label `労務`; description `労務管理`; icon `mdi-clipboard-account`; permissions `customers:read`, `sites:read`, `employees:read`, `operation-results:read` |
+| `legal` | label `法務`; description `契約管理`; icon `mdi-gavel`; permissions `customers:write`, `sites:write`, `employees:read` |
+
+The label, description, and opaque `mdi-*` icon token are environment-independent display metadata. They do not include UI behavior or a Vue or Vuetify runtime dependency.
+
+`isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
+
+This is an additive planned public API. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 
