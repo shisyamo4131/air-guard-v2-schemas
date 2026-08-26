@@ -8,11 +8,14 @@ Implemented:
 - development-tag publish workflow using Node 24, npm ci, and npm publish --tag dev
 - governance renderer and validators after bootstrap
 - root diagnostic scripts
+- local 2.4.2-dev.165 shared role preset catalog and public `./constants` exports
+- targeted `test:role-presets` check through the public package self-reference
+- Node 24 direct-test, public-import, and local package dry-run evidence for the role preset catalog
 
 Planned or not yet verified:
 
-- approved shared role preset contract; implementation and publication pending
-- targeted `test:role-presets` check through the public `./constants` self-reference
+- tag, push, npm publication, and remote-registry confirmation for 2.4.2-dev.165
+- AirGuardV2 root and Functions adoption, same-version/content confirmation, and local catalog deletion
 - supported Node range
 - formal package test runner
 - stable release policy
@@ -96,19 +99,20 @@ Parallel work requires independent scopes, a common baseline, checkpoint IDs, di
 
 ## Shared Role Preset Contract Delivery
 
-The shared role preset contract in [ADR 0004](decisions/0004-shared-role-permission-catalog.md) is approved but not implemented or published. Package version 2.4.2-dev.164 does not provide the planned exports. The proposed S-2 candidate is 2.4.2-dev.165; local tag and remote registry availability remain unverified.
+The shared role preset contract in [ADR 0004](decisions/0004-shared-role-permission-catalog.md) is implemented and validated in the current local branch at version 2.4.2-dev.165. It has not been tagged, pushed, published to npm, or confirmed in a remote registry, so published consumer availability is false.
 
-The planned public imports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` from `@shisyamo4131/air-guard-v2-schemas/constants`. Package implementation is limited to catalog data and prototype-safe membership validation. Consumer authorization evaluators, write-to-read implication, and strict or general policy semantics remain consumer-owned.
+The local public imports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` from `@shisyamo4131/air-guard-v2-schemas/constants`. Package implementation is limited to catalog data and prototype-safe membership validation. Consumer authorization evaluators, write-to-read implication, and strict or general policy semantics remain consumer-owned.
+
+Targeted evidence uses Node 24 as the formal package evidence candidate and includes the direct `node:test` command, the package script with the same Node runtime, a public self-reference import smoke check, and a local package dry run confirming that `src/constants/role-presets.js` is included while the root test file is excluded. This evidence does not establish a whole-package formal test runner or the sole supported Node range. The known `test-error-definitions.js` failure remains separate and unresolved, and Firebase Functions Node 22 compatibility remains consumer evidence.
 
 Deliver and verify the contract in this order:
 
-1. Commit and review the approved contract documents without changing package code, tests, or version files.
-2. In the separately bounded and approved S-2 checkpoint, implement `src/constants/role-presets.js`, update `src/constants/index.js`, add `test-role-presets.js`, add only the `test:role-presets` script, and change package.json and package-lock.json to the approved candidate.
-3. Record Node 24, targeted public-import, immutability, catalog-shape, package-file, governance, and Git evidence independently. The targeted test is not a whole-package formal runner. Firebase Functions Node 22 compatibility remains consumer evidence.
-4. Review and locally commit only the approved package files. Produce release evidence before any remote action.
-5. Obtain separate explicit approvals for tag creation, push, and the push-triggered npm publication. A local version or tag is not publication evidence.
-6. Confirm the published version and content before asking consumer coordinators to adopt it.
-7. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. The AirGuardV2 root and Functions adoption proposal uses the same exact 2.4.2-dev.165 version and verifies matching resolved content and integrity.
+1. Keep the accepted contract, local implementation, targeted test, package version, and current authoritative documents aligned in one reviewed local integration.
+2. Record Node 24, targeted public-import, immutability, catalog-shape, package-file, governance, and Git evidence independently. The targeted test is not a whole-package formal runner. Firebase Functions Node 22 compatibility remains consumer evidence.
+3. Review and locally commit only the approved files. Produce release evidence before any remote action.
+4. Obtain separate explicit approvals for tag creation, push, and the push-triggered npm publication. A local version or tag is not publication evidence.
+5. Confirm the published version and content before asking consumer coordinators to adopt it.
+6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. The AirGuardV2 root and Functions adoption proposal uses the same exact 2.4.2-dev.165 version and verifies matching resolved content and integrity; local catalog deletion occurs only in that consumer-owned adoption.
 
 Rollback does not depend on npm unpublish, tag deletion, history rewrite, deployment, or data action. Before publication, correct or revert local work through an approved non-history-rewriting Git change. If a published candidate is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
 

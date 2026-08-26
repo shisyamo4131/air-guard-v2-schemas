@@ -1,6 +1,6 @@
 {
   "name": "@shisyamo4131/air-guard-v2-schemas",
-  "version": "2.4.2-dev.164",
+  "version": "2.4.2-dev.165",
   "description": "Schemas for AirGuard V2",
   "type": "module",
   "main": "index.js",
@@ -32,7 +32,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {},
+  "scripts": {
+    "test:role-presets": "node --test test-role-presets.js"
+  },
   "peerDependencies": {
     "@holiday-jp/holiday_jp": "^2.5.1",
     "@shisyamo4131/air-firebase-v2": "^2.3.1-dev.3"

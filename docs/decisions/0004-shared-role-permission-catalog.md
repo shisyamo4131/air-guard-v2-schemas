@@ -2,8 +2,8 @@
 
 - Date: 2026-08-26
 - Status: Accepted
-- Implementation status: Approved contract; package implementation, version change, publication, and consumer adoption pending
-- Related specification: Approved Planned Shared Role Preset Contract
+- Implementation status: Implemented and validated locally at 2.4.2-dev.165; tag, push, npm publication, remote-registry confirmation, and consumer adoption pending
+- Related specification: Shared Role Preset Contract
 - Related decisions: [0001](0001-shared-domain-boundary.md), [0002](0002-cross-project-ownership-and-versioned-integration.md), [0003](0003-release-and-rollback-approval-boundaries.md)
 - Supersedes: None
 
@@ -15,9 +15,9 @@ Schemas already owns environment-independent role, permission, constant, and dis
 
 ## Decision
 
-Add an approved shared role preset contract to the existing public `@shisyamo4131/air-guard-v2-schemas/constants` subpath in a future development release. This decision accepts the contract but does not claim that it is implemented or published in 2.4.2-dev.164.
+Add the accepted shared role preset contract to the existing public `@shisyamo4131/air-guard-v2-schemas/constants` subpath. The contract is implemented in the current local branch at 2.4.2-dev.165 but is not tagged, pushed, published, remote-registry confirmed, or consumer-adopted.
 
-The planned internal module is `src/constants/role-presets.js`. It will expose internal `VALUES` and `IDS`, which `src/constants/index.js` will map to `ROLE_PRESETS` and `ROLE_PRESET_IDS`. It will also export `isRolePresetId`. The package root will not re-export these names.
+The internal module is `src/constants/role-presets.js`. It exposes internal `VALUES` and `IDS`, which `src/constants/index.js` maps to `ROLE_PRESETS` and `ROLE_PRESET_IDS`. It also exports `isRolePresetId`. The package root does not re-export these names.
 
 `ROLE_PRESET_IDS` is the deeply frozen ordered array `manager`, `controller`, `accountant`, `human-resource`, `labor`, and `legal`.
 
@@ -54,18 +54,18 @@ A single immutable package catalog prevents client/server drift while preserving
 
 - Users: Client and server consumers can use the same catalog version and content after separate publication and adoption.
 - Data: No production data, migration, role assignment, claim, or authorization state changes are authorized by this decision.
-- Implementation: A future bounded package checkpoint adds the constants module, index exports, targeted test, and candidate version files. Consumer coordinators separately update dependency and application files.
+- Implementation: The current branch adds the constants module, index exports, targeted test, and local 2.4.2-dev.165 version files. Consumer coordinators separately update dependency and application files only after publication confirmation.
 - Compatibility: Adding named exports to the existing `./constants` subpath is structurally additive. Consumer import migration requires the published package version and must not precede publication confirmation.
-- Tests: A targeted `node:test` check verifies the public self-reference, exact catalog, immutable shape, mutation rejection, unknown and prototype-key handling, and runtime independence. It is not a whole-package formal runner.
+- Tests: A targeted `node:test` check verifies the public self-reference, exact catalog, immutable shape, mutation rejection, unknown and prototype-key handling, and runtime independence. Node 24 direct-test, import, and local package dry-run evidence exists. It is not a whole-package formal runner, and the known legacy diagnostic failure remains separate and unresolved.
 - Runtime: Node 24 is the formal package evidence candidate, not the sole supported runtime. Firebase Functions Node 22 compatibility is consumer evidence.
 - Progress: Acceptance of this contract does not complete a predefined roadmap milestone; official readiness remains 25 percent.
 - Operations: Tag, push, npm publication, consumer adoption, main merge, deployment, remote operations, and data operations remain separate approval boundaries.
 
 ## Version, Publication, and Adoption
 
-The proposed development version is 2.4.2-dev.165. It is a candidate for the future implementation checkpoint; local tag and remote registry availability remain unverified.
+The local development version is 2.4.2-dev.165. No tag, push, npm publication, or remote-registry confirmation has been performed, and published consumer availability is false.
 
-The approved order is contract documentation and review, bounded package implementation/test/version work and local commit, release evidence, separate tag and push approvals, npm publication confirmation, and then consumer-owned adoption. Confirmed consumers must use and verify the same exact version and content. AirGuardV2 root and Functions are expected to propose exact version pins after publication.
+The approved order is aligned contract documentation and bounded package implementation/test/version work in a local commit, release evidence, separate tag and push approvals, npm publication confirmation, and then consumer-owned adoption. Confirmed consumers must use and verify the same exact version and content. AirGuardV2 root and Functions adoption, exact version pins, same-content confirmation, and local catalog deletion have not been performed.
 
 ## Migration and Rollback
 

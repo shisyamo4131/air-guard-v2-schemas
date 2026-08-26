@@ -62,6 +62,11 @@ export {
   OPTIONS as PREFECTURES_OPTIONS,
 } from "./prefectures.js";
 export {
+  VALUES as ROLE_PRESETS,
+  IDS as ROLE_PRESET_IDS,
+  isRolePresetId,
+} from "./role-presets.js";
+export {
   VALUES as SECURITY_TYPE_VALUES,
   OPTIONS as SECURITY_TYPE_OPTIONS,
 } from "./security-type.js";

@@ -11,15 +11,15 @@
 | Milestone | Weight | Earned | Status | Completion evidence and remaining work |
 | --- | ---: | ---: | --- | --- |
 | Governance and source-of-truth baseline | 25 | 25 | Complete | Sub-gates completed: managed/project governance 10; zero-unmapped inventory 5; all governance checks 5; local commit and clean worktree 5 |
-| Public API and data-contract inventory | 25 | 0 | In progress | The shared role preset contract is approved in ADR 0004 but not implemented; inventory every exported model, field, method, serialization rule, constant, error, calculation, inherited surface, and compatibility class |
+| Public API and data-contract inventory | 25 | 0 | In progress | The ADR 0004 role preset contract is implemented locally at 2.4.2-dev.165, but the complete public inventory remains unfinished; inventory every exported model, field, method, serialization rule, constant, error, calculation, inherited surface, and compatibility class |
 | Repeatable package validation and test baseline | 25 | 0 | Not started | Confirm Node support, formal runner, existing diagnostic treatment, failure correction, and repeatable package evidence |
-| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | The role preset delivery order is approved but unverified; verify versioning, local preparation, approval gates, publish order, adoption order, and rollback |
+| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | Local role preset implementation and package evidence exists, but tag, push, publication, registry confirmation, adoption, and rollback remain unverified |
 | Two-consumer compatibility and adoption evidence | 10 | 0 | Not started | Both confirmed consumers verify the same package version and content |
 | **Total** | **100** | **25** |  |  |
 
 ## Next Work
 
-1. After this S-1 documentation checkpoint is accepted, execute the separately bounded and already approved S-2 package implementation, targeted test, and candidate-version checkpoint.
+1. Review the local 2.4.2-dev.165 implementation commit and prepare a bounded release-evidence proposal without performing tag, push, publication, registry, deployment, or data actions.
 2. Continue the complete public API inventory and compatibility policy across all existing exports.
 
 ## Deliverables and Verification Evidence
@@ -27,8 +27,8 @@
 | Milestone | Design or decision | Implementation | Tests, review, release, or acceptance evidence |
 | --- | --- | --- | --- |
 | Governance baseline | [Specification](../specification.md), [ADRs](../decisions/README.md) | [Project rules](../../governance/project-rules.md), generated AGENTS.md | [Bootstrap evidence](../evidence/governance-bootstrap.md) |
-| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md) | Existing index.js and src/; approved role preset implementation pending | Complete inventory not yet available; approved catalog has no implementation or package evidence |
-| Package validation | [Operations](../operations.md) | Root diagnostics only; formal runner not implemented | Known diagnostic failure remains open |
+| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md) | Local 2.4.2-dev.165 role preset module and `./constants` exports implemented | Complete inventory not yet available; publication and consumer evidence absent |
+| Package validation | [Operations](../operations.md) | Targeted role preset `node:test`; whole-package formal runner not implemented | Node 24 targeted test/import/package dry-run evidence exists; known diagnostic failure remains open |
 | Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | Verified end-to-end evidence not yet available |
 | Consumer evidence | [ADR 0002](../decisions/0002-cross-project-ownership-and-versioned-integration.md) | Consumer-owned repositories | Not yet recorded |
 
@@ -42,7 +42,7 @@
 - Legacy ./apis compatibility
 - Stable release policy
 - Missing two-consumer evidence
-- Approved shared role preset exports, targeted test, candidate version, publication, and consumer adoption remain pending
+- Shared role preset publication, remote-registry confirmation, AirGuardV2 root/Functions adoption, same-version/content confirmation, and local catalog deletion remain pending
 
 ## Definition of Done
 
@@ -59,3 +59,4 @@
 | 2026-08-26 | 0% | Baseline | Initial approved weighted roadmap before governance bootstrap completion |
 | 2026-08-26 | 25% | +25 | All four predefined governance sub-gates completed; see bootstrap evidence and the local governance commit |
 | 2026-08-26 | 25% | +0 | Shared role preset contract and delivery order approved and documented; no predefined implementation, validation, release, or consumer-evidence gate completed |
+| 2026-08-26 | 25% | +0 | Local 2.4.2-dev.165 catalog implementation and targeted Node 24 evidence completed; no full inventory, formal package baseline, release, or consumer-evidence milestone completed |

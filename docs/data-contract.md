@@ -2,14 +2,14 @@
 
 - Status: Partially confirmed
 - Last verified: 2026-08-26
-- Authority: Inventory of the existing public package surface and separately labeled approved planned additions; unresolved compatibility items remain open in the specification.
+- Authority: Inventory of the existing public package surface and separately labeled local unreleased additions; unresolved compatibility items remain open in the specification.
 - Related roadmap: [Shared-package readiness](roadmaps/shared-package-readiness.md)
 - Related decisions: [ADR index](decisions/README.md)
 
 ## Package Identity
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
-- existing version: 2.4.2-dev.164
+- current local version: 2.4.2-dev.165; not tagged, pushed, published, or remote-registry confirmed
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2
@@ -23,17 +23,17 @@
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
 
-## Approved Planned `./constants` Additions
+## Locally Implemented `./constants` Additions
 
-- Status: Approved contract; not implemented, versioned, published, or available in 2.4.2-dev.164.
-- Planned development version: 2.4.2-dev.165 candidate; local tag and remote registry availability unverified.
+- Status: Accepted contract implemented and validated in the current local branch; not tagged, pushed, published, remote-registry confirmed, or adopted by consumers.
+- Local development version: 2.4.2-dev.165.
 - Related decision: [ADR 0004](decisions/0004-shared-role-permission-catalog.md)
 
-The existing `./constants` subpath will add the named exports `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. They will be implemented in `src/constants/role-presets.js` as internal `VALUES`, `IDS`, and the membership helper, then mapped by `src/constants/index.js`. They will not be re-exported from the package root.
+The existing `./constants` subpath exports `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` in the current branch. They are implemented in `src/constants/role-presets.js` as internal `VALUES`, `IDS`, and the membership helper, then mapped by `src/constants/index.js`. They are not re-exported from the package root.
 
-`ROLE_PRESET_IDS` will be a deeply frozen ordered array containing `manager`, `controller`, `accountant`, `human-resource`, `labor`, and `legal` in that order.
+`ROLE_PRESET_IDS` is a deeply frozen ordered array containing `manager`, `controller`, `accountant`, `human-resource`, `labor`, and `legal` in that order.
 
-`ROLE_PRESETS` will be a deeply frozen null-prototype readonly record. Its own keys are the canonical identifiers. Each value has exactly `label`, `description`, `icon`, and `permissions`; there is no redundant identifier field. Every entry and permission array is frozen, and every permission is a unique, trimmed, non-empty string within its preset.
+`ROLE_PRESETS` is a deeply frozen null-prototype readonly record. Its own keys are the canonical identifiers. Each value has exactly `label`, `description`, `icon`, and `permissions`; there is no redundant identifier field. Every entry and permission array is frozen, and every permission is a unique, trimmed, non-empty string within its preset.
 
 | Identifier | Exact entry |
 | --- | --- |
@@ -48,7 +48,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This is an additive planned public API. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This is an additive local unreleased public API. Node 24 targeted-test, public self-reference import, and package dry-run evidence exists, but a whole-package formal runner and the supported Node range remain open. The known legacy diagnostic failure remains separate and unresolved. Published consumer availability is false, and AirGuardV2 root and Functions adoption, same-version/content verification, and local catalog deletion have not been performed. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 

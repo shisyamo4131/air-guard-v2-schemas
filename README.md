@@ -4,9 +4,9 @@ AirGuard V2 Schemas is the public npm package @shisyamo4131/air-guard-v2-schemas
 
 ## Status
 
-The package is an existing development release at 2.4.2-dev.164. Project governance is active and the Shared-package readiness roadmap tracks contract, verification, release, and consumer-integration maturity separately from existing implementation volume.
+The current branch locally implements package version 2.4.2-dev.165. No tag, push, npm publication, or remote-registry confirmation has been performed for this version, so it is not yet available to published-package consumers. Project governance is active and the Shared-package readiness roadmap tracks contract, verification, release, and consumer-integration maturity separately from existing implementation volume.
 
-An additive shared role preset contract has been approved for a future development release, but it is not implemented or published. Version 2.4.2-dev.164 does not provide `ROLE_PRESETS`, `ROLE_PRESET_IDS`, or `isRolePresetId`.
+The approved shared role preset contract is implemented locally through the `./constants` subpath as `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and deletion of their local catalogs have not been performed.
 
 The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Firebase Cloud Functions. Both must adopt and verify the same package version and content before cross-project integration is complete.
 
@@ -17,7 +17,7 @@ The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Fire
 - Utilities: src/utils/index.js through the ./utils export
 - Legacy API helpers: src/apis/index.js through the ./apis export
 
-The approved planned role preset exports will use the existing `./constants` subpath and will not be re-exported from the package root. Their contract is recorded in [ADR 0004](docs/decisions/0004-shared-role-permission-catalog.md) and [the data-contract inventory](docs/data-contract.md); they are not currently available.
+The role preset exports use the existing `./constants` subpath and are not re-exported from the package root. Their contract is recorded in [ADR 0004](docs/decisions/0004-shared-role-permission-catalog.md) and [the data-contract inventory](docs/data-contract.md). They are available in the current local branch, not in a confirmed published package.
 
 The current public-contract inventory and known compatibility questions are in docs/data-contract.md.
 
@@ -44,7 +44,7 @@ The publish workflow uses Node 24, which is the formal validation runtime candid
 
 The root test-*.js files are diagnostics and are not a formal test runner. Run governance checks according to docs/operations.md. Do not treat the known test-error-definitions.js failure as resolved.
 
-The approved implementation plan adds only a targeted `node:test` check for the planned role preset contract. That future check will not establish a whole-package formal test runner or the sole supported Node range.
+The role preset contract has a targeted `node:test` check through the public package self-reference. Node 24 direct-test, public-import, and local package dry-run evidence exists. This check does not establish a whole-package formal test runner or the sole supported Node range, and the known `test-error-definitions.js` failure remains separate and unresolved.
 
 ## Security
 

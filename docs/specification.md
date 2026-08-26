@@ -1,7 +1,7 @@
 # AirGuard V2 Schemas Specification
 
 - Last updated: 2026-08-26
-- Specification version: 0.2.0
+- Specification version: 0.3.0
 - Status: Active
 - Current phase: Shared-package readiness
 
@@ -51,21 +51,21 @@ The publish workflow uses Node 24, making Node 24 the formal validation runtime 
 
 The Schemas primary coordinator owns this repository and package evidence. Each consumer project primary coordinator owns its dependency, code, test, documentation, deployment, and acceptance changes. Coordinators may inspect another repository read-only when approved but do not modify it.
 
-## Approved Planned Shared Role Preset Contract
+## Shared Role Preset Contract
 
-- Status: Approved on 2026-08-26; implementation, version change, publication, and consumer adoption remain pending.
-- Current availability: The exports in this section are not present in package version 2.4.2-dev.164.
+- Status: Accepted and implemented locally on 2026-08-26; tag, push, npm publication, remote-registry confirmation, and consumer adoption remain pending.
+- Current availability: The exports in this section are present in the current branch at local package version 2.4.2-dev.165. They are not available from a confirmed published package.
 - Related decision: [ADR 0004](decisions/0004-shared-role-permission-catalog.md)
 
-The planned public location is `@shisyamo4131/air-guard-v2-schemas/constants`. The planned named exports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. The implementation module will be `src/constants/role-presets.js`, with internal `VALUES` and `IDS` exports mapped by `src/constants/index.js` to the public names. The package root will not re-export them.
+The public location is `@shisyamo4131/air-guard-v2-schemas/constants`. The named exports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. The implementation module is `src/constants/role-presets.js`, with internal `VALUES` and `IDS` exports mapped by `src/constants/index.js` to the public names. The package root does not re-export them.
 
-`ROLE_PRESET_IDS` will be the deeply frozen ordered array:
+`ROLE_PRESET_IDS` is the deeply frozen ordered array:
 
 ```text
 ["manager", "controller", "accountant", "human-resource", "labor", "legal"]
 ```
 
-`ROLE_PRESETS` will be a deeply frozen null-prototype readonly record keyed by canonical role identifier. Every entry will contain exactly `{ label: string, description: string, icon: string, permissions: readonly string[] }`, with no redundant identifier field. The catalog, each entry, every permission array, and the identifier array will be frozen. Permission strings must be trimmed, non-empty, and unique within each preset.
+`ROLE_PRESETS` is a deeply frozen null-prototype readonly record keyed by canonical role identifier. Every entry contains exactly `{ label: string, description: string, icon: string, permissions: readonly string[] }`, with no redundant identifier field. The catalog, each entry, every permission array, and the identifier array are frozen. Permission strings are trimmed, non-empty, and unique within each preset.
 
 | Role identifier | Label | Description | Icon | Permissions in order |
 | --- | --- | --- | --- | --- |
@@ -78,13 +78,13 @@ The planned public location is `@shisyamo4131/air-guard-v2-schemas/constants`. T
 
 The label, description, and icon are approved environment-independent display metadata. An icon is an opaque `mdi-*` token and does not transfer Vue, Vuetify, rendering, or UI behavior into this package.
 
-`isRolePresetId` will perform only prototype-safe own-catalog membership validation. The package will not export `hasPresetPermission`, `resolveRolePermissions`, an actor/target/tenant/request evaluator, or any allow/deny authorization engine. Consumer-owned logic retains write-to-read implication and its strict or general authorization semantics. Strict consumer paths must fail closed for ordinary unknown roles and prototype-key values such as `toString`, `constructor`, and `__proto__`. The existing AirGuardV2 general permission expansion that treats unknown strings as direct permissions is a separate consumer behavior and is not changed by this contract.
+`isRolePresetId` performs only prototype-safe own-catalog membership validation. The package does not export `hasPresetPermission`, `resolveRolePermissions`, an actor/target/tenant/request evaluator, or any allow/deny authorization engine. Consumer-owned logic retains write-to-read implication and its strict or general authorization semantics. Strict consumer paths must fail closed for ordinary unknown roles and prototype-key values such as `toString`, `constructor`, and `__proto__`. The existing AirGuardV2 general permission expansion that treats unknown strings as direct permissions is a separate consumer behavior and is not changed by this contract.
 
 Adding or removing a permission on an existing preset is an authorization-sensitive material contract change, regardless of whether the JavaScript shape remains additive. It requires all-consumer impact review and explicit user approval.
 
-The planned targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed only as a future `test:role-presets` package script. It will import through the public `./constants` self-reference and verify exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. It will not establish a whole-package formal runner. Node 24 remains the formal package evidence candidate; the sole supported range remains open, and Firebase Functions compatibility under Node 22 remains separate consumer evidence.
+The targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed only as the `test:role-presets` package script. It imports through the public `./constants` self-reference and verifies exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. Node 24 direct-test, public-import, and local package dry-run evidence exists. This targeted check does not establish a whole-package formal runner. Node 24 remains the formal package evidence candidate; the sole supported range remains open, Firebase Functions compatibility under Node 22 remains separate consumer evidence, and the known legacy diagnostic failure remains unresolved.
 
-The proposed S-2 development version is 2.4.2-dev.165. It remains a candidate until the implementation and version files are changed, validated, and locally committed in the separately bounded and approved S-2 checkpoint. Local tag and remote registry availability are unverified. Publication order is the approved contract documentation, package implementation and local validation, release evidence, separately approved tag and push, npm publication confirmation, and only then consumer-owned adoption of the same exact version and content.
+The current branch uses local development version 2.4.2-dev.165 for this implementation. No tag, push, npm publication, or remote-registry confirmation has been performed. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and local catalog deletion have not been performed. Publication order remains local implementation and validation, release evidence, separately approved tag and push, npm publication confirmation, and only then consumer-owned adoption of the same exact version and content.
 
 ## Functional Requirements
 
