@@ -2,7 +2,7 @@
 
 - Date: 2026-08-28
 - Status: Accepted
-- Implementation status: Implemented in local 2.4.2-dev.167 release candidate with release guard; tag, publication, and consumer adoption pending
+- Implementation status: Implemented, published, and content-verified in 2.4.2-dev.167; consumer adoption pending
 - Related specification: Company Configuration Boundary v1
 - Related decisions: [0001](0001-shared-domain-boundary.md), [0002](0002-cross-project-ownership-and-versioned-integration.md), [0003](0003-release-and-rollback-approval-boundaries.md)
 - Supersedes: None
@@ -46,12 +46,12 @@ An additive subpath makes the exact contract reusable while preserving the publi
 - Data: No production document, migration, transaction, deployment, or remote operation is authorized.
 - Consumers: AirGuardV2 and Admin SDK adoption, adapter integration, Node 22 Functions evidence, and deployment remain consumer-owned.
 - Testing: The targeted public-self-reference test covers shape, constraints, error stability, legacy conflicts, runtime independence, and root compatibility and is included in the formal fail-closed ten-file suite. The local suite passes on Node 22 and Node 24; the supported Node range remains open.
-- Release: Local candidate 2.4.2-dev.167 was selected after a read-only registry check found the exact version unused. Published 2.4.2-dev.166 does not contain this work. The release guard checks tag/package/lock alignment, exports, root absence, formal tests, public self-import, and package content before publication.
+- Release: Exact 2.4.2-dev.167 is verified at commit `bb2390997153b2e57470d0c04012d93ddde2f971`, annotated tag object `577f358e3f7a4f7c32d216c11b9305047bbab4d7`, successful workflow run `33150835365`, registry digests/content, and fresh peer-inclusive public import. The release guard checks tag/package/lock alignment, exports, root absence, formal tests, public self-import, and package content before publication.
 - Progress: No predefined roadmap milestone gate is completed; readiness remains 25 percent.
 
 ## Release and Adoption
 
-The approved local release candidate is 2.4.2-dev.167. Before publication, the release guard fails closed when tag, package/lock version, exports, root absence, package contents, formal tests, or public self-import do not match. `prepublishOnly` and the tag-only workflow integrate the guard; the workflow requires Node 22 and Node 24 test jobs before its Node 24 publish job. Tag creation, main/tag push, workflow-triggered npm publication, registry verification, and consumer installation are separate gates.
+Exact 2.4.2-dev.167 has completed the release gates through registry byte/content verification and a fresh peer-inclusive install. Before any later correction publication, the release guard fails closed when tag, package/lock version, exports, root absence, package contents, formal tests, or public self-import do not match. `prepublishOnly` and the tag-only workflow integrate the guard; the workflow requires Node 22 and Node 24 test jobs before its Node 24 publish job. Future tag creation, main/tag push, workflow-triggered npm publication, registry verification, and consumer installation remain separate approval gates.
 
 Consumer adoption starts only after exact version, tag/commit, workflow, registry shasum/integrity, packed-file, and fresh public-import evidence is accepted. Consumers retain authorization, Firebase adapters, Callable execution, Rules, deployment, migration, and real-data ownership.
 

@@ -67,7 +67,7 @@ Version 2.4.2-dev.165 is verified on main and its annotated tag, successful work
 
 Version 2.4.2-dev.166 is verified at commit `1a6024ceedd03684020ef82af55fda2b73579eb1`, annotated tag object `fb36b67b1cd79b50e9d5dcf8a542196801b0c642`, workflow run `32932703563`, publish job `98067873113`, npm registry shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`, and peer-inclusive fresh public import. It has no role preset API, data, authorization-boundary, implementation-code, or test change relative to 2.4.2-dev.165.
 
-The approved release steps are complete through publication confirmation. Confirmed consumers must use and verify the same exact version and content. AirGuardV2 root and Functions adoption, exact version pins, same-content confirmation, and local catalog deletion have not been performed; the recommended consumer target is exact 2.4.2-dev.166.
+The approved release steps are complete through publication confirmation. Confirmed consumers must use and verify the same exact version and content. AirGuardV2 root and Functions adoption, exact version pins, same-content confirmation, and local catalog deletion have not been performed; the recommended combined role-preset and CCB v1 consumer target is exact 2.4.2-dev.167. The role-preset API and data are unchanged from 2.4.2-dev.166.
 
 ## Migration and Rollback
 

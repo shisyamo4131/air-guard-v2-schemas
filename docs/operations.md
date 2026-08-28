@@ -12,17 +12,17 @@ Implemented:
 - targeted `test:role-presets` check through the public package self-reference
 - verified 2.4.2-dev.166 main and annotated tag, successful workflow run 32932703563 and publish job 98067873113, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - Node 24 direct-test, public-import, and package evidence for the role preset catalog
-- local 2.4.2-dev.167 CCB v1 release candidate, formal ten-file test suite, and fail-closed release guard; not present in published 2.4.2-dev.166
+- published and content-verified 2.4.2-dev.167 CCB v1 package, formal ten-file test suite, and fail-closed release guard
+- common-governance 1.4.0 capacity routing through docs/runbooks/project-coordination.md and scripts/check-codex-session-size.ps1
 
 Planned or not yet verified:
 
 - AirGuardV2 root and Functions adoption, same-version/content confirmation, and local catalog deletion
 - supported Node range
-- formal package test runner
 - stable release policy
 - complete public compatibility evidence
 - verified two-consumer adoption and rollback exercise
-- CCB v1 tag, push, publication, registry verification, and consumer adoption
+- CCB v1 consumer adoption
 
 Unavailable in this project without separate approval:
 
@@ -76,9 +76,9 @@ Node 24 is the formal validation runtime candidate and the publish runtime, whil
 
 ## Company Configuration Boundary Delivery
 
-CCB v1 is locally implemented through `./company-configuration` with the targeted `test-company-configuration.js` public-self-reference test. The local release candidate is 2.4.2-dev.167, selected only after a read-only registry check found that exact version unused. The immutable published 2.4.2-dev.166 artifact does not contain CCB v1. Do not infer publication from local version, export, test, or guard success.
+CCB v1 is published through `./company-configuration` in exact version 2.4.2-dev.167 from commit `bb2390997153b2e57470d0c04012d93ddde2f971` and annotated tag `v2.4.2-dev.167`. The tag-triggered workflow completed its Node 22 and Node 24 test jobs, Node 24 release guard, and Trusted Publishing job successfully. Registry metadata and downloaded bytes matched, LF-clean exact-commit package content matched the published artifact, and a fresh peer-inclusive install verified the public 27-name API and package-root non-leak. Consumer adoption is not implied.
 
-Before a CCB release, run `npm run check:release` with the intended exact tag. It proves tag/package/lock alignment, export and root compatibility, all formal tests, public self-import, required packed CCB content, forbidden-content exclusion, and absence of repository package archives. `prepublishOnly` repeats the guard, and the tag-only workflow requires Node 22 and Node 24 tests before the Node 24 publish job. Tag creation, push, npm publication, registry confirmation, and consumer installation remain distinct approval gates.
+Before a future CCB correction release, run `npm run check:release` with the intended exact tag. It proves tag/package/lock alignment, export and root compatibility, all formal tests, public self-import, required packed CCB content, forbidden-content exclusion, and absence of repository package archives. `prepublishOnly` repeats the guard, and the tag-only workflow requires Node 22 and Node 24 tests before the Node 24 publish job. Tag creation, push, npm publication, registry confirmation, and consumer installation remain distinct approval gates.
 
 If validation or publication fails, retain immutable published versions and correct forward with a later development version. Rollback does not move/delete a tag, unpublish a package, rewrite history, deploy, or modify real data. AirGuardV2 and Admin SDK adoption remain consumer-owned and start only after exact published version/content evidence is accepted.
 
@@ -118,7 +118,7 @@ Version 2.4.2-dev.166 is a documentation/version-metadata-only correction relati
 
 The local public imports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` from `@shisyamo4131/air-guard-v2-schemas/constants`. Package implementation is limited to catalog data and prototype-safe membership validation. Consumer authorization evaluators, write-to-read implication, and strict or general policy semantics remain consumer-owned.
 
-Targeted role-preset evidence uses Node 24 as the formal package evidence candidate and includes the direct `node:test` command, the package script with the same Node runtime, a public self-reference import smoke check, and package evidence confirming that `src/constants/role-presets.js` is included while root tests are excluded. The local 2.4.2-dev.167 candidate additionally provides the formal ten-file runner and Node 22/24 suite evidence. This does not establish the complete supported Node range; Firebase Functions Node 22 compatibility remains separate consumer evidence.
+Targeted role-preset evidence uses Node 24 as the formal package evidence candidate and includes the direct `node:test` command, the package script with the same Node runtime, a public self-reference import smoke check, and package evidence confirming that `src/constants/role-presets.js` is included while root tests are excluded. Published 2.4.2-dev.167 additionally provides the formal ten-file runner and Node 22/24 workflow suite evidence. This does not establish the complete supported Node range; Firebase Functions Node 22 compatibility remains separate consumer evidence.
 
 Deliver and verify the contract in this order:
 
@@ -127,9 +127,9 @@ Deliver and verify the contract in this order:
 3. Review and locally commit only the approved files. Produce release evidence before any remote action.
 4. Obtain separate explicit approvals for tag creation, push, and the push-triggered npm publication. A local version or tag is not publication evidence.
 5. Confirm the published version and content before asking consumer coordinators to adopt it.
-6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. AirGuardV2 root and Functions adoption should use exact version 2.4.2-dev.166 with matching resolved content and integrity; local catalog deletion occurs only in that consumer-owned adoption.
+6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. AirGuardV2 root and Functions adoption should use exact version 2.4.2-dev.167 with matching resolved content and integrity; local catalog deletion occurs only in that consumer-owned adoption.
 
-Rollback does not depend on npm unpublish, tag deletion or movement, history rewrite, deployment, or data action. Published 2.4.2-dev.165 and 2.4.2-dev.166 remain immutable. If a published version is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
+Rollback does not depend on npm unpublish, tag deletion or movement, history rewrite, deployment, or data action. Published 2.4.2-dev.165, 2.4.2-dev.166, and 2.4.2-dev.167 remain immutable. If a published version is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
 
 ## Release, Publish, Adoption, and Rollback
 
@@ -150,7 +150,7 @@ The preferred consumer rollback is to restore a previously verified package vers
 
 ## Governance Updates and Task Turnover
 
-Managed common-governance version 1.3.0, root AGENTS.md, project-wide permissions or approval policy, coordinator responsibilities, delegation and Git integration, callback and handoff rules, and safety boundaries are instruction-chain sources.
+Managed common-governance version 1.4.0, root AGENTS.md, project-wide permissions or approval policy, coordinator responsibilities, delegation and Git integration, callback and handoff rules, and safety boundaries are instruction-chain sources.
 
 After an approved instruction-chain change:
 
@@ -166,7 +166,9 @@ After an approved instruction-chain change:
 
 ## Coordinator Session Lifecycle
 
-Use scripts/check-codex-session-size.ps1 with the exact session ID. The handoff proposal threshold is 300 MiB. Measure at work-session start, after callback-driven material changes, and at stop or completion, no more than hourly when nothing changes.
+Route `容量チェック`, `タスク容量確認`, `セッション容量確認`, and `session size / handoff threshold確認` through [the project coordination runbook](runbooks/project-coordination.md). Run scripts/check-codex-session-size.ps1 with the actual current task ID from trusted task metadata and require exactly one match. Never infer the newest or most recently modified session.
+
+The handoff proposal threshold is 300 MiB per session. The Codex-wide 10 GiB threshold is a separate reference warning and does not trigger task replacement. Report every standard field, scan completeness/error count, command result, and independently observed exit status without exposing session contents. Unknown task identity, zero or multiple matches, command failure, or incomplete total scanning stops the affected conclusion. Measure at work-session start, after callback-driven material changes, and at stop or completion, no more than hourly when nothing changes.
 
 Coordinator replacement always requires explicit user approval. Delegated-task rotation is allowed only under approved conditions at a safe checkpoint.
 

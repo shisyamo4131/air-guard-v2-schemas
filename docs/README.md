@@ -1,7 +1,7 @@
 # Documentation Map
 
 - Status: Active
-- Last verified: 2026-08-26
+- Last verified: 2026-08-28
 - Authority: Navigation only. specification.md is authoritative for confirmed requirements and roadmaps/ for verified progress.
 
 ## How to Start Work
@@ -21,7 +21,8 @@
 | Cross-project consumer request | [Specification](specification.md), [data contract](data-contract.md), [ADR 0002](decisions/0002-cross-project-ownership-and-versioned-integration.md), [operations](operations.md) | Current consumer checkpoint and compatibility evidence |
 | Test or validation | [Specification](specification.md), [operations](operations.md), [roadmap](roadmaps/shared-package-readiness.md) | Root diagnostics and repository-local validators |
 | Release, publish, adoption, or rollback | [Operations](operations.md), [ADR 0003](decisions/0003-release-and-rollback-approval-boundaries.md), [roadmap](roadmaps/shared-package-readiness.md) | package.json, package-lock.json, publish workflow, consumer evidence |
-| Governance or task lifecycle | ../AGENTS.md, ../governance/project-rules.md, [operations](operations.md), [bootstrap evidence](evidence/governance-bootstrap.md) | governance lock, renderer, validators, current handoff |
+| Governance or task lifecycle | ../AGENTS.md, ../governance/project-rules.md, [operations](operations.md), [coordination runbook](runbooks/project-coordination.md), [bootstrap evidence](evidence/governance-bootstrap.md) | governance lock, renderer, validators, [current handoff](handoffs/README.md) |
+| `容量チェック`, `タスク容量確認`, `セッション容量確認`, or `session size / handoff threshold確認` | [Coordination runbook](runbooks/project-coordination.md) | scripts/check-codex-session-size.ps1 with the actual current task ID |
 
 ## Document Authority
 
@@ -34,7 +35,10 @@
 | [Roadmaps](roadmaps/README.md) | Remaining work, completion criteria, and evidence-backed progress |
 | [Decisions](decisions/README.md) | Material decision status and rationale |
 | [Operations](operations.md) | Implemented, planned, and unavailable operating procedures |
+| [Coordination runbook](runbooks/project-coordination.md) | Exact task/session capacity routing, report fields, thresholds, and stop conditions |
+| [Handoffs](handoffs/README.md) | Latest temporary task routing and restart checkpoint |
 | [Bootstrap evidence](evidence/governance-bootstrap.md) | Migration baseline, rule mapping, checks, and known conflicts |
+| [2.4.2-dev.167 release evidence](evidence/release-2.4.2-dev.167.md) | Exact commit/tag, workflow, registry content, and fresh-install verification |
 | [Changelog](../CHANGELOG.md) | Concise visible changes |
 
 ## Documentation Completion Criteria

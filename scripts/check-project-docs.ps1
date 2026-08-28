@@ -18,13 +18,21 @@ $requiredFiles = @(
     'docs/specification.md',
     'docs/data-contract.md',
     'docs/operations.md',
+    'docs/runbooks/project-coordination.md',
+    'docs/handoffs/README.md',
+    'docs/handoffs/2026-08-28-governance-1.4.0-migration.md',
     'docs/roadmaps/README.md',
     'docs/roadmaps/shared-package-readiness.md',
     'docs/decisions/README.md',
     'docs/decisions/0001-shared-domain-boundary.md',
     'docs/decisions/0002-cross-project-ownership-and-versioned-integration.md',
     'docs/decisions/0003-release-and-rollback-approval-boundaries.md',
+    'docs/decisions/0004-shared-role-permission-catalog.md',
+    'docs/decisions/0005-company-configuration-v1.md',
+    'docs/decisions/0006-governance-1-4-session-capacity-and-turnover.md',
     'docs/evidence/governance-bootstrap.md',
+    'docs/evidence/release-2.4.2-dev.167.md',
+    'scripts/check-codex-session-size.ps1',
     '.codex/config.toml',
     '.codex/agents/developer.toml',
     '.codex/agents/tester.toml',
@@ -82,15 +90,55 @@ $requiredIndexLinks = @(
     'specification.md',
     'data-contract.md',
     'operations.md',
+    'runbooks/project-coordination.md',
+    'handoffs/README.md',
     'roadmaps/README.md',
     'decisions/README.md',
     'evidence/governance-bootstrap.md',
+    'evidence/release-2.4.2-dev.167.md',
     '../CHANGELOG.md'
 )
 foreach ($requiredLink in $requiredIndexLinks) {
     if (-not $docsIndex.Contains($requiredLink)) {
         throw "docs/README.md does not route to required document: $requiredLink"
     }
+}
+
+$capacityAliases = @(
+    '容量チェック',
+    'タスク容量確認',
+    'セッション容量確認',
+    'session size / handoff threshold確認'
+)
+$coordinationPath = Join-Path $resolvedProject 'docs\runbooks\project-coordination.md'
+$coordination = [IO.File]::ReadAllText($coordinationPath)
+foreach ($alias in $capacityAliases) {
+    if (-not $docsIndex.Contains($alias) -or -not $coordination.Contains($alias)) {
+        throw "Capacity alias is not routed through both the documentation map and coordination runbook: $alias"
+    }
+}
+
+$capacityScript = [IO.File]::ReadAllText((Join-Path $resolvedProject 'scripts\check-codex-session-size.ps1'))
+$capacityScriptRequirements = @(
+    "SessionId is required",
+    'Expected exactly one session',
+    '[long]$ThresholdBytes = 300MB',
+    '[long]$TotalThresholdBytes = 10GB',
+    'usage_percent',
+    'selection = ''session_id'''
+)
+foreach ($requirement in $capacityScriptRequirements) {
+    if (-not $capacityScript.Contains($requirement)) {
+        throw "Capacity script requirement is missing: $requirement"
+    }
+}
+if ($capacityScript.Contains('most_recently_updated') -or $capacityScript.Contains('Select-Object -First 1')) {
+    throw 'Capacity script still contains newest-session inference.'
+}
+
+$projectRules = [IO.File]::ReadAllText((Join-Path $resolvedProject 'governance\project-rules.md'))
+if (-not $projectRules.Contains('Managed common-governance version: 1.4.0')) {
+    throw 'Project rules do not declare managed common-governance version 1.4.0.'
 }
 
 $decisionsRoot = Join-Path $resolvedProject 'docs\decisions'
@@ -213,4 +261,5 @@ if ($LASTEXITCODE -ne 0) {
     rule_inventory_items = [int]$inventoryMatch.Groups[1].Value
     unmapped_rule_items = 0
     toml_files_current = $true
+    capacity_routing_current = $true
 }

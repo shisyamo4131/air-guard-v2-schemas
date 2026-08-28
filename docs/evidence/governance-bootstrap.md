@@ -55,9 +55,13 @@
 | R033 | Package code/test writes and external actions have separate approval boundaries | project rules, specification, operations, ADR 0003 |
 | R034 | Every task must use the primary repository without unapproved linked worktrees | project rules and operations |
 | R035 | Instruction-chain changes require new non-forked tasks and user-controlled coordinator replacement | project rules and operations |
+| R036 | Capacity aliases must resolve to persisted task/session measurement, not token or context estimates | docs/README.md and docs/runbooks/project-coordination.md |
+| R037 | Capacity measurement requires the actual current task ID, exactly one match, and no newest-session inference | project rules, coordination runbook, and scripts/check-codex-session-size.ps1 |
+| R038 | The per-session handoff threshold is 300 MiB and the separate Codex-wide reference warning is 10 GiB | project rules, coordination runbook, and measurement script |
+| R039 | Capacity reports use the standard fields and fail closed without session-content exposure | coordination runbook, measurement script, operations, and project validator |
 
-- Inventory items: 35
-- Mapped items: 35
+- Inventory items: 39
+- Mapped items: 39
 - Explicitly retired items: 0
 - Unmapped items: 0
 
@@ -114,3 +118,19 @@ This bootstrap does not authorize package implementation or test changes, the kn
 - The required no-change callback route succeeded without embedding temporary routing identifiers in durable documentation.
 - Shared-package readiness remains at 25 percent, the package version remains `2.4.2-dev.164`, and the known `test-error-definitions.js` failure remains unmodified and separate from governance validation.
 - After this file-limited local commit succeeds, ownership may retire from the former coordinator. Former task deletion remains a user-only action; Codex does not archive or delete it.
+
+## Common-governance 1.4.0 Migration
+
+- Date: 2026-08-28
+- Owner-approved checkpoint: GOV14-SCHEMAS-01
+- Program selection source: `25fb125a1a656b7a6906d11456f6c7f0a4050363`
+- Pre-migration repository baseline: `bb2390997153b2e57470d0c04012d93ddde2f971`
+- Installed skill inventory: 36 files; `validate-skill.ps1` exit 0 before migration
+- Managed common-governance version: 1.4.0
+- Managed common-governance SHA-256: `d2511f9c2fcb2a90ac43f8c168241fd7cc026da9db1f37b7c66daf10ebfc1d47`
+- Project-owned additions: exact-task capacity aliases/routing, coordination runbook, 300 MiB per-session and separate 10 GiB Codex-wide thresholds, fail-closed session-size script, ADR 0006, current handoff/index, and validator regression coverage
+- Product boundary: package runtime, public API, version, release workflow, and ten-file formal test inventory are unchanged
+- Task boundary: every affected active Schemas task is replaced after the clean migration commit; replacements are new tasks in the primary directory and are never forks
+- Former tasks remain unarchived and undeleted for user-controlled deletion
+
+The exact migration commit, post-commit checks, replacement task ID/host, accepted no-change callback, and self-routing state are recorded in the latest handoff and the GOV14-SCHEMAS-01 completion callback rather than through a self-referential edit to this evidence.

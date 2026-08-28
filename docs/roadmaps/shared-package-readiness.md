@@ -12,26 +12,25 @@
 | --- | ---: | ---: | --- | --- |
 | Governance and source-of-truth baseline | 25 | 25 | Complete | Sub-gates completed: managed/project governance 10; zero-unmapped inventory 5; all governance checks 5; local commit and clean worktree 5 |
 | Public API and data-contract inventory | 25 | 0 | In progress | The ADR 0004 role preset contract is available in verified published 2.4.2-dev.166 and its API, data, and behavior are unchanged from 2.4.2-dev.165, but the complete public inventory remains unfinished; inventory every exported model, field, method, serialization rule, constant, error, calculation, inherited surface, and compatibility class |
-| Repeatable package validation and test baseline | 25 | 0 | In progress | Formal fail-closed ten-file runner, maintained error-definition assertions, Node 22/24 workflow matrix, and release guard are implemented locally; supported Node range and complete compatibility baseline remain open, so no predefined full gate is complete |
-| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | The 2.4.2-dev.166 tag, main, workflow/job, registry integrity, and peer-inclusive fresh import are verified, but the whole milestone gate remains incomplete: consumer adoption, same-version/content confirmation, and rollback evidence remain pending; no predefined partial sub-gate exists |
+| Repeatable package validation and test baseline | 25 | 0 | In progress | Formal fail-closed ten-file runner, maintained error-definition assertions, successful Node 22/24 workflow matrix, and release guard are implemented and published in 2.4.2-dev.167; supported Node range and complete compatibility baseline remain open, so no predefined full gate is complete |
+| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | The 2.4.2-dev.167 tag/main, workflow jobs, registry bytes/content, LF-clean exact-commit comparison, and peer-inclusive fresh import are verified, but the whole milestone gate remains incomplete: consumer adoption, same-version/content confirmation, and rollback evidence remain pending; no predefined partial sub-gate exists |
 | Two-consumer compatibility and adoption evidence | 10 | 0 | Not started | Both confirmed consumers verify the same package version and content |
 | **Total** | **100** | **25** |  |  |
 
 ## Next Work
 
-1. Review the local 2.4.2-dev.167 release evidence, then separately approve tag creation, push, publication, and registry verification.
-2. After CCB publication evidence, perform consumer-owned AirGuardV2/Admin SDK adoption with exact same-version/content evidence.
-3. Complete AirGuardV2 root and Functions adoption of the shared role catalog and remove the duplicated local catalog.
-4. Continue the complete public API inventory and compatibility policy across all existing exports.
+1. Perform consumer-owned AirGuardV2/Admin SDK adoption of exact 2.4.2-dev.167 with same-version/content evidence.
+2. Complete AirGuardV2 root and Functions adoption of the shared role catalog and remove the duplicated local catalog.
+3. Continue the complete public API inventory and compatibility policy across all existing exports.
 
 ## Deliverables and Verification Evidence
 
 | Milestone | Design or decision | Implementation | Tests, review, release, or acceptance evidence |
 | --- | --- | --- | --- |
 | Governance baseline | [Specification](../specification.md), [ADRs](../decisions/README.md) | [Project rules](../../governance/project-rules.md), generated AGENTS.md | [Bootstrap evidence](../evidence/governance-bootstrap.md) |
-| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md), [ADR 0005](../decisions/0005-company-configuration-v1.md) | Role preset module is published; additive CCB v1 `./company-configuration` is in local 2.4.2-dev.167 candidate | Complete inventory and consumer adoption evidence not yet available |
-| Package validation | [Operations](../operations.md) | Formal fail-closed ten-file runner, targeted CCB/role checks, maintained error assertions, and release guard | Local Node 22/24 suite and Node 24 guard evidence exists; supported range and complete compatibility baseline remain open |
-| Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | 2.4.2-dev.166 publication, registry integrity, and peer-inclusive fresh import verified; two-consumer adoption and rollback evidence remain incomplete |
+| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md), [ADR 0005](../decisions/0005-company-configuration-v1.md) | Role preset module and additive CCB v1 `./company-configuration` are published in exact 2.4.2-dev.167 | Complete inventory and consumer adoption evidence not yet available |
+| Package validation | [Operations](../operations.md) | Formal fail-closed ten-file runner, targeted CCB/role checks, maintained error assertions, and release guard | Node 22/24 workflow suite and Node 24 guard evidence exists for 2.4.2-dev.167; supported range and complete compatibility baseline remain open |
+| Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | [2.4.2-dev.167 evidence](../evidence/release-2.4.2-dev.167.md) verifies publication, registry byte/content integrity, LF-clean exact-commit match, and peer-inclusive fresh import; two-consumer adoption and rollback evidence remain incomplete |
 | Consumer evidence | [ADR 0002](../decisions/0002-cross-project-ownership-and-versioned-integration.md) | Consumer-owned repositories | Not yet recorded |
 
 ## Unresolved Problems and Decisions
@@ -42,8 +41,8 @@
 - Legacy ./apis compatibility
 - Stable release policy
 - Missing two-consumer evidence
-- AirGuardV2 root/Functions adoption of exact 2.4.2-dev.166, same-version/content confirmation, and local catalog deletion remain pending
-- CCB v1 2.4.2-dev.167 tag, publication evidence, and consumer adoption remain pending
+- AirGuardV2 root/Functions adoption of exact 2.4.2-dev.167, same-version/content confirmation, and local catalog deletion remain pending
+- CCB v1 2.4.2-dev.167 consumer adoption remains pending
 
 ## Definition of Done
 
@@ -66,3 +65,5 @@
 | 2026-08-28 | 25% | +0 | Accepted and locally implemented the additive CCB v1 pure-data contract and targeted test; no complete public-inventory, formal-runner, release, or consumer-adoption milestone gate completed |
 | 2026-08-28 | 25% | +0 | Implemented the formal ten-file Node 22/24 suite, corrected the obsolete error diagnostic, selected unused local candidate 2.4.2-dev.167, and added the fail-closed release guard; supported-runtime and full compatibility gates remain incomplete |
 | 2026-08-28 | 25% | +0 | Reconciled the active project validation rules and remaining current contract/ADR wording with the accepted S3 formal suite before release; no predefined milestone gate or consumer evidence was completed |
+| 2026-08-28 | 25% | +0 | Verified 2.4.2-dev.167 commit/tag, workflow jobs, registry bytes/content, LF-clean exact-commit package equivalence, and fresh peer-inclusive API/root-nonleak import; the release milestone has no predefined partial gate and consumer adoption remains incomplete |
+| 2026-08-28 | 25% | +0 | Migrated to common-governance 1.4.0 with exact-task capacity routing and all-active-task turnover; the existing governance milestone was already complete, so earned progress remains unchanged |

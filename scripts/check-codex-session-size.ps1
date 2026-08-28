@@ -2,28 +2,33 @@ param(
     [string]$SessionId,
     [string]$CodexRoot = (Join-Path $env:USERPROFILE '.codex'),
     [long]$ThresholdBytes = 300MB,
-    [long]$TotalThresholdBytes = 2GB,
+    [long]$TotalThresholdBytes = 10GB,
     [int]$TotalScanMaxAgeHours = 24,
     [string]$TotalCachePath = (Join-Path $PSScriptRoot '..\tmp\codex-capacity-cache.json'),
     [switch]$ForceTotalScan
 )
+
+$ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($SessionId)) {
+    throw 'SessionId is required. Pass the current Codex task ID; do not infer the newest session.'
+}
+if ($ThresholdBytes -le 0) {
+    throw 'ThresholdBytes must be greater than zero.'
+}
+if ($TotalThresholdBytes -le 0) {
+    throw 'TotalThresholdBytes must be greater than zero.'
+}
 
 $sessionsRoot = Join-Path $CodexRoot 'sessions'
 if (-not (Test-Path -LiteralPath $sessionsRoot)) {
     throw "Codex sessions directory was not found: $sessionsRoot"
 }
 
-$files = Get-ChildItem -LiteralPath $sessionsRoot -Recurse -File -Filter '*.jsonl'
-if ($SessionId) {
-    $files = $files | Where-Object { $_.BaseName -like "*$SessionId*" }
-    if (@($files).Count -ne 1) {
-        throw "Expected exactly one session for '$SessionId', found $(@($files).Count)."
-    }
-} else {
-    $files = $files | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
-    if (-not $files) {
-        throw "No Codex session files were found under: $sessionsRoot"
-    }
+$files = Get-ChildItem -LiteralPath $sessionsRoot -Recurse -File -Filter '*.jsonl' |
+    Where-Object { $_.BaseName -like "*$SessionId*" }
+if (@($files).Count -ne 1) {
+    throw "Expected exactly one session for '$SessionId', found $(@($files).Count)."
 }
 
 $file = @($files)[0]
@@ -73,11 +78,13 @@ if (-not $capacity) {
 }
 
 [pscustomobject]@{
+    session_id = $SessionId
     session_file = $file.FullName
     size_bytes = $file.Length
     size_mib = [math]::Round($file.Length / 1MB, 2)
     threshold_bytes = $ThresholdBytes
     threshold_mib = [math]::Round($ThresholdBytes / 1MB, 2)
+    usage_percent = [math]::Round(($file.Length / $ThresholdBytes) * 100, 2)
     handoff_required = $file.Length -ge $ThresholdBytes
     codex_root = $capacity.codex_root
     codex_file_count = $capacity.file_count
@@ -93,5 +100,5 @@ if (-not $capacity) {
     codex_total_measurement_source = $capacitySource
     codex_total_cache_max_age_hours = $TotalScanMaxAgeHours
     measured_at_utc = (Get-Date).ToUniversalTime().ToString('o')
-    selection = if ($SessionId) { 'session_id' } else { 'most_recently_updated' }
+    selection = 'session_id'
 } | ConvertTo-Json

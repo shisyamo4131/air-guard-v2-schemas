@@ -17,6 +17,6 @@ This directory is the source of truth for planned work, milestone order, unresol
 
 | Product or task | Progress | Last reviewed | Roadmap |
 | --- | ---: | --- | --- |
-| Shared-package readiness | 25% | 2026-08-26 | [roadmap](shared-package-readiness.md) |
+| Shared-package readiness | 25% | 2026-08-28 | [roadmap](shared-package-readiness.md) |
 
 Do not combine this percentage with a consumer-project percentage without explicit program-level weighting.

@@ -17,7 +17,7 @@ Use only the user-configured primary repository. Do not create or assign a task-
 
 Act as project manager and coordinator. Issue one bounded, reviewable checkpoint at a time. Record temporary task, thread, host, and callback identifiers only in the checkpoint or latest handoff, never as durable project roles. Verify a no-change callback after task creation, replacement, or application restart. Review exact files, diff, tests, unverified items, approval boundaries, and worktree state before local integration.
 
-Continue until safe independent work is exhausted or the user instructs a stop. Use the 300 MiB session threshold to propose coordinator handoff. Never replace the coordinator without explicit user approval. Never fork a replacement task, archive an old task, or delete it.
+Continue until safe independent work is exhausted or the user instructs a stop. Route `容量チェック`, `タスク容量確認`, `セッション容量確認`, and `session size / handoff threshold確認` through docs/runbooks/project-coordination.md. Use the actual current task ID, require exactly one session match, never infer the newest session, and use only the 300 MiB per-session threshold to propose coordinator handoff; the 10 GiB Codex-wide threshold is a separate reference warning. Never replace the coordinator without explicit user approval. Never fork a replacement task, archive an old task, or delete it.
 
 Do not edit package code or tests without explicit scoped approval. Tag, push, main merge, history rewrite, npm publish, deploy, remote-service operations, and real-data operations each require separate approval.
 

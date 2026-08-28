@@ -9,9 +9,10 @@
 ## Package Identity
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
-- current published version: 2.4.2-dev.166; verified on main and its annotated tag, successful publish workflow and job, npm registry and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
-- current local release candidate: 2.4.2-dev.167; read-only registry evidence found that exact version unused when selected; not tagged, pushed, published, registry-confirmed, or consumer-adopted
+- current published version: 2.4.2-dev.167; verified at commit `bb2390997153b2e57470d0c04012d93ddde2f971`, annotated tag object `577f358e3f7a4f7c32d216c11b9305047bbab4d7`, successful workflow run `33150835365`, npm registry and `dev` dist-tag, canonical shasum `b4cbc285438179f75b69bd754141b0a4492c722d`, integrity `sha512-EsMVhMXo9Rrc6AdLT98sdiN5iGniVZq6mEDN+XMgxuB1e8TYbNPPQCHRCdf+HcnvbTseruo23A+4PQnFpw/p0g==`, LF-clean exact-commit content comparison, and peer-inclusive fresh public import
+- current local version: 2.4.2-dev.167; package and lock parity confirmed; consumer adoption remains pending
 - release relationship: 2.4.2-dev.166 changes documentation and version metadata only relative to immutable 2.4.2-dev.165; the public API, catalog data, and behavior are unchanged
+- 2.4.2-dev.167 relationship: adds the accepted CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2
@@ -22,13 +23,13 @@
 | --- | --- | --- |
 | package root | index.js | Existing public contract |
 | ./constants | src/constants/index.js | Existing public contract |
-| ./company-configuration | src/company-configuration/index.js | Accepted and implemented in local 2.4.2-dev.167 candidate; unavailable from published 2.4.2-dev.166 |
+| ./company-configuration | src/company-configuration/index.js | Accepted, implemented, published, and content-verified in 2.4.2-dev.167 |
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
 
-## Local Company Configuration Boundary v1
+## Published Company Configuration Boundary v1
 
-The additive `./company-configuration` subpath is implemented in local candidate 2.4.2-dev.167 but is not contained in published 2.4.2-dev.166. It does not alter or remove the legacy root `Company` export and is not re-exported from the package root. The formal package suite and release guard are implemented; tag, push, publication, registry verification, and consumer adoption are pending.
+The additive `./company-configuration` subpath is published and content-verified in exact version 2.4.2-dev.167. It does not alter or remove the legacy root `Company` export and is not re-exported from the package root. The formal package suite and release guard are implemented and the release workflow, registry bytes/content, and fresh install passed; consumer adoption remains pending.
 
 Public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, strict `parseCompany*V1` document and update-input functions, `assertCompanyMaintenancePairV1`, and `mapLegacyCompanyToConfigurationV1`. Error output contains stable `code` and `path` only and never echoes an input value.
 
@@ -74,7 +75,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This is an additive published public API available in 2.4.2-dev.166. Registry integrity and a peer-inclusive fresh install using schemas 2.4.2-dev.166, `@holiday-jp/holiday_jp` 2.5.1, and `@shisyamo4131/air-firebase-v2` 2.3.1-dev.6 are verified, including the public `./constants` import, exact shape, deep freezing, and prototype-safe membership behavior. The local 2.4.2-dev.167 candidate adds a formal fail-closed ten-file runner and Node 22/24 suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions adoption, exact same-version/content verification, and local catalog deletion have not been performed; the recommended currently published consumer target remains 2.4.2-dev.166. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This additive API remains available in published 2.4.2-dev.167. The exact version also includes the formal fail-closed ten-file runner and successful Node 22/24 workflow suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions adoption, exact same-version/content verification, and local catalog deletion have not been performed; the recommended currently published consumer target is exact 2.4.2-dev.167. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 

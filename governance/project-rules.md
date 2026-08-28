@@ -3,7 +3,7 @@
 - Status: Active
 - Owner: Schemas project
 - Common governance: governance/common-governance.md
-- Managed common-governance version: 1.3.0
+- Managed common-governance version: 1.4.0
 - Rule: This file may add stricter project-specific requirements but must not weaken the common governance contract.
 
 ## Project and Current Scope
@@ -26,6 +26,8 @@ Before changing state, read:
 4. the smallest task-routed set identified there
 
 docs/specification.md is the single current confirmed specification. docs/data-contract.md inventories the public package contract. docs/roadmaps/ contains evidence-backed progress. docs/decisions/ records rationale. docs/operations.md owns repeatable operating and recovery procedures. CHANGELOG.md records concise visible changes.
+
+Capacity requests using `容量チェック`, `タスク容量確認`, `セッション容量確認`, or `session size / handoff threshold確認` route through docs/README.md to docs/runbooks/project-coordination.md and scripts/check-codex-session-size.ps1.
 
 Do not promote a consumer request, discussion, assumption, or existing implementation detail into confirmed specification without explicit user approval.
 
@@ -93,7 +95,9 @@ Report approval boundaries, failures, conflicts, progress decreases, callback or
 
 Use event-driven one-shot task callbacks. Each checkpoint carries its temporary task, thread, host, baseline, owned and forbidden scope, validation, completion contract, ending condition, and callback destination. After task creation, replacement, or application restart, verify the route with a no-change callback before real work.
 
-The coordinator handoff proposal threshold is 300 MiB per session. Coordinator replacement always requires explicit user approval. Delegated-task rotation is allowed only at a safe checkpoint under previously approved conditions.
+For a capacity decision, identify the actual current task ID from trusted task metadata and require exactly one matching persisted session. Never infer the newest session. The coordinator handoff proposal threshold is 300 MiB per session; the Codex-wide 10 GiB threshold is a separate reference warning and never triggers task replacement by itself. Report the standard fields, scan completeness, command result, and independently observed exit status without exposing session contents. Unknown IDs, zero or multiple matches, command failures, or incomplete total scans stop the affected conclusion.
+
+Coordinator replacement always requires explicit user approval. Delegated-task rotation is allowed only at a safe checkpoint under previously approved conditions.
 
 Replace tasks with completely new tasks, never forks. Use the same durable base role plus the next sequence number. Verify governance version, repository restart, permissions, callback routing, and assignment identifiers before retiring old ownership. Leave former tasks in place for user-only manual deletion; Codex must not archive or delete them.
 

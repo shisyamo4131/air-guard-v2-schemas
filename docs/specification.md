@@ -1,7 +1,7 @@
 # AirGuard V2 Schemas Specification
 
 - Last updated: 2026-08-28
-- Specification version: 0.4.0
+- Specification version: 0.4.1
 - Status: Active
 - Current phase: Shared-package readiness
 
@@ -45,7 +45,7 @@ Shared role, permission, and display catalogs are in scope. An authorization eng
 
 ## Environment and Ownership Boundaries
 
-The package uses ECMAScript modules and currently publishes public exports from index.js plus ./constants, ./apis, and ./utils subpaths. Its peer dependencies are @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2.
+The package uses ECMAScript modules and currently publishes public exports from index.js plus ./constants, ./company-configuration, ./apis, and ./utils subpaths. Its peer dependencies are @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2.
 
 The publish workflow requires the formal package suite on Node 22 and Node 24, then uses Node 24 for the publish job after the release guard succeeds. Node 24 remains the formal validation runtime candidate. This matrix does not establish the complete supported Node range, which remains open.
 
@@ -82,14 +82,14 @@ The label, description, and icon are approved environment-independent display me
 
 Adding or removing a permission on an existing preset is an authorization-sensitive material contract change, regardless of whether the JavaScript shape remains additive. It requires all-consumer impact review and explicit user approval.
 
-The targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed as the `test:role-presets` package script. It imports through the public `./constants` self-reference and verifies exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. The check is also part of the formal ten-file `npm test` inventory. Node 24 targeted, canonical package, registry-integrity, and peer-inclusive fresh public-import evidence exists; local 2.4.2-dev.167 suite evidence covers Node 22 and Node 24. Node 24 remains the formal package evidence candidate, the supported range remains open, and Firebase Functions compatibility under Node 22 remains separate consumer evidence.
+The targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed as the `test:role-presets` package script. It imports through the public `./constants` self-reference and verifies exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. The check is also part of the formal ten-file `npm test` inventory. Node 24 targeted, canonical package, registry-integrity, and peer-inclusive fresh public-import evidence exists; published 2.4.2-dev.167 workflow evidence covers Node 22 and Node 24. Node 24 remains the formal package evidence candidate, the supported range remains open, and Firebase Functions compatibility under Node 22 remains separate consumer evidence.
 
-Version 2.4.2-dev.166 is verified at commit `1a6024ceedd03684020ef82af55fda2b73579eb1` and its annotated tag, successful workflow run `32932703563` and publish job `98067873113`, matching npm registry version and `dev` dist-tag, canonical shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`, and peer-inclusive fresh public import. Published consumer availability is true. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and local catalog deletion remain pending and consumer-owned; the recommended exact target is 2.4.2-dev.166. Published 2.4.2-dev.165 and 2.4.2-dev.166 are immutable, and correction or rollback does not depend on npm unpublish, tag movement, or history rewrite.
+Version 2.4.2-dev.166 is verified at commit `1a6024ceedd03684020ef82af55fda2b73579eb1` and its annotated tag, successful workflow run `32932703563` and publish job `98067873113`, matching npm registry version and `dev` dist-tag, canonical shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`, and peer-inclusive fresh public import. Published consumer availability is true. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and local catalog deletion remain pending and consumer-owned; the recommended combined role-preset and CCB v1 target is exact 2.4.2-dev.167, whose role-preset API and data are unchanged. Published 2.4.2-dev.165, 2.4.2-dev.166, and 2.4.2-dev.167 are immutable, and correction or rollback does not depend on npm unpublish, tag movement, or history rewrite.
 
 ## Company Configuration Boundary v1
 
-- Status: Accepted and implemented locally; not published or consumer-adopted
-- Public location after release: `@shisyamo4131/air-guard-v2-schemas/company-configuration`
+- Status: Accepted, implemented, published, and content-verified in 2.4.2-dev.167; not consumer-adopted
+- Public location: `@shisyamo4131/air-guard-v2-schemas/company-configuration`
 - Related decision: [ADR 0005](decisions/0005-company-configuration-v1.md)
 
 CCB v1 is an additive pure-data contract. It leaves the legacy `Company` class and package-root exports intact and is not re-exported from the package root. It has no Firebase SDK class-identity requirement, AirFirebase adapter, FireModel, Vue, Vuetify, CRUD, Callable execution, Rules, deployment, remote-service, or data-operation dependency.
@@ -102,7 +102,7 @@ Profile, billing, operations, arrangement, entitlement, maintenance, private, au
 
 Legacy mapping removes a leading `T` or `t` from a valid invoice registration input, maps `ACTUAL_DATE` to `LABOR_STANDARD` and `OPERATION_DATE` to `OPERATION_COUNT`, applies documented defaults when absent, strips arrangement-only `key`, and does not promote Stripe or subscription fields. The historical empty-bank representation with all other bank fields empty/whitespace and only the default `accountType: 普通` maps to five null fields. `当座` alone and every other partial bank, unknown legacy fields, unknown attendance modes, and active maintenance/private ambiguity return an explicit conflict instead of being guessed.
 
-CCB v1 and its release guard are implemented locally in the 2.4.2-dev.167 release candidate. A read-only registry check confirmed that exact version was unused when selected. Published 2.4.2-dev.166 does not contain CCB v1. Tag creation, push, npm publication, registry verification, and consumer adoption remain separately approved work. The exact maintained ten-file suite passes locally on Node 22 and Node 24; the supported Node range and complete public compatibility inventory remain open.
+CCB v1 and its release guard are published in exact 2.4.2-dev.167 from commit `bb2390997153b2e57470d0c04012d93ddde2f971` and annotated tag object `577f358e3f7a4f7c32d216c11b9305047bbab4d7`. Workflow run `33150835365` completed Node 22/24 tests, Node 24 release guard, and Trusted Publishing successfully. Registry bytes match shasum `b4cbc285438179f75b69bd754141b0a4492c722d` and integrity `sha512-EsMVhMXo9Rrc6AdLT98sdiN5iGniVZq6mEDN+XMgxuB1e8TYbNPPQCHRCdf+HcnvbTseruo23A+4PQnFpw/p0g==`; LF-clean exact-commit content comparison and fresh peer-inclusive import verified the expected 27-name API and root non-leak. Consumer adoption, the supported Node range, and complete public compatibility inventory remain open.
 
 ## Functional Requirements
 

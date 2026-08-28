@@ -16,5 +16,6 @@
 | [0003](0003-release-and-rollback-approval-boundaries.md) | Release, publish, and rollback approval boundaries | Accepted | 2026-08-26 |
 | [0004](0004-shared-role-permission-catalog.md) | Shared role preset and permission catalog | Accepted | 2026-08-26 |
 | [0005](0005-company-configuration-v1.md) | Company Configuration Boundary v1 pure-data contract | Accepted | 2026-08-28 |
+| [0006](0006-governance-1-4-session-capacity-and-turnover.md) | Governance 1.4 session capacity routing and task turnover | Accepted | 2026-08-28 |
 
 Accepted ADRs are never deleted. Supersede them with a new numbered ADR.

@@ -4,6 +4,12 @@
 
 ### Added
 
+- Migrated managed common governance to 1.4.0 and added exact-task session-capacity routing, the project coordination runbook, the fail-closed local measurement script, governance ADR, handoff index, and capacity-routing validation.
+
+## 2.4.2-dev.167 - 2026-08-28
+
+### Added
+
 - Locally implemented the accepted Company Configuration Boundary v1 pure-data contract through the additive `./company-configuration` public subpath, including exact document and Callable-input parsers, structural `TimestampLike` semantics, stable code/path validation errors, and explicit-conflict legacy `Company` mapping.
 - Added the targeted `test-company-configuration.js` public-self-reference test and `test:company-configuration` package script.
 - Added the fail-closed formal `npm test` inventory, release guard, positive and negative guard tests, and Node 22/24 workflow test matrix required before the Node 24 publish job.
@@ -11,7 +17,7 @@
 ### Compatibility and release status
 
 - The legacy `Company` class and package-root exports remain unchanged; Firebase SDK identity, AirFirebase adapters, UI runtimes, CRUD, Rules, deployment, and data operations are excluded.
-- The local release candidate is 2.4.2-dev.167 after a read-only registry lookup confirmed that exact version was unused. Published 2.4.2-dev.166 does not contain CCB v1. The candidate is not tagged, pushed, published, registry-confirmed, or consumer-adopted.
+- Exact 2.4.2-dev.167 is published and verified at commit/tag, successful Node 22/24 and Node 24 release/publish workflow jobs, registry byte/content digests, LF-clean exact-commit comparison, and fresh peer-inclusive public import. Consumer adoption remains pending and consumer-owned.
 
 ### Fixed
 
