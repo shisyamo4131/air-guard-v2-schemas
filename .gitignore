@@ -1,6 +1,10 @@
 # Node dependencies
 node_modules/
 node_modules/**
+
+# Local generated Codex capacity cache
+/tmp/codex-capacity-cache.json
+
 *.md
 
 # Authoritative project governance and documentation
