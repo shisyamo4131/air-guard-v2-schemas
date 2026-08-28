@@ -12,6 +12,11 @@
 - The legacy `Company` class and package-root exports remain unchanged; Firebase SDK identity, AirFirebase adapters, UI runtimes, CRUD, Rules, deployment, and data operations are excluded.
 - Package version remains 2.4.2-dev.166. The CCB v1 contract is not present in the published 2.4.2-dev.166 artifact and is not yet tagged, pushed, published, registry-confirmed, or consumer-adopted. Release-version selection and the S3 release guard require separate approval.
 
+### Fixed
+
+- The legacy mapper now treats whitespace-only bank fields plus the old default `accountType: 普通` as an empty bank and maps all five bank fields to null. Partial bank input and `当座`-only input continue to fail with an explicit conflict.
+- The activation-period root projection now accepts and removes the six known persisted framework/computed extras `docId`, `uid`, `fullAddress`, `prefecture`, `hasBankInfo`, and `isCompleteRequiredFields`; the exact root parser and true unknown fields remain strict.
+
 ## 2.4.2-dev.166 - 2026-08-26
 
 ### Changed

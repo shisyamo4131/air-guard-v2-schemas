@@ -135,9 +135,32 @@ test("TimestampLike is structural and retained without Firebase identity", () =>
     "$.extra",
   );
   assert.deepEqual(
-    contract.parseCompanyRootProjectionV1({ ...parsed, companyName: "legacy" }),
+    contract.parseCompanyRootProjectionV1({
+      ...parsed,
+      companyName: "legacy",
+      docId: "company-1",
+      uid: "company-1",
+      fullAddress: "legacy computed address",
+      prefecture: "東京都",
+      hasBankInfo: false,
+      isCompleteRequiredFields: true,
+    }),
     parsed,
   );
+  for (const field of [
+    "docId",
+    "uid",
+    "fullAddress",
+    "prefecture",
+    "hasBankInfo",
+    "isCompleteRequiredFields",
+  ]) {
+    expectError(
+      () => contract.parseCompanyRootV1({ ...parsed, [field]: "legacy" }),
+      "UNKNOWN_FIELD",
+      `$.${field}`,
+    );
+  }
   expectError(
     () => contract.parseCompanyRootProjectionV1({ ...parsed, unknownPhysicalField: true }),
     "UNKNOWN_FIELD",
@@ -364,6 +387,75 @@ test("legacy mapping is deterministic, strips legacy-only fields and does not pr
   ]);
   assert.equal(result.value.privateEntitlement.stripeCustomerId, null);
   assert.equal(Object.hasOwn(result.value.arrangement.siteOrder[0], "key"), false);
+});
+
+test("legacy bank mapping drops only the empty-bank ordinary default", () => {
+  const context = { actorUid: "actor-1", timestamp };
+  const base = {
+    companyName: "株式会社エアガード",
+    companyNameKana: "エアガード",
+  };
+  const emptyDefault = contract.mapLegacyCompanyToConfigurationV1(
+    {
+      ...base,
+      bankName: "  ",
+      branchName: "\t",
+      accountType: " 普通 ",
+      accountNumber: "",
+      accountHolder: "　",
+    },
+    context,
+  );
+  assert.equal(emptyDefault.ok, true);
+  assert.deepEqual(
+    [
+      emptyDefault.value.billing.bankName,
+      emptyDefault.value.billing.branchName,
+      emptyDefault.value.billing.accountType,
+      emptyDefault.value.billing.accountNumber,
+      emptyDefault.value.billing.accountHolder,
+    ],
+    [null, null, null, null, null],
+  );
+
+  for (const bank of [
+    { bankName: "銀行", branchName: "", accountType: "普通", accountNumber: "", accountHolder: "" },
+    { bankName: "", branchName: "", accountType: "当座", accountNumber: "", accountHolder: "" },
+  ]) {
+    assert.deepEqual(
+      contract.mapLegacyCompanyToConfigurationV1({ ...base, ...bank }, context),
+      { ok: false, conflict: { code: "CONFLICT", path: "$.bankAccount" } },
+    );
+  }
+
+  const complete = contract.mapLegacyCompanyToConfigurationV1(
+    {
+      ...base,
+      bankName: " テスト銀行 ",
+      branchName: " 本店 ",
+      accountType: " 普通 ",
+      accountNumber: " 0012345 ",
+      accountHolder: " エアガード ",
+    },
+    context,
+  );
+  assert.equal(complete.ok, true);
+  assert.deepEqual(
+    {
+      bankName: complete.value.billing.bankName,
+      branchName: complete.value.billing.branchName,
+      accountType: complete.value.billing.accountType,
+      accountNumber: complete.value.billing.accountNumber,
+      accountHolder: complete.value.billing.accountHolder,
+    },
+    {
+      bankName: "テスト銀行",
+      branchName: "本店",
+      accountType: "普通",
+      accountNumber: "0012345",
+      accountHolder: "エアガード",
+    },
+  );
 });
 
 test("legacy ambiguities return stable conflicts without echoing input", () => {

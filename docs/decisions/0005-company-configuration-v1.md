@@ -23,7 +23,9 @@ Canonical parsers reject unknown and missing fields and return a fresh plain obj
 
 The exact CCB v1 shapes are recorded in the specification and data-contract inventory. They cover the seven reserved root fields, settings metadata, profile string and kana limits, 13-digit invoice and correlated bank data, five-minute operations intervals and exact enums, bounded unique arrangement pairs, disabled/null/empty v1 entitlement projections, correlated maintenance public/private state, masked sorted audit changes with exact consecutive revisions, and exact update inputs. Arrangement updates select exactly one of `siteOrder` or `scheduleOrder` per call.
 
-The legacy mapper is intentionally lossy and conflict-aware. It removes an invoice `T` or `t`, maps known attendance modes, strips arrangement `key`, applies documented defaults, and does not promote Stripe/subscription data. Unknown fields, an unknown attendance mode, partial bank data, and active maintenance/private ambiguity are explicit conflicts. The mapper never guesses missing sensitive/private values.
+The legacy mapper is intentionally lossy and conflict-aware. It removes an invoice `T` or `t`, maps known attendance modes, strips arrangement `key`, applies documented defaults, and does not promote Stripe/subscription data. The single known empty-bank compatibility case—four empty/whitespace fields plus the legacy default `accountType: 普通`—maps to five null fields. `当座` alone and other partial bank data, unknown fields, an unknown attendance mode, and active maintenance/private ambiguity are explicit conflicts. The mapper never guesses missing sensitive/private values.
+
+During activation, the root projection accepts the documented legacy Company inventory, including persisted framework/computed fields `docId`, `uid`, `fullAddress`, `prefecture`, `hasBankInfo`, and `isCompleteRequiredFields`, then returns only the canonical seven reserved fields. This exception does not weaken the exact root parser or allow a true unknown field.
 
 ## Rationale
 

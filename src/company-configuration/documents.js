@@ -63,6 +63,12 @@ const ROOT_LEGACY_EXTRA_KEYS = Object.freeze([
   "agreementsV2",
   "location",
   "geopoint",
+  "docId",
+  "uid",
+  "fullAddress",
+  "prefecture",
+  "hasBankInfo",
+  "isCompleteRequiredFields",
 ]);
 
 const PROFILE_BUSINESS_KEYS = Object.freeze([

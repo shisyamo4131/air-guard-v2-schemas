@@ -51,7 +51,12 @@ const LEGACY_KEYS = Object.freeze([
   "geopoint",
 ]);
 
-const nullIfEmpty = (value) => (value === "" || value === undefined ? null : value);
+const nullIfEmpty = (value) => {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+};
 
 const normalizeOrder = (value) => {
   if (value === undefined || value === null) return [];
@@ -119,6 +124,14 @@ export const mapLegacyCompanyToConfigurationV1 = (
       legacy.accountNumber,
       legacy.accountHolder,
     ].map(nullIfEmpty);
+    const hasLegacyOrdinaryDefaultOnly =
+      bankValues[2] === "普通" &&
+      [bankValues[0], bankValues[1], bankValues[3], bankValues[4]].every(
+        (value) => value === null,
+      );
+    if (hasLegacyOrdinaryDefaultOnly) {
+      bankValues[2] = null;
+    }
     const allBankNull = bankValues.every((value) => value === null);
     if (!allBankNull && bankValues.some((value) => value === null)) {
       return conflict("$.bankAccount");
