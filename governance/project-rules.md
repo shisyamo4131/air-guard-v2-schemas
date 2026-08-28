@@ -75,9 +75,9 @@ Keep application-code changes with the developer and test-file changes with the 
 
 The coordinator reviews accepted work, stages only reviewed owned files, creates local commits, and performs integration. Do not use unintegrated work as a confirmed dependency.
 
-Node 24 is the formal validation runtime candidate because the publish workflow uses it. It is not yet confirmed as the only supported runtime. The supported Node range remains open.
+The publish workflow requires the formal package suite on Node 22 and Node 24, then uses Node 24 for the publish job after the release guard succeeds. Node 24 remains the formal validation runtime candidate; this matrix does not establish the complete supported Node range, which remains open.
 
-The seven root test scripts are diagnostics, not a formal test suite. The known failure in test-error-definitions.js remains separate from governance work. Do not claim package correctness from diagnostic commands.
+`npm test` runs the exact maintained ten-file root `test*.js` inventory and fails closed if a test is added, omitted, or exits nonzero. `test-error-definitions.js` uses maintained `node:test` assertions for `invalidReasons`, `isInvalid`, and `validate()`; the former obsolete diagnostic failure is resolved. Targeted tests and ad hoc diagnostics remain supporting evidence and do not replace the formal aggregate or other required completion gates.
 
 Every mandatory command must have an independently observable result and exit status. Grouped checks are allowed only through a verified fail-fast or aggregate runner that exits nonzero when any required check fails. Status-masking chains and diagnostic batches are not completion evidence.
 

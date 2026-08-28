@@ -15,6 +15,7 @@
 
 ### Fixed
 
+- Reconciled stale active validation instructions and current contract/ADR wording with the formal ten-file suite and the corrected error-definition test before publication.
 - Replaced the obsolete console-only `test-error-definitions.js` diagnostic with maintained assertions for `invalidReasons`, `isInvalid`, and `validate()` without echoing raw input values.
 - The legacy mapper now treats whitespace-only bank fields plus the old default `accountType: 普通` as an empty bank and maps all five bank fields to null. Partial bank input and `当座`-only input continue to fail with an explicit conflict.
 - The activation-period root projection now accepts and removes the six known persisted framework/computed extras `docId`, `uid`, `fullAddress`, `prefecture`, `hasBankInfo`, and `isCompleteRequiredFields`; the exact root parser and true unknown fields remain strict.

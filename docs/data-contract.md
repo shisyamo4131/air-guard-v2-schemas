@@ -137,9 +137,10 @@ This package owns environment-independent definitions and calculations. It does 
 2. Field definitions include AirVuetify-oriented component names and attributes, creating a possible UI-coupling exception.
 3. The ./apis subpath calls model fetch methods and is marked in source as planned for removal.
 4. The supported Node range is not established.
-5. The seven root scripts do not constitute a formal test runner.
 
 Do not remove, narrow, or reclassify these existing surfaces without a material-change proposal covering consumers, versioning, adoption order, rollback, and tests.
+
+The current package validation baseline uses an exact fail-closed ten-file `npm test` inventory. It includes the corrected `test-error-definitions.js` assertions and runs in the Node 22/24 workflow matrix before the Node 24 publish job. Node 24 remains the formal package evidence candidate, while the complete supported Node range remains open.
 
 ## Consumer Compatibility Evidence
 
