@@ -2,7 +2,15 @@
 
 ## Unreleased
 
-No changes are recorded after the verified 2.4.2-dev.166 publication.
+### Added
+
+- Locally implemented the accepted Company Configuration Boundary v1 pure-data contract through the additive `./company-configuration` public subpath, including exact document and Callable-input parsers, structural `TimestampLike` semantics, stable code/path validation errors, and explicit-conflict legacy `Company` mapping.
+- Added the targeted `test-company-configuration.js` public-self-reference test and `test:company-configuration` package script.
+
+### Compatibility and release status
+
+- The legacy `Company` class and package-root exports remain unchanged; Firebase SDK identity, AirFirebase adapters, UI runtimes, CRUD, Rules, deployment, and data operations are excluded.
+- Package version remains 2.4.2-dev.166. The CCB v1 contract is not present in the published 2.4.2-dev.166 artifact and is not yet tagged, pushed, published, registry-confirmed, or consumer-adopted. Release-version selection and the S3 release guard require separate approval.
 
 ## 2.4.2-dev.166 - 2026-08-26
 

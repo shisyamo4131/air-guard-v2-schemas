@@ -19,16 +19,18 @@
 
 ## Next Work
 
-1. Complete AirGuardV2 root and Functions adoption of exact 2.4.2-dev.166, same-version/content evidence, and duplicated local catalog deletion.
-2. Continue the complete public API inventory and compatibility policy across all existing exports.
+1. Design and approve the CCB v1 S3 release guard, release version, and package-content evidence, then separately approve tag, push, publication, and registry verification.
+2. After CCB publication evidence, perform consumer-owned AirGuardV2/Admin SDK adoption with exact same-version/content evidence.
+3. Complete AirGuardV2 root and Functions adoption of the shared role catalog and remove the duplicated local catalog.
+4. Continue the complete public API inventory and compatibility policy across all existing exports.
 
 ## Deliverables and Verification Evidence
 
 | Milestone | Design or decision | Implementation | Tests, review, release, or acceptance evidence |
 | --- | --- | --- | --- |
 | Governance baseline | [Specification](../specification.md), [ADRs](../decisions/README.md) | [Project rules](../../governance/project-rules.md), generated AGENTS.md | [Bootstrap evidence](../evidence/governance-bootstrap.md) |
-| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md) | Role preset module and `./constants` exports available in verified published 2.4.2-dev.166; this version changes documentation/version metadata only relative to 2.4.2-dev.165 | Complete inventory and consumer adoption evidence not yet available |
-| Package validation | [Operations](../operations.md) | Targeted role preset `node:test`; whole-package formal runner not implemented | Node 24 targeted test/import/package dry-run evidence exists; known diagnostic failure remains open |
+| Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md), [ADR 0005](../decisions/0005-company-configuration-v1.md) | Role preset module is published; additive CCB v1 `./company-configuration` is implemented locally but unpublished | Complete inventory and consumer adoption evidence not yet available |
+| Package validation | [Operations](../operations.md) | Targeted role preset and CCB v1 `node:test` checks; whole-package formal runner and CCB release guard not implemented | Node 24 targeted evidence exists; known diagnostic failure remains open |
 | Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | 2.4.2-dev.166 publication, registry integrity, and peer-inclusive fresh import verified; two-consumer adoption and rollback evidence remain incomplete |
 | Consumer evidence | [ADR 0002](../decisions/0002-cross-project-ownership-and-versioned-integration.md) | Consumer-owned repositories | Not yet recorded |
 
@@ -43,6 +45,7 @@
 - Stable release policy
 - Missing two-consumer evidence
 - AirGuardV2 root/Functions adoption of exact 2.4.2-dev.166, same-version/content confirmation, and local catalog deletion remain pending
+- CCB v1 release version, S3 release guard, publication evidence, and consumer adoption remain pending
 
 ## Definition of Done
 
@@ -62,3 +65,4 @@
 | 2026-08-26 | 25% | +0 | Local 2.4.2-dev.165 catalog implementation and targeted Node 24 evidence completed; no full inventory, formal package baseline, release, or consumer-evidence milestone completed |
 | 2026-08-26 | 25% | +0 | Verified 2.4.2-dev.165 publication, registry integrity, and peer-inclusive fresh import, and prepared local 2.4.2-dev.166 corrective release documentation; the release milestone has no predefined partial sub-gate and consumer integration remains incomplete |
 | 2026-08-26 | 25% | +0 | Verified 2.4.2-dev.166 commit/tag, workflow and publish job, registry integrity, and peer-inclusive fresh public import; the release milestone has no predefined partial gate and consumer adoption remains incomplete |
+| 2026-08-28 | 25% | +0 | Accepted and locally implemented the additive CCB v1 pure-data contract and targeted test; no complete public-inventory, formal-runner, release, or consumer-adoption milestone gate completed |

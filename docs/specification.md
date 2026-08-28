@@ -1,7 +1,7 @@
 # AirGuard V2 Schemas Specification
 
-- Last updated: 2026-08-26
-- Specification version: 0.3.0
+- Last updated: 2026-08-28
+- Specification version: 0.4.0
 - Status: Active
 - Current phase: Shared-package readiness
 
@@ -85,6 +85,24 @@ Adding or removing a permission on an existing preset is an authorization-sensit
 The targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed only as the `test:role-presets` package script. It imports through the public `./constants` self-reference and verifies exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. Node 24 targeted-test, canonical package, registry-integrity, and peer-inclusive fresh public-import evidence exists. This targeted check does not establish a whole-package formal runner. Node 24 remains the formal package evidence candidate; the sole supported range remains open, Firebase Functions compatibility under Node 22 remains separate consumer evidence, and the known legacy diagnostic failure remains unresolved.
 
 Version 2.4.2-dev.166 is verified at commit `1a6024ceedd03684020ef82af55fda2b73579eb1` and its annotated tag, successful workflow run `32932703563` and publish job `98067873113`, matching npm registry version and `dev` dist-tag, canonical shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`, and peer-inclusive fresh public import. Published consumer availability is true. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and local catalog deletion remain pending and consumer-owned; the recommended exact target is 2.4.2-dev.166. Published 2.4.2-dev.165 and 2.4.2-dev.166 are immutable, and correction or rollback does not depend on npm unpublish, tag movement, or history rewrite.
+
+## Company Configuration Boundary v1
+
+- Status: Accepted and implemented locally; not published or consumer-adopted
+- Public location after release: `@shisyamo4131/air-guard-v2-schemas/company-configuration`
+- Related decision: [ADR 0005](decisions/0005-company-configuration-v1.md)
+
+CCB v1 is an additive pure-data contract. It leaves the legacy `Company` class and package-root exports intact and is not re-exported from the package root. It has no Firebase SDK class-identity requirement, AirFirebase adapter, FireModel, Vue, Vuetify, CRUD, Callable execution, Rules, deployment, remote-service, or data-operation dependency.
+
+The contract provides frozen enumerations, strict parsers for the root projection, profile, billing, operations, arrangement, entitlement, maintenance, private documents, audit records, and update-Callable inputs, plus structural `TimestampLike` validation and `mapLegacyCompanyToConfigurationV1`. Canonical document parsers reject unknown and missing fields and return fresh plain objects. `CompanyConfigurationValidationError` exposes stable `code` and `path`; messages and legacy conflicts never echo input values. Public entitlement is exactly disabled/null/empty in v1; private Stripe fields are all null. Maintenance uses correlated public and private projections. Audits use exact from/to revisions with `toRevision = fromRevision + 1`. Arrangement update input changes exactly one order field.
+
+The canonical root owns exactly `schemaVersion`, `configurationState`, `status`, `createdAt`, `createdBy`, `updatedAt`, and `updatedBy`. Root projection may select those reserved fields from a physical document with unrelated fields. Settings and private documents use schema version 1, revision at least 1, structural timestamps, and 1-to-128-character actor identifiers. Revisions start at 1; consumer transactions own later increments.
+
+Profile, billing, operations, arrangement, entitlement, maintenance, private, audit, and Callable-input shapes and constraints are specified in the [data-contract inventory](data-contract.md). Strings use Unicode extended-grapheme-cluster length, are not normalized, and reject control characters. Unknown fields fail closed. The operations minute interval is one of 5, 10, 15, 20, 25, or 30. Arrangement pairs are exact, unique, and bounded to 2,000 entries per list. Audit bank values are `null` or masked as `***`.
+
+Legacy mapping removes a leading `T` or `t` from a valid invoice registration input, maps `ACTUAL_DATE` to `LABOR_STANDARD` and `OPERATION_DATE` to `OPERATION_COUNT`, applies documented defaults when absent, strips arrangement-only `key`, and does not promote Stripe or subscription fields. Unknown legacy fields, unknown attendance modes, partial bank accounts, and active maintenance/private ambiguity return an explicit conflict instead of being guessed.
+
+Package version remains 2.4.2-dev.166 in this checkpoint. Published 2.4.2-dev.166 does not contain CCB v1. Release version, S3 tag/version/package-content/test guard, tag, push, npm publication, registry verification, and consumer adoption remain separately approved work. A targeted Node 24 test exists, but the supported Node range and whole-package formal runner remain open; the known legacy diagnostic failure remains separate.
 
 ## Functional Requirements
 

@@ -7,6 +7,7 @@
   "exports": {
     ".": "./index.js",
     "./constants": "./src/constants/index.js",
+    "./company-configuration": "./src/company-configuration/index.js",
     "./apis": "./src/apis/index.js",
     "./utils": "./src/utils/index.js"
   },
@@ -33,6 +34,7 @@
     "access": "public"
   },
   "scripts": {
+    "test:company-configuration": "node --test test-company-configuration.js",
     "test:role-presets": "node --test test-role-presets.js"
   },
   "peerDependencies": {

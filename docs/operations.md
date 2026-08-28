@@ -12,6 +12,7 @@ Implemented:
 - targeted `test:role-presets` check through the public package self-reference
 - verified 2.4.2-dev.166 main and annotated tag, successful workflow run 32932703563 and publish job 98067873113, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - Node 24 direct-test, public-import, and package evidence for the role preset catalog
+- locally implemented CCB v1 `./company-configuration` pure-data contract and targeted `test:company-configuration` check; not present in published 2.4.2-dev.166
 
 Planned or not yet verified:
 
@@ -21,6 +22,7 @@ Planned or not yet verified:
 - stable release policy
 - complete public compatibility evidence
 - verified two-consumer adoption and rollback exercise
+- CCB v1 release version and S3 guard that checks tag/version/package content/targeted tests before publication
 
 Unavailable in this project without separate approval:
 
@@ -68,6 +70,14 @@ Node 24 is the formal validation runtime candidate because CI uses it, but the s
 - node test-validator-debug.js
 
 Do not use them as a formal completion gate. test-error-definitions.js has a known pre-existing exit-1 failure at line 19 because detailedInvalidReasons is undefined. Fixing it and selecting a formal runner require a separate approved checkpoint.
+
+## Company Configuration Boundary Delivery
+
+CCB v1 is locally implemented through `./company-configuration` with the targeted `test-company-configuration.js` public-self-reference test. Package version remains 2.4.2-dev.166, while the immutable published artifact at that version does not contain CCB v1. Do not infer publication from the local export map or test success.
+
+Before a CCB release, complete a separately approved S3 guard that independently proves the intended tag matches the package version, the canonical package contains `src/company-configuration/**` and excludes the root test, both targeted tests pass with the approved Node evidence runtime, and the public self-import resolves from the packed content. Version selection, file changes, tag creation, push, npm publication, registry confirmation, and consumer installation are distinct approval gates.
+
+If validation or publication fails, retain immutable published versions and correct forward with a later development version. Rollback does not move/delete a tag, unpublish a package, rewrite history, deploy, or modify real data. AirGuardV2 and Admin SDK adoption remain consumer-owned and start only after exact published version/content evidence is accepted.
 
 ## Git Integration
 

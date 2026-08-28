@@ -1,7 +1,7 @@
 # Public Data Contract Inventory
 
 - Status: Partially confirmed
-- Last verified: 2026-08-26
+- Last verified: 2026-08-28
 - Authority: Inventory of the existing public package surface and verified published additions; unresolved compatibility items remain open in the specification.
 - Related roadmap: [Shared-package readiness](roadmaps/shared-package-readiness.md)
 - Related decisions: [ADR index](decisions/README.md)
@@ -21,8 +21,32 @@
 | --- | --- | --- |
 | package root | index.js | Existing public contract |
 | ./constants | src/constants/index.js | Existing public contract |
+| ./company-configuration | src/company-configuration/index.js | Accepted and implemented locally; unavailable from published 2.4.2-dev.166 |
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
+
+## Local Company Configuration Boundary v1
+
+The additive `./company-configuration` subpath is locally implemented but is not contained in published 2.4.2-dev.166. It does not alter or remove the legacy root `Company` export and is not re-exported from the package root. Release version, release guard, publication, and consumer adoption are pending.
+
+Public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, strict `parseCompany*V1` document and update-input functions, `assertCompanyMaintenancePairV1`, and `mapLegacyCompanyToConfigurationV1`. Error output contains stable `code` and `path` only and never echoes an input value.
+
+All canonical parsers reject unknown and missing fields. A structural timestamp is a plain record with safe-integer `seconds` and integer `nanoseconds` from 0 through 999,999,999; accepted adapter values are retained without a Firebase import or SDK identity test.
+
+| Document | Exact CCB v1 fields and constraints |
+| --- | --- |
+| Root | `schemaVersion: 1`; `configurationState: CCB_V1_ACTIVE`; `status: ACTIVE \| SUSPENDED \| CLOSED`; `createdAt`, `createdBy`, `updatedAt`, `updatedBy`. The strict parser accepts exactly these seven fields; the activation-period projection parser accepts only these plus the documented legacy Company extras and returns the seven reserved fields. |
+| Common settings metadata | `schemaVersion: 1`; `revision` integer at least 1; created/updated structural timestamps and actor identifiers of 1-128 Unicode grapheme clusters. |
+| Profile | Metadata plus `companyName` 1-100; `companyNameKana` 1-200 using Katakana U+30A0-30FF, U+3000, fullwidth digits, non-control space, and combining dakuten/handakuten only with a Katakana base in the same grapheme; nullable `zipcode` exactly 7 ASCII digits; nullable `prefCode` 01-47; nullable `city` max 100; `address`/`building` max 200; `tel`/`fax` max 32 using ASCII digits, `+`, `-`, `(`, `)`, `.`, and whitespace. |
+| Billing | Metadata plus nullable 13-digit canonical `invoiceNumber`; `bankName`/`branchName` max 100, `accountType` `普通 \| 当座`, `accountNumber` 1-7 ASCII digits, and `accountHolder` max 200. The five bank fields are all null or all valid. |
+| Operations | Metadata plus `minuteInterval: 5 \| 10 \| 15 \| 20 \| 25 \| 30`, `roundSetting: FLOOR \| ROUND \| CEIL`, `firstDayOfWeek` integer 0-6, and `attendanceSummaryMode: LABOR_STANDARD \| OPERATION_COUNT`. Defaults used only by the legacy mapper are 15, ROUND, 0, and LABOR_STANDARD. |
+| Arrangement | Metadata plus `siteOrder` and `scheduleOrder`, each no more than 2,000 exact `{ siteId, shiftType }` entries. `siteId` is 1-128 without slash/control characters; shift is `DAY \| NIGHT`; duplicate `(siteId, shiftType)` pairs are rejected. |
+| Entitlement/private entitlement | Public v1 is exactly `entitlementState: DISABLED`, `planCode: null`, `featureCodes: []`, `employeeLimit: null`. Private v1 is exactly nullable `stripeCustomerId`, `stripeSubscriptionId`, `stripeSubscriptionStatus`, and `currentPeriodEnd`, all null. Legacy entitlement/Stripe data is not promoted. |
+| Maintenance | Public business fields are `maintenanceMode`, nullable `maintenanceReason` max 200, and nullable structural `maintenanceStartAt`; off requires both nullable fields null and on requires both. Private business fields are `maintenanceMode`, `internalReason` max 500, `scope` max 50 strings of 1-100, `maintenanceStartAt`, `maintenanceStartedBy` max 128, optional `operationId` max 128, and correlated `lastErrorCode` max 100/`lastErrorAt`. Off clears all private operation fields; on requires reason, non-empty scope, time, and actor. Public/private modes must match. |
+| Audit | Exact `{ schemaVersion, settingType, fromRevision, toRevision, actorUid, createdAt, changes }`; type is `PROFILE \| BILLING \| OPERATIONS`, `toRevision` is `fromRevision + 1`, and changes are 1-9 field-sorted unique exact records. Non-null bank-field before/after values must be `***`. |
+| Update Callable input | Profile, billing, and operations accept exactly `{ expectedRevision, value: <complete business payload> }` without metadata. Arrangement accepts exactly `{ expectedRevision, field: 'siteOrder' \| 'scheduleOrder', order: [...] }`. This package validates input data; it does not execute a Callable or authorize a request. |
+
+String limits count Unicode extended grapheme clusters after outer trimming. Inputs are not Unicode-normalized, and CR, LF, line/paragraph separators, and other control characters are rejected. The legacy mapper accepts only its documented field inventory, produces an `ACTIVE` canonical root plus all settings/private documents, removes invoice `T`/`t`, maps legacy attendance modes, strips arrangement `key`, and returns `{ ok: false, conflict: { code: "CONFLICT", path } }` for unknown or ambiguous state rather than guessing or echoing data.
 
 ## Published `./constants` Additions
 
