@@ -5,14 +5,14 @@
 Implemented:
 
 - npm package metadata and public export map
-- development-tag publish workflow using Node 24, npm ci, and npm publish --tag dev
+- development-tag publish workflow requiring Node 22 and Node 24 formal tests, then Node 24 release guard and `npm publish --tag dev`
 - governance renderer and validators after bootstrap
 - root diagnostic scripts
 - published 2.4.2-dev.166 shared role preset catalog and public `./constants` exports
 - targeted `test:role-presets` check through the public package self-reference
 - verified 2.4.2-dev.166 main and annotated tag, successful workflow run 32932703563 and publish job 98067873113, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - Node 24 direct-test, public-import, and package evidence for the role preset catalog
-- locally implemented CCB v1 `./company-configuration` pure-data contract and targeted `test:company-configuration` check; not present in published 2.4.2-dev.166
+- local 2.4.2-dev.167 CCB v1 release candidate, formal ten-file test suite, and fail-closed release guard; not present in published 2.4.2-dev.166
 
 Planned or not yet verified:
 
@@ -22,7 +22,7 @@ Planned or not yet verified:
 - stable release policy
 - complete public compatibility evidence
 - verified two-consumer adoption and rollback exercise
-- CCB v1 release version and S3 guard that checks tag/version/package content/targeted tests before publication
+- CCB v1 tag, push, publication, registry verification, and consumer adoption
 
 Unavailable in this project without separate approval:
 
@@ -59,7 +59,7 @@ Do not combine required evidence through a status-masking chain. A verified aggr
 
 ## Package Diagnostics
 
-Node 24 is the formal validation runtime candidate because CI uses it, but the supported Node range is open. The existing root scripts remain diagnostics:
+Node 24 is the formal validation runtime candidate and the publish runtime, while CI requires the formal suite on both Node 22 and Node 24. The supported Node range remains open. `npm test` executes the exact maintained root-test inventory and fails closed on additions, omissions, and nonzero exits. The inventory is:
 
 - node test-class-imports.js
 - node test-field-definitions.js
@@ -68,14 +68,17 @@ Node 24 is the formal validation runtime candidate because CI uses it, but the s
 - node test-refactored-date-formatting.js
 - node test-employee-insurance.js
 - node test-validator-debug.js
+- node test-company-configuration.js
+- node test-role-presets.js
+- node test-release-guard.js
 
-Do not use them as a formal completion gate. test-error-definitions.js has a known pre-existing exit-1 failure at line 19 because detailedInvalidReasons is undefined. Fixing it and selecting a formal runner require a separate approved checkpoint.
+`test-error-definitions.js` now asserts the maintained `invalidReasons`, `isInvalid`, and `validate()` behavior. `test-release-guard.js` covers the positive contract plus tag, version, export, content, import, test, and inventory-negative paths.
 
 ## Company Configuration Boundary Delivery
 
-CCB v1 is locally implemented through `./company-configuration` with the targeted `test-company-configuration.js` public-self-reference test. Package version remains 2.4.2-dev.166, while the immutable published artifact at that version does not contain CCB v1. Do not infer publication from the local export map or test success.
+CCB v1 is locally implemented through `./company-configuration` with the targeted `test-company-configuration.js` public-self-reference test. The local release candidate is 2.4.2-dev.167, selected only after a read-only registry check found that exact version unused. The immutable published 2.4.2-dev.166 artifact does not contain CCB v1. Do not infer publication from local version, export, test, or guard success.
 
-Before a CCB release, complete a separately approved S3 guard that independently proves the intended tag matches the package version, the canonical package contains `src/company-configuration/**` and excludes the root test, both targeted tests pass with the approved Node evidence runtime, and the public self-import resolves from the packed content. Version selection, file changes, tag creation, push, npm publication, registry confirmation, and consumer installation are distinct approval gates.
+Before a CCB release, run `npm run check:release` with the intended exact tag. It proves tag/package/lock alignment, export and root compatibility, all formal tests, public self-import, required packed CCB content, forbidden-content exclusion, and absence of repository package archives. `prepublishOnly` repeats the guard, and the tag-only workflow requires Node 22 and Node 24 tests before the Node 24 publish job. Tag creation, push, npm publication, registry confirmation, and consumer installation remain distinct approval gates.
 
 If validation or publication fails, retain immutable published versions and correct forward with a later development version. Rollback does not move/delete a tag, unpublish a package, rewrite history, deploy, or modify real data. AirGuardV2 and Admin SDK adoption remain consumer-owned and start only after exact published version/content evidence is accepted.
 
@@ -115,12 +118,12 @@ Version 2.4.2-dev.166 is a documentation/version-metadata-only correction relati
 
 The local public imports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` from `@shisyamo4131/air-guard-v2-schemas/constants`. Package implementation is limited to catalog data and prototype-safe membership validation. Consumer authorization evaluators, write-to-read implication, and strict or general policy semantics remain consumer-owned.
 
-Targeted evidence uses Node 24 as the formal package evidence candidate and includes the direct `node:test` command, the package script with the same Node runtime, a public self-reference import smoke check, and a local package dry run confirming that `src/constants/role-presets.js` is included while the root test file is excluded. This evidence does not establish a whole-package formal test runner or the sole supported Node range. The known `test-error-definitions.js` failure remains separate and unresolved, and Firebase Functions Node 22 compatibility remains consumer evidence.
+Targeted role-preset evidence uses Node 24 as the formal package evidence candidate and includes the direct `node:test` command, the package script with the same Node runtime, a public self-reference import smoke check, and package evidence confirming that `src/constants/role-presets.js` is included while root tests are excluded. The local 2.4.2-dev.167 candidate additionally provides the formal ten-file runner and Node 22/24 suite evidence. This does not establish the complete supported Node range; Firebase Functions Node 22 compatibility remains separate consumer evidence.
 
 Deliver and verify the contract in this order:
 
 1. Keep the accepted contract, local implementation, targeted test, package version, and current authoritative documents aligned in one reviewed local integration.
-2. Record Node 24, targeted public-import, immutability, catalog-shape, package-file, governance, and Git evidence independently. The targeted test is not a whole-package formal runner. Firebase Functions Node 22 compatibility remains consumer evidence.
+2. Record Node 22/24 formal-suite, targeted public-import, immutability, catalog-shape, package-file, governance, and Git evidence independently. Firebase Functions Node 22 compatibility remains consumer-owned evidence.
 3. Review and locally commit only the approved files. Produce release evidence before any remote action.
 4. Obtain separate explicit approvals for tag creation, push, and the push-triggered npm publication. A local version or tag is not publication evidence.
 5. Confirm the published version and content before asking consumer coordinators to adopt it.

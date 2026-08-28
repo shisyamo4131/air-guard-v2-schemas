@@ -10,6 +10,7 @@
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
 - current published version: 2.4.2-dev.166; verified on main and its annotated tag, successful publish workflow and job, npm registry and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
+- current local release candidate: 2.4.2-dev.167; read-only registry evidence found that exact version unused when selected; not tagged, pushed, published, registry-confirmed, or consumer-adopted
 - release relationship: 2.4.2-dev.166 changes documentation and version metadata only relative to immutable 2.4.2-dev.165; the public API, catalog data, and behavior are unchanged
 - module type: ECMAScript module
 - root entry: index.js
@@ -21,13 +22,13 @@
 | --- | --- | --- |
 | package root | index.js | Existing public contract |
 | ./constants | src/constants/index.js | Existing public contract |
-| ./company-configuration | src/company-configuration/index.js | Accepted and implemented locally; unavailable from published 2.4.2-dev.166 |
+| ./company-configuration | src/company-configuration/index.js | Accepted and implemented in local 2.4.2-dev.167 candidate; unavailable from published 2.4.2-dev.166 |
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
 
 ## Local Company Configuration Boundary v1
 
-The additive `./company-configuration` subpath is locally implemented but is not contained in published 2.4.2-dev.166. It does not alter or remove the legacy root `Company` export and is not re-exported from the package root. Release version, release guard, publication, and consumer adoption are pending.
+The additive `./company-configuration` subpath is implemented in local candidate 2.4.2-dev.167 but is not contained in published 2.4.2-dev.166. It does not alter or remove the legacy root `Company` export and is not re-exported from the package root. The formal package suite and release guard are implemented; tag, push, publication, registry verification, and consumer adoption are pending.
 
 Public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, strict `parseCompany*V1` document and update-input functions, `assertCompanyMaintenancePairV1`, and `mapLegacyCompanyToConfigurationV1`. Error output contains stable `code` and `path` only and never echoes an input value.
 
@@ -73,7 +74,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This is an additive published public API available in 2.4.2-dev.166. Registry integrity and a peer-inclusive fresh install using schemas 2.4.2-dev.166, `@holiday-jp/holiday_jp` 2.5.1, and `@shisyamo4131/air-firebase-v2` 2.3.1-dev.6 are verified, including the public `./constants` import, exact shape, deep freezing, and prototype-safe membership behavior. Node 24 package evidence exists, but a whole-package formal runner and the supported Node range remain open; Firebase Functions Node 22 remains consumer evidence. The known legacy diagnostic failure remains separate and unresolved. AirGuardV2 root and Functions adoption, exact same-version/content verification, and local catalog deletion have not been performed; the recommended exact consumer target is 2.4.2-dev.166. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This is an additive published public API available in 2.4.2-dev.166. Registry integrity and a peer-inclusive fresh install using schemas 2.4.2-dev.166, `@holiday-jp/holiday_jp` 2.5.1, and `@shisyamo4131/air-firebase-v2` 2.3.1-dev.6 are verified, including the public `./constants` import, exact shape, deep freezing, and prototype-safe membership behavior. The local 2.4.2-dev.167 candidate adds a formal fail-closed ten-file runner and Node 22/24 suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions adoption, exact same-version/content verification, and local catalog deletion have not been performed; the recommended currently published consumer target remains 2.4.2-dev.166. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 

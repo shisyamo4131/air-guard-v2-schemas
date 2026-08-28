@@ -1,6 +1,6 @@
 {
   "name": "@shisyamo4131/air-guard-v2-schemas",
-  "version": "2.4.2-dev.166",
+  "version": "2.4.2-dev.167",
   "description": "Schemas for AirGuard V2",
   "type": "module",
   "main": "index.js",
@@ -34,6 +34,9 @@
     "access": "public"
   },
   "scripts": {
+    "test": "node scripts/run-package-tests.mjs",
+    "check:release": "node scripts/check-release-package.mjs",
+    "prepublishOnly": "npm run check:release",
     "test:company-configuration": "node --test test-company-configuration.js",
     "test:role-presets": "node --test test-role-presets.js"
   },

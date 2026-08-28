@@ -2,7 +2,7 @@
 
 - Date: 2026-08-28
 - Status: Accepted
-- Implementation status: Implemented locally; release guard, version, publication, and consumer adoption pending
+- Implementation status: Implemented in local 2.4.2-dev.167 release candidate with release guard; tag, publication, and consumer adoption pending
 - Related specification: Company Configuration Boundary v1
 - Related decisions: [0001](0001-shared-domain-boundary.md), [0002](0002-cross-project-ownership-and-versioned-integration.md), [0003](0003-release-and-rollback-approval-boundaries.md)
 - Supersedes: None
@@ -45,13 +45,13 @@ An additive subpath makes the exact contract reusable while preserving the publi
 - Compatibility: The new subpath and package script are additive. Root and legacy Company exports are unchanged.
 - Data: No production document, migration, transaction, deployment, or remote operation is authorized.
 - Consumers: AirGuardV2 and Admin SDK adoption, adapter integration, Node 22 Functions evidence, and deployment remain consumer-owned.
-- Testing: A targeted Node 24 public-self-reference test covers shape, constraints, error stability, legacy conflicts, runtime independence, and root compatibility. It is not a whole-package formal runner.
-- Release: Package version remains 2.4.2-dev.166 locally, and the published artifact with that version does not contain this work. S3 must guard tag/version/package content and targeted tests before a later release.
+- Testing: The targeted public-self-reference test covers shape, constraints, error stability, legacy conflicts, runtime independence, and root compatibility and is included in the formal fail-closed ten-file suite. The local suite passes on Node 22 and Node 24; the supported Node range remains open.
+- Release: Local candidate 2.4.2-dev.167 was selected after a read-only registry check found the exact version unused. Published 2.4.2-dev.166 does not contain this work. The release guard checks tag/package/lock alignment, exports, root absence, formal tests, public self-import, and package content before publication.
 - Progress: No predefined roadmap milestone gate is completed; readiness remains 25 percent.
 
 ## Release and Adoption
 
-Select a new version only after separate approval. Before publication, an approved S3 release guard must fail closed when tag, package version, package contents, or targeted tests do not match. Tag creation, main/tag push, workflow-triggered npm publication, registry verification, and consumer installation are separate gates.
+The approved local release candidate is 2.4.2-dev.167. Before publication, the release guard fails closed when tag, package/lock version, exports, root absence, package contents, formal tests, or public self-import do not match. `prepublishOnly` and the tag-only workflow integrate the guard; the workflow requires Node 22 and Node 24 test jobs before its Node 24 publish job. Tag creation, main/tag push, workflow-triggered npm publication, registry verification, and consumer installation are separate gates.
 
 Consumer adoption starts only after exact version, tag/commit, workflow, registry shasum/integrity, packed-file, and fresh public-import evidence is accepted. Consumers retain authorization, Firebase adapters, Callable execution, Rules, deployment, migration, and real-data ownership.
 

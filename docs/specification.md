@@ -47,7 +47,7 @@ Shared role, permission, and display catalogs are in scope. An authorization eng
 
 The package uses ECMAScript modules and currently publishes public exports from index.js plus ./constants, ./apis, and ./utils subpaths. Its peer dependencies are @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2.
 
-The publish workflow uses Node 24, making Node 24 the formal validation runtime candidate. This does not establish Node 24 as the only supported runtime. The supported Node range is open.
+The publish workflow requires the formal package suite on Node 22 and Node 24, then uses Node 24 for the publish job after the release guard succeeds. Node 24 remains the formal validation runtime candidate. This matrix does not establish the complete supported Node range, which remains open.
 
 The Schemas primary coordinator owns this repository and package evidence. Each consumer project primary coordinator owns its dependency, code, test, documentation, deployment, and acceptance changes. Coordinators may inspect another repository read-only when approved but do not modify it.
 
@@ -82,7 +82,7 @@ The label, description, and icon are approved environment-independent display me
 
 Adding or removing a permission on an existing preset is an authorization-sensitive material contract change, regardless of whether the JavaScript shape remains additive. It requires all-consumer impact review and explicit user approval.
 
-The targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed only as the `test:role-presets` package script. It imports through the public `./constants` self-reference and verifies exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. Node 24 targeted-test, canonical package, registry-integrity, and peer-inclusive fresh public-import evidence exists. This targeted check does not establish a whole-package formal runner. Node 24 remains the formal package evidence candidate; the sole supported range remains open, Firebase Functions compatibility under Node 22 remains separate consumer evidence, and the known legacy diagnostic failure remains unresolved.
+The targeted package check is `test-role-presets.js`, executed through `node --test test-role-presets.js` and exposed as the `test:role-presets` package script. It imports through the public `./constants` self-reference and verifies exact identifiers, order, records, metadata, permissions, uniqueness, public reachability, deep freezing, failed mutation, unknown and prototype-key roles, membership validation, and absence of runtime dependencies. The check is also part of the formal ten-file `npm test` inventory. Node 24 targeted, canonical package, registry-integrity, and peer-inclusive fresh public-import evidence exists; local 2.4.2-dev.167 suite evidence covers Node 22 and Node 24. Node 24 remains the formal package evidence candidate, the supported range remains open, and Firebase Functions compatibility under Node 22 remains separate consumer evidence.
 
 Version 2.4.2-dev.166 is verified at commit `1a6024ceedd03684020ef82af55fda2b73579eb1` and its annotated tag, successful workflow run `32932703563` and publish job `98067873113`, matching npm registry version and `dev` dist-tag, canonical shasum `a284c1b4c961733f167a4195f46d4cc35378ec11`, integrity `sha512-z1lPb3Q/DhXffFXxxih69b7fqUJlrnC8jZ1LotwGqflCA+tL1iO/gjH92Pky0YxIaxSbHGkNX4Cby6PZymeb/g==`, and peer-inclusive fresh public import. Published consumer availability is true. AirGuardV2 root and Functions adoption, same-version and same-content confirmation, and local catalog deletion remain pending and consumer-owned; the recommended exact target is 2.4.2-dev.166. Published 2.4.2-dev.165 and 2.4.2-dev.166 are immutable, and correction or rollback does not depend on npm unpublish, tag movement, or history rewrite.
 
@@ -102,7 +102,7 @@ Profile, billing, operations, arrangement, entitlement, maintenance, private, au
 
 Legacy mapping removes a leading `T` or `t` from a valid invoice registration input, maps `ACTUAL_DATE` to `LABOR_STANDARD` and `OPERATION_DATE` to `OPERATION_COUNT`, applies documented defaults when absent, strips arrangement-only `key`, and does not promote Stripe or subscription fields. The historical empty-bank representation with all other bank fields empty/whitespace and only the default `accountType: 普通` maps to five null fields. `当座` alone and every other partial bank, unknown legacy fields, unknown attendance modes, and active maintenance/private ambiguity return an explicit conflict instead of being guessed.
 
-Package version remains 2.4.2-dev.166 in this checkpoint. Published 2.4.2-dev.166 does not contain CCB v1. Release version, S3 tag/version/package-content/test guard, tag, push, npm publication, registry verification, and consumer adoption remain separately approved work. A targeted Node 24 test exists, but the supported Node range and whole-package formal runner remain open; the known legacy diagnostic failure remains separate.
+CCB v1 and its release guard are implemented locally in the 2.4.2-dev.167 release candidate. A read-only registry check confirmed that exact version was unused when selected. Published 2.4.2-dev.166 does not contain CCB v1. Tag creation, push, npm publication, registry verification, and consumer adoption remain separately approved work. The exact maintained ten-file suite passes locally on Node 22 and Node 24; the supported Node range and complete public compatibility inventory remain open.
 
 ## Functional Requirements
 
@@ -135,7 +135,7 @@ Existing field definitions include component metadata associated with AirVuetify
 
 Validation may return booleans or structured error objects depending on the existing field or model contract. The complete error behavior is not yet formally inventoried.
 
-The diagnostic test-error-definitions.js currently fails because detailedInvalidReasons is undefined at line 19. The failure predates governance bootstrap and is not fixed or reclassified here.
+The former `test-error-definitions.js` diagnostic has been replaced with maintained `node:test` assertions for structured `invalidReasons`, `isInvalid`, and the `ValidationError.validationErrors` thrown by `validate()`. The formal runner fails closed on additions, omissions, or nonzero exits in the exact maintained root-test inventory.
 
 Required checks may not be masked by later command success. A grouped runner must exit nonzero when any required item fails.
 
@@ -156,8 +156,7 @@ Shared-package readiness reaches 100 percent only when:
 ## Open Decisions
 
 - Supported Node version range beyond the Node 24 formal validation candidate
-- Formal package test runner and treatment of the seven diagnostic scripts
-- Product impact and correction for the test-error-definitions.js failure
+- Complete compatibility classification of legacy console-style tests beyond their current maintained aggregate execution
 - Compatibility treatment of inherited FireModel runtime methods
 - Compatibility treatment of AirVuetify-specific component metadata in field definitions
 - Retirement, replacement, or compatibility status of the published ./apis helpers

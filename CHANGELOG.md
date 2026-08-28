@@ -6,14 +6,16 @@
 
 - Locally implemented the accepted Company Configuration Boundary v1 pure-data contract through the additive `./company-configuration` public subpath, including exact document and Callable-input parsers, structural `TimestampLike` semantics, stable code/path validation errors, and explicit-conflict legacy `Company` mapping.
 - Added the targeted `test-company-configuration.js` public-self-reference test and `test:company-configuration` package script.
+- Added the fail-closed formal `npm test` inventory, release guard, positive and negative guard tests, and Node 22/24 workflow test matrix required before the Node 24 publish job.
 
 ### Compatibility and release status
 
 - The legacy `Company` class and package-root exports remain unchanged; Firebase SDK identity, AirFirebase adapters, UI runtimes, CRUD, Rules, deployment, and data operations are excluded.
-- Package version remains 2.4.2-dev.166. The CCB v1 contract is not present in the published 2.4.2-dev.166 artifact and is not yet tagged, pushed, published, registry-confirmed, or consumer-adopted. Release-version selection and the S3 release guard require separate approval.
+- The local release candidate is 2.4.2-dev.167 after a read-only registry lookup confirmed that exact version was unused. Published 2.4.2-dev.166 does not contain CCB v1. The candidate is not tagged, pushed, published, registry-confirmed, or consumer-adopted.
 
 ### Fixed
 
+- Replaced the obsolete console-only `test-error-definitions.js` diagnostic with maintained assertions for `invalidReasons`, `isInvalid`, and `validate()` without echoing raw input values.
 - The legacy mapper now treats whitespace-only bank fields plus the old default `accountType: 普通` as an empty bank and maps all five bank fields to null. Partial bank input and `当座`-only input continue to fail with an explicit conflict.
 - The activation-period root projection now accepts and removes the six known persisted framework/computed extras `docId`, `uid`, `fullAddress`, `prefecture`, `hasBankInfo`, and `isCompleteRequiredFields`; the exact root parser and true unknown fields remain strict.
 

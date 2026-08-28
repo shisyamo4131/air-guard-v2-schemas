@@ -6,7 +6,7 @@ AirGuard V2 Schemas is the public npm package @shisyamo4131/air-guard-v2-schemas
 
 The shared role preset exports are available beginning with published package version 2.4.2-dev.165. Project governance is active and the Shared-package readiness roadmap tracks contract, verification, release, and consumer-integration maturity separately from existing implementation volume.
 
-The Company Configuration Boundary v1 contract is implemented locally on the current branch through the additive `./company-configuration` subpath. It is not included in published 2.4.2-dev.166 and is not yet tagged, pushed, published, registry-confirmed, or adopted by a consumer. Its release version and release guard remain separate approval boundaries.
+The Company Configuration Boundary v1 contract is implemented locally through the additive `./company-configuration` subpath in the 2.4.2-dev.167 release candidate. Published 2.4.2-dev.166 does not contain it. The candidate is not tagged, pushed, published, registry-confirmed, or consumer-adopted; those remain separate approval boundaries.
 
 The approved shared role preset contract is exposed through the `./constants` subpath as `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. Consumer dependency changes, same-version and same-content confirmation, and replacement of local catalogs remain consumer-owned work.
 
@@ -16,7 +16,7 @@ The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Fire
 
 - Package root: index.js
 - Constants: src/constants/index.js through the ./constants export
-- Company Configuration Boundary v1: src/company-configuration/index.js through the ./company-configuration export (local implementation; not available in published 2.4.2-dev.166)
+- Company Configuration Boundary v1: src/company-configuration/index.js through the ./company-configuration export (local 2.4.2-dev.167 release candidate; not available in published 2.4.2-dev.166)
 - Utilities: src/utils/index.js through the ./utils export
 - Legacy API helpers: src/apis/index.js through the ./apis export
 
@@ -45,13 +45,13 @@ Start with AGENTS.md, then use docs/README.md to choose the smallest sufficient 
 
 ## Development and Verification
 
-The publish workflow uses Node 24, which is the formal validation runtime candidate. The only supported Node version range is not yet confirmed.
+The publish workflow requires the formal package suite on Node 22 and Node 24 before its Node 24 publish job. Node 24 remains the formal package evidence candidate; the supported Node range is not yet confirmed.
 
-The root test-*.js files are diagnostics and are not a formal test runner. Run governance checks according to docs/operations.md. Do not treat the known test-error-definitions.js failure as resolved.
+`npm test` runs the exact maintained root `test*.js` inventory and fails closed if a test is added, omitted, or exits nonzero. The formerly obsolete `test-error-definitions.js` diagnostic now asserts the maintained `invalidReasons`, `isInvalid`, and `validate()` contract.
 
-The role preset contract has a targeted `node:test` check through the public package self-reference. Node 24 direct-test, public-import, package, and fresh-install evidence exists. This check does not establish a whole-package formal test runner or the sole supported Node range, and the known `test-error-definitions.js` failure remains separate and unresolved.
+The role preset contract retains its targeted `node:test` check through the public package self-reference. It is also included in the formal package suite. Node 22 and Node 24 local suite evidence exists for the 2.4.2-dev.167 candidate, but this does not establish the sole supported Node range.
 
-The locally implemented Company Configuration Boundary has a separate targeted `test-company-configuration.js` public-self-reference check. It does not establish release readiness: the tag/version/package-content/test release guard is planned for a separately approved S3 checkpoint.
+The Company Configuration Boundary retains its targeted `test-company-configuration.js` public-self-reference check and is included in the formal suite. `npm run check:release` fails closed on tag/version, lockfile, export/root-leak, formal tests, public self-import, package content, or repository archive mismatches; `prepublishOnly` and the tag-only workflow make that guard part of the publish path.
 
 ## Security
 
