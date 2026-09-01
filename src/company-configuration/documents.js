@@ -104,27 +104,11 @@ const ARRANGEMENT_BUSINESS_KEYS = Object.freeze([
   "scheduleOrder",
 ]);
 
-const ENTITLEMENT_KEYS = Object.freeze([
-  ...SETTINGS_METADATA_KEYS,
-  "entitlementState",
-  "planCode",
-  "featureCodes",
-  "employeeLimit",
-]);
-
 const MAINTENANCE_KEYS = Object.freeze([
   ...SETTINGS_METADATA_KEYS,
   "maintenanceMode",
   "maintenanceReason",
   "maintenanceStartAt",
-]);
-
-const PRIVATE_ENTITLEMENT_KEYS = Object.freeze([
-  ...SETTINGS_METADATA_KEYS,
-  "stripeCustomerId",
-  "stripeSubscriptionId",
-  "stripeSubscriptionStatus",
-  "currentPeriodEnd",
 ]);
 
 const PRIVATE_MAINTENANCE_KEYS = Object.freeze([
@@ -403,29 +387,6 @@ const parseArrangementValue = (value, path = "$") => {
 
 export const parseCompanyArrangementV1 = (value) => parseArrangementValue(value);
 
-const parseEntitlementValue = (value, path = "$") => {
-  assertPlainRecord(value, path);
-  assertExactKeys(value, ENTITLEMENT_KEYS, path);
-  if (
-    value.entitlementState !== "DISABLED" ||
-    value.planCode !== null ||
-    !Array.isArray(value.featureCodes) ||
-    value.featureCodes.length !== 0 ||
-    value.employeeLimit !== null
-  ) {
-    fail(COMPANY_CONFIGURATION_ERROR_CODES.CONFLICT, path);
-  }
-  return {
-    ...parseSettingsMetadata(value, path),
-    entitlementState: "DISABLED",
-    planCode: null,
-    featureCodes: [],
-    employeeLimit: null,
-  };
-};
-
-export const parseCompanyEntitlementV1 = (value) => parseEntitlementValue(value);
-
 const parseMaintenanceValue = (value, path = "$") => {
   assertPlainRecord(value, path);
   assertExactKeys(value, MAINTENANCE_KEYS, path);
@@ -450,29 +411,6 @@ const parseMaintenanceValue = (value, path = "$") => {
 };
 
 export const parseCompanyMaintenanceV1 = (value) => parseMaintenanceValue(value);
-
-const parsePrivateEntitlementValue = (value, path = "$") => {
-  assertPlainRecord(value, path);
-  assertExactKeys(value, PRIVATE_ENTITLEMENT_KEYS, path);
-  if (
-    value.stripeCustomerId !== null ||
-    value.stripeSubscriptionId !== null ||
-    value.stripeSubscriptionStatus !== null ||
-    value.currentPeriodEnd !== null
-  ) {
-    fail(COMPANY_CONFIGURATION_ERROR_CODES.CONFLICT, path);
-  }
-  return {
-    ...parseSettingsMetadata(value, path),
-    stripeCustomerId: null,
-    stripeSubscriptionId: null,
-    stripeSubscriptionStatus: null,
-    currentPeriodEnd: null,
-  };
-};
-
-export const parseCompanyPrivateEntitlementV1 = (value) =>
-  parsePrivateEntitlementValue(value);
 
 const parsePrivateMaintenanceValue = (value, path = "$") => {
   assertPlainRecord(value, path);
@@ -681,8 +619,6 @@ export const INTERNAL_DOCUMENT_PARSERS = Object.freeze({
   billing: parseBillingValue,
   operations: parseOperationsValue,
   arrangement: parseArrangementValue,
-  entitlement: parseEntitlementValue,
   maintenance: parseMaintenanceValue,
-  privateEntitlement: parsePrivateEntitlementValue,
   privateMaintenance: parsePrivateMaintenanceValue,
 });

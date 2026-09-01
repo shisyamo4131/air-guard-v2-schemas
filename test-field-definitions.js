@@ -4,12 +4,15 @@
  * - defField関数が正常に動作するか確認
  */
 
+import assert from "node:assert/strict";
+
 import {
   fieldDefinitions,
   defField,
   DEFAULT_WORKING_MINUTES,
   DEFAULT_BREAK_MINUTES,
 } from "./src/parts/fieldDefinitions.js";
+import Company from "./src/Company.js";
 
 console.log("========================================");
 console.log("フィールド定義のリファクタリング検証");
@@ -89,6 +92,26 @@ console.log("✓ defField('unknownField', { label: '未知のフィールド' })
 console.log(`  label: ${field3.label}`);
 console.log(`  type: ${field3.type.name}`);
 console.log();
+
+assert.equal(Object.hasOwn(Company.classProps, "stripeCustomerId"), false);
+assert.equal(Object.hasOwn(Company.classProps, "subscription"), false);
+
+const legacyCompany = new Company({
+  companyName: "株式会社エアガード",
+  companyNameKana: "エアガード",
+  stripeCustomerId: "cus_legacy",
+  subscription: {
+    id: "sub_legacy",
+    employeeLimit: 99,
+  },
+});
+const serializedCompany = legacyCompany.toObject();
+
+for (const field of ["stripeCustomerId", "subscription"]) {
+  assert.equal(Object.hasOwn(legacyCompany, field), false);
+  assert.equal(Object.hasOwn(serializedCompany, field), false);
+}
+assert.equal(JSON.stringify(serializedCompany).includes("employeeLimit"), false);
 
 console.log("========================================");
 console.log("検証完了");

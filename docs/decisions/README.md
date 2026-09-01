@@ -17,5 +17,6 @@
 | [0004](0004-shared-role-permission-catalog.md) | Shared role preset and permission catalog | Accepted | 2026-08-26 |
 | [0005](0005-company-configuration-v1.md) | Company Configuration Boundary v1 pure-data contract | Accepted | 2026-08-28 |
 | [0006](0006-governance-1-4-session-capacity-and-turnover.md) | Governance 1.4 session capacity routing and task turnover | Accepted | 2026-08-28 |
+| [0007](0007-legacy-stripe-schema-scaffold-removal.md) | Legacy Stripe schema scaffold removal | Accepted | 2026-09-01 |
 
 Accepted ADRs are never deleted. Supersede them with a new numbered ADR.

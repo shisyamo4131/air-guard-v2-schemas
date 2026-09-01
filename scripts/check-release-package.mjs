@@ -7,12 +7,36 @@ import path from "node:path";
 import { runPackageTests } from "./run-package-tests.mjs";
 
 const REQUIRED_CCB_EXPORTS = Object.freeze([
+  "ATTENDANCE_SUMMARY_MODE_VALUES",
+  "COMPANY_CONFIGURATION_ERROR_CODES",
   "COMPANY_CONFIGURATION_SCHEMA_VERSION",
   "COMPANY_CONFIGURATION_STATE",
+  "COMPANY_SETTING_TYPE_VALUES",
+  "COMPANY_STATUS_VALUES",
+  "ROUND_SETTING_VALUES",
+  "SHIFT_TYPE_VALUES",
   "CompanyConfigurationValidationError",
+  "assertCompanyMaintenancePairV1",
   "isTimestampLike",
-  "mapLegacyCompanyToConfigurationV1",
+  "parseCompanyArrangementV1",
+  "parseCompanyBillingV1",
+  "parseCompanyMaintenanceV1",
+  "parseCompanyOperationsV1",
+  "parseCompanyPrivateMaintenanceV1",
+  "parseCompanyProfileV1",
+  "parseCompanyRootProjectionV1",
   "parseCompanyRootV1",
+  "parseCompanySettingAuditV1",
+  "parseUpdateCompanyArrangementInputV1",
+  "parseUpdateCompanyBillingInputV1",
+  "parseUpdateCompanyOperationsInputV1",
+  "parseUpdateCompanyProfileInputV1",
+]);
+
+const FORBIDDEN_CCB_EXPORTS = Object.freeze([
+  "mapLegacyCompanyToConfigurationV1",
+  "parseCompanyEntitlementV1",
+  "parseCompanyPrivateEntitlementV1",
 ]);
 
 const REQUIRED_PACKAGE_FILES = Object.freeze([
@@ -23,8 +47,11 @@ const REQUIRED_PACKAGE_FILES = Object.freeze([
   "src/company-configuration/constants.js",
   "src/company-configuration/documents.js",
   "src/company-configuration/index.js",
-  "src/company-configuration/legacy.js",
   "src/company-configuration/validation.js",
+]);
+
+const FORBIDDEN_PACKAGE_FILES = Object.freeze([
+  "src/company-configuration/legacy.js",
 ]);
 
 export class ReleaseGuardError extends Error {
@@ -45,11 +72,13 @@ export function validateReleaseState({ tag, packageJson, lockJson, rootExports, 
   guard(lockJson.version === packageJson.version, "VERSION_MISMATCH", "Lockfile top-level version mismatch");
   guard(lockJson.packages?.[""]?.version === packageJson.version, "VERSION_MISMATCH", "Lockfile package version mismatch");
   guard(packageJson.exports?.["./company-configuration"] === "./src/company-configuration/index.js", "EXPORT_MISMATCH", "Missing company-configuration export");
-  guard(!REQUIRED_CCB_EXPORTS.some((name) => rootExports.includes(name)), "ROOT_EXPORT_LEAK", "CCB export leaked from package root");
+  guard(!ccbExports.some((name) => rootExports.includes(name)), "ROOT_EXPORT_LEAK", "CCB export leaked from package root");
   guard(REQUIRED_CCB_EXPORTS.every((name) => ccbExports.includes(name)), "EXPORT_MISMATCH", "Required CCB public export missing");
+  guard(!FORBIDDEN_CCB_EXPORTS.some((name) => ccbExports.includes(name)), "EXPORT_MISMATCH", "Forbidden legacy CCB public export present");
   guard(testStatus === 0, "TEST_FAILURE", "Formal package tests failed");
   guard(importStatus === 0, "IMPORT_FAILURE", "Public self-import failed");
   guard(REQUIRED_PACKAGE_FILES.every((name) => packFiles.includes(name)), "CONTENT_MISMATCH", "Required package content missing");
+  guard(!FORBIDDEN_PACKAGE_FILES.some((name) => packFiles.includes(name)), "CONTENT_MISMATCH", "Forbidden legacy package content present");
   guard(!packFiles.some((name) => /(^|\/)(test[^/]*\.js|governance|docs|scripts|\.github)(\/|$)|\.tgz$/u.test(name)), "CONTENT_MISMATCH", "Forbidden package content present");
   guard(archiveCount === 0, "CONTENT_MISMATCH", "Package archive artifact exists in repository");
   return true;

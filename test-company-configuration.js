@@ -75,13 +75,10 @@ test("public subpath exposes the exact pure contract without root re-export", as
     "SHIFT_TYPE_VALUES",
     "assertCompanyMaintenancePairV1",
     "isTimestampLike",
-    "mapLegacyCompanyToConfigurationV1",
     "parseCompanyArrangementV1",
     "parseCompanyBillingV1",
-    "parseCompanyEntitlementV1",
     "parseCompanyMaintenanceV1",
     "parseCompanyOperationsV1",
-    "parseCompanyPrivateEntitlementV1",
     "parseCompanyPrivateMaintenanceV1",
     "parseCompanyProfileV1",
     "parseCompanyRootProjectionV1",
@@ -94,6 +91,13 @@ test("public subpath exposes the exact pure contract without root re-export", as
   ].sort());
   const root = await import("@shisyamo4131/air-guard-v2-schemas");
   assert.equal(Object.hasOwn(root, "parseCompanyRootV1"), false);
+  for (const removedName of [
+    "mapLegacyCompanyToConfigurationV1",
+    "parseCompanyEntitlementV1",
+    "parseCompanyPrivateEntitlementV1",
+  ]) {
+    assert.equal(Object.hasOwn(contract, removedName), false);
+  }
   assert.equal(contract.COMPANY_CONFIGURATION_SCHEMA_VERSION, 1);
   assert.equal(contract.COMPANY_CONFIGURATION_STATE, "CCB_V1_ACTIVE");
   for (const value of [
@@ -144,6 +148,8 @@ test("TimestampLike is structural and retained without Firebase identity", () =>
       prefecture: "東京都",
       hasBankInfo: false,
       isCompleteRequiredFields: true,
+      stripeCustomerId: "cus_legacy",
+      subscription: { employeeLimit: 99 },
     }),
     parsed,
   );
@@ -154,6 +160,8 @@ test("TimestampLike is structural and retained without Firebase identity", () =>
     "prefecture",
     "hasBankInfo",
     "isCompleteRequiredFields",
+    "stripeCustomerId",
+    "subscription",
   ]) {
     expectError(
       () => contract.parseCompanyRootV1({ ...parsed, [field]: "legacy" }),
@@ -227,20 +235,7 @@ test("billing, operations and arrangement enforce correlation, enums and uniquen
   );
 });
 
-test("v1 entitlement is disabled and maintenance public/private documents correlate", () => {
-  const entitlement = {
-    ...metadata(),
-    entitlementState: "DISABLED",
-    planCode: null,
-    featureCodes: [],
-    employeeLimit: null,
-  };
-  assert.deepEqual(contract.parseCompanyEntitlementV1(entitlement), entitlement);
-  expectError(
-    () => contract.parseCompanyEntitlementV1({ ...entitlement, employeeLimit: 10 }),
-    "CONFLICT",
-    "$",
-  );
+test("maintenance public/private documents remain correlated", () => {
   const maintenance = {
     ...metadata(),
     maintenanceMode: true,
@@ -339,159 +334,12 @@ test("callable inputs accept only expectedRevision and the exact value document"
   });
 });
 
-test("legacy mapping is deterministic, strips legacy-only fields and does not promote billing providers", () => {
-  const legacy = {
-    companyName: "株式会社エアガード",
-    companyNameKana: "エアガード",
-    zipcode: "1234567",
-    prefCode: "13",
-    city: "千代田区",
-    address: "丸の内1-1",
-    building: "",
-    tel: "",
-    fax: "",
-    invoiceNumber: "T1234567890123",
-    bankName: "",
-    branchName: "",
-    accountType: "",
-    accountNumber: "",
-    accountHolder: "",
-    minuteInterval: 15,
-    roundSetting: "ROUND",
-    firstDayOfWeek: 0,
-    attendanceManagementMode: "OPERATION_DATE",
-    siteOrder: [{ key: "ignored", siteId: "site-1", shiftType: "DAY" }],
-    scheduleOrder: [],
-    maintenanceMode: false,
-    stripeCustomerId: "not-promoted",
-    subscription: { plan: "not-promoted" },
-  };
-  const result = contract.mapLegacyCompanyToConfigurationV1(legacy, {
-    actorUid: "actor-1",
-    timestamp,
-  });
-  assert.equal(result.ok, true);
-  assert.deepEqual(result.value.root, {
-    schemaVersion: 1,
-    configurationState: "CCB_V1_ACTIVE",
-    status: "ACTIVE",
-    createdAt: timestamp,
-    createdBy: "actor-1",
-    updatedAt: timestamp,
-    updatedBy: "actor-1",
-  });
-  assert.equal(result.value.billing.invoiceNumber, "1234567890123");
-  assert.equal(result.value.operations.attendanceSummaryMode, "OPERATION_COUNT");
-  assert.deepEqual(result.value.arrangement.siteOrder, [
-    { siteId: "site-1", shiftType: "DAY" },
-  ]);
-  assert.equal(result.value.privateEntitlement.stripeCustomerId, null);
-  assert.equal(Object.hasOwn(result.value.arrangement.siteOrder[0], "key"), false);
-});
-
-test("legacy bank mapping drops only the empty-bank ordinary default", () => {
-  const context = { actorUid: "actor-1", timestamp };
-  const base = {
-    companyName: "株式会社エアガード",
-    companyNameKana: "エアガード",
-  };
-  const emptyDefault = contract.mapLegacyCompanyToConfigurationV1(
-    {
-      ...base,
-      bankName: "  ",
-      branchName: "\t",
-      accountType: " 普通 ",
-      accountNumber: "",
-      accountHolder: "　",
-    },
-    context,
-  );
-  assert.equal(emptyDefault.ok, true);
-  assert.deepEqual(
-    [
-      emptyDefault.value.billing.bankName,
-      emptyDefault.value.billing.branchName,
-      emptyDefault.value.billing.accountType,
-      emptyDefault.value.billing.accountNumber,
-      emptyDefault.value.billing.accountHolder,
-    ],
-    [null, null, null, null, null],
-  );
-
-  for (const bank of [
-    { bankName: "銀行", branchName: "", accountType: "普通", accountNumber: "", accountHolder: "" },
-    { bankName: "", branchName: "", accountType: "当座", accountNumber: "", accountHolder: "" },
-  ]) {
-    assert.deepEqual(
-      contract.mapLegacyCompanyToConfigurationV1({ ...base, ...bank }, context),
-      { ok: false, conflict: { code: "CONFLICT", path: "$.bankAccount" } },
-    );
-  }
-
-  const complete = contract.mapLegacyCompanyToConfigurationV1(
-    {
-      ...base,
-      bankName: " テスト銀行 ",
-      branchName: " 本店 ",
-      accountType: " 普通 ",
-      accountNumber: " 0012345 ",
-      accountHolder: " エアガード ",
-    },
-    context,
-  );
-  assert.equal(complete.ok, true);
-  assert.deepEqual(
-    {
-      bankName: complete.value.billing.bankName,
-      branchName: complete.value.billing.branchName,
-      accountType: complete.value.billing.accountType,
-      accountNumber: complete.value.billing.accountNumber,
-      accountHolder: complete.value.billing.accountHolder,
-    },
-    {
-      bankName: "テスト銀行",
-      branchName: "本店",
-      accountType: "普通",
-      accountNumber: "0012345",
-      accountHolder: "エアガード",
-    },
-  );
-});
-
-test("legacy ambiguities return stable conflicts without echoing input", () => {
-  const activeMaintenance = contract.mapLegacyCompanyToConfigurationV1(
-    { maintenanceMode: true, maintenanceReason: "secret reason" },
-    { actorUid: "actor-1", timestamp },
-  );
-  assert.deepEqual(activeMaintenance, {
-    ok: false,
-    conflict: { code: "CONFLICT", path: "$.maintenanceMode" },
-  });
-  assert.equal(JSON.stringify(activeMaintenance).includes("secret reason"), false);
-  const unknownMode = contract.mapLegacyCompanyToConfigurationV1(
-    { attendanceManagementMode: "UNKNOWN" },
-    { actorUid: "actor-1", timestamp },
-  );
-  assert.deepEqual(unknownMode, {
-    ok: false,
-    conflict: { code: "CONFLICT", path: "$.attendanceManagementMode" },
-  });
-  const malformedOrder = contract.mapLegacyCompanyToConfigurationV1(
-    {
-      companyName: "株式会社エアガード",
-      companyNameKana: "エアガード",
-      siteOrder: "not-an-array",
-    },
-    { actorUid: "actor-1", timestamp },
-  );
-  assert.deepEqual(malformedOrder, {
-    ok: false,
-    conflict: { code: "CONFLICT", path: "$.siteOrder" },
-  });
-});
-
 test("company-configuration source has no Firebase, AirFirebase, Vue, Vuetify or FireModel dependency", () => {
-  for (const file of ["constants.js", "validation.js", "documents.js", "legacy.js", "index.js"]) {
+  assert.equal(
+    fs.existsSync(new URL("./src/company-configuration/legacy.js", import.meta.url)),
+    false,
+  );
+  for (const file of ["constants.js", "validation.js", "documents.js", "index.js"]) {
     const source = fs.readFileSync(new URL(`./src/company-configuration/${file}`, import.meta.url), "utf8");
     assert.doesNotMatch(source, /firebase|air-firebase|vue|vuetify|FireModel/iu);
   }

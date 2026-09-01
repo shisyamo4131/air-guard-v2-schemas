@@ -6,6 +6,17 @@
 
 - Migrated managed common governance to 1.4.0 and added exact-task session-capacity routing, the project coordination runbook, the fail-closed local measurement script, governance ADR, handoff index, and capacity-routing validation.
 
+### Changed
+
+- Prepared and locally validated the breaking correction as unpublished package candidate `3.0.0-dev.1`; published `2.4.2-dev.167` remains immutable and is the rollback baseline.
+- Changed the release-package guard so the retired legacy mapper/export/file and Stripe-derived entitlement parser exports are forbidden package content instead of required content.
+- Legacy-shaped `Company` input may be read only to discard `stripeCustomerId` and `subscription`; those fields are no longer restored, defaulted, or serialized.
+
+### Removed
+
+- Removed `stripeCustomerId` and `subscription` (including the nested `employeeLimit`) from the public `Company` schema.
+- Removed `parseCompanyEntitlementV1`, `parseCompanyPrivateEntitlementV1`, and `mapLegacyCompanyToConfigurationV1` from `./company-configuration`, and removed `src/company-configuration/legacy.js` from the package.
+
 ## 2.4.2-dev.167 - 2026-08-28
 
 ### Added

@@ -9,10 +9,36 @@ const packageJson = JSON.parse(readFileSync(new URL("./package.json", import.met
 const lockJson = JSON.parse(readFileSync(new URL("./package-lock.json", import.meta.url), "utf8"));
 const rootExports = Object.keys(await import("@shisyamo4131/air-guard-v2-schemas"));
 const ccbExports = Object.keys(await import("@shisyamo4131/air-guard-v2-schemas/company-configuration"));
+const preservedCcbExports = [
+  "ATTENDANCE_SUMMARY_MODE_VALUES",
+  "COMPANY_CONFIGURATION_ERROR_CODES",
+  "COMPANY_CONFIGURATION_SCHEMA_VERSION",
+  "COMPANY_CONFIGURATION_STATE",
+  "COMPANY_SETTING_TYPE_VALUES",
+  "COMPANY_STATUS_VALUES",
+  "CompanyConfigurationValidationError",
+  "ROUND_SETTING_VALUES",
+  "SHIFT_TYPE_VALUES",
+  "assertCompanyMaintenancePairV1",
+  "isTimestampLike",
+  "parseCompanyArrangementV1",
+  "parseCompanyBillingV1",
+  "parseCompanyMaintenanceV1",
+  "parseCompanyOperationsV1",
+  "parseCompanyPrivateMaintenanceV1",
+  "parseCompanyProfileV1",
+  "parseCompanyRootProjectionV1",
+  "parseCompanyRootV1",
+  "parseCompanySettingAuditV1",
+  "parseUpdateCompanyArrangementInputV1",
+  "parseUpdateCompanyBillingInputV1",
+  "parseUpdateCompanyOperationsInputV1",
+  "parseUpdateCompanyProfileInputV1",
+];
 const packFiles = [
   "README.md", "index.js", "package.json", "src/constants/role-presets.js",
   "src/company-configuration/constants.js", "src/company-configuration/documents.js",
-  "src/company-configuration/index.js", "src/company-configuration/legacy.js",
+  "src/company-configuration/index.js",
   "src/company-configuration/validation.js",
 ];
 
@@ -37,7 +63,22 @@ test("release guard rejects a package-lock version mismatch", () => {
 });
 
 test("release guard rejects a required export mismatch", () => {
-  assertGuardCode("EXPORT_MISMATCH", { ccbExports: [] });
+  assert.deepEqual([...ccbExports].sort(), [...preservedCcbExports].sort());
+  for (const preservedName of preservedCcbExports) {
+    assertGuardCode("EXPORT_MISMATCH", {
+      ccbExports: ccbExports.filter((name) => name !== preservedName),
+    });
+  }
+});
+
+test("release guard rejects removed company-configuration exports", () => {
+  for (const removedName of [
+    "mapLegacyCompanyToConfigurationV1",
+    "parseCompanyEntitlementV1",
+    "parseCompanyPrivateEntitlementV1",
+  ]) {
+    assertGuardCode("EXPORT_MISMATCH", { ccbExports: [...ccbExports, removedName] });
+  }
 });
 
 test("release guard rejects a package-root export leak", () => {
@@ -45,7 +86,12 @@ test("release guard rejects a package-root export leak", () => {
 });
 
 test("release guard rejects missing or forbidden package content", () => {
-  assertGuardCode("CONTENT_MISMATCH", { packFiles: packFiles.filter((name) => name !== "src/company-configuration/index.js") });
+  for (const requiredFile of packFiles) {
+    assertGuardCode("CONTENT_MISMATCH", {
+      packFiles: packFiles.filter((name) => name !== requiredFile),
+    });
+  }
+  assertGuardCode("CONTENT_MISMATCH", { packFiles: [...packFiles, "src/company-configuration/legacy.js"] });
   assertGuardCode("CONTENT_MISMATCH", { packFiles: [...packFiles, "test-company-configuration.js"] });
 });
 

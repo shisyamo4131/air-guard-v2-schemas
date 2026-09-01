@@ -26,8 +26,6 @@
  * @property {string} roundSetting - 端数処理設定
  * @property {string} firstDayOfWeek - 週の始まり
  * @property {string} attendanceManagementMode - 勤怠管理方式
- * @property {string} stripeCustomerId - Stripe顧客ID
- * @property {object} subscription - サブスクリプション情報
  * @property {boolean} maintenanceMode - メンテナンスモードフラグ
  * @property {string} maintenanceReason - メンテナンス理由
  * @property {Date} maintenanceStartAt - メンテナンス開始日時
@@ -163,24 +161,6 @@ const classProps = {
         items: ATTENDANCE_MANAGEMENT_MODE_OPTIONS,
       },
     },
-  }),
-
-  /** Stripe連携フィールド */
-  stripeCustomerId: defField("oneLine", {
-    label: "Stripe顧客ID",
-    hidden: true,
-    length: 100,
-  }),
-
-  subscription: defField("object", {
-    label: "サブスクリプション情報",
-    hidden: true,
-    default: () => ({
-      id: null,
-      status: null,
-      currentPeriodEnd: null,
-      employeeLimit: 10,
-    }),
   }),
 
   /** メンテナンス情報 */

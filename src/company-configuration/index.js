@@ -13,10 +13,8 @@ export {
   assertCompanyMaintenancePairV1,
   parseCompanyArrangementV1,
   parseCompanyBillingV1,
-  parseCompanyEntitlementV1,
   parseCompanyMaintenanceV1,
   parseCompanyOperationsV1,
-  parseCompanyPrivateEntitlementV1,
   parseCompanyPrivateMaintenanceV1,
   parseCompanyProfileV1,
   parseCompanyRootProjectionV1,
@@ -27,8 +25,6 @@ export {
   parseUpdateCompanyOperationsInputV1,
   parseUpdateCompanyProfileInputV1,
 } from "./documents.js";
-
-export { mapLegacyCompanyToConfigurationV1 } from "./legacy.js";
 
 export {
   CompanyConfigurationValidationError,

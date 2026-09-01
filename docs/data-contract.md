@@ -1,7 +1,7 @@
 # Public Data Contract Inventory
 
 - Status: Partially confirmed
-- Last verified: 2026-08-28
+- Last verified: 2026-09-01
 - Authority: Inventory of the existing public package surface and verified published additions; unresolved compatibility items remain open in the specification.
 - Related roadmap: [Shared-package readiness](roadmaps/shared-package-readiness.md)
 - Related decisions: [ADR index](decisions/README.md)
@@ -10,9 +10,10 @@
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
 - current published version: 2.4.2-dev.167; verified at commit `bb2390997153b2e57470d0c04012d93ddde2f971`, annotated tag object `577f358e3f7a4f7c32d216c11b9305047bbab4d7`, successful workflow run `33150835365`, npm registry and `dev` dist-tag, canonical shasum `b4cbc285438179f75b69bd754141b0a4492c722d`, integrity `sha512-EsMVhMXo9Rrc6AdLT98sdiN5iGniVZq6mEDN+XMgxuB1e8TYbNPPQCHRCdf+HcnvbTseruo23A+4PQnFpw/p0g==`, LF-clean exact-commit content comparison, and peer-inclusive fresh public import
-- current local version: 2.4.2-dev.167; package and lock parity confirmed; consumer adoption remains pending
+- current local candidate: 3.0.0-dev.1; package and lock parity, targeted checks, Node 22/24 formal suites, and the Node 24 release guard are locally verified; the candidate is unpublished and consumer adoption remains pending
 - release relationship: 2.4.2-dev.166 changes documentation and version metadata only relative to immutable 2.4.2-dev.165; the public API, catalog data, and behavior are unchanged
-- 2.4.2-dev.167 relationship: adds the accepted CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
+- 2.4.2-dev.167 relationship: immutable published baseline that adds the accepted original CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
+- 3.0.0-dev.1 candidate relationship: breaking forward correction that removes the public `Company` Stripe/subscription fields, the entitlement/private-entitlement parser exports, the legacy mapper export, and the packed legacy mapper file while preserving the remaining CCB and role-preset surfaces
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2
@@ -23,32 +24,39 @@
 | --- | --- | --- |
 | package root | index.js | Existing public contract |
 | ./constants | src/constants/index.js | Existing public contract |
-| ./company-configuration | src/company-configuration/index.js | Accepted, implemented, published, and content-verified in 2.4.2-dev.167 |
+| ./company-configuration | src/company-configuration/index.js | Original contract published in immutable 2.4.2-dev.167; approved breaking correction prepared as unpublished 3.0.0-dev.1 candidate |
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
 
-## Published Company Configuration Boundary v1
+## Company Configuration Boundary v1 and 3.0.0-dev.1 Correction
 
-The additive `./company-configuration` subpath is published and content-verified in exact version 2.4.2-dev.167. It does not alter or remove the legacy root `Company` export and is not re-exported from the package root. The formal package suite and release guard are implemented and the release workflow, registry bytes/content, and fresh install passed; consumer adoption remains pending.
+The original additive `./company-configuration` subpath is published and content-verified in exact version 2.4.2-dev.167. Candidate 3.0.0-dev.1 retains the root `Company` export and the dedicated subpath, but intentionally narrows both contracts by removing obsolete Stripe-derived scaffold. It is not re-exported from the package root. The candidate is local and unpublished; consumer adoption remains pending.
 
-Public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, strict `parseCompany*V1` document and update-input functions, `assertCompanyMaintenancePairV1`, and `mapLegacyCompanyToConfigurationV1`. Error output contains stable `code` and `path` only and never echoes an input value.
+Candidate public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, the strict root/profile/billing/operations/arrangement/maintenance/private-maintenance/audit and update-input parsers, and `assertCompanyMaintenancePairV1`. `parseCompanyEntitlementV1`, `parseCompanyPrivateEntitlementV1`, and `mapLegacyCompanyToConfigurationV1` are forbidden exports. Error output contains stable `code` and `path` only and never echoes an input value.
 
 All canonical parsers reject unknown and missing fields. A structural timestamp is a plain record with safe-integer `seconds` and integer `nanoseconds` from 0 through 999,999,999; accepted adapter values are retained without a Firebase import or SDK identity test.
 
 | Document | Exact CCB v1 fields and constraints |
 | --- | --- |
-| Root | `schemaVersion: 1`; `configurationState: CCB_V1_ACTIVE`; `status: ACTIVE \| SUSPENDED \| CLOSED`; `createdAt`, `createdBy`, `updatedAt`, `updatedBy`. The strict parser accepts exactly these seven fields. The activation-period projection parser also accepts documented legacy Company fields, including persisted `docId`, `uid`, `fullAddress`, `prefecture`, `hasBankInfo`, and `isCompleteRequiredFields`, and returns only the seven reserved fields. True unknown fields are rejected. |
+| Root | `schemaVersion: 1`; `configurationState: CCB_V1_ACTIVE`; `status: ACTIVE \| SUSPENDED \| CLOSED`; `createdAt`, `createdBy`, `updatedAt`, `updatedBy`. The strict parser accepts exactly these seven fields. The activation-period projection parser also accepts documented legacy Company fields, including legacy `stripeCustomerId` and `subscription` plus persisted `docId`, `uid`, `fullAddress`, `prefecture`, `hasBankInfo`, and `isCompleteRequiredFields`, and returns only the seven reserved fields. This is discard-only compatibility; true unknown fields are rejected. |
 | Common settings metadata | `schemaVersion: 1`; `revision` integer at least 1; created/updated structural timestamps and actor identifiers of 1-128 Unicode grapheme clusters. |
 | Profile | Metadata plus `companyName` 1-100; `companyNameKana` 1-200 using Katakana U+30A0-30FF, U+3000, fullwidth digits, non-control space, and combining dakuten/handakuten only with a Katakana base in the same grapheme; nullable `zipcode` exactly 7 ASCII digits; nullable `prefCode` 01-47; nullable `city` max 100; `address`/`building` max 200; `tel`/`fax` max 32 using ASCII digits, `+`, `-`, `(`, `)`, `.`, and whitespace. |
 | Billing | Metadata plus nullable 13-digit canonical `invoiceNumber`; `bankName`/`branchName` max 100, `accountType` `普通 \| 当座`, `accountNumber` 1-7 ASCII digits, and `accountHolder` max 200. The five bank fields are all null or all valid. |
-| Operations | Metadata plus `minuteInterval: 5 \| 10 \| 15 \| 20 \| 25 \| 30`, `roundSetting: FLOOR \| ROUND \| CEIL`, `firstDayOfWeek` integer 0-6, and `attendanceSummaryMode: LABOR_STANDARD \| OPERATION_COUNT`. Defaults used only by the legacy mapper are 15, ROUND, 0, and LABOR_STANDARD. |
+| Operations | Metadata plus `minuteInterval: 5 \| 10 \| 15 \| 20 \| 25 \| 30`, `roundSetting: FLOOR \| ROUND \| CEIL`, `firstDayOfWeek` integer 0-6, and `attendanceSummaryMode: LABOR_STANDARD \| OPERATION_COUNT`. |
 | Arrangement | Metadata plus `siteOrder` and `scheduleOrder`, each no more than 2,000 exact `{ siteId, shiftType }` entries. `siteId` is 1-128 without slash/control characters; shift is `DAY \| NIGHT`; duplicate `(siteId, shiftType)` pairs are rejected. |
-| Entitlement/private entitlement | Public v1 is exactly `entitlementState: DISABLED`, `planCode: null`, `featureCodes: []`, `employeeLimit: null`. Private v1 is exactly nullable `stripeCustomerId`, `stripeSubscriptionId`, `stripeSubscriptionStatus`, and `currentPeriodEnd`, all null. Legacy entitlement/Stripe data is not promoted. |
 | Maintenance | Public business fields are `maintenanceMode`, nullable `maintenanceReason` max 200, and nullable structural `maintenanceStartAt`; off requires both nullable fields null and on requires both. Private business fields are `maintenanceMode`, `internalReason` max 500, `scope` max 50 strings of 1-100, `maintenanceStartAt`, `maintenanceStartedBy` max 128, optional `operationId` max 128, and correlated `lastErrorCode` max 100/`lastErrorAt`. Off clears all private operation fields; on requires reason, non-empty scope, time, and actor. Public/private modes must match. |
 | Audit | Exact `{ schemaVersion, settingType, fromRevision, toRevision, actorUid, createdAt, changes }`; type is `PROFILE \| BILLING \| OPERATIONS`, `toRevision` is `fromRevision + 1`, and changes are 1-9 field-sorted unique exact records. Non-null bank-field before/after values must be `***`. |
 | Update Callable input | Profile, billing, and operations accept exactly `{ expectedRevision, value: <complete business payload> }` without metadata. Arrangement accepts exactly `{ expectedRevision, field: 'siteOrder' \| 'scheduleOrder', order: [...] }`. This package validates input data; it does not execute a Callable or authorize a request. |
 
-String limits count Unicode extended grapheme clusters after outer trimming. Inputs are not Unicode-normalized, and CR, LF, line/paragraph separators, and other control characters are rejected. The legacy mapper accepts only its documented field inventory, produces an `ACTIVE` canonical root plus all settings/private documents, removes invoice `T`/`t`, maps legacy attendance modes, strips arrangement `key`, and returns `{ ok: false, conflict: { code: "CONFLICT", path } }` for unknown or ambiguous state rather than guessing or echoing data. For the known legacy empty-bank representation only, whitespace/empty values in the other four bank fields plus the historical default `accountType: 普通` map to five null fields; `当座` alone and every other partial bank remain conflicts.
+String limits count Unicode extended grapheme clusters after outer trimming. Inputs are not Unicode-normalized, and CR, LF, line/paragraph separators, and other control characters are rejected. Candidate 3.0.0-dev.1 has no general legacy mapper. Consumers must not rely on this package to convert invoice, bank, attendance, arrangement, maintenance, entitlement, subscription, or Stripe data. Any migration or data interpretation remains consumer-owned and separately approved.
+
+### Breaking Correction Boundary
+
+- The root `Company` export remains, but `stripeCustomerId` and `subscription` are absent from its public field definitions, defaults, and serialized output. A legacy-shaped constructor input does not reintroduce them.
+- The `./company-configuration` subpath preserves root, profile, billing, operations, arrangement, maintenance, private-maintenance, audit, update-input, validation, and enumeration surfaces.
+- Entitlement/private-entitlement parser exports and `mapLegacyCompanyToConfigurationV1` are absent, and `src/company-configuration/legacy.js` is forbidden from packed content.
+- Role preset marker/catalog exports remain unchanged under `./constants`.
+- No Stripe resource inventory, API call, migration, remote write, or production-data operation is implemented or authorized.
 
 ## Published `./constants` Additions
 
@@ -75,7 +83,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This additive API remains available in published 2.4.2-dev.167. The exact version also includes the formal fail-closed ten-file runner and successful Node 22/24 workflow suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions adoption, exact same-version/content verification, and local catalog deletion have not been performed; the recommended currently published consumer target is exact 2.4.2-dev.167. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This additive API remains available in published 2.4.2-dev.167 and is preserved in candidate 3.0.0-dev.1. Exact 2.4.2-dev.167 also includes the formal fail-closed ten-file runner and successful Node 22/24 workflow suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions adoption, exact same-version/content verification, and local catalog deletion have not been performed. Consumers must wait for exact published corrected-version/content evidence before combining role-preset adoption with the approved Company/CCB correction. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 
@@ -119,6 +127,8 @@ The root exports defField, VALIDATION_ERRORS, GeocodableMixin, utilities re-expo
 
 This list is an export inventory, not a claim that every constructor, field, method, validation rule, serialization shape, or inherited method has complete compatibility evidence.
 
+In candidate 3.0.0-dev.1, the `Company` class remains a root named export but no longer publicly defines or serializes `stripeCustomerId` or `subscription`.
+
 ## Data-shape Conventions
 
 - Firestore-oriented document models generally extend FireModel.
@@ -139,7 +149,7 @@ This package owns environment-independent definitions and calculations. It does 
 3. The ./apis subpath calls model fetch methods and is marked in source as planned for removal.
 4. The supported Node range is not established.
 
-Do not remove, narrow, or reclassify these existing surfaces without a material-change proposal covering consumers, versioning, adoption order, rollback, and tests.
+Do not remove, narrow, or reclassify other existing surfaces without a material-change proposal covering consumers, versioning, adoption order, rollback, and tests. The Stripe-derived correction above is the explicitly approved exception recorded in ADR 0007.
 
 The current package validation baseline uses an exact fail-closed ten-file `npm test` inventory. It includes the corrected `test-error-definitions.js` assertions and runs in the Node 22/24 workflow matrix before the Node 24 publish job. Node 24 remains the formal package evidence candidate, while the complete supported Node range remains open.
 

@@ -9,6 +9,7 @@ console.log("========================================\n");
 
 const testImports = async () => {
   const tests = [
+    { name: "Company", path: "./src/Company.js" },
     { name: "Customer", path: "./src/Customer.js" },
     { name: "Employee", path: "./src/Employee.js" },
     { name: "Site", path: "./src/Site.js" },
@@ -39,6 +40,7 @@ const testImports = async () => {
     console.log("✓ 全てのクラスが正常にインポートされました");
   } else {
     console.log("✗ 一部のクラスでエラーが発生しました");
+    process.exitCode = 1;
   }
   console.log("========================================");
 };

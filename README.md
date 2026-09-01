@@ -8,6 +8,8 @@ The shared role preset exports are available beginning with published package ve
 
 The Company Configuration Boundary v1 contract is available through the additive `./company-configuration` subpath in verified published package version 2.4.2-dev.167. Its exact commit/tag, workflow, registry bytes/content, and fresh peer-inclusive public import are verified. Consumer adoption remains a separate consumer-owned boundary.
 
+The approved breaking correction is locally implemented and validated as unpublished candidate `3.0.0-dev.1`. It removes the legacy Stripe fields from the public `Company` schema and removes the entitlement/private-entitlement parsers and legacy mapper from `./company-configuration`. Legacy-shaped `Company` input may still be read only to discard those fields; it does not restore or serialize them. Published `2.4.2-dev.167` remains immutable and available as the rollback baseline.
+
 The approved shared role preset contract is exposed through the `./constants` subpath as `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. Consumer dependency changes, same-version and same-content confirmation, and replacement of local catalogs remain consumer-owned work.
 
 The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Firebase Cloud Functions. Both must adopt and verify the same package version and content before cross-project integration is complete.
@@ -24,7 +26,7 @@ The role preset exports use the existing `./constants` subpath and are not re-ex
 
 The current public-contract inventory and known compatibility questions are in docs/data-contract.md.
 
-The Company Configuration Boundary exports strict pure-data parsers, structural `TimestampLike` validation, stable code/path validation errors, and an explicit-conflict legacy mapper. It does not change the legacy `Company` class or package-root exports and does not add Firebase SDK, AirFirebase adapter, Vue, Vuetify, CRUD, Callable, Rules, deployment, or data-operation behavior. See [ADR 0005](docs/decisions/0005-company-configuration-v1.md).
+The Company Configuration Boundary exports strict pure-data parsers, structural `TimestampLike` validation, and stable code/path validation errors. Candidate `3.0.0-dev.1` preserves profile, billing, operations, arrangement, maintenance, private-maintenance, audit, and update-input parsing while forbidding the retired entitlement, private-entitlement, and legacy-mapper surfaces. It does not add Firebase SDK, AirFirebase adapter, Vue, Vuetify, CRUD, Callable, Rules, deployment, Stripe API, or data-operation behavior. See [ADR 0005](docs/decisions/0005-company-configuration-v1.md) and [ADR 0007](docs/decisions/0007-legacy-stripe-schema-scaffold-removal.md).
 
 ## Documentation
 
@@ -51,7 +53,7 @@ The publish workflow requires the formal package suite on Node 22 and Node 24 be
 
 The role preset contract retains its targeted `node:test` check through the public package self-reference. It is also included in the formal package suite. Node 22 and Node 24 workflow suite evidence exists for published 2.4.2-dev.167, but this does not establish the sole supported Node range.
 
-The Company Configuration Boundary retains its targeted `test-company-configuration.js` public-self-reference check and is included in the formal suite. `npm run check:release` fails closed on tag/version, lockfile, export/root-leak, formal tests, public self-import, package content, or repository archive mismatches; `prepublishOnly` and the tag-only workflow make that guard part of the publish path.
+The Company Configuration Boundary retains its targeted `test-company-configuration.js` public-self-reference check and is included in the formal suite. `npm run check:release` fails closed on tag/version, lockfile, required or forbidden exports, root leaks, formal tests, public self-import, required or forbidden package content, or repository archive mismatches; `prepublishOnly` and the tag-only workflow make that guard part of the publish path.
 
 ## Security
 

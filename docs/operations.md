@@ -13,10 +13,12 @@ Implemented:
 - verified 2.4.2-dev.166 main and annotated tag, successful workflow run 32932703563 and publish job 98067873113, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - Node 24 direct-test, public-import, and package evidence for the role preset catalog
 - published and content-verified 2.4.2-dev.167 CCB v1 package, formal ten-file test suite, and fail-closed release guard
+- unpublished local 3.0.0-dev.1 breaking correction with targeted checks, independent Node 22/24 formal suites, and the Node 24 candidate release guard verified
 - common-governance 1.4.0 capacity routing through docs/runbooks/project-coordination.md and scripts/check-codex-session-size.ps1
 
 Planned or not yet verified:
 
+- publication and consumer adoption of the correction that removes the legacy Stripe-derived Company/CCB scaffold
 - AirGuardV2 root and Functions adoption, same-version/content confirmation, and local catalog deletion
 - supported Node range
 - stable release policy
@@ -72,7 +74,7 @@ Node 24 is the formal validation runtime candidate and the publish runtime, whil
 - node test-role-presets.js
 - node test-release-guard.js
 
-`test-error-definitions.js` now asserts the maintained `invalidReasons`, `isInvalid`, and `validate()` behavior. `test-release-guard.js` covers the positive contract plus tag, version, export, content, import, test, and inventory-negative paths.
+`test-error-definitions.js` now asserts the maintained `invalidReasons`, `isInvalid`, and `validate()` behavior. `test-release-guard.js` covers the positive contract plus tag, version, required/forbidden export, required/forbidden content, import, test, and inventory-negative paths.
 
 ## Company Configuration Boundary Delivery
 
@@ -81,6 +83,16 @@ CCB v1 is published through `./company-configuration` in exact version 2.4.2-dev
 Before a future CCB correction release, run `npm run check:release` with the intended exact tag. It proves tag/package/lock alignment, export and root compatibility, all formal tests, public self-import, required packed CCB content, forbidden-content exclusion, and absence of repository package archives. `prepublishOnly` repeats the guard, and the tag-only workflow requires Node 22 and Node 24 tests before the Node 24 publish job. Tag creation, push, npm publication, registry confirmation, and consumer installation remain distinct approval gates.
 
 If validation or publication fails, retain immutable published versions and correct forward with a later development version. Rollback does not move/delete a tag, unpublish a package, rewrite history, deploy, or modify real data. AirGuardV2 and Admin SDK adoption remain consumer-owned and start only after exact published version/content evidence is accepted.
+
+### Breaking Stripe-scaffold Correction
+
+[ADR 0007](decisions/0007-legacy-stripe-schema-scaffold-removal.md) approves unpublished candidate `3.0.0-dev.1` as a breaking forward correction. The local change removes `stripeCustomerId` and `subscription` from the public `Company` schema and removes the entitlement/private-entitlement parsers, legacy mapper export, and packed `src/company-configuration/legacy.js`. Legacy-shaped input may be accepted only on discard-only paths and must not reintroduce or serialize the removed fields.
+
+Local completion requires the changed targeted tests to pass independently, followed by the unchanged formal ten-file `npm test` suite on existing local Node 22 and Node 24 runtimes. The release guard must treat the removed exports and file as forbidden, retain the remaining required-export/content checks, pass with exact candidate tag `v3.0.0-dev.1`, and fail its negative paths. Governance, generated-entry, project-document, link/index, roadmap, ADR, and whitespace checks remain independent evidence items.
+
+No tag, push, npm publish, registry query, consumer edit, Stripe API operation, or production-data migration is part of the local checkpoint. After a separately approved publication, consumers may adopt only one exact verified version/content. A consumer that still requires a removed surface must stay on its previous verified dependency until it owns and verifies an explicit replacement.
+
+Rollback retains exact published 2.4.2-dev.167 and its existing evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A local failure leaves the candidate unpublished and is corrected forward; a consumer adoption failure restores that consumer's previously verified exact dependency and implementation under consumer ownership.
 
 ## Git Integration
 
@@ -127,7 +139,7 @@ Deliver and verify the contract in this order:
 3. Review and locally commit only the approved files. Produce release evidence before any remote action.
 4. Obtain separate explicit approvals for tag creation, push, and the push-triggered npm publication. A local version or tag is not publication evidence.
 5. Confirm the published version and content before asking consumer coordinators to adopt it.
-6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. AirGuardV2 root and Functions adoption should use exact version 2.4.2-dev.167 with matching resolved content and integrity; local catalog deletion occurs only in that consumer-owned adoption.
+6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. Combined role-preset and corrected Company/CCB adoption must use one separately approved, published, content-verified corrected version with matching resolved content and integrity in AirGuardV2 root and Functions; local catalog deletion occurs only in that consumer-owned adoption. Exact 2.4.2-dev.167 remains immutable rollback and historical evidence, not the corrected adoption target.
 
 Rollback does not depend on npm unpublish, tag deletion or movement, history rewrite, deployment, or data action. Published 2.4.2-dev.165, 2.4.2-dev.166, and 2.4.2-dev.167 remain immutable. If a published version is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
 
