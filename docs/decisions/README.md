@@ -19,5 +19,6 @@
 | [0006](0006-governance-1-4-session-capacity-and-turnover.md) | Governance 1.4 session capacity routing and task turnover | Accepted | 2026-08-28 |
 | [0007](0007-legacy-stripe-schema-scaffold-removal.md) | Legacy Stripe schema scaffold removal | Accepted | 2026-09-01 |
 | [0008](0008-evidence-bound-critical-identifiers.md) | Evidence-bound critical identifiers | Accepted | 2026-09-01 |
+| [0009](0009-impact-based-verification-selection.md) | Impact-based verification selection | Accepted | 2026-09-01 |
 
 Accepted ADRs are never deleted. Supersede them with a new numbered ADR.

@@ -53,26 +53,55 @@ For this package, verify the source or tag manifest through `package.json`, `pac
 
 This preflight does not merge approval gates. Package code or tests, tag creation, push, npm publication, registry access, consumer adoption, deployment, remote service, and data operations retain their separate approvals.
 
-## Required Governance Verification
+## Verification Matrix
 
-Run every command independently and record its exit status:
+`governance/verification-policy.json` is the machine-readable source for change classes, stable gate IDs, stages, inclusion, invalidation, comprehensive fallback, and omission destinations. Classify every affected surface before implementation. Mixed changes use the union of all selected gates. Unknown or unbounded impact uses the comprehensive suite. Scaffold creation, governance migration, managed sync, common-contract changes, permission or agent-policy changes, and build/release/deploy completion also use the comprehensive suite.
 
-1. Shared skill validation:
-   & C:\Users\seven\.agents\skills\scaffold-project-governance\scripts\validate-skill.ps1 -SkillPath C:\Users\seven\.agents\skills\scaffold-project-governance
-2. Managed governance validation:
-   & .\scripts\check-governance.ps1 -ProjectPath C:\Users\seven\projects\AirGuard\air-guard-v2-schemas
-3. Generated entry-point drift:
-   & .\scripts\render-governance.ps1 -ProjectPath C:\Users\seven\projects\AirGuard\air-guard-v2-schemas -Check
-4. Project documentation, links, indexes, TOML, roadmaps, ADRs, and evidence:
-   & .\scripts\check-project-docs.ps1 -ProjectPath C:\Users\seven\projects\AirGuard\air-guard-v2-schemas
-5. Git whitespace:
-   git diff --check
+| Change class | Typical triggers | Iteration | Targeted regression | Completion | Release only |
+| --- | --- | --- | --- | --- | --- |
+| `documentation-only` | Markdown and indexes with no behavior or configuration impact | `project-docs` | `project-docs` | `project-docs`, `git-whitespace` | None |
+| `ui-css-layout` | A proposed UI, visual, interaction, or accessibility surface | `project-docs` | `package-suite` | `package-suite`, `project-docs`, `git-whitespace` | None |
+| `application-logic` | Package implementation, exports, executable tests | `package-suite` | affected targeted package gates | `package-suite`, `project-docs`, `git-whitespace` | `release-guard` |
+| `data-contract-schema-migration` | Schema, serialization, compatibility, persistence, migration | targeted contract gate | `package-suite` | `package-suite`, `project-docs`, `git-whitespace` | `release-guard` |
+| `governance-permissions-agents` | Governance, permissions, agents, managed sync, routing, turnover | `generated-governance` | `managed-governance`, `project-docs` | comprehensive suite | None |
+| `build-release-deploy` | Metadata, workflow, build, release, publish, deploy, rollback | `package-suite` | `release-guard` | comprehensive suite | `release-guard` |
 
-The managed sync command is state-changing and is used only after approval:
+<!-- BEGIN GENERATED VERIFICATION POLICY SUMMARY -->
+- Root: schemaVersion=1.0; comprehensiveGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]; unknownImpactGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]
+- Class: id=documentation-only; triggers=[*.md,docs/**,README.md,CHANGELOG.md,no executable\, configuration\, package\, or data-contract effect]; iterationGateIds=[project-docs]; targetedRegressionGateIds=[project-docs]; completionGateIds=[project-docs,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[managed-governance,generated-governance,package-suite,release-guard]; omissionRecord=task callback or completion report
+- Class: id=ui-css-layout; triggers=[consumer-facing UI\, CSS\, layout\, template\, visual\, interaction\, or accessibility impact,introduction of a UI-owned surface into this package]; iterationGateIds=[project-docs]; targetedRegressionGateIds=[package-suite]; completionGateIds=[package-suite,project-docs,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[managed-governance,generated-governance,release-guard]; omissionRecord=task callback or completion report\; UI implementation remains outside the confirmed package scope
+- Class: id=application-logic; triggers=[index.js,src/**/*.js,test*.js,scripts/run-package-tests.mjs,executable package behavior or public export impact]; iterationGateIds=[package-suite]; targetedRegressionGateIds=[company-configuration-targeted,role-presets-targeted]; completionGateIds=[package-suite,project-docs,git-whitespace]; releaseOnlyGateIds=[release-guard]; omittableGateIds=[managed-governance,generated-governance]; omissionRecord=task callback or completion report\; release-only omission also records that no release was authorized
+- Class: id=data-contract-schema-migration; triggers=[docs/data-contract.md,schema\, field\, serialization\, compatibility\, persistence meaning\, or migration impact,src/** schema or contract surface]; iterationGateIds=[company-configuration-targeted]; targetedRegressionGateIds=[package-suite]; completionGateIds=[package-suite,project-docs,git-whitespace]; releaseOnlyGateIds=[release-guard]; omittableGateIds=[managed-governance,generated-governance]; omissionRecord=task callback or completion report\; authorized release evidence for release-only gates
+- Class: id=governance-permissions-agents; triggers=[AGENTS.md,governance/**,.codex/**,INITIAL_PROMPT.md,docs/operations.md,docs/runbooks/**,scripts/check-governance.ps1,scripts/render-governance.ps1,managed sync\, permissions\, agents\, approval\, callback\, or turnover impact]; iterationGateIds=[generated-governance]; targetedRegressionGateIds=[managed-governance,project-docs]; completionGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[release-guard]; omissionRecord=task callback or completion report\; release guard omitted only when package release is outside scope
+- Class: id=build-release-deploy; triggers=[package.json,package-lock.json,.github/workflows/**,scripts/check-release-package.mjs,build\, packaging\, version\, tag\, publish\, install\, deploy\, or rollback impact]; iterationGateIds=[package-suite]; targetedRegressionGateIds=[release-guard]; completionGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]; releaseOnlyGateIds=[release-guard]; omittableGateIds=[]; omissionRecord=task callback\, completion report\, and authorized release evidence
+- Gate: id=managed-governance; command=pwsh -NoProfile -File .\\scripts\\check-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[targeted,completion,release]; includes=[generated-governance]; invalidatedBy=[AGENTS.md,governance/**,docs/operations.md,scripts/check-governance.ps1,scripts/render-governance.ps1]; evidenceDestination=task callback or completion report
+- Gate: id=generated-governance; command=pwsh -NoProfile -File .\\scripts\\render-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas -Check; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[AGENTS.md,governance/common-governance.md,governance/project-rules.md,governance/governance.lock.toml,scripts/render-governance.ps1]; evidenceDestination=task callback or completion report
+- Gate: id=verification-policy-negative-tests; command=pwsh -NoProfile -File .\\scripts\\test-verification-policy.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[targeted,completion,release]; includes=[]; invalidatedBy=[governance/verification-policy.json,scripts/test-verification-policy.ps1,scripts/check-governance.ps1]; evidenceDestination=task callback or completion report
+- Gate: id=project-docs; command=pwsh -NoProfile -File .\\scripts\\check-project-docs.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[*.md,docs/**,governance/project-rules.md,governance/verification-policy.json,.codex/**,scripts/check-project-docs.ps1]; evidenceDestination=task callback or completion report
+- Gate: id=package-suite; command=npm test; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[index.js,src/**,test*.js,scripts/run-package-tests.mjs,package.json,package-lock.json,Node.js runtime,installed dependencies]; evidenceDestination=task callback\, completion report\, or release evidence
+- Gate: id=company-configuration-targeted; command=npm run test:company-configuration; stages=[iteration,targeted]; includes=[]; invalidatedBy=[src/company-configuration/**,test-company-configuration.js,package.json,Node.js runtime,installed dependencies]; evidenceDestination=task callback or completion report
+- Gate: id=role-presets-targeted; command=npm run test:role-presets; stages=[targeted]; includes=[]; invalidatedBy=[src/constants/**,test-role-presets.js,package.json,Node.js runtime,installed dependencies]; evidenceDestination=task callback or completion report
+- Gate: id=release-guard; command=npm run check:release -- --tag <approved-candidate-tag>; stages=[targeted,release]; includes=[package-suite]; invalidatedBy=[package.json,package-lock.json,index.js,src/**,test*.js,scripts/check-release-package.mjs,scripts/run-package-tests.mjs,.github/workflows/**,candidate tag,Node.js runtime,installed dependencies]; evidenceDestination=authorized release evidence and task callback
+- Gate: id=git-whitespace; command=git diff --check; stages=[completion,release]; includes=[]; invalidatedBy=[any later worktree edit]; evidenceDestination=task callback or completion report
+<!-- END GENERATED VERIFICATION POLICY SUMMARY -->
 
-& C:\Users\seven\.agents\skills\scaffold-project-governance\scripts\sync-project-governance.ps1 -ProjectPath C:\Users\seven\projects\AirGuard\air-guard-v2-schemas -Apply
+### Gate Catalog and Inclusion
 
-Do not combine required evidence through a status-masking chain. A verified aggregate runner must report all results and exit nonzero if any item fails.
+The exact marker-bounded summary above is generated from the JSON policy. Do not maintain a second manual command catalog. Inclusion must be acyclic. A selected parent gate that preserves an included gate's named result and exit status and fails with it satisfies that child. Diagnostic batches never satisfy completion evidence.
+
+The approved managed sync command for this migration is:
+
+`& C:\Users\seven\projects\ScaffoldProjectGovernance\scripts\sync-project-governance.ps1 -ProjectPath C:\Users\seven\projects\AirGuard\air-guard-v2-schemas -Apply`
+
+Run selected commands independently and record their results and exit statuses. A grouped runner is acceptable only when it is verified to preserve every named result and exit status and exits nonzero if any included gate fails. Do not use `;` or another status-masking chain as completion evidence.
+
+### Evidence Validity and Retry
+
+- Bind successful evidence to the current revision or worktree state and impact classification.
+- A failure or later edit invalidates the failed gate and every gate whose `invalidatedBy` entry matches the changed path, configuration, dependency, generated artifact, runtime, or environment.
+- Unaffected successful evidence may be reused only when the matrix proves it remains valid.
+- Record omitted gates and matrix-based reasons in the task callback or completion report, and in durable release evidence when applicable. Never omit a gate to avoid a known failure.
+- Release-only, publish, registry, install, deploy, remote-service, and data gates retain separate approval boundaries.
 
 ## Package Diagnostics
 
@@ -179,7 +208,7 @@ The preferred consumer rollback is to restore a previously verified package vers
 
 ## Governance Updates and Task Turnover
 
-Managed common-governance version 1.4.1, root AGENTS.md, project-wide permissions or approval policy, coordinator responsibilities, delegation and Git integration, callback and handoff rules, evidence-bound critical-identifier routing, and safety boundaries are instruction-chain sources.
+Managed common-governance version 1.5.0, root AGENTS.md, project-wide permissions or approval policy, coordinator responsibilities, delegation and Git integration, callback and handoff rules, verification-selection policy, evidence-bound critical-identifier routing, and safety boundaries are instruction-chain sources.
 
 After an approved instruction-chain change:
 

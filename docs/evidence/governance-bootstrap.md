@@ -64,9 +64,15 @@
 | R042 | Coordinator and delegated task independently verify critical identifiers before delegation or state change and stop without an application/package diff on conflict | project rules, operations, coordination runbook, ADR 0008, and validator |
 | R043 | Published-artifact release/adoption verifies source or tag manifest, release evidence or registry metadata, and consumer manifest-lock name/version/resolved/integrity | docs/README.md, operations, coordination runbook, specification, and ADR 0008 |
 | R044 | Unapproved network gaps leave remote freshness explicitly unverified and common-governance 1.4.1 requires all-affected-task turnover | common governance 1.4.1, project rules, operations, ADR 0008, current handoff, and validator |
+| R045 | Verification selection is based on six impact classes and stable gate IDs rather than one unconditional command list | common governance 1.5.0, verification-policy.json, operations, ADR 0009, and initial prompt |
+| R046 | Iteration, targeted regression, completion, and release-only stages remain distinct | verification-policy.json, operations, project rules, and ADR 0009 |
+| R047 | Mixed changes use the union of selected gates and unknown impact uses the comprehensive fallback | common governance 1.5.0, verification-policy.json, operations, and initial prompt |
+| R048 | Governance migration, managed sync, common-contract, permission/agent-policy, and build/release/deploy completion require comprehensive verification | common governance 1.5.0, verification-policy.json, operations, project rules, and ADR 0009 |
+| R049 | Inclusion is acyclic, failures and later edits invalidate matching evidence, and omissions require a recorded reason | verification-policy.json, operations, managed validator, and negative policy tests |
+| R050 | The generated operations summary must exactly match the project-owned JSON policy | verification-policy.json, operations, canonical sync, managed validator, and project validator |
 
-- Inventory items: 44
-- Mapped items: 44
+- Inventory items: 50
+- Mapped items: 50
 - Explicitly retired items: 0
 - Unmapped items: 0
 
@@ -155,3 +161,20 @@ The exact migration commit, post-commit checks, replacement task ID/host, accept
 - Former tasks remain unarchived and undeleted for user-controlled deletion
 
 The migration commit, post-commit Git state, independent validator exits, callback result, and replacement task metadata are reported outside this pre-commit evidence to avoid self-reference. Network access was not approved, so remote branch, workflow, registry, and dist-tag freshness remain unverified.
+
+## Common-governance 1.5.0 Migration
+
+- Date: 2026-09-01
+- Owner-approved checkpoint: GOV20-SCHEMAS-GOVERNANCE-1.5.0-MIGRATION-001
+- Pre-migration repository baseline: `9c3bf095d3d992734662282ebf92130d153f39c9`
+- Canonical scaffold baseline: `de5b39e90ecf8c4f94d89dbc514c982b1652ba04`
+- Managed common-governance version: 1.5.0
+- Managed common-governance SHA-256: `0a13fc03273030594e4355dc3ec29b62ee1abb350311761de77154817fcaf6ac`
+- Project-owned additions: verification-policy.json, six impact classes, stable staged gate IDs, comprehensive fallback, omission and invalidation records, generated operations summary, ADR 0009, negative policy tests, current handoff, and validator routing
+- Inventory: 50 mapped items, 0 unmapped
+- Product boundary: package implementation, API, schema, manifest, lock, version, tag, tests, workflow, release evidence, and consumer adoption remain unchanged
+- Progress boundary: Shared-package readiness remains 25 percent; no product milestone credit is added
+- Task boundary: PM（Schemas）-06 prepares PM（Schemas）-07 turnover, but creation or replacement requires later explicit user approval after coordinator review and local integration
+- Former tasks remain unarchived and undeleted for user-controlled deletion
+
+The independent comprehensive-suite exits, exact unstaged diff, omissions, worktree state, and callback delivery are reported to PM（SPG）-05. This migration performs no benchmark, network request, release action, or remote write.

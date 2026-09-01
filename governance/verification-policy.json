@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "1.0",
+  "comprehensiveGateIds": [
+    "managed-governance",
+    "generated-governance",
+    "verification-policy-negative-tests",
+    "project-docs",
+    "package-suite",
+    "git-whitespace"
+  ],
+  "unknownImpactGateIds": [
+    "managed-governance",
+    "generated-governance",
+    "verification-policy-negative-tests",
+    "project-docs",
+    "package-suite",
+    "git-whitespace"
+  ],
+  "classes": [
+    {
+      "id": "documentation-only",
+      "triggers": ["*.md", "docs/**", "README.md", "CHANGELOG.md", "no executable, configuration, package, or data-contract effect"],
+      "iterationGateIds": ["project-docs"],
+      "targetedRegressionGateIds": ["project-docs"],
+      "completionGateIds": ["project-docs", "git-whitespace"],
+      "releaseOnlyGateIds": [],
+      "omittableGateIds": ["managed-governance", "generated-governance", "package-suite", "release-guard"],
+      "omissionRecord": "task callback or completion report"
+    },
+    {
+      "id": "ui-css-layout",
+      "triggers": ["consumer-facing UI, CSS, layout, template, visual, interaction, or accessibility impact", "introduction of a UI-owned surface into this package"],
+      "iterationGateIds": ["project-docs"],
+      "targetedRegressionGateIds": ["package-suite"],
+      "completionGateIds": ["package-suite", "project-docs", "git-whitespace"],
+      "releaseOnlyGateIds": [],
+      "omittableGateIds": ["managed-governance", "generated-governance", "release-guard"],
+      "omissionRecord": "task callback or completion report; UI implementation remains outside the confirmed package scope"
+    },
+    {
+      "id": "application-logic",
+      "triggers": ["index.js", "src/**/*.js", "test*.js", "scripts/run-package-tests.mjs", "executable package behavior or public export impact"],
+      "iterationGateIds": ["package-suite"],
+      "targetedRegressionGateIds": ["company-configuration-targeted", "role-presets-targeted"],
+      "completionGateIds": ["package-suite", "project-docs", "git-whitespace"],
+      "releaseOnlyGateIds": ["release-guard"],
+      "omittableGateIds": ["managed-governance", "generated-governance"],
+      "omissionRecord": "task callback or completion report; release-only omission also records that no release was authorized"
+    },
+    {
+      "id": "data-contract-schema-migration",
+      "triggers": ["docs/data-contract.md", "schema, field, serialization, compatibility, persistence meaning, or migration impact", "src/** schema or contract surface"],
+      "iterationGateIds": ["company-configuration-targeted"],
+      "targetedRegressionGateIds": ["package-suite"],
+      "completionGateIds": ["package-suite", "project-docs", "git-whitespace"],
+      "releaseOnlyGateIds": ["release-guard"],
+      "omittableGateIds": ["managed-governance", "generated-governance"],
+      "omissionRecord": "task callback or completion report; authorized release evidence for release-only gates"
+    },
+    {
+      "id": "governance-permissions-agents",
+      "triggers": ["AGENTS.md", "governance/**", ".codex/**", "INITIAL_PROMPT.md", "docs/operations.md", "docs/runbooks/**", "scripts/check-governance.ps1", "scripts/render-governance.ps1", "managed sync, permissions, agents, approval, callback, or turnover impact"],
+      "iterationGateIds": ["generated-governance"],
+      "targetedRegressionGateIds": ["managed-governance", "project-docs"],
+      "completionGateIds": ["managed-governance", "generated-governance", "verification-policy-negative-tests", "project-docs", "package-suite", "git-whitespace"],
+      "releaseOnlyGateIds": [],
+      "omittableGateIds": ["release-guard"],
+      "omissionRecord": "task callback or completion report; release guard omitted only when package release is outside scope"
+    },
+    {
+      "id": "build-release-deploy",
+      "triggers": ["package.json", "package-lock.json", ".github/workflows/**", "scripts/check-release-package.mjs", "build, packaging, version, tag, publish, install, deploy, or rollback impact"],
+      "iterationGateIds": ["package-suite"],
+      "targetedRegressionGateIds": ["release-guard"],
+      "completionGateIds": ["managed-governance", "generated-governance", "verification-policy-negative-tests", "project-docs", "package-suite", "git-whitespace"],
+      "releaseOnlyGateIds": ["release-guard"],
+      "omittableGateIds": [],
+      "omissionRecord": "task callback, completion report, and authorized release evidence"
+    }
+  ],
+  "gates": [
+    {
+      "id": "managed-governance",
+      "command": "pwsh -NoProfile -File .\\scripts\\check-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas",
+      "stages": ["targeted", "completion", "release"],
+      "includes": ["generated-governance"],
+      "invalidatedBy": ["AGENTS.md", "governance/**", "docs/operations.md", "scripts/check-governance.ps1", "scripts/render-governance.ps1"],
+      "evidenceDestination": "task callback or completion report"
+    },
+    {
+      "id": "generated-governance",
+      "command": "pwsh -NoProfile -File .\\scripts\\render-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas -Check",
+      "stages": ["iteration", "targeted", "completion", "release"],
+      "includes": [],
+      "invalidatedBy": ["AGENTS.md", "governance/common-governance.md", "governance/project-rules.md", "governance/governance.lock.toml", "scripts/render-governance.ps1"],
+      "evidenceDestination": "task callback or completion report"
+    },
+    {
+      "id": "verification-policy-negative-tests",
+      "command": "pwsh -NoProfile -File .\\scripts\\test-verification-policy.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas",
+      "stages": ["targeted", "completion", "release"],
+      "includes": [],
+      "invalidatedBy": ["governance/verification-policy.json", "scripts/test-verification-policy.ps1", "scripts/check-governance.ps1"],
+      "evidenceDestination": "task callback or completion report"
+    },
+    {
+      "id": "project-docs",
+      "command": "pwsh -NoProfile -File .\\scripts\\check-project-docs.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas",
+      "stages": ["iteration", "targeted", "completion", "release"],
+      "includes": [],
+      "invalidatedBy": ["*.md", "docs/**", "governance/project-rules.md", "governance/verification-policy.json", ".codex/**", "scripts/check-project-docs.ps1"],
+      "evidenceDestination": "task callback or completion report"
+    },
+    {
+      "id": "package-suite",
+      "command": "npm test",
+      "stages": ["iteration", "targeted", "completion", "release"],
+      "includes": [],
+      "invalidatedBy": ["index.js", "src/**", "test*.js", "scripts/run-package-tests.mjs", "package.json", "package-lock.json", "Node.js runtime", "installed dependencies"],
+      "evidenceDestination": "task callback, completion report, or release evidence"
+    },
+    {
+      "id": "company-configuration-targeted",
+      "command": "npm run test:company-configuration",
+      "stages": ["iteration", "targeted"],
+      "includes": [],
+      "invalidatedBy": ["src/company-configuration/**", "test-company-configuration.js", "package.json", "Node.js runtime", "installed dependencies"],
+      "evidenceDestination": "task callback or completion report"
+    },
+    {
+      "id": "role-presets-targeted",
+      "command": "npm run test:role-presets",
+      "stages": ["targeted"],
+      "includes": [],
+      "invalidatedBy": ["src/constants/**", "test-role-presets.js", "package.json", "Node.js runtime", "installed dependencies"],
+      "evidenceDestination": "task callback or completion report"
+    },
+    {
+      "id": "release-guard",
+      "command": "npm run check:release -- --tag <approved-candidate-tag>",
+      "stages": ["targeted", "release"],
+      "includes": ["package-suite"],
+      "invalidatedBy": ["package.json", "package-lock.json", "index.js", "src/**", "test*.js", "scripts/check-release-package.mjs", "scripts/run-package-tests.mjs", ".github/workflows/**", "candidate tag", "Node.js runtime", "installed dependencies"],
+      "evidenceDestination": "authorized release evidence and task callback"
+    },
+    {
+      "id": "git-whitespace",
+      "command": "git diff --check",
+      "stages": ["completion", "release"],
+      "includes": [],
+      "invalidatedBy": ["any later worktree edit"],
+      "evidenceDestination": "task callback or completion report"
+    }
+  ]
+}

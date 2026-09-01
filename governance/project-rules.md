@@ -3,7 +3,7 @@
 - Status: Active
 - Owner: Schemas project
 - Common governance: governance/common-governance.md
-- Managed common-governance version: 1.4.1
+- Managed common-governance version: 1.5.0
 - Rule: This file may add stricter project-specific requirements but must not weaken the common governance contract.
 
 ## Project and Current Scope
@@ -91,7 +91,9 @@ The publish workflow requires the formal package suite on Node 22 and Node 24, t
 
 `npm test` runs the exact maintained ten-file root `test*.js` inventory and fails closed if a test is added, omitted, or exits nonzero. `test-error-definitions.js` uses maintained `node:test` assertions for `invalidReasons`, `isInvalid`, and `validate()`; the former obsolete diagnostic failure is resolved. Targeted tests and ad hoc diagnostics remain supporting evidence and do not replace the formal aggregate or other required completion gates.
 
-Every mandatory command must have an independently observable result and exit status. Grouped checks are allowed only through a verified fail-fast or aggregate runner that exits nonzero when any required check fails. Status-masking chains and diagnostic batches are not completion evidence.
+Classify affected surfaces with `governance/verification-policy.json` before implementation. Mixed changes use the union of selected stable gate IDs; unknown impact uses the comprehensive suite. Governance migration, managed sync, common-contract, permission or agent-policy, and build/release/deploy completion use the comprehensive suite. Iteration and targeted checks do not replace selected completion gates. Record every matrix-authorized omission and its reason in the task callback or completion report.
+
+Every selected command must have an independently observable result and exit status. Grouped checks are allowed only through a verified fail-fast or aggregate runner that preserves named included results and exits nonzero when any required check fails. Status-masking chains and diagnostic batches are not completion evidence. Failures and later edits invalidate affected evidence according to the policy and require rerunning the invalidated gates.
 
 ## Progress and Reporting
 

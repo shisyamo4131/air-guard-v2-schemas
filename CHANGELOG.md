@@ -4,10 +4,12 @@
 
 ### Added
 
+- Added the governance 1.5.0 impact-based verification policy, generated operations summary, ADR 0009, project-local negative policy tests, and PM（Schemas）-07 turnover preparation.
 - Added evidence-bound critical-identifier routing, ADR 0008, the governance 1.4.1 turnover handoff, source/tag/release/consumer manifest-lock preflight, and validator coverage.
 
 ### Changed
 
+- Migrated managed common governance to 1.5.0 without changing package implementation, schemas, API, tests, manifest, lock, version, tag, release evidence, workflow, consumer state, or roadmap progress.
 - Migrated managed common governance to 1.4.1 and specification to 1.0.3 without changing the package API, schema, manifest, lock, version, tag, tests, workflow, release evidence, or consumer adoption state.
 
 ## 3.0.0-dev.1 - 2026-09-01
