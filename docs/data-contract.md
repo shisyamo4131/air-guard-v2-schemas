@@ -9,11 +9,11 @@
 ## Package Identity
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
-- current published version: 2.4.2-dev.167; verified at commit `bb2390997153b2e57470d0c04012d93ddde2f971`, annotated tag object `577f358e3f7a4f7c32d216c11b9305047bbab4d7`, successful workflow run `33150835365`, npm registry and `dev` dist-tag, canonical shasum `b4cbc285438179f75b69bd754141b0a4492c722d`, integrity `sha512-EsMVhMXo9Rrc6AdLT98sdiN5iGniVZq6mEDN+XMgxuB1e8TYbNPPQCHRCdf+HcnvbTseruo23A+4PQnFpw/p0g==`, LF-clean exact-commit content comparison, and peer-inclusive fresh public import
-- current local candidate: 3.0.0-dev.1; package and lock parity, targeted checks, Node 22/24 formal suites, and the Node 24 release guard are locally verified; the candidate is unpublished and corrected-version adoption remains pending
+- current verified development version: 3.0.0-dev.1; published from commit `c84bee2f3c934618489b691dadecbd23a534372a`, annotated tag object `b317eab74d5c635bb0765ba2c2354e93e1529d9e`, successful workflow run `33467705041`, npm registry and `dev` dist-tag, shasum `e195a1de3ccafe7b369c79e1c8e327fe571fd666`, integrity `sha512-Pg5ZdBI5MDP5Ks2sN/HtzLGDhtOYcGSOczFI+AYvT2hf0b4EqoS6ditTm3ca66mQ0YVNHX7EHchX19lbmv9/CA==`, 83-file tagged-commit content comparison, and peer-inclusive fresh public imports
+- current consumer/rollback baseline: immutable published 2.4.2-dev.167; AirGuardV2 root and Functions currently use its same exact package content, and corrected-version adoption remains pending
 - release relationship: 2.4.2-dev.166 changes documentation and version metadata only relative to immutable 2.4.2-dev.165; the public API, catalog data, and behavior are unchanged
 - 2.4.2-dev.167 relationship: immutable published baseline that adds the accepted original CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
-- 3.0.0-dev.1 candidate relationship: breaking forward correction that removes the public `Company` Stripe/subscription fields, the entitlement/private-entitlement parser exports, the legacy mapper export, and the packed legacy mapper file while preserving the remaining CCB and role-preset surfaces
+- 3.0.0-dev.1 relationship: published breaking forward correction that removes the public `Company` Stripe/subscription fields, the entitlement/private-entitlement parser exports, the legacy mapper export, and the packed legacy mapper file while preserving the remaining CCB and role-preset surfaces
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2
@@ -24,15 +24,15 @@
 | --- | --- | --- |
 | package root | index.js | Existing public contract |
 | ./constants | src/constants/index.js | Existing public contract |
-| ./company-configuration | src/company-configuration/index.js | Original contract published in immutable 2.4.2-dev.167; approved breaking correction prepared as unpublished 3.0.0-dev.1 candidate |
+| ./company-configuration | src/company-configuration/index.js | Original contract published in immutable 2.4.2-dev.167; approved breaking correction published and content-verified in 3.0.0-dev.1 |
 | ./utils | src/utils/index.js | Existing public contract |
 | ./apis | src/apis/index.js | Existing but marked for future removal in source; compatibility decision open |
 
 ## Company Configuration Boundary v1 and 3.0.0-dev.1 Correction
 
-The original additive `./company-configuration` subpath is published and content-verified in exact version 2.4.2-dev.167. The AirGuardV2 root and Functions consumers pin that exact package with the same tarball/integrity and use retained subpath APIs; they do not import the three removed exports. Candidate 3.0.0-dev.1 retains the root `Company` export and the dedicated subpath, but intentionally narrows both contracts by removing obsolete Stripe-derived scaffold. It is not re-exported from the package root. The candidate is local and unpublished; corrected-version adoption remains pending because current consumer code still relies indirectly on the legacy root `Company` Stripe scaffold.
+The original additive `./company-configuration` subpath is published and content-verified in exact version 2.4.2-dev.167. The AirGuardV2 root and Functions consumers pin that exact package with the same tarball/integrity and use retained subpath APIs; they do not import the three removed exports. Published 3.0.0-dev.1 retains the root `Company` export and the dedicated subpath, but intentionally narrows both contracts by removing obsolete Stripe-derived scaffold. It is not re-exported from the package root. Corrected-version adoption remains pending because current consumer code still relies indirectly on the legacy root `Company` Stripe scaffold.
 
-Candidate public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, the strict root/profile/billing/operations/arrangement/maintenance/private-maintenance/audit and update-input parsers, and `assertCompanyMaintenancePairV1`. `parseCompanyEntitlementV1`, `parseCompanyPrivateEntitlementV1`, and `mapLegacyCompanyToConfigurationV1` are forbidden exports. Error output contains stable `code` and `path` only and never echoes an input value.
+The published corrected public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, the strict root/profile/billing/operations/arrangement/maintenance/private-maintenance/audit and update-input parsers, and `assertCompanyMaintenancePairV1`. `parseCompanyEntitlementV1`, `parseCompanyPrivateEntitlementV1`, and `mapLegacyCompanyToConfigurationV1` are absent exports. Error output contains stable `code` and `path` only and never echoes an input value.
 
 All canonical parsers reject unknown and missing fields. A structural timestamp is a plain record with safe-integer `seconds` and integer `nanoseconds` from 0 through 999,999,999; accepted adapter values are retained without a Firebase import or SDK identity test.
 
@@ -48,7 +48,7 @@ All canonical parsers reject unknown and missing fields. A structural timestamp 
 | Audit | Exact `{ schemaVersion, settingType, fromRevision, toRevision, actorUid, createdAt, changes }`; type is `PROFILE \| BILLING \| OPERATIONS`, `toRevision` is `fromRevision + 1`, and changes are 1-9 field-sorted unique exact records. Non-null bank-field before/after values must be `***`. |
 | Update Callable input | Profile, billing, and operations accept exactly `{ expectedRevision, value: <complete business payload> }` without metadata. Arrangement accepts exactly `{ expectedRevision, field: 'siteOrder' \| 'scheduleOrder', order: [...] }`. This package validates input data; it does not execute a Callable or authorize a request. |
 
-String limits count Unicode extended grapheme clusters after outer trimming. Inputs are not Unicode-normalized, and CR, LF, line/paragraph separators, and other control characters are rejected. Candidate 3.0.0-dev.1 has no general legacy mapper. Consumers must not rely on this package to convert invoice, bank, attendance, arrangement, maintenance, entitlement, subscription, or Stripe data. Any migration or data interpretation remains consumer-owned and separately approved.
+String limits count Unicode extended grapheme clusters after outer trimming. Inputs are not Unicode-normalized, and CR, LF, line/paragraph separators, and other control characters are rejected. Published 3.0.0-dev.1 has no general legacy mapper. Consumers must not rely on this package to convert invoice, bank, attendance, arrangement, maintenance, entitlement, subscription, or Stripe data. Any migration or data interpretation remains consumer-owned and separately approved.
 
 ### Breaking Correction Boundary
 
@@ -84,7 +84,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This additive API remains available in published 2.4.2-dev.167 and is preserved in candidate 3.0.0-dev.1. Exact 2.4.2-dev.167 also includes the formal fail-closed ten-file runner and successful Node 22/24 workflow suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions already pin the same exact 2.4.2-dev.167 package content, while role-catalog import adoption and local catalog deletion remain unverified consumer work. Consumers must wait for exact published corrected-version/content evidence before combining those changes with the approved Company/CCB correction. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This additive API remains available in published 2.4.2-dev.167 and is preserved in published 3.0.0-dev.1. Exact 3.0.0-dev.1 includes successful Node 22/24 workflow tests, the Node 24 release guard, registry byte/content verification, and fresh public imports; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions still pin the same exact 2.4.2-dev.167 package content, while role-catalog import adoption and local catalog deletion remain unverified consumer work. Consumers may combine those changes with the approved Company/CCB correction only in a separately approved adoption using the exact published corrected version/content. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 
@@ -128,7 +128,7 @@ The root exports defField, VALIDATION_ERRORS, GeocodableMixin, utilities re-expo
 
 This list is an export inventory, not a claim that every constructor, field, method, validation rule, serialization shape, or inherited method has complete compatibility evidence.
 
-In candidate 3.0.0-dev.1, the `Company` class remains a root named export but no longer publicly defines or serializes `stripeCustomerId` or `subscription`.
+In published 3.0.0-dev.1, the `Company` class remains a root named export but no longer publicly defines or serializes `stripeCustomerId` or `subscription`.
 
 ## Data-shape Conventions
 

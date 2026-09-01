@@ -8,11 +8,11 @@ The shared role preset exports are available beginning with published package ve
 
 The Company Configuration Boundary v1 contract is available through the additive `./company-configuration` subpath in verified published package version 2.4.2-dev.167. Its exact commit/tag, workflow, registry bytes/content, and fresh peer-inclusive public import are verified. The AirGuardV2 root and Functions consumers currently pin exact 2.4.2-dev.167 with the same tarball and integrity and use retained `./company-configuration` APIs. They do not import the three surfaces removed by the correction.
 
-The approved breaking correction is locally implemented and validated as unpublished candidate `3.0.0-dev.1`. It removes the legacy Stripe fields from the public `Company` schema and removes the entitlement/private-entitlement parsers and legacy mapper from `./company-configuration`. Legacy-shaped `Company` input may still be read only to discard those fields; it does not restore or serialize them. Current AirGuardV2 code still relies indirectly on the legacy root `Company` Stripe scaffold, so corrected-version adoption remains pending and must update root and Functions together. Rollback restores both consumers to exact 2.4.2-dev.167 and their previous consumer code.
+The approved breaking correction is published and content-verified as `3.0.0-dev.1`. It removes the legacy Stripe fields from the public `Company` schema and removes the entitlement/private-entitlement parsers and legacy mapper from `./company-configuration`. Legacy-shaped `Company` input may still be read only to discard those fields; it does not restore or serialize them. Exact commit/tag, Node 22/24 workflow, registry bytes/content, and fresh public imports are verified. Current AirGuardV2 code still relies indirectly on the legacy root `Company` Stripe scaffold, so corrected-version adoption remains pending and must update root and Functions together. Rollback restores both consumers to exact 2.4.2-dev.167 and their previous consumer code.
 
 The approved shared role preset contract is exposed through the `./constants` subpath as `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. Role-catalog import adoption and replacement of local catalogs remain consumer-owned work even though both current consumers already pin the same 2.4.2-dev.167 package content.
 
-The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Firebase Cloud Functions. Both currently share exact 2.4.2-dev.167. Corrected-contract integration completes only when both adopt and verify the same separately approved, published corrected version and content.
+The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Firebase Cloud Functions. Both currently share exact 2.4.2-dev.167. Published corrected version 3.0.0-dev.1 is available, but corrected-contract integration completes only when both adopt and verify the same exact version and content in a separately approved consumer checkpoint.
 
 ## Public Entry Points
 
@@ -26,7 +26,7 @@ The role preset exports use the existing `./constants` subpath and are not re-ex
 
 The current public-contract inventory and known compatibility questions are in docs/data-contract.md.
 
-The Company Configuration Boundary exports strict pure-data parsers, structural `TimestampLike` validation, and stable code/path validation errors. Candidate `3.0.0-dev.1` preserves profile, billing, operations, arrangement, maintenance, private-maintenance, audit, and update-input parsing while forbidding the retired entitlement, private-entitlement, and legacy-mapper surfaces. It does not add Firebase SDK, AirFirebase adapter, Vue, Vuetify, CRUD, Callable, Rules, deployment, Stripe API, or data-operation behavior. See [ADR 0005](docs/decisions/0005-company-configuration-v1.md) and [ADR 0007](docs/decisions/0007-legacy-stripe-schema-scaffold-removal.md).
+The Company Configuration Boundary exports strict pure-data parsers, structural `TimestampLike` validation, and stable code/path validation errors. Published `3.0.0-dev.1` preserves profile, billing, operations, arrangement, maintenance, private-maintenance, audit, and update-input parsing while forbidding the retired entitlement, private-entitlement, and legacy-mapper surfaces. It does not add Firebase SDK, AirFirebase adapter, Vue, Vuetify, CRUD, Callable, Rules, deployment, Stripe API, or data-operation behavior. See [ADR 0005](docs/decisions/0005-company-configuration-v1.md), [ADR 0007](docs/decisions/0007-legacy-stripe-schema-scaffold-removal.md), and [the release evidence](docs/evidence/release-3.0.0-dev.1.md).
 
 ## Documentation
 
@@ -51,7 +51,7 @@ The publish workflow requires the formal package suite on Node 22 and Node 24 be
 
 `npm test` runs the exact maintained root `test*.js` inventory and fails closed if a test is added, omitted, or exits nonzero. The formerly obsolete `test-error-definitions.js` diagnostic now asserts the maintained `invalidReasons`, `isInvalid`, and `validate()` contract.
 
-The role preset contract retains its targeted `node:test` check through the public package self-reference. It is also included in the formal package suite. Node 22 and Node 24 workflow suite evidence exists for published 2.4.2-dev.167, but this does not establish the sole supported Node range.
+The role preset contract retains its targeted `node:test` check through the public package self-reference. It is also included in the formal package suite. Node 22 and Node 24 workflow suite evidence exists for published 2.4.2-dev.167 and 3.0.0-dev.1, but this does not establish the sole supported Node range.
 
 The Company Configuration Boundary retains its targeted `test-company-configuration.js` public-self-reference check and is included in the formal suite. `npm run check:release` fails closed on tag/version, lockfile, required or forbidden exports, root leaks, formal tests, public self-import, required or forbidden package content, or repository archive mismatches; `prepublishOnly` and the tag-only workflow make that guard part of the publish path.
 

@@ -2,7 +2,7 @@
 
 - Date: 2026-09-01
 - Status: Accepted
-- Implementation status: Implemented and locally validated as 3.0.0-dev.1 candidate; publication and corrected-version adoption pending
+- Implementation status: Published and content-verified as 3.0.0-dev.1; corrected-version adoption pending
 - Related specification: Company Configuration Boundary v1
 - Related decisions: [0003](0003-release-and-rollback-approval-boundaries.md), [0005](0005-company-configuration-v1.md)
 - Supersedes: The entitlement, private-entitlement, and legacy-mapper portions of ADR 0005; other CCB v1 decisions remain accepted
@@ -13,7 +13,7 @@ Published 2.4.2-dev.167 contains legacy Stripe-derived schema scaffold that is n
 
 ## Decision
 
-Prepare a breaking forward correction as unpublished candidate `3.0.0-dev.1`.
+Prepare and release a breaking forward correction as `3.0.0-dev.1`.
 
 Keep the package-root `Company` export, but remove `stripeCustomerId` and `subscription`, including the nested `employeeLimit` default, from its public field definition and serialized shape. Legacy-shaped constructor input may be read only so those known fields can be discarded; it must not restore or serialize them.
 
@@ -41,7 +41,7 @@ A major-version candidate makes the public narrowing explicit. Removing inert or
 - Data: No production document or Stripe resource is read or changed. Legacy data conversion is not provided by this package.
 - Implementation: Runtime, package metadata, release guard, tests, specification, data-contract inventory, roadmap, operations, README, changelog, and ADR index change together.
 - Tests: Targeted tests must prove field omission and non-reserialization, forbidden removed exports/file, preservation of the remaining public API, unchanged role catalog reachability, and release-guard negative paths. The formal ten-file suite must pass independently on local Node 22 and Node 24 runtimes before local integration is complete.
-- Release: Candidate 3.0.0-dev.1 remains unpublished. Tag, push, publication, registry verification, and consumer adoption remain separate approval gates.
+- Release: Exact 3.0.0-dev.1 is published and content-verified from commit `c84bee2f3c934618489b691dadecbd23a534372a`, annotated tag object `b317eab74d5c635bb0765ba2c2354e93e1529d9e`, successful workflow run `33467705041`, registry digests, tagged-commit content comparison, and fresh public imports. Consumer adoption remains a separate approval gate.
 - Progress: No predefined roadmap gate is completed by the local correction; Shared-package readiness remains 25 percent.
 
 ## Migration and Rollback

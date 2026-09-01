@@ -1,7 +1,7 @@
 # Documentation Map
 
 - Status: Active
-- Last verified: 2026-08-28
+- Last verified: 2026-09-01
 - Authority: Navigation only. specification.md is authoritative for confirmed requirements and roadmaps/ for verified progress.
 
 ## How to Start Work
@@ -39,6 +39,7 @@
 | [Handoffs](handoffs/README.md) | Latest temporary task routing and restart checkpoint |
 | [Bootstrap evidence](evidence/governance-bootstrap.md) | Migration baseline, rule mapping, checks, and known conflicts |
 | [2.4.2-dev.167 release evidence](evidence/release-2.4.2-dev.167.md) | Exact commit/tag, workflow, registry content, and fresh-install verification |
+| [3.0.0-dev.1 release evidence](evidence/release-3.0.0-dev.1.md) | Breaking correction commit/tag, workflow, registry content, and fresh-install verification |
 | [Changelog](../CHANGELOG.md) | Concise visible changes |
 
 ## Documentation Completion Criteria

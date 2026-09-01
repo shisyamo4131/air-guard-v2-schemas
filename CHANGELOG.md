@@ -2,16 +2,19 @@
 
 ## Unreleased
 
+## 3.0.0-dev.1 - 2026-09-01
+
 ### Added
 
 - Migrated managed common governance to 1.4.0 and added exact-task session-capacity routing, the project coordination runbook, the fail-closed local measurement script, governance ADR, handoff index, and capacity-routing validation.
 
 ### Changed
 
-- Prepared and locally validated the breaking correction as unpublished package candidate `3.0.0-dev.1`; published `2.4.2-dev.167` remains immutable and is the rollback baseline.
+- Published and content-verified the breaking correction as package `3.0.0-dev.1`; published `2.4.2-dev.167` remains immutable and is the consumer rollback baseline.
 - Changed the release-package guard so the retired legacy mapper/export/file and Stripe-derived entitlement parser exports are forbidden package content instead of required content.
 - Legacy-shaped `Company` input may be read only to discard `stripeCustomerId` and `subscription`; those fields are no longer restored, defaulted, or serialized.
 - Recorded that AirGuardV2 root and Functions currently pin the same exact `2.4.2-dev.167` package content, use retained Company Configuration Boundary APIs, and do not import the three removed exports; shared role-catalog import adoption and corrected-contract adoption/build acceptance remain pending.
+- Verified annotated tag `v3.0.0-dev.1`, workflow run `33467705041`, npm `dev` dist-tag, registry shasum/integrity, all 83 published files against the tagged commit, and peer-inclusive fresh public imports.
 
 ### Removed
 
