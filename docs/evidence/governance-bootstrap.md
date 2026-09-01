@@ -59,9 +59,14 @@
 | R037 | Capacity measurement requires the actual current task ID, exactly one match, and no newest-session inference | project rules, coordination runbook, and scripts/check-codex-session-size.ps1 |
 | R038 | The per-session handoff threshold is 300 MiB and the separate Codex-wide reference warning is 10 GiB | project rules, coordination runbook, and measurement script |
 | R039 | Capacity reports use the standard fields and fail closed without session-content exposure | coordination runbook, measurement script, operations, and project validator |
+| R040 | Critical identifiers are confirmed only from a current-turn task-routed source or actual target with source, location or command, and value recorded | common governance 1.4.1, project rules, specification, operations, and coordination runbook |
+| R041 | Chat history, summaries, memory, prompts, agent reports, and multiple-agent agreement are leads only | common governance 1.4.1, project rules, specification, ADR 0008, and initial prompt |
+| R042 | Coordinator and delegated task independently verify critical identifiers before delegation or state change and stop without an application/package diff on conflict | project rules, operations, coordination runbook, ADR 0008, and validator |
+| R043 | Published-artifact release/adoption verifies source or tag manifest, release evidence or registry metadata, and consumer manifest-lock name/version/resolved/integrity | docs/README.md, operations, coordination runbook, specification, and ADR 0008 |
+| R044 | Unapproved network gaps leave remote freshness explicitly unverified and common-governance 1.4.1 requires all-affected-task turnover | common governance 1.4.1, project rules, operations, ADR 0008, current handoff, and validator |
 
-- Inventory items: 39
-- Mapped items: 39
+- Inventory items: 44
+- Mapped items: 44
 - Explicitly retired items: 0
 - Unmapped items: 0
 
@@ -134,3 +139,19 @@ This bootstrap does not authorize package implementation or test changes, the kn
 - Former tasks remain unarchived and undeleted for user-controlled deletion
 
 The exact migration commit, post-commit checks, replacement task ID/host, accepted no-change callback, and self-routing state are recorded in the latest handoff and the GOV14-SCHEMAS-01 completion callback rather than through a self-referential edit to this evidence.
+
+## Common-governance 1.4.1 Migration
+
+- Date: 2026-09-01
+- Owner-approved checkpoint: GOV19-SCHEMAS-EVIDENCE-BOUND-SYNC-001
+- Pre-migration repository baseline: `e9e40888a963776b8ba091f0ad1c315db8e9877c`
+- Managed common-governance version: 1.4.1
+- Managed common-governance SHA-256: `21e2be90d274a11001f788f78e647d7d537a45124baa731be5ccbadf89cd5eca`
+- Project-owned additions: evidence-bound critical-identifier rules and routing, ADR 0008, current migration handoff, source/tag/release/consumer manifest-lock preflight, remote-freshness boundary, and validator coverage
+- Inventory: 44 mapped items, 0 unmapped
+- Product boundary: package runtime, API, schema, manifest, lock, version, tag, tests, workflow, release evidence, and consumer adoption are unchanged
+- Progress boundary: Shared-package readiness remains 25 percent; no product/package milestone credit is added
+- Task boundary: all affected active Schemas tasks require new non-forked replacements after the clean migration commit; PM（Schemas）-05 remains active until PM（Schemas）-06 activation succeeds
+- Former tasks remain unarchived and undeleted for user-controlled deletion
+
+The migration commit, post-commit Git state, independent validator exits, callback result, and replacement task metadata are reported outside this pre-commit evidence to avoid self-reference. Network access was not approved, so remote branch, workflow, registry, and dist-tag freshness remain unverified.

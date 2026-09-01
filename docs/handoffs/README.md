@@ -4,6 +4,6 @@ This index identifies the latest temporary task routing and restart record. Dura
 
 ## Current
 
-- [GOV14-SCHEMAS-01 common-governance 1.4.0 migration and turnover](2026-08-28-governance-1.4.0-migration.md)
+- [GOV19-SCHEMAS-EVIDENCE-BOUND-SYNC-001 common-governance 1.4.1 migration and planned turnover](2026-09-01-governance-1.4.1-migration.md)
 
 Superseded handoff records remain historical evidence and must not be used as current routing.

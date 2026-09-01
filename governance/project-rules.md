@@ -3,7 +3,7 @@
 - Status: Active
 - Owner: Schemas project
 - Common governance: governance/common-governance.md
-- Managed common-governance version: 1.4.0
+- Managed common-governance version: 1.4.1
 - Rule: This file may add stricter project-specific requirements but must not weaken the common governance contract.
 
 ## Project and Current Scope
@@ -30,6 +30,16 @@ docs/specification.md is the single current confirmed specification. docs/data-c
 Capacity requests using `容量チェック`, `タスク容量確認`, `セッション容量確認`, or `session size / handoff threshold確認` route through docs/README.md to docs/runbooks/project-coordination.md and scripts/check-codex-session-size.ps1.
 
 Do not promote a consumer request, discussion, assumption, or existing implementation detail into confirmed specification without explicit user approval.
+
+## Evidence-bound Critical Identifier Routing
+
+Treat package names and versions, digests and integrity values, repository paths, branches, commits, tags, environments, project and database IDs, deploy targets, and data targets as critical identifiers. Before the coordinator presents one as confirmed in a delegation or uses it for state change, obtain it in the current turn from the task-routed authoritative source or actual target and record the exact source, location or command, and value.
+
+Chat history, compaction summaries, memory, inference, parent or coordinator prompts, delegated-task reports, and agreement between multiple agents are leads only. They do not confirm a critical identifier.
+
+A delegated task independently compares every prompt identifier with the actual target or authoritative source before any file write, Git mutation, validator or test, install, network call, or other state change. If a value is missing, stale, ambiguous, or contradictory, stop and callback without creating an application or package diff.
+
+For published-artifact release or adoption, verify the applicable chain: source or tag manifest; recorded release evidence or registry metadata; and consumer manifest or lock name, version, resolved location, and integrity. When network access is not separately approved, verify only available local source and recorded evidence, mark remote freshness unverified, and do not infer the missing gate.
 
 ## Product and Cross-project Boundaries
 

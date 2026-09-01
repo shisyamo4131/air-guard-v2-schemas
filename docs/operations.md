@@ -15,7 +15,7 @@ Implemented:
 - published and content-verified 2.4.2-dev.167 CCB v1 package, formal ten-file test suite, and fail-closed release guard
 - AirGuardV2 root and Functions consumption of the same exact 2.4.2-dev.167 tarball/integrity with retained CCB APIs; the three correction-removed exports are unused
 - published and content-verified 3.0.0-dev.1 breaking correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and fresh public imports
-- common-governance 1.4.0 capacity routing through docs/runbooks/project-coordination.md and scripts/check-codex-session-size.ps1
+- common-governance 1.4.1 capacity routing and evidence-bound critical-identifier gate through docs/runbooks/project-coordination.md and project validators
 
 Planned or not yet verified:
 
@@ -38,6 +38,20 @@ Use the primary repository at C:\Users\seven\projects\AirGuard\air-guard-v2-sche
 Do not use a linked worktree, task-specific worktree, or alternate repository copy unless the user explicitly approves its reason, path, branch, owner, integration method, lifetime, and cleanup plan.
 
 Do not add secrets or production data. Network access remains disabled unless separately approved.
+
+## Evidence-bound Critical Identifier Preflight
+
+Before delegating or changing state with a package name or version, digest or integrity value, repository path, branch, commit, tag, environment, project or database ID, deploy target, or data target:
+
+1. Select the smallest task-routed authoritative source or inspect the actual target in the current turn.
+2. Record the exact source, location or command, and value.
+3. Treat chat history, summaries, memory, prompts, delegated-task reports, and multiple-agent agreement as leads only.
+4. Require a delegated task to repeat the comparison before its first file write, Git mutation, validator or test, install, network call, or other state change.
+5. Stop and callback without an application or package diff when any material value is missing, stale, ambiguous, or contradictory.
+
+For this package, verify the source or tag manifest through `package.json`, `package-lock.json`, and the actual Git object for a commit or tag, then use the indexed `docs/evidence/release-*.md` record or separately approved registry query for release metadata. Published-artifact release or consumer adoption additionally requires the consumer manifest or lock name, version, resolved location, and integrity. If network use is unapproved, do not query or infer remote state; mark remote freshness, including registry, workflow, and branch state, unverified.
+
+This preflight does not merge approval gates. Package code or tests, tag creation, push, npm publication, registry access, consumer adoption, deployment, remote service, and data operations retain their separate approvals.
 
 ## Required Governance Verification
 
@@ -165,7 +179,7 @@ The preferred consumer rollback is to restore a previously verified package vers
 
 ## Governance Updates and Task Turnover
 
-Managed common-governance version 1.4.0, root AGENTS.md, project-wide permissions or approval policy, coordinator responsibilities, delegation and Git integration, callback and handoff rules, and safety boundaries are instruction-chain sources.
+Managed common-governance version 1.4.1, root AGENTS.md, project-wide permissions or approval policy, coordinator responsibilities, delegation and Git integration, callback and handoff rules, evidence-bound critical-identifier routing, and safety boundaries are instruction-chain sources.
 
 After an approved instruction-chain change:
 

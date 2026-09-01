@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- Added evidence-bound critical-identifier routing, ADR 0008, the governance 1.4.1 turnover handoff, source/tag/release/consumer manifest-lock preflight, and validator coverage.
+
+### Changed
+
+- Migrated managed common governance to 1.4.1 and specification to 1.0.3 without changing the package API, schema, manifest, lock, version, tag, tests, workflow, release evidence, or consumer adoption state.
+
 ## 3.0.0-dev.1 - 2026-09-01
 
 ### Added

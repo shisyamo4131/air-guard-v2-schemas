@@ -21,6 +21,7 @@ $requiredFiles = @(
     'docs/runbooks/project-coordination.md',
     'docs/handoffs/README.md',
     'docs/handoffs/2026-08-28-governance-1.4.0-migration.md',
+    'docs/handoffs/2026-09-01-governance-1.4.1-migration.md',
     'docs/roadmaps/README.md',
     'docs/roadmaps/shared-package-readiness.md',
     'docs/decisions/README.md',
@@ -30,8 +31,11 @@ $requiredFiles = @(
     'docs/decisions/0004-shared-role-permission-catalog.md',
     'docs/decisions/0005-company-configuration-v1.md',
     'docs/decisions/0006-governance-1-4-session-capacity-and-turnover.md',
+    'docs/decisions/0007-legacy-stripe-schema-scaffold-removal.md',
+    'docs/decisions/0008-evidence-bound-critical-identifiers.md',
     'docs/evidence/governance-bootstrap.md',
     'docs/evidence/release-2.4.2-dev.167.md',
+    'docs/evidence/release-3.0.0-dev.1.md',
     'scripts/check-codex-session-size.ps1',
     '.codex/config.toml',
     '.codex/agents/developer.toml',
@@ -96,6 +100,7 @@ $requiredIndexLinks = @(
     'decisions/README.md',
     'evidence/governance-bootstrap.md',
     'evidence/release-2.4.2-dev.167.md',
+    'evidence/release-3.0.0-dev.1.md',
     '../CHANGELOG.md'
 )
 foreach ($requiredLink in $requiredIndexLinks) {
@@ -137,8 +142,59 @@ if ($capacityScript.Contains('most_recently_updated') -or $capacityScript.Contai
 }
 
 $projectRules = [IO.File]::ReadAllText((Join-Path $resolvedProject 'governance\project-rules.md'))
-if (-not $projectRules.Contains('Managed common-governance version: 1.4.0')) {
-    throw 'Project rules do not declare managed common-governance version 1.4.0.'
+if (-not $projectRules.Contains('Managed common-governance version: 1.4.1')) {
+    throw 'Project rules do not declare managed common-governance version 1.4.1.'
+}
+
+$operations = [IO.File]::ReadAllText((Join-Path $resolvedProject 'docs\operations.md'))
+$initialPrompt = [IO.File]::ReadAllText((Join-Path $resolvedProject 'INITIAL_PROMPT.md'))
+$evidenceBoundRequirements = @(
+    'critical identifier',
+    'current turn',
+    'task-routed',
+    'actual target',
+    'source, location or command, and value',
+    'application or package diff',
+    'source or tag manifest',
+    'consumer manifest or lock',
+    'remote freshness'
+)
+foreach ($requirement in $evidenceBoundRequirements) {
+    foreach ($surface in @(
+        @{ Name = 'governance/project-rules.md'; Content = $projectRules },
+        @{ Name = 'docs/operations.md'; Content = $operations },
+        @{ Name = 'docs/runbooks/project-coordination.md'; Content = $coordination }
+    )) {
+        if (-not $surface.Content.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "$($surface.Name) does not contain evidence-bound requirement: $requirement"
+        }
+    }
+}
+
+foreach ($requirement in @('critical identifier', 'current turn', 'task-routed', 'actual target', 'source or tag manifest', 'consumer manifest or lock', 'remote freshness')) {
+    if (-not $docsIndex.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "docs/README.md does not route evidence-bound requirement: $requirement"
+    }
+    if (-not $initialPrompt.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "INITIAL_PROMPT.md does not preserve evidence-bound requirement: $requirement"
+    }
+}
+
+$specification = [IO.File]::ReadAllText((Join-Path $resolvedProject 'docs\specification.md'))
+if (-not $specification.Contains('Specification version: 1.0.3')) {
+    throw 'Specification version is not the approved 1.0.3 governance patch.'
+}
+
+$handoffIndex = [IO.File]::ReadAllText((Join-Path $resolvedProject 'docs\handoffs\README.md'))
+$currentHandoffName = '2026-09-01-governance-1.4.1-migration.md'
+if (-not $handoffIndex.Contains($currentHandoffName)) {
+    throw "Handoff index does not route to current turnover source: $currentHandoffName"
+}
+$currentHandoff = [IO.File]::ReadAllText((Join-Path $resolvedProject "docs\handoffs\$currentHandoffName"))
+foreach ($requirement in @('Managed common governance: 1.4.1', 'PM（Schemas）-05', 'PM（Schemas）-06', 'e9e40888a963776b8ba091f0ad1c315db8e9877c', 'former Schemas tasks remain unarchived and undeleted')) {
+    if (-not $currentHandoff.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Current handoff is missing turnover requirement: $requirement"
+    }
 }
 
 $decisionsRoot = Join-Path $resolvedProject 'docs\decisions'
@@ -196,6 +252,10 @@ if (-not $inventoryMatch.Success -or -not $mappedMatch.Success) {
 }
 if ($inventoryMatch.Groups[1].Value -ne $mappedMatch.Groups[1].Value) {
     throw 'Governance rule inventory count does not equal mapped count.'
+}
+$inventoryRows = [regex]::Matches($evidence, '(?m)^\| R\d{3} \|')
+if ($inventoryRows.Count -ne [int]$inventoryMatch.Groups[1].Value) {
+    throw "Governance rule inventory declares $($inventoryMatch.Groups[1].Value) items but contains $($inventoryRows.Count) rule rows."
 }
 if ($evidence -notmatch '(?m)^- Unmapped items:\s*0\s*$') {
     throw 'Governance rule inventory has unmapped items or lacks the zero-unmapped declaration.'
@@ -262,4 +322,6 @@ if ($LASTEXITCODE -ne 0) {
     unmapped_rule_items = 0
     toml_files_current = $true
     capacity_routing_current = $true
+    evidence_bound_routing_current = $true
+    current_handoff = $currentHandoffName
 }

@@ -1,5 +1,21 @@
 # Project Coordination Runbook
 
+## Evidence-bound Critical Identifier Preflight
+
+Before the coordinator delegates or uses a package name or version, digest or integrity value, repository path, branch, commit, tag, environment, project or database ID, deploy target, or data target for state change, obtain it in the current turn from the task-routed authoritative source or actual target. Record the exact source, location or command, and value in the checkpoint or report.
+
+Chat history, compaction summaries, memory, inference, parent or coordinator prompts, delegated-task reports, and multiple-agent agreement are leads only. A delegated task independently compares every prompt identifier with the actual target or authoritative source before its first file write, Git mutation, validator or test, install, network call, or other state change.
+
+If any material identifier is missing, stale, ambiguous, or contradictory, stop and issue a specification-question or failure callback without creating an application or package diff. Read-only discovery may investigate a value that remains explicitly unconfirmed.
+
+For published-artifact release or adoption, verify the applicable chain:
+
+1. source or tag manifest;
+2. recorded release evidence or separately approved registry metadata;
+3. consumer manifest or lock name, version, resolved location, and integrity.
+
+When network use is not separately approved, verify only local source and recorded evidence, mark remote freshness unverified, and do not infer the missing gate. This preflight does not authorize release, push, publish, consumer adoption, deployment, remote service, or data operations.
+
 ## Session Capacity Routing
 
 Treat each of these user instructions as the same task-capacity request and route here before answering:

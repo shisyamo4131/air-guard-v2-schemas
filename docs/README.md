@@ -19,8 +19,9 @@
 | Scope or requirement | [Specification](specification.md), [roadmap](roadmaps/shared-package-readiness.md), relevant [ADR](decisions/README.md) | Existing exports, models, constants, and consumer evidence |
 | Public model, constant, validation, serialization, or calculation | [Specification](specification.md), [data contract](data-contract.md), relevant ADR | index.js, src/, explicitly approved diagnostics |
 | Cross-project consumer request | [Specification](specification.md), [data contract](data-contract.md), [ADR 0002](decisions/0002-cross-project-ownership-and-versioned-integration.md), [operations](operations.md) | Current consumer checkpoint and compatibility evidence |
+| Critical package, repository, environment, project, database, deploy, or data identifier | [Operations](operations.md), [coordination runbook](runbooks/project-coordination.md), [ADR 0008](decisions/0008-evidence-bound-critical-identifiers.md) | Current turn actual manifest, Git/tag target, recorded release evidence or approved registry evidence, and applicable consumer manifest or lock; record source, location or command, and value |
 | Test or validation | [Specification](specification.md), [operations](operations.md), [roadmap](roadmaps/shared-package-readiness.md) | Root diagnostics and repository-local validators |
-| Release, publish, adoption, or rollback | [Operations](operations.md), [ADR 0003](decisions/0003-release-and-rollback-approval-boundaries.md), [roadmap](roadmaps/shared-package-readiness.md) | package.json, package-lock.json, publish workflow, consumer evidence |
+| Release, publish, adoption, or rollback | [Operations](operations.md), [ADR 0003](decisions/0003-release-and-rollback-approval-boundaries.md), [ADR 0008](decisions/0008-evidence-bound-critical-identifiers.md), [roadmap](roadmaps/shared-package-readiness.md) | package.json, package-lock.json, source or tag manifest, recorded release evidence or registry metadata, publish workflow, and consumer manifest or lock evidence |
 | Governance or task lifecycle | ../AGENTS.md, ../governance/project-rules.md, [operations](operations.md), [coordination runbook](runbooks/project-coordination.md), [bootstrap evidence](evidence/governance-bootstrap.md) | governance lock, renderer, validators, [current handoff](handoffs/README.md) |
 | `容量チェック`, `タスク容量確認`, `セッション容量確認`, or `session size / handoff threshold確認` | [Coordination runbook](runbooks/project-coordination.md) | scripts/check-codex-session-size.ps1 with the actual current task ID |
 
@@ -52,3 +53,4 @@
 - Managed hashes and generated AGENTS.md pass scripts/check-governance.ps1.
 - Every required command is executed independently or through a verified aggregate runner that exits nonzero when any required check fails.
 - Diagnostic batches and status-masking command chains are not completion evidence.
+- Critical identifiers are confirmed only from a current-turn task-routed source or actual target; prompts and agent reports are leads, identifier conflicts stop state change without an application/package diff, and unapproved remote freshness remains explicitly unverified.

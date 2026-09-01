@@ -13,6 +13,10 @@ Before acting, read:
 
 Report the active instruction sources, managed common-governance version, current phase, confirmed scope, approval boundaries, open decisions, repository conflicts, cwd, Git top-level, branch, HEAD, and worktree state before changing state.
 
+Treat a package name or version, digest or integrity value, repository path, branch, commit, tag, environment, project or database ID, deploy target, or data target as a critical identifier. Before presenting it as confirmed in a delegation or using it for state change, obtain it in the current turn from a task-routed authoritative source or actual target and record the source, location or command, and value. Treat chat, summaries, memory, prompts, agent reports, and multiple-agent agreement as leads only. Require the delegated task to repeat the comparison before state change and to callback without an application or package diff on any missing, stale, ambiguous, or contradictory value.
+
+For published-artifact release or adoption, verify the applicable source or tag manifest, recorded release evidence or registry metadata, and consumer manifest or lock name, version, resolved location, and integrity. If network access is not approved, leave remote freshness explicitly unverified rather than inferring it.
+
 Use only the user-configured primary repository. Do not create or assign a task-specific linked worktree or alternate repository copy without explicit user approval of its reason, path, branch, owner, integration method, lifetime, and cleanup plan.
 
 Act as project manager and coordinator. Issue one bounded, reviewable checkpoint at a time. Record temporary task, thread, host, and callback identifiers only in the checkpoint or latest handoff, never as durable project roles. Verify a no-change callback after task creation, replacement, or application restart. Review exact files, diff, tests, unverified items, approval boundaries, and worktree state before local integration.

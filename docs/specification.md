@@ -1,7 +1,7 @@
 # AirGuard V2 Schemas Specification
 
 - Last updated: 2026-09-01
-- Specification version: 1.0.2
+- Specification version: 1.0.3
 - Status: Active
 - Current phase: Shared-package readiness
 
@@ -50,6 +50,14 @@ The package uses ECMAScript modules and currently publishes public exports from 
 The publish workflow requires the formal package suite on Node 22 and Node 24, then uses Node 24 for the publish job after the release guard succeeds. Node 24 remains the formal validation runtime candidate. This matrix does not establish the complete supported Node range, which remains open.
 
 The Schemas primary coordinator owns this repository and package evidence. Each consumer project primary coordinator owns its dependency, code, test, documentation, deployment, and acceptance changes. Coordinators may inspect another repository read-only when approved but do not modify it.
+
+## Evidence-bound Coordination Requirements
+
+Package names and versions, digests and integrity values, repository paths, branches, commits, tags, environments, project and database IDs, deploy targets, and data targets are confirmed only when obtained in the current turn from a task-routed authoritative source or the actual target. The coordinator records the source, location or command, and value before delegation or state change. Chat history, summaries, memory, prompts, delegated-task reports, and multiple-agent agreement remain leads only.
+
+Each delegated task independently compares prompt identifiers with the authoritative source or actual target before file writes, Git mutation, validation, tests, install, network access, or other state change. Missing, stale, ambiguous, or contradictory identifiers stop the checkpoint without creating an application or package diff.
+
+Published-artifact release or adoption requires the applicable source or tag manifest, recorded release evidence or registry metadata, and consumer manifest or lock name, version, resolved location, and integrity chain. If network use is not separately approved, remote freshness remains explicitly unverified and is never inferred. [ADR 0008](decisions/0008-evidence-bound-critical-identifiers.md) records the decision.
 
 ## Shared Role Preset Contract
 
@@ -114,6 +122,9 @@ The corrected contract is published from commit `c84bee2f3c934618489b691dadecbd2
 6. A future consumer is added only after runtime, public API, version, compatibility, verification, adoption order, and rollback are confirmed.
 7. Release, publish, and rollback procedures distinguish local evidence from external actions requiring separate approval.
 8. Published 3.0.0-dev.1 exposes no public Stripe/subscription fields, entitlement/private-entitlement parsers, legacy mapper, or packed legacy mapper file; known legacy input is accepted only on explicitly documented discard-only paths.
+9. Critical identifiers used for coordination or state change are bound to a current-turn task-routed source or actual target with their source, location or command, and value recorded.
+10. A delegated task stops without an application or package diff when a critical identifier is missing, stale, ambiguous, or contradictory.
+11. Release and adoption evidence distinguishes locally verified source and recorded evidence from unverified remote freshness.
 
 ## Non-functional Requirements
 
@@ -123,6 +134,7 @@ The corrected contract is published from commit `c84bee2f3c934618489b691dadecbd2
 - Required validation commands expose independent results and exit statuses.
 - Managed governance drift, broken documentation links, stale indexes, invalid TOML, roadmap arithmetic, ADR mismatch, or unmapped migration rules block governance completion.
 - Network and external writes remain disabled unless separately approved.
+- Prompts, summaries, memory, agent reports, and repeated agent agreement cannot substitute for current-turn critical-identifier evidence.
 
 ## Data and State
 
