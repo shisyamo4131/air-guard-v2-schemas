@@ -10,7 +10,7 @@
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
 - current published version: 2.4.2-dev.167; verified at commit `bb2390997153b2e57470d0c04012d93ddde2f971`, annotated tag object `577f358e3f7a4f7c32d216c11b9305047bbab4d7`, successful workflow run `33150835365`, npm registry and `dev` dist-tag, canonical shasum `b4cbc285438179f75b69bd754141b0a4492c722d`, integrity `sha512-EsMVhMXo9Rrc6AdLT98sdiN5iGniVZq6mEDN+XMgxuB1e8TYbNPPQCHRCdf+HcnvbTseruo23A+4PQnFpw/p0g==`, LF-clean exact-commit content comparison, and peer-inclusive fresh public import
-- current local candidate: 3.0.0-dev.1; package and lock parity, targeted checks, Node 22/24 formal suites, and the Node 24 release guard are locally verified; the candidate is unpublished and consumer adoption remains pending
+- current local candidate: 3.0.0-dev.1; package and lock parity, targeted checks, Node 22/24 formal suites, and the Node 24 release guard are locally verified; the candidate is unpublished and corrected-version adoption remains pending
 - release relationship: 2.4.2-dev.166 changes documentation and version metadata only relative to immutable 2.4.2-dev.165; the public API, catalog data, and behavior are unchanged
 - 2.4.2-dev.167 relationship: immutable published baseline that adds the accepted original CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
 - 3.0.0-dev.1 candidate relationship: breaking forward correction that removes the public `Company` Stripe/subscription fields, the entitlement/private-entitlement parser exports, the legacy mapper export, and the packed legacy mapper file while preserving the remaining CCB and role-preset surfaces
@@ -30,7 +30,7 @@
 
 ## Company Configuration Boundary v1 and 3.0.0-dev.1 Correction
 
-The original additive `./company-configuration` subpath is published and content-verified in exact version 2.4.2-dev.167. Candidate 3.0.0-dev.1 retains the root `Company` export and the dedicated subpath, but intentionally narrows both contracts by removing obsolete Stripe-derived scaffold. It is not re-exported from the package root. The candidate is local and unpublished; consumer adoption remains pending.
+The original additive `./company-configuration` subpath is published and content-verified in exact version 2.4.2-dev.167. The AirGuardV2 root and Functions consumers pin that exact package with the same tarball/integrity and use retained subpath APIs; they do not import the three removed exports. Candidate 3.0.0-dev.1 retains the root `Company` export and the dedicated subpath, but intentionally narrows both contracts by removing obsolete Stripe-derived scaffold. It is not re-exported from the package root. The candidate is local and unpublished; corrected-version adoption remains pending because current consumer code still relies indirectly on the legacy root `Company` Stripe scaffold.
 
 Candidate public names comprise the frozen schema/enumeration constants, `COMPANY_CONFIGURATION_ERROR_CODES`, `CompanyConfigurationValidationError`, `isTimestampLike`, the strict root/profile/billing/operations/arrangement/maintenance/private-maintenance/audit and update-input parsers, and `assertCompanyMaintenancePairV1`. `parseCompanyEntitlementV1`, `parseCompanyPrivateEntitlementV1`, and `mapLegacyCompanyToConfigurationV1` are forbidden exports. Error output contains stable `code` and `path` only and never echoes an input value.
 
@@ -57,6 +57,7 @@ String limits count Unicode extended grapheme clusters after outer trimming. Inp
 - Entitlement/private-entitlement parser exports and `mapLegacyCompanyToConfigurationV1` are absent, and `src/company-configuration/legacy.js` is forbidden from packed content.
 - Role preset marker/catalog exports remain unchanged under `./constants`.
 - No Stripe resource inventory, API call, migration, remote write, or production-data operation is implemented or authorized.
+- Current AirGuardV2 root and Functions consumption is exact 2.4.2-dev.167 with matching package content. Corrected adoption must update both consumers together; rollback restores both to exact 2.4.2-dev.167 and their previous code.
 
 ## Published `./constants` Additions
 
@@ -83,7 +84,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This additive API remains available in published 2.4.2-dev.167 and is preserved in candidate 3.0.0-dev.1. Exact 2.4.2-dev.167 also includes the formal fail-closed ten-file runner and successful Node 22/24 workflow suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions adoption, exact same-version/content verification, and local catalog deletion have not been performed. Consumers must wait for exact published corrected-version/content evidence before combining role-preset adoption with the approved Company/CCB correction. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This additive API remains available in published 2.4.2-dev.167 and is preserved in candidate 3.0.0-dev.1. Exact 2.4.2-dev.167 also includes the formal fail-closed ten-file runner and successful Node 22/24 workflow suite evidence; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions already pin the same exact 2.4.2-dev.167 package content, while role-catalog import adoption and local catalog deletion remain unverified consumer work. Consumers must wait for exact published corrected-version/content evidence before combining those changes with the approved Company/CCB correction. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 
@@ -157,7 +158,7 @@ The current package validation baseline uses an exact fail-closed ten-file `npm 
 
 | Consumer | Required evidence | Current status |
 | --- | --- | --- |
-| AirGuardV2 Nuxt Web frontend | exact package version/content, imports, build/test evidence | Not yet recorded |
-| AirGuardV2 Firebase Cloud Functions | exact package version/content, imports, build/test evidence | Not yet recorded |
+| AirGuardV2 Nuxt Web frontend | exact package version/content, imports, build/test evidence | Consumer coordinator confirms package/lock pin exact 2.4.2-dev.167 with the shared tarball/integrity and retained CCB API use; removed exports are unused; corrected-version adoption/build acceptance pending |
+| AirGuardV2 Firebase Cloud Functions | exact package version/content, imports, build/test evidence | Consumer coordinator confirms package/lock pin exact 2.4.2-dev.167 with the shared tarball/integrity and retained CCB API use; removed exports are unused; corrected-version adoption/build acceptance pending |
 
-Integration is incomplete until both rows refer to the same package version and content and the consumer coordinators accept their repository evidence.
+Both rows currently refer to the same exact 2.4.2-dev.167 package content. Corrected-contract integration remains incomplete until both consumers adopt aligned code and the same separately approved, published corrected version/content and the consumer coordinator accepts the resulting build/test evidence.

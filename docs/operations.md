@@ -13,18 +13,19 @@ Implemented:
 - verified 2.4.2-dev.166 main and annotated tag, successful workflow run 32932703563 and publish job 98067873113, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - Node 24 direct-test, public-import, and package evidence for the role preset catalog
 - published and content-verified 2.4.2-dev.167 CCB v1 package, formal ten-file test suite, and fail-closed release guard
+- AirGuardV2 root and Functions consumption of the same exact 2.4.2-dev.167 tarball/integrity with retained CCB APIs; the three correction-removed exports are unused
 - unpublished local 3.0.0-dev.1 breaking correction with targeted checks, independent Node 22/24 formal suites, and the Node 24 candidate release guard verified
 - common-governance 1.4.0 capacity routing through docs/runbooks/project-coordination.md and scripts/check-codex-session-size.ps1
 
 Planned or not yet verified:
 
 - publication and consumer adoption of the correction that removes the legacy Stripe-derived Company/CCB scaffold
-- AirGuardV2 root and Functions adoption, same-version/content confirmation, and local catalog deletion
+- simultaneous AirGuardV2 root and Functions adoption of one exact published corrected version/content with aligned consumer code
+- shared role-catalog import adoption and local catalog deletion
 - supported Node range
 - stable release policy
 - complete public compatibility evidence
 - verified two-consumer adoption and rollback exercise
-- CCB v1 consumer adoption
 
 Unavailable in this project without separate approval:
 
@@ -78,11 +79,11 @@ Node 24 is the formal validation runtime candidate and the publish runtime, whil
 
 ## Company Configuration Boundary Delivery
 
-CCB v1 is published through `./company-configuration` in exact version 2.4.2-dev.167 from commit `bb2390997153b2e57470d0c04012d93ddde2f971` and annotated tag `v2.4.2-dev.167`. The tag-triggered workflow completed its Node 22 and Node 24 test jobs, Node 24 release guard, and Trusted Publishing job successfully. Registry metadata and downloaded bytes matched, LF-clean exact-commit package content matched the published artifact, and a fresh peer-inclusive install verified the public 27-name API and package-root non-leak. Consumer adoption is not implied.
+CCB v1 is published through `./company-configuration` in exact version 2.4.2-dev.167 from commit `bb2390997153b2e57470d0c04012d93ddde2f971` and annotated tag `v2.4.2-dev.167`. The tag-triggered workflow completed its Node 22 and Node 24 test jobs, Node 24 release guard, and Trusted Publishing job successfully. Registry metadata and downloaded bytes matched, LF-clean exact-commit package content matched the published artifact, and a fresh peer-inclusive install verified the public 27-name API and package-root non-leak. The AirGuardV2 root and Functions consumers separately confirm current use of the same exact package content and retained CCB APIs; the three removed exports are unused.
 
 Before a future CCB correction release, run `npm run check:release` with the intended exact tag. It proves tag/package/lock alignment, export and root compatibility, all formal tests, public self-import, required packed CCB content, forbidden-content exclusion, and absence of repository package archives. `prepublishOnly` repeats the guard, and the tag-only workflow requires Node 22 and Node 24 tests before the Node 24 publish job. Tag creation, push, npm publication, registry confirmation, and consumer installation remain distinct approval gates.
 
-If validation or publication fails, retain immutable published versions and correct forward with a later development version. Rollback does not move/delete a tag, unpublish a package, rewrite history, deploy, or modify real data. AirGuardV2 and Admin SDK adoption remain consumer-owned and start only after exact published version/content evidence is accepted.
+If validation or publication fails, retain immutable published versions and correct forward with a later development version. Rollback does not move/delete a tag, unpublish a package, rewrite history, deploy, or modify real data. Corrected AirGuardV2 root and Functions adoption remains consumer-owned and starts only after exact corrected published version/content evidence is accepted.
 
 ### Breaking Stripe-scaffold Correction
 
@@ -90,9 +91,9 @@ If validation or publication fails, retain immutable published versions and corr
 
 Local completion requires the changed targeted tests to pass independently, followed by the unchanged formal ten-file `npm test` suite on existing local Node 22 and Node 24 runtimes. The release guard must treat the removed exports and file as forbidden, retain the remaining required-export/content checks, pass with exact candidate tag `v3.0.0-dev.1`, and fail its negative paths. Governance, generated-entry, project-document, link/index, roadmap, ADR, and whitespace checks remain independent evidence items.
 
-No tag, push, npm publish, registry query, consumer edit, Stripe API operation, or production-data migration is part of the local checkpoint. After a separately approved publication, consumers may adopt only one exact verified version/content. A consumer that still requires a removed surface must stay on its previous verified dependency until it owns and verifies an explicit replacement.
+No tag, push, npm publish, registry query, consumer edit, Stripe API operation, or production-data migration is part of the local checkpoint. After a separately approved publication, AirGuardV2 root and Functions may adopt only one exact verified corrected version/content and must remove their indirect legacy root `Company` Stripe dependency in the same consumer checkpoint. A consumer that still requires a removed surface must stay on its previous verified dependency until it owns and verifies an explicit replacement.
 
-Rollback retains exact published 2.4.2-dev.167 and its existing evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A local failure leaves the candidate unpublished and is corrected forward; a consumer adoption failure restores that consumer's previously verified exact dependency and implementation under consumer ownership.
+Rollback retains exact published 2.4.2-dev.167 and its existing evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A local failure leaves the candidate unpublished and is corrected forward; a consumer adoption failure restores both AirGuardV2 root and Functions to exact 2.4.2-dev.167 and their previous consumer code, then reruns consumer compatibility evidence under consumer ownership.
 
 ## Git Integration
 

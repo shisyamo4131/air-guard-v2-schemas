@@ -12,7 +12,7 @@ import {
   DEFAULT_WORKING_MINUTES,
   DEFAULT_BREAK_MINUTES,
 } from "./src/parts/fieldDefinitions.js";
-import Company from "./src/Company.js";
+import { Company } from "@shisyamo4131/air-guard-v2-schemas";
 
 console.log("========================================");
 console.log("フィールド定義のリファクタリング検証");

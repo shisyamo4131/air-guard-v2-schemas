@@ -11,6 +11,7 @@
 - Prepared and locally validated the breaking correction as unpublished package candidate `3.0.0-dev.1`; published `2.4.2-dev.167` remains immutable and is the rollback baseline.
 - Changed the release-package guard so the retired legacy mapper/export/file and Stripe-derived entitlement parser exports are forbidden package content instead of required content.
 - Legacy-shaped `Company` input may be read only to discard `stripeCustomerId` and `subscription`; those fields are no longer restored, defaulted, or serialized.
+- Recorded that AirGuardV2 root and Functions currently pin the same exact `2.4.2-dev.167` package content, use retained Company Configuration Boundary APIs, and do not import the three removed exports; shared role-catalog import adoption and corrected-contract adoption/build acceptance remain pending.
 
 ### Removed
 
@@ -28,7 +29,7 @@
 ### Compatibility and release status
 
 - The legacy `Company` class and package-root exports remain unchanged; Firebase SDK identity, AirFirebase adapters, UI runtimes, CRUD, Rules, deployment, and data operations are excluded.
-- Exact 2.4.2-dev.167 is published and verified at commit/tag, successful Node 22/24 and Node 24 release/publish workflow jobs, registry byte/content digests, LF-clean exact-commit comparison, and fresh peer-inclusive public import. Consumer adoption remains pending and consumer-owned.
+- Exact 2.4.2-dev.167 is published and verified at commit/tag, successful Node 22/24 and Node 24 release/publish workflow jobs, registry byte/content digests, LF-clean exact-commit comparison, and fresh peer-inclusive public import. AirGuardV2 root and Functions currently pin the same exact package content, use retained Company Configuration Boundary APIs, and do not import the three exports removed by the later correction. Shared role-catalog import adoption and corrected-contract adoption/build acceptance remain pending and consumer-owned.
 
 ### Fixed
 

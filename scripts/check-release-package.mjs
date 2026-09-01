@@ -43,6 +43,7 @@ const REQUIRED_PACKAGE_FILES = Object.freeze([
   "README.md",
   "index.js",
   "package.json",
+  "src/Company.js",
   "src/constants/role-presets.js",
   "src/company-configuration/constants.js",
   "src/company-configuration/documents.js",
@@ -74,7 +75,7 @@ export function validateReleaseState({ tag, packageJson, lockJson, rootExports, 
   guard(packageJson.exports?.["./company-configuration"] === "./src/company-configuration/index.js", "EXPORT_MISMATCH", "Missing company-configuration export");
   guard(!ccbExports.some((name) => rootExports.includes(name)), "ROOT_EXPORT_LEAK", "CCB export leaked from package root");
   guard(REQUIRED_CCB_EXPORTS.every((name) => ccbExports.includes(name)), "EXPORT_MISMATCH", "Required CCB public export missing");
-  guard(!FORBIDDEN_CCB_EXPORTS.some((name) => ccbExports.includes(name)), "EXPORT_MISMATCH", "Forbidden legacy CCB public export present");
+  guard(!FORBIDDEN_CCB_EXPORTS.some((name) => rootExports.includes(name) || ccbExports.includes(name)), "EXPORT_MISMATCH", "Forbidden legacy public export present");
   guard(testStatus === 0, "TEST_FAILURE", "Formal package tests failed");
   guard(importStatus === 0, "IMPORT_FAILURE", "Public self-import failed");
   guard(REQUIRED_PACKAGE_FILES.every((name) => packFiles.includes(name)), "CONTENT_MISMATCH", "Required package content missing");

@@ -36,7 +36,7 @@ const preservedCcbExports = [
   "parseUpdateCompanyProfileInputV1",
 ];
 const packFiles = [
-  "README.md", "index.js", "package.json", "src/constants/role-presets.js",
+  "README.md", "index.js", "package.json", "src/Company.js", "src/constants/role-presets.js",
   "src/company-configuration/constants.js", "src/company-configuration/documents.js",
   "src/company-configuration/index.js",
   "src/company-configuration/validation.js",
@@ -81,6 +81,16 @@ test("release guard rejects removed company-configuration exports", () => {
   }
 });
 
+test("release guard rejects removed exports reintroduced at the package root", () => {
+  for (const removedName of [
+    "mapLegacyCompanyToConfigurationV1",
+    "parseCompanyEntitlementV1",
+    "parseCompanyPrivateEntitlementV1",
+  ]) {
+    assertGuardCode("EXPORT_MISMATCH", { rootExports: [...rootExports, removedName] });
+  }
+});
+
 test("release guard rejects a package-root export leak", () => {
   assertGuardCode("ROOT_EXPORT_LEAK", { rootExports: [...rootExports, "parseCompanyRootV1"] });
 });
@@ -93,6 +103,12 @@ test("release guard rejects missing or forbidden package content", () => {
   }
   assertGuardCode("CONTENT_MISMATCH", { packFiles: [...packFiles, "src/company-configuration/legacy.js"] });
   assertGuardCode("CONTENT_MISMATCH", { packFiles: [...packFiles, "test-company-configuration.js"] });
+});
+
+test("release guard rejects a package missing the public Company model", () => {
+  assertGuardCode("CONTENT_MISMATCH", {
+    packFiles: packFiles.filter((name) => name !== "src/Company.js"),
+  });
 });
 
 test("release guard rejects a public import failure", () => {

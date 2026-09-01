@@ -6,13 +6,13 @@ AirGuard V2 Schemas is the public npm package @shisyamo4131/air-guard-v2-schemas
 
 The shared role preset exports are available beginning with published package version 2.4.2-dev.165. Project governance is active and the Shared-package readiness roadmap tracks contract, verification, release, and consumer-integration maturity separately from existing implementation volume.
 
-The Company Configuration Boundary v1 contract is available through the additive `./company-configuration` subpath in verified published package version 2.4.2-dev.167. Its exact commit/tag, workflow, registry bytes/content, and fresh peer-inclusive public import are verified. Consumer adoption remains a separate consumer-owned boundary.
+The Company Configuration Boundary v1 contract is available through the additive `./company-configuration` subpath in verified published package version 2.4.2-dev.167. Its exact commit/tag, workflow, registry bytes/content, and fresh peer-inclusive public import are verified. The AirGuardV2 root and Functions consumers currently pin exact 2.4.2-dev.167 with the same tarball and integrity and use retained `./company-configuration` APIs. They do not import the three surfaces removed by the correction.
 
-The approved breaking correction is locally implemented and validated as unpublished candidate `3.0.0-dev.1`. It removes the legacy Stripe fields from the public `Company` schema and removes the entitlement/private-entitlement parsers and legacy mapper from `./company-configuration`. Legacy-shaped `Company` input may still be read only to discard those fields; it does not restore or serialize them. Published `2.4.2-dev.167` remains immutable and available as the rollback baseline.
+The approved breaking correction is locally implemented and validated as unpublished candidate `3.0.0-dev.1`. It removes the legacy Stripe fields from the public `Company` schema and removes the entitlement/private-entitlement parsers and legacy mapper from `./company-configuration`. Legacy-shaped `Company` input may still be read only to discard those fields; it does not restore or serialize them. Current AirGuardV2 code still relies indirectly on the legacy root `Company` Stripe scaffold, so corrected-version adoption remains pending and must update root and Functions together. Rollback restores both consumers to exact 2.4.2-dev.167 and their previous consumer code.
 
-The approved shared role preset contract is exposed through the `./constants` subpath as `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. Consumer dependency changes, same-version and same-content confirmation, and replacement of local catalogs remain consumer-owned work.
+The approved shared role preset contract is exposed through the `./constants` subpath as `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId`. Role-catalog import adoption and replacement of local catalogs remain consumer-owned work even though both current consumers already pin the same 2.4.2-dev.167 package content.
 
-The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Firebase Cloud Functions. Both must adopt and verify the same package version and content before cross-project integration is complete.
+The confirmed consumers are the AirGuardV2 Nuxt Web frontend and AirGuardV2 Firebase Cloud Functions. Both currently share exact 2.4.2-dev.167. Corrected-contract integration completes only when both adopt and verify the same separately approved, published corrected version and content.
 
 ## Public Entry Points
 
