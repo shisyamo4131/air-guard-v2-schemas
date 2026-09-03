@@ -34,7 +34,7 @@ The Company Configuration Boundary exports strict pure-data parsers, structural 
 - governance/project-rules.md: project-specific instructions and approval boundaries
 - governance/common-governance.md: managed common contract snapshot
 - governance/governance.lock.toml: managed version and integrity hashes
-- docs/README.md: task-oriented documentation navigation
+- [Documentation map](docs/README.md): task-oriented navigation and contract snapshots
 - docs/specification.md: single current confirmed specification
 - docs/data-contract.md: public package and compatibility inventory
 - docs/roadmaps/: planned work and evidence-backed progress
@@ -43,7 +43,7 @@ The Company Configuration Boundary exports strict pure-data parsers, structural 
 - CHANGELOG.md: visible changes
 - INITIAL_PROMPT.md: startup prompt for a future Schemas coordinator
 
-Start with AGENTS.md, then use docs/README.md to choose the smallest sufficient document set.
+Start with [AGENTS.md](AGENTS.md), then use [docs/README.md](docs/README.md) to choose the smallest sufficient document set.
 
 ## Development and Verification
 

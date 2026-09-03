@@ -1,12 +1,55 @@
 # Governance Bootstrap Evidence
 
-- Status: Complete
+- Status: Historical evidence (bootstrap and prior migrations below)
 - Date: 2026-08-26
 - Baseline commit: bc941cb62d0965bda453a6f0dc6aaea8921db743
 - Primary repository: C:\Users\seven\projects\AirGuard\air-guard-v2-schemas
 - Approved branch: codex/governance-bootstrap
 - Managed common-governance version: 1.3.0
 - Rollback: return to the baseline commit through a separately approved non-destructive Git procedure; no history rewrite is authorized.
+
+## Evidence Status and Current Migration
+
+The bootstrap, R001-R050 inventory, old diagnostic failure and governance 1.3/1.4/1.5 sections below describe their historical revisions. The former `detailedInvalidReasons` failure was later resolved by the formal package suite; it is not a current unresolved defect. Old task identifiers, ACK/activation and compulsory-turnover text are not current instructions. Historical counts are not reused as governance 3 completion evidence.
+
+The approved governance 3 migration is defined by [ADR 0010](../decisions/0010-common-governance-3-and-document-authority.md), the [original-source plan](governance-3.0.0-document-plan.json) and [supplemental rule inventory](governance-3.0.0-rule-inventory.json). It preserves the standard split and product scope. Baseline: `dc4c375f393399dace6604724cdac35954818e60`; installed normalized-LF manifest revision: `4ba483f63e7ce086975b7bce8ae39c7864122aa08094fa82210179e7c94eb87d`. Current validation, independent review and integration results are recorded only after execution in the migration completion report; they are not inferred from this historical evidence.
+
+### Current Scoped Integration Evidence
+
+- Scope decision: The user deferred reconstruction of the missing tracked `scripts/test-verification-policy.ps1`; common-governance application, document organization, available verification, independent review and scoped local integration continue. Runner restoration, execution, cause investigation and security-product inquiry are outside this work.
+- Status: The central coordinator authorized local preservation of the reviewed migration changes despite the recorded Windows PowerShell execution-policy rejection. Comprehensive verification and migration acceptance remain blocked; authorization to save is not a passing validation result.
+- Known unavailable gate: `verification-policy-negative-tests` is not run. Its previous Core result is stale after removal; the previous Desktop failure is not erased or promoted to success.
+- Dependent gate: `project-docs` retains the missing-file check. Both runtime results must be recorded as actually observed; downstream checks after that failure are not claimed to have run.
+- Integration boundary: Commit reviewed owned migration files only, excluding the missing runner. Any remaining unstaged deletion is reported as an explicit user-authorized handover candidate exception, never as clean. Required gates and the ordinary clean-replacement rule remain unchanged.
+- Verification and review: The measured results below distinguish executed gates from unavailable work. Source hashes in the original plan remain immutable. Independent final document review found no additional required correction and confirmed preserved safety, approval, consumer and product boundaries; this does not accept the blocked comprehensive gates or integration.
+- Local preservation boundary: Save only the reviewed 26 migration paths, excluding `scripts/test-verification-policy.ps1` whether absent or supplied by the user. Report the actual Git commit and residual status separately; do not predict success, bypass the execution-policy rejection or repeat a rejected commit request. Any runner reconstruction or execution remains separately scoped future work.
+- User supplementation: The user announced an intention to supply the test file. The latest pre-integration observation still found it absent; completion of that user action, source provenance, safety and execution authority are not inferred. If it appears, preserve it and perform read-only comparison only; never include it in this local save.
+
+Commands below were run from the primary repository on 2026-09-03. `skill-root` means the verified installed `C:\Users\seven\.agents\skills\scaffold-project-governance`; `central` means the approved `C:\Users\seven\projects\ScaffoldProjectGovernance`. Each listed exit was independently observed. `-ProjectPath` was the primary repository and the document `-PlanPath` was `docs/evidence/governance-3.0.0-document-plan.json`.
+
+| Check / command | Observed result | Exit |
+| --- | --- | ---: |
+| Normalized-LF hash and exact file-set comparison with the approved immutable installation manifest | All 41 installed files match; implicit invocation remains false | 0 |
+| `skill-root/scripts/validate-skill.ps1 -SkillPath <skill-root>` with bytecode writes disabled | Skill and explicit-only invocation policy valid; no dependency installation | 0 |
+| `skill-root/scripts/sync-project-governance.ps1 -Plan` | Nine-leaf plan; only the generated operations summary differs | 0 |
+| Same sync command with `-Apply` | One changed leaf: operations summary; renderer and validator each invoked once | 0 |
+| Same sync command with `-Check` | Aligned; zero writes | 0 |
+| `central/scripts/manage-document-migration.ps1 -Action ValidateResult` | Standard split, three target authorities; structural result only | 0 |
+| `pwsh -NoProfile -File scripts/check-governance.ps1` | Core 7.6.4: managed hashes, generated entry, nine gates, seven classes and two required runtime profiles valid; included renderer result/exit 0 preserved | 0 |
+| `powershell.exe -NoProfile -File scripts/check-governance.ps1` | Desktop 5.1.26100.9168: script execution disabled; UnauthorizedAccess before script body | 1 |
+| `pwsh -NoProfile -File scripts/check-project-docs.ps1` | Missing required `scripts/test-verification-policy.ps1`; later documentation checks did not run | 1 |
+| `powershell.exe -NoProfile -File scripts/check-project-docs.ps1` | Script execution disabled; UnauthorizedAccess before the missing-file check | 1 |
+| Node 22.23.2 invoking the installed npm CLI with `test` | All ten maintained formal test files passed | 0 |
+| Node 24.19.0 invoking the same npm CLI with `test` | All ten maintained formal test files passed | 0 |
+| Read-only in-memory comparison of Git baseline Markdown units with the original plan and supplemental inventory | Independent reviewer verified all 216 source units across 28 project-owned Markdown documents; original normalized-LF hashes match, without missing, duplicate or unexpected units. This is source correspondence, not comprehensive acceptance | 0 |
+| `Parser::ParseFile` on `scripts/check-project-docs.ps1`, separately in Core and Desktop | Both parser-only diagnostics succeeded; script body was not executed | 0 each |
+| Isolated in-memory lock extraction from the actual two source expressions, separately in Core and Desktop | LF/CRLF/CR and four malformed cases behaved as intended; seven cases per runtime. Supporting diagnostics only, not replacement for the blocked document gate | 0 each |
+| `git diff --check` | No whitespace errors; checkout line-ending warnings are not errors | 0 |
+| `verification-policy-negative-tests`, both PowerShell profiles | Unavailable / not run; reconstruction explicitly deferred | Not run |
+
+Node 22 used `C:\Program Files\nodejs\node.exe`; Node 24 used `C:\Users\seven\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`. Both invoked `C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js test`, put their own runtime first in the child-process PATH and restored that environment afterward. Later documentation-only edits do not invalidate package-suite evidence under the policy. Successful managed-governance evidence must be refreshed if operations or another listed input changes. No standalone release guard, publication, install, registry or remote gate was selected: no release or external action was authorized; the maintained release-guard regression test remained inside the formal suite.
+
+The Desktop rejection is independent of the deferred missing runner. No execution-policy override, security-setting change, alternate script-body invocation or restoration was attempted in response. The central coordinator has authorized a local save of reviewed work without accepting the incomplete comprehensive verification. Actual save results belong to Git and the integration report; successor acceptance is not claimed.
 
 ## Repository Baseline
 

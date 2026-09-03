@@ -18,3 +18,7 @@ node_modules/**
 !docs/
 !docs/*.md
 !docs/**/*.md
+
+# Only the approved common contract snapshots
+!references/task-turnover-contract.md
+!references/document-migration-contract.md

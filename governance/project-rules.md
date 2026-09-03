@@ -3,7 +3,7 @@
 - Status: Active
 - Owner: Schemas project
 - Common governance: governance/common-governance.md
-- Managed common-governance version: 1.5.0
+- Managed common-governance version: 3.0.0
 - Rule: This file may add stricter project-specific requirements but must not weaken the common governance contract.
 
 ## Project and Current Scope
@@ -28,6 +28,8 @@ Before changing state, read:
 docs/specification.md is the single current confirmed specification. docs/data-contract.md inventories the public package contract. docs/roadmaps/ contains evidence-backed progress. docs/decisions/ records rationale. docs/operations.md owns repeatable operating and recovery procedures. CHANGELOG.md records concise visible changes.
 
 Capacity requests using `容量チェック`, `タスク容量確認`, `セッション容量確認`, or `session size / handoff threshold確認` route through docs/README.md to docs/runbooks/project-coordination.md and scripts/check-codex-session-size.ps1.
+
+Ordinary project tasks follow repository instructions without loading the installed scaffold skill. Use that skill only for an explicit governance creation, adoption, migration, update, or skill-maintenance request.
 
 Do not promote a consumer request, discussion, assumption, or existing implementation detail into confirmed specification without explicit user approval.
 
@@ -56,7 +58,7 @@ Confirmed current consumers are:
 
 Integration is complete only when both confirmed consumers use and verify the same public package version and content. Any future consumer requires separate confirmation of runtime, public subpaths, API, version, compatibility, consumer verification, publish and adoption order, and rollback.
 
-Durable documents must not fix a numbered PM name, task ID, thread ID, host ID, or callback destination. Put those identifiers only in the current checkpoint or latest handoff.
+Durable documents must not fix a numbered PM name, task ID, thread ID, host ID, or callback destination. Put those identifiers only in the current checkpoint; historical handoff records are not current routing.
 
 ## Project-specific Roles and Routing
 
@@ -105,12 +107,12 @@ Report approval boundaries, failures, conflicts, progress decreases, callback or
 
 ## Task Lifecycle
 
-Use event-driven one-shot task callbacks. Each checkpoint carries its temporary task, thread, host, baseline, owned and forbidden scope, validation, completion contract, ending condition, and callback destination. After task creation, replacement, or application restart, verify the route with a no-change callback before real work.
+Use event-driven one-shot task callbacks. Each checkpoint carries its temporary task, thread, host, baseline, owned and forbidden scope, validation, completion contract, ending condition, and callback destination. After ordinary delegated-task creation or application restart, verify the route with a no-change callback before real work. Requested replacement uses ordinary repository startup and needs no activation callback.
 
 For a capacity decision, identify the actual current task ID from trusted task metadata and require exactly one matching persisted session. Never infer the newest session. The coordinator handoff proposal threshold is 300 MiB per session; the Codex-wide 10 GiB threshold is a separate reference warning and never triggers task replacement by itself. Report the standard fields, scan completeness, command result, and independently observed exit status without exposing session contents. Unknown IDs, zero or multiple matches, command failures, or incomplete total scans stop the affected conclusion.
 
-Coordinator replacement always requires explicit user approval. Delegated-task rotation is allowed only at a safe checkpoint under previously approved conditions.
+Coordinator replacement requires an explicit user request; delegated replacement remains limited to previously approved conditions at a safe checkpoint. A user-requested replacement is distinct from a capacity-based proposal.
 
-Replace tasks with completely new tasks, never forks. Use the same durable base role plus the next sequence number. Verify governance version, repository restart, permissions, callback routing, and assignment identifiers before retiring old ownership. Leave former tasks in place for user-only manual deletion; Codex must not archive or delete them.
+For a requested replacement, update existing authoritative project facts and next work, commit reviewed owned changes in sensible groups, and leave the primary repository clean. Create a fresh non-fork task in that primary project with the same base name and next sequence number. Every task, including manual creation or recovery without the old owner, reads AGENTS.md, this file, and routed repository authorities before project work. No old task ID, old-owner ACK, activation handshake, task registry/history/cache, or replacement-specific validator is required. Do not create per-edit/task-action or empty replacement commits.
 
-An instruction-chain change requires the turnover process in docs/operations.md. Do not begin a new implementation checkpoint after committing such a change.
+Governance changes do not force task rotation. Follow docs/operations.md for approved synchronization and user-requested replacement. Leave former tasks in place for user-only manual deletion; Codex must not archive or delete them.

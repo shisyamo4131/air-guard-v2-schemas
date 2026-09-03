@@ -2,9 +2,15 @@
 
 - Date: 2026-09-01
 - Status: Accepted
-- Implementation status: Implemented through the approved common-governance 1.5.0 migration; task turnover remains pending user approval after coordinator integration
+- Implementation status: Historical adoption implemented; current amendments are recorded in ADR 0010.
 - Related specification: Verification and coordination requirements
 - Related decisions: [0003](0003-release-and-rollback-approval-boundaries.md), [0006](0006-governance-1-4-session-capacity-and-turnover.md), [0008](0008-evidence-bound-critical-identifiers.md)
+
+- Partially superseded by: [ADR 0010](0010-common-governance-3-and-document-authority.md)
+
+The six-class count becomes seven with nonbehavioral project-guidance metadata; mandatory turnover and old task-specific migration routing are superseded. Staged verification, existing nine gates, six comprehensive IDs, invalidation and inclusion remain accepted.
+
+The original decision and migration text below is retained as historical rationale wherever superseded; it does not prescribe current task routing.
 
 ## Context
 

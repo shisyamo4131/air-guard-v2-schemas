@@ -2,10 +2,16 @@
 
 - Date: 2026-08-28
 - Status: Accepted
-- Implementation status: Implemented in the owner-approved governance 1.4.0 migration; task turnover follows the migration commit
+- Implementation status: Historical adoption implemented; current amendments are recorded in ADR 0010.
 - Related specification: Coordination and governance requirements
 - Related decisions: [0002](0002-cross-project-ownership-and-versioned-integration.md), [0003](0003-release-and-rollback-approval-boundaries.md)
 - Supersedes: The former optional newest-session selection and 2 GiB Codex-wide warning in the project-local capacity script
+
+- Partially superseded by: [ADR 0010](0010-common-governance-3-and-document-authority.md)
+
+Only compulsory governance-triggered turnover, replacement callback/ownership handshake and turnover-dependent rollback are superseded. Exact-task capacity routing, thresholds, reporting and safety remain accepted.
+
+The original decision and migration text below is retained as historical rationale wherever superseded; it does not prescribe current task routing.
 
 ## Context
 

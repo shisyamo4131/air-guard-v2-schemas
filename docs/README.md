@@ -1,7 +1,7 @@
 # Documentation Map
 
 - Status: Active
-- Last verified: 2026-09-01
+- Last verified: 2026-09-03
 - Authority: Navigation only. specification.md is authoritative for confirmed requirements and roadmaps/ for verified progress.
 
 ## How to Start Work
@@ -22,7 +22,7 @@
 | Critical package, repository, environment, project, database, deploy, or data identifier | [Operations](operations.md), [coordination runbook](runbooks/project-coordination.md), [ADR 0008](decisions/0008-evidence-bound-critical-identifiers.md) | Current turn actual manifest, Git/tag target, recorded release evidence or approved registry evidence, and applicable consumer manifest or lock; record source, location or command, and value |
 | Test or validation | [Specification](specification.md), [operations](operations.md), [ADR 0009](decisions/0009-impact-based-verification-selection.md), [roadmap](roadmaps/shared-package-readiness.md) | `../governance/verification-policy.json`, selected stable gate IDs, root diagnostics, and repository-local validators |
 | Release, publish, adoption, or rollback | [Operations](operations.md), [ADR 0003](decisions/0003-release-and-rollback-approval-boundaries.md), [ADR 0008](decisions/0008-evidence-bound-critical-identifiers.md), [roadmap](roadmaps/shared-package-readiness.md) | package.json, package-lock.json, source or tag manifest, recorded release evidence or registry metadata, publish workflow, and consumer manifest or lock evidence |
-| Governance or task lifecycle | ../AGENTS.md, ../governance/project-rules.md, [operations](operations.md), [coordination runbook](runbooks/project-coordination.md), [bootstrap evidence](evidence/governance-bootstrap.md) | governance lock, renderer, validators, [current handoff](handoffs/README.md) |
+| Governance or task lifecycle | ../AGENTS.md, ../governance/project-rules.md, [operations](operations.md), [coordination runbook](runbooks/project-coordination.md), [bootstrap evidence](evidence/governance-bootstrap.md) | governance lock, renderer, validators, [historical handoffs](handoffs/README.md), [ADR 0010](decisions/0010-common-governance-3-and-document-authority.md) |
 | `容量チェック`, `タスク容量確認`, `セッション容量確認`, or `session size / handoff threshold確認` | [Coordination runbook](runbooks/project-coordination.md) | scripts/check-codex-session-size.ps1 with the actual current task ID |
 
 ## Document Authority
@@ -38,10 +38,14 @@
 | [Decisions](decisions/README.md) | Material decision status and rationale |
 | [Operations](operations.md) | Implemented, planned, and unavailable operating procedures |
 | [Coordination runbook](runbooks/project-coordination.md) | Exact task/session capacity routing, report fields, thresholds, and stop conditions |
-| [Handoffs](handoffs/README.md) | Latest temporary task routing and restart checkpoint |
-| [Bootstrap evidence](evidence/governance-bootstrap.md) | Migration baseline, rule mapping, checks, and known conflicts |
+| [Handoffs](handoffs/README.md) | Historical evidence only; never current routing |
+| [Bootstrap evidence](evidence/governance-bootstrap.md) | Historical bootstrap/migrations and current migration evidence; not current task routing |
 | [2.4.2-dev.167 release evidence](evidence/release-2.4.2-dev.167.md) | Exact commit/tag, workflow, registry content, and fresh-install verification |
 | [3.0.0-dev.1 release evidence](evidence/release-3.0.0-dev.1.md) | Breaking correction commit/tag, workflow, registry content, and fresh-install verification |
+| [Document migration contract](../references/document-migration-contract.md) | Versioned contract for content-free mapping and topology validation |
+| [Task replacement contract](../references/task-turnover-contract.md) | Managed user-requested replacement and ordinary startup |
+| [Governance 3 document plan](evidence/governance-3.0.0-document-plan.json) | Original-source hashes, mapped core units, authority and rollback |
+| [Governance 3 rule inventory](evidence/governance-3.0.0-rule-inventory.json) | Supplemental original-source units and semantic dispositions; not a second specification |
 | [Changelog](../CHANGELOG.md) | Concise visible changes |
 
 ## Documentation Completion Criteria
@@ -56,3 +60,7 @@
 - Every selected command is executed independently or through a verified aggregate runner that preserves named results and exits nonzero when any included check fails.
 - Diagnostic batches and status-masking command chains are not completion evidence.
 - Critical identifiers are confirmed only from a current-turn task-routed source or actual target; prompts and agent reports are leads, identifier conflicts stop state change without an application/package diff, and unapproved remote freshness remains explicitly unverified.
+
+<!-- BEGIN MANAGED DOCUMENT MIGRATION INDEX -->
+
+<!-- END MANAGED DOCUMENT MIGRATION INDEX -->

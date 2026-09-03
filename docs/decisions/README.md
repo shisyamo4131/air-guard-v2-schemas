@@ -20,5 +20,8 @@
 | [0007](0007-legacy-stripe-schema-scaffold-removal.md) | Legacy Stripe schema scaffold removal | Accepted | 2026-09-01 |
 | [0008](0008-evidence-bound-critical-identifiers.md) | Evidence-bound critical identifiers | Accepted | 2026-09-01 |
 | [0009](0009-impact-based-verification-selection.md) | Impact-based verification selection | Accepted | 2026-09-01 |
+| [0010](0010-common-governance-3-and-document-authority.md) | Common governance 3 and document authority | Accepted | 2026-09-03 |
+
+ADR 0010 partially supersedes lifecycle provisions in 0006/0008/0009 and the former six-class count in 0009; the remaining decisions stay Accepted.
 
 Accepted ADRs are never deleted. Supersede them with a new numbered ADR.

@@ -177,6 +177,6 @@ Shared-package readiness reaches 100 percent only when:
 
 ## Specification Change Rules
 
-After explicit user approval, update this specification, affected roadmap, relevant ADRs and index, CHANGELOG.md, implementation, tests, operations, and affected consumer documentation surfaces in the same task. If the full change cannot be completed, list every unreflected surface.
+After explicit user approval, update only the affected specification, roadmap, relevant ADRs and index, CHANGELOG.md, implementation, tests, operations, data-contract, and user-documentation surfaces in the same task. Consumer-owned documentation changes remain with the consumer coordinator. Change this specification only when confirmed requirements or acceptance criteria change; do not add unrelated version or progress-history changes. If the full change cannot be completed, list every unreflected surface.
 
 This file always represents the current confirmed specification. Git history retains previous text. If roadmap scope or earned credit changes, report the previous percentage, new percentage, and evidence-backed reason.

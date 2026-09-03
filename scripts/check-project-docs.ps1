@@ -37,6 +37,11 @@ $requiredFiles = @(
     'docs/decisions/0008-evidence-bound-critical-identifiers.md',
     'docs/decisions/0009-impact-based-verification-selection.md',
     'docs/evidence/governance-bootstrap.md',
+    'docs/evidence/governance-3.0.0-document-plan.json',
+    'docs/evidence/governance-3.0.0-rule-inventory.json',
+    'docs/decisions/0010-common-governance-3-and-document-authority.md',
+    'references/document-migration-contract.md',
+    'references/task-turnover-contract.md',
     'docs/evidence/release-2.4.2-dev.167.md',
     'docs/evidence/release-3.0.0-dev.1.md',
     'scripts/check-codex-session-size.ps1',
@@ -105,6 +110,10 @@ $requiredIndexLinks = @(
     'evidence/governance-bootstrap.md',
     'evidence/release-2.4.2-dev.167.md',
     'evidence/release-3.0.0-dev.1.md',
+    '../references/document-migration-contract.md',
+    '../references/task-turnover-contract.md',
+    'evidence/governance-3.0.0-document-plan.json',
+    'evidence/governance-3.0.0-rule-inventory.json',
     '../CHANGELOG.md'
 )
 foreach ($requiredLink in $requiredIndexLinks) {
@@ -114,10 +123,10 @@ foreach ($requiredLink in $requiredIndexLinks) {
 }
 
 $capacityAliases = @(
-    '容量チェック',
-    'タスク容量確認',
-    'セッション容量確認',
-    'session size / handoff threshold確認'
+    ([regex]::Unescape('\u5bb9\u91cf\u30c1\u30a7\u30c3\u30af')),
+    ([regex]::Unescape('\u30bf\u30b9\u30af\u5bb9\u91cf\u78ba\u8a8d')),
+    ([regex]::Unescape('\u30bb\u30c3\u30b7\u30e7\u30f3\u5bb9\u91cf\u78ba\u8a8d')),
+    ([regex]::Unescape('session size / handoff threshold\u78ba\u8a8d'))
 )
 $coordinationPath = Join-Path $resolvedProject 'docs\runbooks\project-coordination.md'
 $coordination = [IO.File]::ReadAllText($coordinationPath)
@@ -146,8 +155,14 @@ if ($capacityScript.Contains('most_recently_updated') -or $capacityScript.Contai
 }
 
 $projectRules = [IO.File]::ReadAllText((Join-Path $resolvedProject 'governance\project-rules.md'))
-if (-not $projectRules.Contains('Managed common-governance version: 1.5.0')) {
-    throw 'Project rules do not declare managed common-governance version 1.5.0.'
+$lockText = [IO.File]::ReadAllText((Join-Path $resolvedProject 'governance/governance.lock.toml')).Replace("`r`n", "`n").Replace("`r", "`n")
+$versionMatch = [regex]::Match($lockText, '(?m)^common_governance_version = "([^"]+)"$')
+if (-not $versionMatch.Success) { throw 'Managed version is missing from the governance lock.' }
+$managedVersion = $versionMatch.Groups[1].Value
+$agentsText = [IO.File]::ReadAllText((Join-Path $resolvedProject 'AGENTS.md'))
+if (-not $projectRules.Contains("Managed common-governance version: $managedVersion") -or
+    -not $agentsText.Contains("Common governance version: $managedVersion")) {
+    throw 'Project rules, generated entrypoint and governance lock versions disagree.'
 }
 
 $operations = [IO.File]::ReadAllText((Join-Path $resolvedProject 'docs\operations.md'))
@@ -169,17 +184,17 @@ foreach ($requirement in $evidenceBoundRequirements) {
         @{ Name = 'docs/operations.md'; Content = $operations },
         @{ Name = 'docs/runbooks/project-coordination.md'; Content = $coordination }
     )) {
-        if (-not $surface.Content.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
+        if ($surface.Content.IndexOf($requirement, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
             throw "$($surface.Name) does not contain evidence-bound requirement: $requirement"
         }
     }
 }
 
 foreach ($requirement in @('critical identifier', 'current turn', 'task-routed', 'actual target', 'source or tag manifest', 'consumer manifest or lock', 'remote freshness')) {
-    if (-not $docsIndex.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
+    if ($docsIndex.IndexOf($requirement, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "docs/README.md does not route evidence-bound requirement: $requirement"
     }
-    if (-not $initialPrompt.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
+    if ($initialPrompt.IndexOf($requirement, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "INITIAL_PROMPT.md does not preserve evidence-bound requirement: $requirement"
     }
 }
@@ -190,15 +205,17 @@ if (-not $specification.Contains('Specification version: 1.0.3')) {
 }
 
 $handoffIndex = [IO.File]::ReadAllText((Join-Path $resolvedProject 'docs\handoffs\README.md'))
-$currentHandoffName = '2026-09-01-governance-1.5.0-migration.md'
-if (-not $handoffIndex.Contains($currentHandoffName)) {
-    throw "Handoff index does not route to current turnover source: $currentHandoffName"
-}
-$currentHandoff = [IO.File]::ReadAllText((Join-Path $resolvedProject "docs\handoffs\$currentHandoffName"))
-foreach ($requirement in @('Managed common governance: 1.5.0', 'PM（Schemas）-06', 'PM（Schemas）-07', 'PM（SPG）-05', '9c3bf095d3d992734662282ebf92130d153f39c9', 'former Schemas tasks remain unarchived and undeleted')) {
-    if (-not $currentHandoff.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Current handoff is missing turnover requirement: $requirement"
+foreach ($historicalName in @(
+    '2026-08-28-governance-1.4.0-migration.md',
+    '2026-09-01-governance-1.4.1-migration.md',
+    '2026-09-01-governance-1.5.0-migration.md'
+)) {
+    if (-not $handoffIndex.Contains($historicalName)) {
+        throw "Historical handoff is not indexed: $historicalName"
     }
+}
+if (-not $handoffIndex.Contains('historical evidence only') -or -not $handoffIndex.Contains('not current routing')) {
+    throw 'Handoff index must distinguish historical evidence from current routing.'
 }
 
 $decisionsRoot = Join-Path $resolvedProject 'docs\decisions'
@@ -268,7 +285,7 @@ if (-not $evidence.Contains('bc941cb62d0965bda453a6f0dc6aaea8921db743')) {
     throw 'Governance evidence does not contain the approved baseline commit.'
 }
 if (-not $evidence.Contains('test-error-definitions.js') -or -not $evidence.Contains('detailedInvalidReasons')) {
-    throw 'Governance evidence does not preserve the known diagnostic failure.'
+    throw 'Governance evidence does not preserve the historical diagnostic failure.'
 }
 
 $pythonCommand = Get-Command python -ErrorAction Stop
@@ -314,6 +331,72 @@ if ($LASTEXITCODE -ne 0) {
     throw "TOML validation failed with exit code $LASTEXITCODE."
 }
 
+
+foreach ($requirement in @('common-governance 1.5.0', 'verification-policy.json', 'six impact classes', '50 mapped items', '0 unmapped')) {
+    if ($evidence.IndexOf($requirement, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "Governance evidence does not preserve verification-selection migration requirement: $requirement"
+    }
+}
+
+foreach ($requirement in @('governance/verification-policy.json', 'mixed changes', 'unknown impact', 'comprehensive suite', 'omissions', 'invalidated')) {
+    if ($initialPrompt.IndexOf($requirement, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "INITIAL_PROMPT.md does not preserve verification-selection requirement: $requirement"
+    }
+}
+
+# Document mapping is content-free evidence, never a replacement task ledger.
+function Get-NormalizedDocumentHash([string]$Path) {
+    $text = [IO.File]::ReadAllText($Path).Replace("`r`n", "`n").Replace("`r", "`n")
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try { return ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($text)))).Replace('-', '').ToLowerInvariant() }
+    finally { $sha.Dispose() }
+}
+$documentHash = Get-NormalizedDocumentHash (Join-Path $resolvedProject 'references/document-migration-contract.md')
+if ($documentHash -ne 'aa0a8d53995881c042229d70336dd936e46e252124d9477b33550b4cab24b3e3') {
+    throw 'Document migration 1.0.1 snapshot differs from the approved source.'
+}
+$migrationPlan = [IO.File]::ReadAllText((Join-Path $resolvedProject 'docs/evidence/governance-3.0.0-document-plan.json')) | ConvertFrom-Json
+$ruleInventory = [IO.File]::ReadAllText((Join-Path $resolvedProject 'docs/evidence/governance-3.0.0-rule-inventory.json')) | ConvertFrom-Json
+if ($migrationPlan.contract_version -ne '1.0.1' -or $migrationPlan.source_shape -ne 'standard_split' -or
+    $migrationPlan.target_shape -ne 'standard_split' -or $migrationPlan.rollback.mode -ne 'whole_change' -or
+    $migrationPlan.rollback.baseline_required -ne $true -or
+    $migrationPlan.rollback.baseline_commit -ne $ruleInventory.baseline_commit) {
+    throw 'Document plan contract, shape, rollback or baseline is inconsistent.'
+}
+if (@($migrationPlan.units).Count -ne 47 -or @($ruleInventory.supplemental_units).Count -ne 169 -or
+    $ruleInventory.core_unit_count -ne 47 -or $ruleInventory.supplemental_unit_count -ne 169 -or
+    $ruleInventory.mapped_supplemental_units -ne 169 -or $ruleInventory.unmapped_units -ne 0) {
+    throw 'Current migration inventory counts are inconsistent.'
+}
+$mappedKeys = @{}
+foreach ($unit in @($migrationPlan.units) + @($ruleInventory.supplemental_units)) {
+    $key = "$($unit.source_path)#$($unit.unit_id)"
+    if ($mappedKeys.ContainsKey($key)) { throw "Duplicate document inventory unit: $key" }
+    $mappedKeys[$key] = $unit
+    if ($unit.content_sha256 -notmatch '^[0-9a-f]{64}$' -or $unit.mapping_status -ne 'mapped' -or
+        $unit.disposition -ne 'retain' -or $unit.source_path -ne $unit.target_path -or
+        [string]::IsNullOrWhiteSpace($unit.rationale) -or [string]::IsNullOrWhiteSpace($unit.authority_id)) {
+        throw "Incomplete document inventory mapping: $key"
+    }
+    if ([IO.Path]::IsPathRooted($unit.target_path) -or ($unit.target_path.Replace('\', '/') -split '/') -contains '..' -or
+        -not (Test-Path -LiteralPath (Join-Path $resolvedProject $unit.target_path) -PathType Leaf)) {
+        throw "Unsafe or missing mapped document target: $key"
+    }
+}
+foreach ($amendment in @($ruleInventory.core_semantic_amendments)) {
+    $key = "$($amendment.source_path)#$($amendment.unit_id)"
+    if (-not $mappedKeys.ContainsKey($key) -or $amendment.content_sha256 -ne $mappedKeys[$key].content_sha256 -or
+        [string]::IsNullOrWhiteSpace($amendment.rationale)) { throw "Unbound semantic amendment: $key" }
+}
+foreach ($unit in @($ruleInventory.core_semantic_amendments) + @($ruleInventory.supplemental_units)) {
+    foreach ($paragraph in @($unit.changed_paragraphs)) {
+        if ($paragraph.content_sha256 -notmatch '^[0-9a-f]{64}$' -or $paragraph.ordinal -lt 1 -or
+            [string]::IsNullOrWhiteSpace($paragraph.disposition) -or [string]::IsNullOrWhiteSpace($paragraph.rationale)) {
+            throw "Incomplete semantic paragraph mapping: $($unit.source_path)#$($unit.unit_id)"
+        }
+    }
+}
+
 [pscustomobject]@{
     project_path = $resolvedProject
     markdown_files_checked = @($markdownFiles).Count
@@ -327,16 +410,9 @@ if ($LASTEXITCODE -ne 0) {
     toml_files_current = $true
     capacity_routing_current = $true
     evidence_bound_routing_current = $true
-    current_handoff = $currentHandoffName
-}
-foreach ($requirement in @('common-governance 1.5.0', 'verification-policy.json', 'six impact classes', '50 mapped items', '0 unmapped')) {
-    if (-not $evidence.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Governance evidence does not preserve verification-selection migration requirement: $requirement"
-    }
-}
-
-foreach ($requirement in @('governance/verification-policy.json', 'mixed changes', 'unknown impact', 'comprehensive suite', 'omissions', 'invalidated')) {
-    if (-not $initialPrompt.Contains($requirement, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "INITIAL_PROMPT.md does not preserve verification-selection requirement: $requirement"
-    }
+    historical_handoff_records = 3
+    managed_governance_version = $managedVersion
+    document_contract_hash_current = $true
+    core_migration_units = @($migrationPlan.units).Count
+    supplemental_migration_units = @($ruleInventory.supplemental_units).Count
 }

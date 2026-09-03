@@ -15,7 +15,7 @@ Implemented:
 - published and content-verified 2.4.2-dev.167 CCB v1 package, formal ten-file test suite, and fail-closed release guard
 - AirGuardV2 root and Functions consumption of the same exact 2.4.2-dev.167 tarball/integrity with retained CCB APIs; the three correction-removed exports are unused
 - published and content-verified 3.0.0-dev.1 breaking correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and fresh public imports
-- common-governance 1.4.1 capacity routing and evidence-bound critical-identifier gate through docs/runbooks/project-coordination.md and project validators
+- managed common governance, exact-task capacity routing, evidence-bound identifiers, and impact-selected verification through the governance lock, policy, coordination runbook, and project validators
 
 Planned or not yet verified:
 
@@ -63,21 +63,25 @@ This preflight does not merge approval gates. Package code or tests, tag creatio
 | `ui-css-layout` | A proposed UI, visual, interaction, or accessibility surface | `project-docs` | `package-suite` | `package-suite`, `project-docs`, `git-whitespace` | None |
 | `application-logic` | Package implementation, exports, executable tests | `package-suite` | affected targeted package gates | `package-suite`, `project-docs`, `git-whitespace` | `release-guard` |
 | `data-contract-schema-migration` | Schema, serialization, compatibility, persistence, migration | targeted contract gate | `package-suite` | `package-suite`, `project-docs`, `git-whitespace` | `release-guard` |
+| `project-guidance-metadata` | Descriptive guidance metadata with no instruction, permission, safety, routing, executable, or product effect | `project-docs` | `project-docs` | `project-docs`, `git-whitespace` | None |
 | `governance-permissions-agents` | Governance, permissions, agents, managed sync, routing, turnover | `generated-governance` | `managed-governance`, `project-docs` | comprehensive suite | None |
 | `build-release-deploy` | Metadata, workflow, build, release, publish, deploy, rollback | `package-suite` | `release-guard` | comprehensive suite | `release-guard` |
 
 <!-- BEGIN GENERATED VERIFICATION POLICY SUMMARY -->
 - Root: schemaVersion=1.0; comprehensiveGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]; unknownImpactGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]
+- RuntimeProfile: id=windows-powershell-5.1; platform=windows; edition=Desktop; executable=powershell.exe; versionRule=major-minor=5.1; required=True; supportStatus=supported
+- RuntimeProfile: id=powershell-core-7; platform=windows; edition=Core; executable=pwsh.exe; versionRule=minimum-major=7; required=True; supportStatus=supported
 - Class: id=documentation-only; triggers=[*.md,docs/**,README.md,CHANGELOG.md,no executable\, configuration\, package\, or data-contract effect]; iterationGateIds=[project-docs]; targetedRegressionGateIds=[project-docs]; completionGateIds=[project-docs,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[managed-governance,generated-governance,package-suite,release-guard]; omissionRecord=task callback or completion report
 - Class: id=ui-css-layout; triggers=[consumer-facing UI\, CSS\, layout\, template\, visual\, interaction\, or accessibility impact,introduction of a UI-owned surface into this package]; iterationGateIds=[project-docs]; targetedRegressionGateIds=[package-suite]; completionGateIds=[package-suite,project-docs,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[managed-governance,generated-governance,release-guard]; omissionRecord=task callback or completion report\; UI implementation remains outside the confirmed package scope
 - Class: id=application-logic; triggers=[index.js,src/**/*.js,test*.js,scripts/run-package-tests.mjs,executable package behavior or public export impact]; iterationGateIds=[package-suite]; targetedRegressionGateIds=[company-configuration-targeted,role-presets-targeted]; completionGateIds=[package-suite,project-docs,git-whitespace]; releaseOnlyGateIds=[release-guard]; omittableGateIds=[managed-governance,generated-governance]; omissionRecord=task callback or completion report\; release-only omission also records that no release was authorized
 - Class: id=data-contract-schema-migration; triggers=[docs/data-contract.md,schema\, field\, serialization\, compatibility\, persistence meaning\, or migration impact,src/** schema or contract surface]; iterationGateIds=[company-configuration-targeted]; targetedRegressionGateIds=[package-suite]; completionGateIds=[package-suite,project-docs,git-whitespace]; releaseOnlyGateIds=[release-guard]; omittableGateIds=[managed-governance,generated-governance]; omissionRecord=task callback or completion report\; authorized release evidence for release-only gates
-- Class: id=governance-permissions-agents; triggers=[AGENTS.md,governance/**,.codex/**,INITIAL_PROMPT.md,docs/operations.md,docs/runbooks/**,scripts/check-governance.ps1,scripts/render-governance.ps1,managed sync\, permissions\, agents\, approval\, callback\, or turnover impact]; iterationGateIds=[generated-governance]; targetedRegressionGateIds=[managed-governance,project-docs]; completionGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[release-guard]; omissionRecord=task callback or completion report\; release guard omitted only when package release is outside scope
+- Class: id=project-guidance-metadata; triggers=[descriptive project-guidance metadata only\; no instruction\, permission\, safety\, routing\, executable\, or product effect]; iterationGateIds=[project-docs]; targetedRegressionGateIds=[project-docs]; completionGateIds=[project-docs,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,package-suite,release-guard]; omissionRecord=task callback or completion report\; any instruction or safety effect uses governance-permissions-agents
+- Class: id=governance-permissions-agents; triggers=[AGENTS.md,governance/**,.codex/**,INITIAL_PROMPT.md,docs/operations.md,docs/runbooks/**,scripts/check-governance.ps1,scripts/render-governance.ps1,managed sync\, permissions\, agents\, approval\, callback\, or turnover impact,references/**,scripts/check-project-docs.ps1,scripts/test-verification-policy.ps1,explicit-only skill invocation or instruction-entrypoint routing]; iterationGateIds=[generated-governance]; targetedRegressionGateIds=[managed-governance,project-docs]; completionGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]; releaseOnlyGateIds=[]; omittableGateIds=[release-guard]; omissionRecord=task callback or completion report\; release guard omitted only when package release is outside scope
 - Class: id=build-release-deploy; triggers=[package.json,package-lock.json,.github/workflows/**,scripts/check-release-package.mjs,build\, packaging\, version\, tag\, publish\, install\, deploy\, or rollback impact]; iterationGateIds=[package-suite]; targetedRegressionGateIds=[release-guard]; completionGateIds=[managed-governance,generated-governance,verification-policy-negative-tests,project-docs,package-suite,git-whitespace]; releaseOnlyGateIds=[release-guard]; omittableGateIds=[]; omissionRecord=task callback\, completion report\, and authorized release evidence
-- Gate: id=managed-governance; command=pwsh -NoProfile -File .\\scripts\\check-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[targeted,completion,release]; includes=[generated-governance]; invalidatedBy=[AGENTS.md,governance/**,docs/operations.md,scripts/check-governance.ps1,scripts/render-governance.ps1]; evidenceDestination=task callback or completion report
-- Gate: id=generated-governance; command=pwsh -NoProfile -File .\\scripts\\render-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas -Check; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[AGENTS.md,governance/common-governance.md,governance/project-rules.md,governance/governance.lock.toml,scripts/render-governance.ps1]; evidenceDestination=task callback or completion report
-- Gate: id=verification-policy-negative-tests; command=pwsh -NoProfile -File .\\scripts\\test-verification-policy.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[targeted,completion,release]; includes=[]; invalidatedBy=[governance/verification-policy.json,scripts/test-verification-policy.ps1,scripts/check-governance.ps1]; evidenceDestination=task callback or completion report
-- Gate: id=project-docs; command=pwsh -NoProfile -File .\\scripts\\check-project-docs.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[*.md,docs/**,governance/project-rules.md,governance/verification-policy.json,.codex/**,scripts/check-project-docs.ps1]; evidenceDestination=task callback or completion report
+- Gate: id=managed-governance; command=pwsh -NoProfile -File .\\scripts\\check-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[targeted,completion,release]; includes=[generated-governance]; invalidatedBy=[AGENTS.md,governance/**,docs/operations.md,scripts/check-governance.ps1,scripts/render-governance.ps1,references/task-turnover-contract.md,PowerShell runtime]; evidenceDestination=task callback or completion report
+- Gate: id=generated-governance; command=pwsh -NoProfile -File .\\scripts\\render-governance.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas -Check; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[AGENTS.md,governance/common-governance.md,governance/project-rules.md,governance/governance.lock.toml,scripts/render-governance.ps1,references/task-turnover-contract.md,PowerShell runtime]; evidenceDestination=task callback or completion report
+- Gate: id=verification-policy-negative-tests; command=pwsh -NoProfile -File .\\scripts\\test-verification-policy.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[targeted,completion,release]; includes=[]; invalidatedBy=[governance/verification-policy.json,scripts/test-verification-policy.ps1,scripts/check-governance.ps1,AGENTS.md,governance/common-governance.md,governance/project-rules.md,governance/governance.lock.toml,references/task-turnover-contract.md,scripts/render-governance.ps1,docs/operations.md,PowerShell runtime]; evidenceDestination=task callback or completion report
+- Gate: id=project-docs; command=pwsh -NoProfile -File .\\scripts\\check-project-docs.ps1 -ProjectPath C:\\Users\\seven\\projects\\AirGuard\\air-guard-v2-schemas; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[*.md,docs/**,governance/project-rules.md,governance/verification-policy.json,.codex/**,scripts/check-project-docs.ps1,references/**,PowerShell runtime]; evidenceDestination=task callback or completion report
 - Gate: id=package-suite; command=npm test; stages=[iteration,targeted,completion,release]; includes=[]; invalidatedBy=[index.js,src/**,test*.js,scripts/run-package-tests.mjs,package.json,package-lock.json,Node.js runtime,installed dependencies]; evidenceDestination=task callback\, completion report\, or release evidence
 - Gate: id=company-configuration-targeted; command=npm run test:company-configuration; stages=[iteration,targeted]; includes=[]; invalidatedBy=[src/company-configuration/**,test-company-configuration.js,package.json,Node.js runtime,installed dependencies]; evidenceDestination=task callback or completion report
 - Gate: id=role-presets-targeted; command=npm run test:role-presets; stages=[targeted]; includes=[]; invalidatedBy=[src/constants/**,test-role-presets.js,package.json,Node.js runtime,installed dependencies]; evidenceDestination=task callback or completion report
@@ -89,9 +93,11 @@ This preflight does not merge approval gates. Package code or tests, tag creatio
 
 The exact marker-bounded summary above is generated from the JSON policy. Do not maintain a second manual command catalog. Inclusion must be acyclic. A selected parent gate that preserves an included gate's named result and exit status and fails with it satisfies that child. Diagnostic batches never satisfy completion evidence.
 
-The approved managed sync command for this migration is:
+For an explicitly approved governance update, confirm the installed skill identity and invoke its `scripts/sync-project-governance.ps1` with the confirmed primary `-ProjectPath`: first `-Plan`, then approved `-Apply`, then `-Check`. The current installed root is `C:\Users\seven\.agents\skills\scaffold-project-governance`; reverify it in the actual update turn. Managed sync owns the fixed nine-leaf plan; the renderer is check-only. Do not copy helpers or edit managed artifacts directly.
 
-`& C:\Users\seven\projects\ScaffoldProjectGovernance\scripts\sync-project-governance.ps1 -ProjectPath C:\Users\seven\projects\AirGuard\air-guard-v2-schemas -Apply`
+For this document migration, the reviewed [original-source plan](evidence/governance-3.0.0-document-plan.json) retains its source hashes and whole-change baseline. The approved central `scripts/manage-document-migration.ps1` helper performs `ValidatePlan` and `SyncIndex` before editing the three source documents, then `ValidateResult` after migration. Do not replace the original hashes or rerun pre-migration index sync against edited sources to conceal drift. The [rule inventory](evidence/governance-3.0.0-rule-inventory.json) records preserved and intentionally changed meaning. The [document contract](../references/document-migration-contract.md) defines the topology checks; they do not substitute for project gates.
+
+Governance scripts are required to validate on Windows PowerShell 5.1 Desktop and PowerShell Core 7 on Windows. `runtimeProfiles` declares the required support targets, not a claim that future checks have passed. Run managed governance, project-docs, and negative fixtures independently under each profile. The Core commands are in the policy; for Desktop invoke the same file and arguments with `powershell.exe -NoProfile -File`, subject to the approved execution policy. An execution-policy rejection is a reported blocked gate, not authority to add an override or invoke the script body another way; the [current scoped work](#current-governance-migration-scope) does not authorize such a retry. Node22/24 package evidence uses each existing runtime, including that runtime first in the child-process PATH, and restores the environment afterward. This does not settle the supported package Node range.
 
 Run selected commands independently and record their results and exit statuses. A grouped runner is acceptable only when it is verified to preserve every named result and exit status and exits nonzero if any included gate fails. Do not use `;` or another status-masking chain as completion evidence.
 
@@ -150,13 +156,13 @@ Branch creation, stage, and local commit require the applicable approval. Tag, p
 
 ## Cross-project Checkpoint Loop
 
-The durable parties are the Schemas primary coordinator and a consumer project primary coordinator. Temporary task, thread, host, and callback identifiers belong only in the current checkpoint or latest handoff.
+The durable parties are the Schemas primary coordinator and a consumer project primary coordinator. Temporary task, thread, host, and callback identifiers belong only in the current checkpoint; historical handoffs are not current routing.
 
 Before issuing work:
 
 1. Confirm the current phase, specification, roadmap, baseline, unresolved decisions, and existing behavior.
 2. Confirm cwd, Git top-level, branch, HEAD, worktree, owned and forbidden files, validation, rollback, approval boundaries, ending condition, and callback destination.
-3. After task creation, replacement, or application restart, verify a no-change callback.
+3. After ordinary delegated-task creation or application restart, verify a no-change callback. Requested replacement uses ordinary repository startup, not an activation handshake.
 4. Issue one reviewable checkpoint.
 5. Wait for one completion, failure, specification-question, or approval-boundary callback.
 6. Review the report and owned diff before integration.
@@ -206,21 +212,18 @@ Before any approved release proposal, record:
 
 The preferred consumer rollback is to restore a previously verified package version in each consumer repository under that consumer coordinator. npm unpublish or remote package mutation is not an automatic rollback and requires separate destructive-action approval.
 
-## Governance Updates and Task Turnover
+## Governance Updates and Requested Task Replacement
 
-Managed common-governance version 1.5.0, root AGENTS.md, project-wide permissions or approval policy, coordinator responsibilities, delegation and Git integration, callback and handoff rules, verification-selection policy, evidence-bound critical-identifier routing, and safety boundaries are instruction-chain sources.
+Use approved managed sync for common governance, root AGENTS.md, lock, renderer, validator, and turnover reference; project rules, policy and surrounding operations are project-owned. Permission, approval, delegation, critical-identifier, verification, and safety changes retain their applicable explicit approval boundaries. Resolve scope blockers, review the owned diff, rerun invalidated gates, and commit meaningful reviewed groups. Governance changes do not force rotation.
 
-After an approved instruction-chain change:
+The [task replacement contract](../references/task-turnover-contract.md) uses two steps only when the user requests replacement:
 
-1. Stop new assignments at a safe checkpoint.
-2. Validate and commit owned work.
-3. Confirm a clean worktree or document every exception with files, purpose, verification, reason, owner, and restart procedure.
-4. Ask the user to approve coordinator replacement.
-5. Create a completely new task, never a fork, using the same base role plus the next sequence number.
-6. Send baseline, checkpoint, progress, results, tests, unintegrated work, approvals, owned and forbidden scope, next instructions, governance version, and callback destination.
-7. Verify repository restart, active instruction sources, permissions, a no-change callback, and retargeted identifiers.
-8. Retire ownership from the former task only after successful verification.
-9. Leave the former task in place for user-only manual deletion. Codex must not archive or delete it.
+1. Update existing authoritative project facts and next work, commit reviewed owned changes in sensible groups, and leave the primary repository clean. Do not create per-edit/task-action or empty replacement commits.
+2. Create a fresh non-fork task in that primary project with the same base name and next sequence number. Every task reads AGENTS.md, governance/project-rules.md and routed repository authorities before work.
+
+Manual creation and recovery without the old task use the same startup. No old task ID or old-owner cooperation, activation ACK, task registry/history/cache, self-routing state, or replacement-specific validator is required. Ordinary tasks do not load the installed scaffold skill. A normal delegated-work callback remains required and is not a replacement handshake. Former tasks remain in place; Codex must not archive or delete them.
+
+The approved migration rollback covers the whole owned change at its recorded baseline, including project-owned preparation and managed bytes. Check sync's invocation-touched rollback after a failure; do not leave competing authorities and claim completion. Restore only owned changes through a separately approved non-destructive procedure; after commit use an approved forward revert, never reset, history rewrite, or unrelated-change discard. [ADR 0010](decisions/0010-common-governance-3-and-document-authority.md) records the change and unaffected surfaces.
 
 ## Coordinator Session Lifecycle
 
@@ -228,11 +231,21 @@ Route `容量チェック`, `タスク容量確認`, `セッション容量確�
 
 The handoff proposal threshold is 300 MiB per session. The Codex-wide 10 GiB threshold is a separate reference warning and does not trigger task replacement. Report every standard field, scan completeness/error count, command result, and independently observed exit status without exposing session contents. Unknown task identity, zero or multiple matches, command failure, or incomplete total scanning stops the affected conclusion. Measure at work-session start, after callback-driven material changes, and at stop or completion, no more than hourly when nothing changes.
 
-Coordinator replacement always requires explicit user approval. Delegated-task rotation is allowed only under approved conditions at a safe checkpoint.
+Coordinator replacement requires an explicit user request. Delegated replacement remains limited to approved conditions at a safe checkpoint. A user-requested replacement is not a capacity-triggered proposal and does not require a threshold crossing.
 
 The retiring coordinator commits its completed owned work. A retiring delegated task reports exact files, diff, tests, unverified items, and worktree state; the coordinator reviews, commits, and integrates accepted work. Do not give the same dirty files to old and new tasks.
 
 Do not make direct maintenance of Codex-owned SQLite or WAL files a normal operation.
+
+## Current Governance Migration Scope
+
+The user has deferred reconstruction of the missing tracked `scripts/test-verification-policy.ps1`. The current work is limited to common-governance application, document organization, available verification, independent review and reviewed local integration. Do not restore, recreate under another name, execute or investigate that runner, or request security-product analysis or exclusion decisions as part of this work.
+
+`verification-policy-negative-tests` remains required but unavailable / not run. `project-docs` retains its required-file check and cannot pass while that file is missing; report its actual failure and exit status, not a skipped check or successful substitute. Comprehensive verification remains incomplete. Other independent gates must still run, and any additional failure must be reported separately. Current measured results belong in [the migration evidence](evidence/governance-bootstrap.md#current-scoped-integration-evidence).
+
+Only reviewed migration paths other than the missing runner may be staged and committed. Do not stage its deletion, hide it with Git flags, change Git configuration, or recreate it to obtain a clean status. The user permits returning the precise remaining unstaged deletion as a scoped handover candidate to the central coordinator, not as a clean repository or fully accepted migration. This is a one-time scope decision, not a change to the verification policy or ordinary clean-replacement rule. Reconstruction remains separate future work requiring its own scope.
+
+The central coordinator has explicitly authorized local preservation of the reviewed 26 migration paths while the recorded Desktop execution-policy rejection and incomplete verification remain unresolved. This local commit is a save of reviewed work, not comprehensive acceptance. The user announced an intention to supply the runner; its absence or user-provided contents remain outside staging and must be preserved. Recheck actual existence without assuming the user's operation has finished, compare any supplied file read-only, and do not execute it. If commit approval is rejected, stop after that attempt, preserve the reviewed index and report the reason without another route or repeated request.
 
 ## Errors and Recovery
 
