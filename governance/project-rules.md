@@ -99,6 +99,10 @@ Every selected command must have an independently observable result and exit sta
 
 ## Progress and Reporting
 
+Every current-status report, including requests phrased as `現在地` or `現在値`, must include both local Git state and the actual remote Git state. Report the local branch and HEAD, staged/unstaged/untracked changes and missing tracked files, the relevant remote and upstream branch with its observed commit, local-only and remote-only commit counts when verifiable, and the remote observation time. Follow the procedure in [operations](../docs/operations.md#current-status-git-reporting).
+
+A user-requested current-status report authorizes read-only Git remote queries for this repository. A cached remote-tracking ref alone does not establish the current remote state. If remote access fails or comparison cannot be established, report the failure and mark the affected state or counts unverified; identify any cached value explicitly. This reporting authorization does not authorize push, merge, tag changes, publication, or other external writes.
+
 docs/roadmaps/shared-package-readiness.md uses weighted milestones totaling 100. Credit requires linked repository, validation, review, release, or consumer evidence. Partial credit is allowed only for predefined sub-gates and must state remaining acceptance criteria.
 
 Issue one reviewable checkpoint at a time. Continue after callback and coordinator review only while safe independent work remains. A work session ends when safe independent work is exhausted or the user instructs a stop.

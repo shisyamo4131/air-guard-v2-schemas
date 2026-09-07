@@ -2,6 +2,7 @@
 
 - Date: 2026-09-03
 - Status: Accepted
+- Implementation status: Migration and application completed by explicit user acceptance on 2026-09-03 after the distributed verification runner was restored; see [acceptance evidence](../evidence/governance-bootstrap.md#user-accepted-migration-completion). This status does not claim all verification gates passed.
 - Scope: Approved governance/document migration only; product requirements and specification version 1.0.3 are unchanged
 - Partially supersedes: [0006](0006-governance-1-4-session-capacity-and-turnover.md), [0008](0008-evidence-bound-critical-identifiers.md), [0009](0009-impact-based-verification-selection.md)
 
@@ -38,11 +39,15 @@ The old three handoff bodies remain historical and unchanged. Original bootstrap
 
 ## Validation and Completion
 
+The user subsequently accepted migration/application as complete after restoring the distributed runner. That explicit decision closes this migration without making the remaining comprehensive checks prerequisites to acceptance; it does not change their historical results or the verification policy for future changes. The following paragraph records the original validation and integration plan, not an outstanding condition for this accepted checkpoint.
+
 Use the existing comprehensive policy plus document plan/index/result and skill/sync checks. Run governance, project-docs and policy fixtures under both declared PowerShell profiles and the formal npm suite under actual Node22 and Node24, with child PATH bound to the runtime. Record independent commands/results/exits, inclusion and omission reasons; review the final owned diff and rerun evidence invalidated by subsequent edits. Completion requires independent review, a scoped local commit and a clean primary repository. Future successful results are not prewritten here.
 
 ## Migration and Rollback
 
-For the current scoped integration, the user deferred the missing policy-test runner's reconstruction and excluded its restoration, execution and security investigation. Required gates remain unchanged; the negative gate is unavailable and the documentation gate remains blocked by its required-file check. Available verification and independent review still apply. The central coordinator may receive a reviewed local commit with only the precisely reported unstaged runner deletion as a handover candidate; this is neither comprehensive acceptance nor a clean-status claim. See [operations](../operations.md#current-governance-migration-scope) and [current evidence](../evidence/governance-bootstrap.md#current-scoped-integration-evidence). Ordinary replacement and rollback rules are unchanged.
+The initial scoped integration deferred the missing policy-test runner and allowed a reviewed local save with its explicitly reported unstaged deletion; that save was neither comprehensive acceptance nor a clean-status claim. On 2026-09-03 the user subsequently approved restoring the supplied desktop revision, removing its child-process execution-policy bypass argument, validating the restored runner and updating affected records. Preserve the supplied original. Required gates remain unchanged, and blocked Desktop execution must not be retried through a bypass or alternate script-body invocation. File restoration and comprehensive migration acceptance remain separate outcomes. See [operations](../operations.md#current-governance-migration-scope), [initial integration evidence](../evidence/governance-bootstrap.md#current-scoped-integration-evidence) and [restoration evidence](../evidence/governance-bootstrap.md#policy-test-runner-restoration). Ordinary replacement and rollback rules are unchanged.
+
+The approved write attempt was denied at that time. The user later restored the distributed file, and read-only comparison confirmed that it matched the supplied desktop copy; the missing-file condition is resolved. The user then accepted migration/application as complete. The failed attempt and later acceptance do not authorize changes to permissions, security settings or execution policy. Preserve the restored file and historical verification results; the earlier proposed runner edit is no longer pending under this checkpoint.
 
 The content-free plan records baseline dc4c375f393399dace6604724cdac35954818e60 and whole_change rollback. Installed source revision is 4ba483f63e7ce086975b7bce8ae39c7864122aa08094fa82210179e7c94eb87d; common3.0.0/document1.0.1/turnover2.0.0 are separately versioned. Verify current identifiers before use.
 

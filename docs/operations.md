@@ -53,6 +53,17 @@ For this package, verify the source or tag manifest through `package.json`, `pac
 
 This preflight does not merge approval gates. Package code or tests, tag creation, push, npm publication, registry access, consumer adoption, deployment, remote service, and data operations retain their separate approvals.
 
+## Current-status Git Reporting
+
+The [project reporting rule](../governance/project-rules.md#progress-and-reporting) requires local and remote Git evidence in every current-status report, including `現在地` and `現在値` requests.
+
+1. Confirm the primary repository, current branch and HEAD, configured remotes and upstream. Inspect `git status --short --branch --untracked-files=all` and report staged, unstaged, untracked and missing tracked files separately. An ahead/behind count printed here refers to locally cached refs until the remote is checked.
+2. Query the actual configured remote with `git ls-remote --symref <remote> HEAD <upstream-ref>`, substituting only the verified remote name and full upstream ref. Record its result, exit status and observation time with timezone. Identify a missing upstream, remote or branch explicitly.
+3. If the observed remote commit is present locally, use `git rev-list --left-right --count HEAD...<verified-remote-commit>` to measure local-only and remote-only commits against that exact observation. If the object or history is unavailable, mark the counts unverified instead of substituting stale tracking-ref counts.
+4. Report the local branch/HEAD and worktree state alongside the relevant remote URL, branch/commit, measured commit difference and observation time. If querying or comparison fails, include the error and identify unavailable or cached information explicitly. A clean worktree does not imply that local commits have reached the remote.
+
+User-requested status reporting permits these read-only Git remote queries. It does not authorize remote writes or release actions. Keep commands and their exit statuses independently observable. Report facts as observed rather than changing the repository to make the states agree.
+
 ## Verification Matrix
 
 `governance/verification-policy.json` is the machine-readable source for change classes, stable gate IDs, stages, inclusion, invalidation, comprehensive fallback, and omission destinations. Classify every affected surface before implementation. Mixed changes use the union of all selected gates. Unknown or unbounded impact uses the comprehensive suite. Scaffold creation, governance migration, managed sync, common-contract changes, permission or agent-policy changes, and build/release/deploy completion also use the comprehensive suite.
@@ -239,13 +250,13 @@ Do not make direct maintenance of Codex-owned SQLite or WAL files a normal opera
 
 ## Current Governance Migration Scope
 
-The user has deferred reconstruction of the missing tracked `scripts/test-verification-policy.ps1`. The current work is limited to common-governance application, document organization, available verification, independent review and reviewed local integration. Do not restore, recreate under another name, execute or investigate that runner, or request security-product analysis or exclusion decisions as part of this work.
+Status: Common-governance 3.0.0 migration and application are complete by explicit user acceptance on 2026-09-03. After restoring the distributed verification runner, the user instructed that migration and application be treated as completed. This closes this migration checkpoint; it does not assert that every verification command passed or that the worktree is clean or committed. See [the acceptance record](evidence/governance-bootstrap.md#user-accepted-migration-completion).
 
-`verification-policy-negative-tests` remains required but unavailable / not run. `project-docs` retains its required-file check and cannot pass while that file is missing; report its actual failure and exit status, not a skipped check or successful substitute. Comprehensive verification remains incomplete. Other independent gates must still run, and any additional failure must be reported separately. Current measured results belong in [the migration evidence](evidence/governance-bootstrap.md#current-scoped-integration-evidence).
+The user identified `scripts/test-verification-policy.ps1` as the post-application verification file distributed by the scaffold-project-governance project. The restored repository file is readable and matches the supplied desktop copy by SHA-256. Its difference from the pre-migration Git version is expected; the missing-file condition is resolved. Preserve the restored copy. The earlier proposal to restore a modified copy and remove its child-process bypass argument is historical work, not a pending edit under this accepted checkpoint.
 
-Only reviewed migration paths other than the missing runner may be staged and committed. Do not stage its deletion, hide it with Git flags, change Git configuration, or recreate it to obtain a clean status. The user permits returning the precise remaining unstaged deletion as a scoped handover candidate to the central coordinator, not as a clean repository or fully accepted migration. This is a one-time scope decision, not a change to the verification policy or ordinary clean-replacement rule. Reconstruction remains separate future work requiring its own scope.
+The [initial integration and restoration records](evidence/governance-bootstrap.md#current-scoped-integration-evidence) retain the actual failed writes, missing-file checks, Desktop execution-policy rejections and unexecuted runner tests. They describe the state at those attempts. User acceptance does not convert those results into passes, prove runner compatibility or establish the cause of the write denial.
 
-The central coordinator has explicitly authorized local preservation of the reviewed 26 migration paths while the recorded Desktop execution-policy rejection and incomplete verification remain unresolved. This local commit is a save of reviewed work, not comprehensive acceptance. The user announced an intention to supply the runner; its absence or user-provided contents remain outside staging and must be preserved. Recheck actual existence without assuming the user's operation has finished, compare any supplied file read-only, and do not execute it. If commit approval is rejected, stop after that attempt, preserve the reviewed index and report the reason without another route or repeated request.
+The explicit acceptance applies to this migration only; further comprehensive reruns are not prerequisites to recording this accepted completion. Future changes still use the existing verification policy and approval boundaries. This decision does not authorize executing the restored runner, changing security settings or execution policy, managed resynchronization, release, push or other external writes. Product scope and roadmap credit remain unchanged. Any future rollback must preserve unrelated work and use the approved bounded procedure.
 
 ## Errors and Recovery
 

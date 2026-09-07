@@ -4,6 +4,8 @@
 
 ### Added
 
+- Required current-status reports to include local Git changes, actual remote branch state, verifiable commit differences and observation time, with failed or cached remote checks explicitly identified.
+
 - Added hash-bound governance 3 document mapping, ADR 0010, document/task-replacement contract snapshots, and required Windows PowerShell 5.1/Core 7 verification profiles.
 
 - Added the governance 1.5.0 impact-based verification policy, generated operations summary, ADR 0009, project-local negative policy tests, and PM（Schemas）-07 turnover preparation.
@@ -11,14 +13,14 @@
 
 ### Changed
 
-- Applied common governance 3.0.0 and reorganized document authority for ordinary repository startup and user-requested replacement. Comprehensive verification remains incomplete: the missing policy-test runner and its reconstruction are deferred by the user. Preserved capacity, identifiers, approval boundaries, required gates, product specification 1.0.3 and roadmap 25%.
+- Completed common-governance 3.0.0 migration/application by explicit user acceptance after restoration of the distributed policy-test runner. Preserved historical failed and unexecuted verification results without claiming a fully passing comprehensive suite. Document authority supports ordinary repository startup and user-requested replacement; product specification 1.0.3 and roadmap 25% remain unchanged.
 
 - Migrated managed common governance to 1.5.0 without changing package implementation, schemas, API, tests, manifest, lock, version, tag, release evidence, workflow, consumer state, or roadmap progress.
 - Migrated managed common governance to 1.4.1 and specification to 1.0.3 without changing the package API, schema, manifest, lock, version, tag, tests, workflow, release evidence, or consumer adoption state.
 
 ### Fixed
 
-- Prepared Windows PowerShell 5.1-compatible documentation checks, including lock-file line endings, with success reporting after all checks. End-to-end documentation verification remains blocked by the missing policy-test runner; no completed runner compatibility claim is made.
+- Resolved the missing policy-test runner: the user-restored repository file is readable and matches the supplied desktop copy by SHA-256. Windows PowerShell 5.1-compatible documentation checks were prepared, including lock-file line endings and success reporting after all checks; historical execution-policy failures remain recorded and no completed runner compatibility claim is made.
 
 ## 3.0.0-dev.1 - 2026-09-01
 
