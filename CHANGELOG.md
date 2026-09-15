@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0-dev.2 - 2026-09-15
+
 ### Added
 
 - Required current-status reports to include local Git changes, actual remote branch state, verifiable commit differences and observation time, with failed or cached remote checks explicitly identified.
@@ -20,7 +22,10 @@
 
 ### Fixed
 
-- Resolved the missing policy-test runner: the user-restored repository file is readable and matches the supplied desktop copy by SHA-256. Windows PowerShell 5.1-compatible documentation checks were prepared, including lock-file line endings and success reporting after all checks; historical execution-policy failures remain recorded and no completed runner compatibility claim is made.
+- Corrected `ArrangementNotification.toArrived()` and `toLeaved()` to preserve the existing `confirmedAt` value instead of reading the undefined `confirmAt` property.
+- Corrected `actualStartAt` and `actualEndAt` to use actual-time fields, preserve next-day semantics, and calculate JST date boundaries independently from the process time zone.
+- Added deterministic regression coverage for confirmation timestamps, actual next-day starts, overnight work, equal start/end times, missing actual times, and UTC execution.
+- Resolved the missing policy-test runner and restored Windows PowerShell 5.1 compatibility for the policy-negative-test and project-document gates by suppressing nested startup progress and passing the TOML validator to Python through standard input. The required gates pass under Windows PowerShell 5.1 and PowerShell 7.
 
 ## 3.0.0-dev.1 - 2026-09-01
 

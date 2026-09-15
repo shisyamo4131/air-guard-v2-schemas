@@ -326,7 +326,7 @@ for stem, sandbox in expected.items():
         raise SystemExit(f"{path}: model must remain unpinned")
 print(f"Validated {1 + len(expected)} TOML files.")
 '@
-& $pythonCommand.Source -c $tomlScript $resolvedProject
+$tomlScript | & $pythonCommand.Source - $resolvedProject
 if ($LASTEXITCODE -ne 0) {
     throw "TOML validation failed with exit code $LASTEXITCODE."
 }

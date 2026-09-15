@@ -12,7 +12,7 @@ Implemented:
 - targeted `test:role-presets` check through the public package self-reference
 - verified 2.4.2-dev.166 main and annotated tag, successful workflow run 32932703563 and publish job 98067873113, npm registry version and `dev` dist-tag, canonical integrity, and peer-inclusive fresh public import
 - Node 24 direct-test, public-import, and package evidence for the role preset catalog
-- published and content-verified 2.4.2-dev.167 CCB v1 package, formal ten-file test suite, and fail-closed release guard
+- published and content-verified 2.4.2-dev.167 CCB v1 package, formal package test suite, and fail-closed release guard
 - AirGuardV2 root and Functions consumption of the same exact 2.4.2-dev.167 tarball/integrity with retained CCB APIs; the three correction-removed exports are unused
 - published and content-verified 3.0.0-dev.1 breaking correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and fresh public imports
 - managed common governance, exact-task capacity routing, evidence-bound identifiers, and impact-selected verification through the governance lock, policy, coordination runbook, and project validators
@@ -124,6 +124,7 @@ Run selected commands independently and record their results and exit statuses. 
 
 Node 24 is the formal validation runtime candidate and the publish runtime, while CI requires the formal suite on both Node 22 and Node 24. The supported Node range remains open. `npm test` executes the exact maintained root-test inventory and fails closed on additions, omissions, and nonzero exits. The inventory is:
 
+- node test-arrangement-notification.js
 - node test-class-imports.js
 - node test-field-definitions.js
 - node test-error-definitions.js
@@ -149,13 +150,19 @@ If validation or publication fails, retain immutable published versions and corr
 
 [ADR 0007](decisions/0007-legacy-stripe-schema-scaffold-removal.md) approves published `3.0.0-dev.1` as a breaking forward correction. It removes `stripeCustomerId` and `subscription` from the public `Company` schema and removes the entitlement/private-entitlement parsers, legacy mapper export, and packed `src/company-configuration/legacy.js`. Legacy-shaped input may be accepted only on discard-only paths and must not reintroduce or serialize the removed fields.
 
-Local completion requires the changed targeted tests to pass independently, followed by the unchanged formal ten-file `npm test` suite on existing local Node 22 and Node 24 runtimes. The release guard must treat the removed exports and file as forbidden, retain the remaining required-export/content checks, pass with exact candidate tag `v3.0.0-dev.1`, and fail its negative paths. Governance, generated-entry, project-document, link/index, roadmap, ADR, and whitespace checks remain independent evidence items.
+Local completion requires the changed targeted tests to pass independently, followed by the maintained formal `npm test` suite on existing local Node 22 and Node 24 runtimes. The release guard must treat the removed exports and file as forbidden, retain the remaining required-export/content checks, pass with the exact candidate tag, and fail its negative paths. Governance, generated-entry, project-document, link/index, roadmap, ADR, and whitespace checks remain independent evidence items.
 
 The separately approved release checkpoint created annotated tag `v3.0.0-dev.1` at commit `c84bee2f3c934618489b691dadecbd23a534372a`, fast-forwarded `main`, and completed workflow run `33467705041`. Registry version and `dev` dist-tag, shasum `e195a1de3ccafe7b369c79e1c8e327fe571fd666`, integrity `sha512-Pg5ZdBI5MDP5Ks2sN/HtzLGDhtOYcGSOczFI+AYvT2hf0b4EqoS6ditTm3ca66mQ0YVNHX7EHchX19lbmv9/CA==`, 83-file tagged-commit content, and fresh imports are verified in [the release evidence](evidence/release-3.0.0-dev.1.md). No consumer edit, Stripe API operation, deployment, or production-data migration was performed.
 
 AirGuardV2 root and Functions may adopt only one exact verified corrected version/content and must remove their indirect legacy root `Company` Stripe dependency in the same consumer checkpoint. A consumer that still requires a removed surface must stay on its previous verified dependency until it owns and verifies an explicit replacement.
 
 Rollback retains immutable published 3.0.0-dev.1 and exact published 2.4.2-dev.167 with their evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A package correction is released forward in a later version; a consumer adoption failure restores both AirGuardV2 root and Functions to exact 2.4.2-dev.167 and their previous consumer code, then reruns consumer compatibility evidence under consumer ownership.
+
+### ArrangementNotification Timestamp Correction
+
+The `3.0.0-dev.2` forward correction preserves existing `confirmedAt` timestamps during arrival and leave transitions and calculates actual start/end dates from actual-time fields with deterministic JST day boundaries. It adds a UTC-fixed regression suite to the fail-closed eleven-file package inventory. This correction changes no field shape, export, dependency, consumer code, deployment, or production data.
+
+Release validation uses the targeted `node test-arrangement-notification.js` check, the formal package suite, the comprehensive governance/document gates selected for release work, `git diff --check`, and `npm run check:release` with `RELEASE_TAG=v3.0.0-dev.2`. The annotated `v3.0.0-dev.2` tag triggers Node 22/24 tests and the Node 24 release guard before Trusted Publishing. If publication fails, preserve all existing immutable versions and correct forward with a later development version.
 
 ## Git Integration
 

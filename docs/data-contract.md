@@ -130,6 +130,8 @@ This list is an export inventory, not a claim that every constructor, field, met
 
 In published 3.0.0-dev.1, the `Company` class remains a root named export but no longer publicly defines or serializes `stripeCustomerId` or `subscription`.
 
+`ArrangementNotification` preserves an existing `confirmedAt` value when moving to `ARRIVED` or `LEAVED`. Its `actualStartAt` uses `actualIsStartNextDay`; `actualEndAt` is the first occurrence of `actualEndTime` strictly after `actualStartAt`, so equal actual times represent 24 hours. Missing actual start or end times return `null`, and the JST calculation does not depend on the process time zone.
+
 ## Data-shape Conventions
 
 - Firestore-oriented document models generally extend FireModel.
@@ -152,7 +154,7 @@ This package owns environment-independent definitions and calculations. It does 
 
 Do not remove, narrow, or reclassify other existing surfaces without a material-change proposal covering consumers, versioning, adoption order, rollback, and tests. The Stripe-derived correction above is the explicitly approved exception recorded in ADR 0007.
 
-The current package validation baseline uses an exact fail-closed ten-file `npm test` inventory. It includes the corrected `test-error-definitions.js` assertions and runs in the Node 22/24 workflow matrix before the Node 24 publish job. Node 24 remains the formal package evidence candidate, while the complete supported Node range remains open.
+The current package validation baseline uses an exact fail-closed eleven-file `npm test` inventory. It includes the corrected `test-error-definitions.js` assertions and the `ArrangementNotification` regression suite, and runs in the Node 22/24 workflow matrix before the Node 24 publish job. Node 24 remains the formal package evidence candidate, while the complete supported Node range remains open.
 
 ## Consumer Compatibility Evidence
 

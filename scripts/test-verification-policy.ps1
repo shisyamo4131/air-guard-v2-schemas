@@ -27,7 +27,7 @@ foreach ($relativePath in $fixtureFiles) {
 function Invoke-ManagedValidator([string]$FixturePath) {
     $validatorLiteral = (Join-Path $FixturePath 'scripts\check-governance.ps1').Replace("'", "''")
     $projectLiteral = $FixturePath.Replace("'", "''")
-    $command = "`$ErrorActionPreference = 'Stop'; try { `$result = & '$validatorLiteral' -ProjectPath '$projectLiteral'; `$result | ConvertTo-Json -Depth 10 -Compress; exit 0 } catch { [Console]::Error.WriteLine(`$_.Exception.Message); exit 1 }"
+    $command = "`$ErrorActionPreference = 'Stop'; `$ProgressPreference = 'SilentlyContinue'; try { `$result = & '$validatorLiteral' -ProjectPath '$projectLiteral'; `$result | ConvertTo-Json -Depth 10 -Compress; exit 0 } catch { [Console]::Error.WriteLine(`$_.Exception.Message); exit 1 }"
     $startInfo = [Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = $runtimeExecutable
     $startInfo.Arguments = '-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand ' + [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
