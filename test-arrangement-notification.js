@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 process.env.TZ = "UTC";
 
 import ArrangementNotification from "./src/ArrangementNotification.js";
+import SiteOperationSchedule from "./src/SiteOperationSchedule.js";
 import SiteOperationScheduleDetail from "./src/SiteOperationScheduleDetail.js";
 import { getDateAt } from "./src/utils/index.js";
 
@@ -36,6 +37,62 @@ async function withoutFirestore(callback) {
     SiteOperationScheduleDetail.prototype.update = originalUpdate;
   }
 }
+
+test("notify propagates a next-day start to the created notification", async () => {
+  const originalCreate = ArrangementNotification.prototype.create;
+  const originalRunTransaction = SiteOperationSchedule.runTransaction;
+  const originalUpdate = SiteOperationSchedule.prototype.update;
+  const created = [];
+
+  ArrangementNotification.prototype.create = async function () {
+    created.push(this);
+  };
+  SiteOperationSchedule.runTransaction = async (callback) => callback({});
+  SiteOperationSchedule.prototype.update = async () => {};
+
+  try {
+    const schedule = new SiteOperationSchedule({
+      docId: "schedule-1",
+      dateAt,
+      shiftType: "DAY",
+      startTime: "01:00",
+      endTime: "09:00",
+      isStartNextDay: false,
+      breakMinutes: 0,
+      siteId: "site-1",
+      securityType: "SECURITY",
+      requiredPersonnel: 1,
+      employees: [
+        {
+          id: "worker-1",
+          isEmployee: true,
+          index: 0,
+          dateAt,
+          shiftType: "DAY",
+          startTime: "01:00",
+          endTime: "09:00",
+          isStartNextDay: false,
+          breakMinutes: 0,
+          siteId: "site-1",
+          siteOperationScheduleId: "schedule-1",
+          hasNotification: false,
+        },
+      ],
+      outsourcers: [],
+    });
+    schedule.isStartNextDay = true;
+
+    await schedule.notify(false);
+
+    assert.equal(created.length, 1);
+    assert.equal(created[0].actualIsStartNextDay, true);
+    assert.equal(created[0].actualStartAt.getTime(), schedule.startAt.getTime());
+  } finally {
+    ArrangementNotification.prototype.create = originalCreate;
+    SiteOperationSchedule.runTransaction = originalRunTransaction;
+    SiteOperationSchedule.prototype.update = originalUpdate;
+  }
+});
 
 test("toArrived preserves an existing confirmedAt", async () => {
   const confirmedAt = new Date("2026-01-15T01:02:03.000Z");
