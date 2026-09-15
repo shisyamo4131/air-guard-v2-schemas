@@ -539,6 +539,7 @@ export default class SiteOperationSchedule extends Operation {
           actualStartTime: worker.startTime,
           actualEndTime: worker.endTime,
           actualBreakMinutes: worker.breakMinutes,
+          actualIsStartNextDay: worker.isStartNextDay,
           shouldNotify,
         });
       });
