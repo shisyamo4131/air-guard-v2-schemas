@@ -2,7 +2,7 @@
 
 - Goal: Establish a verified, versioned shared package contract that both confirmed consumers can adopt at the same version and content.
 - Current progress: 25%
-- Last reviewed: 2026-09-01
+- Last reviewed: 2026-09-15
 - Approval boundary: Package code or tests, material specification changes, tag, push, main merge, npm publish, deployment, remote operations, and real-data operations require their applicable explicit approval.
 - Partial credit: Allowed only for the predefined sub-gates below.
 
@@ -12,14 +12,14 @@
 | --- | ---: | ---: | --- | --- |
 | Governance and source-of-truth baseline | 25 | 25 | Complete | Sub-gates completed: managed/project governance including evidence-bound identifiers 10; zero-unmapped inventory 5; all governance checks 5; local commit and clean worktree 5 |
 | Public API and data-contract inventory | 25 | 0 | In progress | The ADR 0004 role preset contract is available in verified published 2.4.2-dev.166 and its API, data, and behavior are unchanged from 2.4.2-dev.165. ADR 0007's breaking removal of the unowned Stripe-derived Company/CCB scaffold is published and content-verified in 3.0.0-dev.1, but the complete public inventory remains unfinished; inventory every remaining exported model, field, method, serialization rule, constant, error, calculation, inherited surface, and compatibility class |
-| Repeatable package validation and test baseline | 25 | 0 | In progress | Formal fail-closed eleven-file runner, maintained error-definition assertions, successful Node 22/24 workflow matrix, and release guard are implemented. Published 3.0.0-dev.1 has successful Node 22/24 formal-suite and corrected Node 24 release-guard evidence; supported Node range and complete compatibility baseline remain open, so no predefined full gate is complete |
-| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | Exact 3.0.0-dev.1 commit/tag, workflow jobs, registry bytes/content, tagged-commit comparison, and peer-inclusive fresh imports are verified. The whole milestone gate remains incomplete because corrected-version adoption/build acceptance and rollback exercise remain pending; no predefined partial sub-gate exists |
+| Repeatable package validation and test baseline | 25 | 0 | In progress | Formal fail-closed eleven-file runner, maintained error-definition assertions, successful Node 22/24 workflow matrix, and release guard are implemented. Published 3.0.0-dev.2 has successful Node 22/24 formal-suite and Node 24 release-guard evidence; supported Node range and complete compatibility baseline remain open, so no predefined full gate is complete |
+| Release, publish, rollback, and consumer integration runbook | 15 | 0 | In progress | Exact 3.0.0-dev.2 commit/tag, workflow jobs, registry bytes/content, tagged-commit comparison, and peer-inclusive fresh imports are verified. The whole milestone gate remains incomplete because corrected-version adoption/build acceptance and rollback exercise remain pending; no predefined partial sub-gate exists |
 | Two-consumer compatibility and adoption evidence | 10 | 0 | In progress | AirGuardV2 root and Functions currently pin the same exact 2.4.2-dev.167 package content, use retained CCB APIs, and do not import the three removed exports. Shared role-catalog import adoption, corrected-version adoption/build acceptance, and rollback exercise remain pending; no predefined partial sub-gate is earned |
 | **Total** | **100** | **25** |  |  |
 
 ## Next Work
 
-1. Obtain separate consumer approval before AirGuardV2 adopts exact published and content-verified 3.0.0-dev.1.
+1. Obtain separate consumer approval before AirGuardV2 adopts exact published and content-verified 3.0.0-dev.2.
 2. Complete AirGuardV2 root and Functions adoption of the shared role catalog and corrected Company/CCB surface together at that exact version/content.
 3. Continue the complete public API inventory and compatibility policy across all remaining exports.
 
@@ -29,8 +29,8 @@
 | --- | --- | --- | --- |
 | Governance baseline | [Specification](../specification.md), [ADRs](../decisions/README.md) | [Project rules](../../governance/project-rules.md), generated AGENTS.md | [Bootstrap evidence](../evidence/governance-bootstrap.md) |
 | Public data contract | [Data contract](../data-contract.md), [ADR 0004](../decisions/0004-shared-role-permission-catalog.md), [ADR 0005](../decisions/0005-company-configuration-v1.md), [ADR 0007](../decisions/0007-legacy-stripe-schema-scaffold-removal.md) | Role preset module and original CCB v1 are published in immutable 2.4.2-dev.167; breaking Stripe-scaffold correction is published in 3.0.0-dev.1 | Published correction evidence exists; complete inventory and consumer adoption evidence remain incomplete |
-| Package validation | [Operations](../operations.md) | Formal fail-closed eleven-file runner, targeted CCB/role/ArrangementNotification checks, maintained error assertions, and release guard | Node 22/24 workflow suite and Node 24 guard evidence exists for published 3.0.0-dev.1; supported range and complete compatibility baseline remain open |
-| Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | [3.0.0-dev.1 evidence](../evidence/release-3.0.0-dev.1.md) verifies publication, registry byte/content integrity, tagged-commit match, and peer-inclusive fresh imports; two-consumer adoption and rollback evidence remain incomplete |
+| Package validation | [Operations](../operations.md) | Formal fail-closed eleven-file runner, targeted CCB/role/ArrangementNotification checks, maintained error assertions, and release guard | Node 22/24 workflow suite and Node 24 guard evidence exists for published 3.0.0-dev.2; supported range and complete compatibility baseline remain open |
+| Release and integration | [ADR 0003](../decisions/0003-release-and-rollback-approval-boundaries.md) | Existing publish workflow | [3.0.0-dev.2 evidence](../evidence/release-3.0.0-dev.2.md) verifies publication, registry byte/content integrity, tagged-commit match, and peer-inclusive fresh imports; two-consumer adoption and rollback evidence remain incomplete |
 | Consumer evidence | [ADR 0002](../decisions/0002-cross-project-ownership-and-versioned-integration.md) | Consumer-owned repositories | Consumer coordinator confirms AirGuardV2 root and Functions use the same exact 2.4.2-dev.167 package content and retained CCB APIs; the removed three exports are unused. Corrected-version adoption/build acceptance and rollback evidence remain incomplete |
 
 ## Unresolved Problems and Decisions
@@ -71,3 +71,4 @@
 | 2026-09-01 | 25% | +0 | Recorded consumer-coordinator evidence that AirGuardV2 root and Functions already use the same exact 2.4.2-dev.167 package content, retained CCB APIs, and none of the three removed exports. Corrected-version and role-catalog adoption/build acceptance plus rollback exercise remain pending, so no predefined consumer or release gate earns credit |
 | 2026-09-01 | 25% | +0 | Published and content-verified 3.0.0-dev.1 at the exact commit/tag through successful Node 22/24 tests, Node 24 release guard and Trusted Publishing, registry digest/content comparison, and fresh imports. The release milestone has no predefined partial sub-gate, and consumer adoption/rollback evidence remains incomplete |
 | 2026-09-01 | 25% | +0 | Migrated governance to 1.4.1 with evidence-bound critical identifiers, source/tag/release/consumer manifest-lock routing, remote-freshness boundaries, ADR and validator coverage. The governance milestone was already fully earned, and no package or consumer gate completed |
+| 2026-09-15 | 25% | +0 | Published and content-verified 3.0.0-dev.2 at the exact commit/tag through successful Node 22/24 tests, Node 24 release guard and Trusted Publishing, registry digest/content comparison, and fresh installed-package behavior checks. The release milestone has no predefined partial sub-gate, and consumer adoption/rollback evidence remains incomplete |

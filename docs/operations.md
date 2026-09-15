@@ -15,6 +15,7 @@ Implemented:
 - published and content-verified 2.4.2-dev.167 CCB v1 package, formal package test suite, and fail-closed release guard
 - AirGuardV2 root and Functions consumption of the same exact 2.4.2-dev.167 tarball/integrity with retained CCB APIs; the three correction-removed exports are unused
 - published and content-verified 3.0.0-dev.1 breaking correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and fresh public imports
+- published and content-verified 3.0.0-dev.2 ArrangementNotification correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and fresh public imports
 - managed common governance, exact-task capacity routing, evidence-bound identifiers, and impact-selected verification through the governance lock, policy, coordination runbook, and project validators
 
 Planned or not yet verified:
@@ -156,13 +157,13 @@ The separately approved release checkpoint created annotated tag `v3.0.0-dev.1` 
 
 AirGuardV2 root and Functions may adopt only one exact verified corrected version/content and must remove their indirect legacy root `Company` Stripe dependency in the same consumer checkpoint. A consumer that still requires a removed surface must stay on its previous verified dependency until it owns and verifies an explicit replacement.
 
-Rollback retains immutable published 3.0.0-dev.1 and exact published 2.4.2-dev.167 with their evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A package correction is released forward in a later version; a consumer adoption failure restores both AirGuardV2 root and Functions to exact 2.4.2-dev.167 and their previous consumer code, then reruns consumer compatibility evidence under consumer ownership.
+Rollback retains immutable published 3.0.0-dev.1, 3.0.0-dev.2, and exact published 2.4.2-dev.167 with their evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A package correction is released forward in a later version; a consumer adoption failure restores both AirGuardV2 root and Functions to exact 2.4.2-dev.167 and their previous consumer code, then reruns consumer compatibility evidence under consumer ownership.
 
 ### ArrangementNotification Timestamp Correction
 
 The `3.0.0-dev.2` forward correction preserves existing `confirmedAt` timestamps during arrival and leave transitions and calculates actual start/end dates from actual-time fields with deterministic JST day boundaries. It adds a UTC-fixed regression suite to the fail-closed eleven-file package inventory. This correction changes no field shape, export, dependency, consumer code, deployment, or production data.
 
-Release validation uses the targeted `node test-arrangement-notification.js` check, the formal package suite, the comprehensive governance/document gates selected for release work, `git diff --check`, and `npm run check:release` with `RELEASE_TAG=v3.0.0-dev.2`. The annotated `v3.0.0-dev.2` tag triggers Node 22/24 tests and the Node 24 release guard before Trusted Publishing. If publication fails, preserve all existing immutable versions and correct forward with a later development version.
+Release validation uses the targeted `node test-arrangement-notification.js` check, the formal package suite, the comprehensive governance/document gates selected for release work, `git diff --check`, and `npm run check:release` with `RELEASE_TAG=v3.0.0-dev.2`. The annotated `v3.0.0-dev.2` tag triggered successful Node 22/24 tests and the Node 24 release guard before Trusted Publishing in workflow run `34925604934`. Registry version and `dev` dist-tag, shasum `12642f31ead39cfbaeb636cc91f5bf8de39a2105`, integrity `sha512-1THCaV7z1V8VLyGJwB5R1AOq1cPpppIIHZC37pPNEgKjP65gJVKFJtc1fls905azLETchBHYlNokUcSrrSS1Hg==`, 83-file tagged-commit content, and fresh imports and behavior are verified in [the release evidence](evidence/release-3.0.0-dev.2.md). If a later publication fails, preserve all existing immutable versions and correct forward with a later development version.
 
 ## Git Integration
 
@@ -200,7 +201,7 @@ Version 2.4.2-dev.166 is a documentation/version-metadata-only correction relati
 
 The local public imports are `ROLE_PRESETS`, `ROLE_PRESET_IDS`, and `isRolePresetId` from `@shisyamo4131/air-guard-v2-schemas/constants`. Package implementation is limited to catalog data and prototype-safe membership validation. Consumer authorization evaluators, write-to-read implication, and strict or general policy semantics remain consumer-owned.
 
-Targeted role-preset evidence uses Node 24 as the formal package evidence candidate and includes the direct `node:test` command, the package script with the same Node runtime, a public self-reference import smoke check, and package evidence confirming that `src/constants/role-presets.js` is included while root tests are excluded. Published 2.4.2-dev.167 and 3.0.0-dev.1 additionally provide the formal ten-file runner and Node 22/24 workflow suite evidence. This does not establish the complete supported Node range; Firebase Functions Node 22 compatibility remains separate consumer evidence.
+Targeted role-preset evidence uses Node 24 as the formal package evidence candidate and includes the direct `node:test` command, the package script with the same Node runtime, a public self-reference import smoke check, and package evidence confirming that `src/constants/role-presets.js` is included while root tests are excluded. Published 2.4.2-dev.167 and 3.0.0-dev.1 provide the historical formal ten-file runner evidence; 3.0.0-dev.2 provides the current eleven-file Node 22/24 workflow suite evidence. This does not establish the complete supported Node range; Firebase Functions Node 22 compatibility remains separate consumer evidence.
 
 Deliver and verify the contract in this order:
 
@@ -211,7 +212,7 @@ Deliver and verify the contract in this order:
 5. Confirm the published version and content before asking consumer coordinators to adopt it.
 6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. Combined role-preset and corrected Company/CCB adoption must use one separately approved, published, content-verified corrected version with matching resolved content and integrity in AirGuardV2 root and Functions; local catalog deletion occurs only in that consumer-owned adoption. Exact 2.4.2-dev.167 remains immutable rollback and historical evidence, not the corrected adoption target.
 
-Rollback does not depend on npm unpublish, tag deletion or movement, history rewrite, deployment, or data action. Published 2.4.2-dev.165, 2.4.2-dev.166, 2.4.2-dev.167, and 3.0.0-dev.1 remain immutable. If a published version is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
+Rollback does not depend on npm unpublish, tag deletion or movement, history rewrite, deployment, or data action. Published 2.4.2-dev.165, 2.4.2-dev.166, 2.4.2-dev.167, 3.0.0-dev.1, and 3.0.0-dev.2 remain immutable. If a published version is not adopted, leave it published and issue a later corrected version if necessary. If consumer adoption fails, the consumer coordinator restores the previously verified exact package version and local catalog/import implementation in all affected consumers, reruns compatibility evidence, and accepts that rollback in the consumer repository.
 
 ## Release, Publish, Adoption, and Rollback
 

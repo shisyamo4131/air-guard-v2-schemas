@@ -1,7 +1,7 @@
 # Public Data Contract Inventory
 
 - Status: Partially confirmed
-- Last verified: 2026-09-01
+- Last verified: 2026-09-15
 - Authority: Inventory of the existing public package surface and verified published additions; unresolved compatibility items remain open in the specification.
 - Related roadmap: [Shared-package readiness](roadmaps/shared-package-readiness.md)
 - Related decisions: [ADR index](decisions/README.md)
@@ -9,11 +9,12 @@
 ## Package Identity
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
-- current verified development version: 3.0.0-dev.1; published from commit `c84bee2f3c934618489b691dadecbd23a534372a`, annotated tag object `b317eab74d5c635bb0765ba2c2354e93e1529d9e`, successful workflow run `33467705041`, npm registry and `dev` dist-tag, shasum `e195a1de3ccafe7b369c79e1c8e327fe571fd666`, integrity `sha512-Pg5ZdBI5MDP5Ks2sN/HtzLGDhtOYcGSOczFI+AYvT2hf0b4EqoS6ditTm3ca66mQ0YVNHX7EHchX19lbmv9/CA==`, 83-file tagged-commit content comparison, and peer-inclusive fresh public imports
+- current verified development version: 3.0.0-dev.2; published from commit `3e69f4e95bd072c161ef64cf6346793619fd6642`, annotated tag object `89f1c0c94af4f54b60533c3942960f32aef972d2`, successful workflow run `34925604934`, npm registry and `dev` dist-tag, shasum `12642f31ead39cfbaeb636cc91f5bf8de39a2105`, integrity `sha512-1THCaV7z1V8VLyGJwB5R1AOq1cPpppIIHZC37pPNEgKjP65gJVKFJtc1fls905azLETchBHYlNokUcSrrSS1Hg==`, 83-file tagged-commit content comparison, and peer-inclusive fresh public imports
 - current consumer/rollback baseline: immutable published 2.4.2-dev.167; AirGuardV2 root and Functions currently use its same exact package content, and corrected-version adoption remains pending
 - release relationship: 2.4.2-dev.166 changes documentation and version metadata only relative to immutable 2.4.2-dev.165; the public API, catalog data, and behavior are unchanged
 - 2.4.2-dev.167 relationship: immutable published baseline that adds the accepted original CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
 - 3.0.0-dev.1 relationship: published breaking forward correction that removes the public `Company` Stripe/subscription fields, the entitlement/private-entitlement parser exports, the legacy mapper export, and the packed legacy mapper file while preserving the remaining CCB and role-preset surfaces
+- 3.0.0-dev.2 relationship: published forward bug fix that preserves `confirmedAt` and corrects actual start/end date calculation without changing public fields, exports, dependencies, or consumer ownership
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2
@@ -84,7 +85,7 @@ The label, description, and opaque `mdi-*` icon token are environment-independen
 
 `isRolePresetId` checks only prototype-safe own membership in the catalog. This public addition does not include consumer permission expansion, write-to-read implication, `hasPresetPermission`, `resolveRolePermissions`, or an authorization evaluator. Strict consumers must fail closed for ordinary unknown and prototype-key roles. Consumer-specific general handling of unknown strings remains outside this package contract.
 
-This additive API remains available in published 2.4.2-dev.167 and is preserved in published 3.0.0-dev.1. Exact 3.0.0-dev.1 includes successful Node 22/24 workflow tests, the Node 24 release guard, registry byte/content verification, and fresh public imports; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions still pin the same exact 2.4.2-dev.167 package content, while role-catalog import adoption and local catalog deletion remain unverified consumer work. Consumers may combine those changes with the approved Company/CCB correction only in a separately approved adoption using the exact published corrected version/content. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
+This additive API remains available in published 2.4.2-dev.167 and is preserved in published 3.0.0-dev.2. Exact 3.0.0-dev.2 includes successful Node 22/24 workflow tests, the Node 24 release guard, registry byte/content verification, and fresh public imports; the supported Node range remains open and Firebase Functions Node 22 remains consumer evidence. AirGuardV2 root and Functions still pin the same exact 2.4.2-dev.167 package content, while role-catalog import adoption and local catalog deletion remain unverified consumer work. Consumers may combine those changes with the approved Company/CCB correction only in a separately approved adoption using the exact published corrected version/content. A later addition or removal of a permission on an existing preset is nevertheless authorization-sensitive and requires material contract review and explicit approval.
 
 ## Root Named Exports
 
