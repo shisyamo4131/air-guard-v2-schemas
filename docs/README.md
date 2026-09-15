@@ -43,6 +43,7 @@
 | [2.4.2-dev.167 release evidence](evidence/release-2.4.2-dev.167.md) | Exact commit/tag, workflow, registry content, and fresh-install verification |
 | [3.0.0-dev.1 release evidence](evidence/release-3.0.0-dev.1.md) | Breaking correction commit/tag, workflow, registry content, and fresh-install verification |
 | [3.0.0-dev.2 release evidence](evidence/release-3.0.0-dev.2.md) | ArrangementNotification correction commit/tag, workflow, registry content, and fresh-install verification |
+| [3.0.0-dev.3 release evidence](evidence/release-3.0.0-dev.3.md) | SiteOperationSchedule next-day notification correction candidate and release verification |
 | [Document migration contract](../references/document-migration-contract.md) | Versioned contract for content-free mapping and topology validation |
 | [Task replacement contract](../references/task-turnover-contract.md) | Managed user-requested replacement and ordinary startup |
 | [Governance 3 document plan](evidence/governance-3.0.0-document-plan.json) | Original-source hashes, mapped core units, authority and rollback |

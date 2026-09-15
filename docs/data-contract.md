@@ -15,6 +15,7 @@
 - 2.4.2-dev.167 relationship: immutable published baseline that adds the accepted original CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
 - 3.0.0-dev.1 relationship: published breaking forward correction that removes the public `Company` Stripe/subscription fields, the entitlement/private-entitlement parser exports, the legacy mapper export, and the packed legacy mapper file while preserving the remaining CCB and role-preset surfaces
 - 3.0.0-dev.2 relationship: published forward bug fix that preserves `confirmedAt` and corrects actual start/end date calculation without changing public fields, exports, dependencies, or consumer ownership
+- 3.0.0-dev.3 candidate relationship: approved compatible bug fix that initializes `ArrangementNotification.actualIsStartNextDay` from the scheduled worker in `SiteOperationSchedule.notify()`; publication and content verification are pending
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2
@@ -132,6 +133,8 @@ This list is an export inventory, not a claim that every constructor, field, met
 In published 3.0.0-dev.1, the `Company` class remains a root named export but no longer publicly defines or serializes `stripeCustomerId` or `subscription`.
 
 `ArrangementNotification` preserves an existing `confirmedAt` value when moving to `ARRIVED` or `LEAVED`. Its `actualStartAt` uses `actualIsStartNextDay`; `actualEndAt` is the first occurrence of `actualEndTime` strictly after `actualStartAt`, so equal actual times represent 24 hours. Missing actual start or end times return `null`, and the JST calculation does not depend on the process time zone.
+
+`SiteOperationSchedule.notify()` initializes the created notification's `actualStartTime`, `actualEndTime`, `actualBreakMinutes`, and `actualIsStartNextDay` from the scheduled worker's corresponding values. This changes no field shape, export, dependency, persistence type, or ownership boundary.
 
 ## Data-shape Conventions
 

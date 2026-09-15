@@ -165,6 +165,12 @@ The `3.0.0-dev.2` forward correction preserves existing `confirmedAt` timestamps
 
 Release validation uses the targeted `node test-arrangement-notification.js` check, the formal package suite, the comprehensive governance/document gates selected for release work, `git diff --check`, and `npm run check:release` with `RELEASE_TAG=v3.0.0-dev.2`. The annotated `v3.0.0-dev.2` tag triggered successful Node 22/24 tests and the Node 24 release guard before Trusted Publishing in workflow run `34925604934`. Registry version and `dev` dist-tag, shasum `12642f31ead39cfbaeb636cc91f5bf8de39a2105`, integrity `sha512-1THCaV7z1V8VLyGJwB5R1AOq1cPpppIIHZC37pPNEgKjP65gJVKFJtc1fls905azLETchBHYlNokUcSrrSS1Hg==`, 83-file tagged-commit content, and fresh imports and behavior are verified in [the release evidence](evidence/release-3.0.0-dev.2.md). If a later publication fails, preserve all existing immutable versions and correct forward with a later development version.
 
+### SiteOperationSchedule Next-day Notification Correction
+
+Candidate `3.0.0-dev.3` corrects `SiteOperationSchedule.notify()` so the created `ArrangementNotification.actualIsStartNextDay` is initialized from the scheduled worker's `isStartNextDay` value together with the existing actual-time and break defaults. The regression test executes the complete `notify()` path with Firestore-facing operations stubbed and restored, and verifies that a next-day schedule produces the same initial occurrence for `actualStartAt` and `startAt`. This compatible correction changes no field shape, export, dependency, consumer code, deployment, or production data.
+
+Before publication, run the targeted notification test, the formal package suite, all comprehensive release gates, `git diff --check`, and the release guard for exact candidate tag `v3.0.0-dev.3`. Record workflow, registry, tagged-content, and fresh-install evidence only after those results exist. If validation fails before publication, do not create the tag; after publication, preserve the immutable version and correct forward with a later development version.
+
 ## Git Integration
 
 Delegated tasks edit and validate only explicitly owned files, then report exact files, diff, tests, unverified items, approval boundaries, and worktree state. They do not stage or commit by default.
