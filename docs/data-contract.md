@@ -9,13 +9,13 @@
 ## Package Identity
 
 - npm name: @shisyamo4131/air-guard-v2-schemas
-- current verified development version: 3.0.0-dev.2; published from commit `3e69f4e95bd072c161ef64cf6346793619fd6642`, annotated tag object `89f1c0c94af4f54b60533c3942960f32aef972d2`, successful workflow run `34925604934`, npm registry and `dev` dist-tag, shasum `12642f31ead39cfbaeb636cc91f5bf8de39a2105`, integrity `sha512-1THCaV7z1V8VLyGJwB5R1AOq1cPpppIIHZC37pPNEgKjP65gJVKFJtc1fls905azLETchBHYlNokUcSrrSS1Hg==`, 83-file tagged-commit content comparison, and peer-inclusive fresh public imports
+- current verified development version: 3.0.0-dev.3; published from commit `817b3199b1964a5cd8ba1851114b085eed8dc322`, annotated tag object `929041296aa65515f2a1ea15fb68caaa4532f8e8`, successful workflow run `34932583471`, npm registry and `dev` dist-tag, shasum `8745cad6e486d49c42cf3261db5a450e1f3535b9`, integrity `sha512-d102QT5cFwAAKJ6GKwReluVFmM67ZNbfPnDdxSTrPq0FnyZaekF6XwOk4u9q1w9c5LJGDznThlKQ9RtOBG6BsA==`, 83-file tagged-commit content comparison, and peer-inclusive fresh public imports and corrected behavior
 - current consumer/rollback baseline: immutable published 2.4.2-dev.167; AirGuardV2 root and Functions currently use its same exact package content, and corrected-version adoption remains pending
 - release relationship: 2.4.2-dev.166 changes documentation and version metadata only relative to immutable 2.4.2-dev.165; the public API, catalog data, and behavior are unchanged
 - 2.4.2-dev.167 relationship: immutable published baseline that adds the accepted original CCB v1 public subpath, formal fail-closed ten-file suite, and release guard while retaining the role-preset API/data unchanged
 - 3.0.0-dev.1 relationship: published breaking forward correction that removes the public `Company` Stripe/subscription fields, the entitlement/private-entitlement parser exports, the legacy mapper export, and the packed legacy mapper file while preserving the remaining CCB and role-preset surfaces
 - 3.0.0-dev.2 relationship: published forward bug fix that preserves `confirmedAt` and corrects actual start/end date calculation without changing public fields, exports, dependencies, or consumer ownership
-- 3.0.0-dev.3 candidate relationship: approved compatible bug fix that initializes `ArrangementNotification.actualIsStartNextDay` from the scheduled worker in `SiteOperationSchedule.notify()`; publication and content verification are pending
+- 3.0.0-dev.3 relationship: published compatible bug fix that initializes `ArrangementNotification.actualIsStartNextDay` from the scheduled worker in `SiteOperationSchedule.notify()` without changing public fields, exports, dependencies, or consumer ownership
 - module type: ECMAScript module
 - root entry: index.js
 - peer dependencies: @holiday-jp/holiday_jp and @shisyamo4131/air-firebase-v2

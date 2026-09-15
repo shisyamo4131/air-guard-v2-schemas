@@ -102,7 +102,7 @@ Version 2.4.2-dev.166 is verified at commit `1a6024ceedd03684020ef82af55fda2b735
 
 This behavior is published and content-verified in exact 3.0.0-dev.2 from commit `3e69f4e95bd072c161ef64cf6346793619fd6642` and annotated tag object `89f1c0c94af4f54b60533c3942960f32aef972d2`. Workflow run `34925604934` completed Node 22/24 formal tests, the Node 24 release guard, and Trusted Publishing. Registry bytes and all 83 package files match the recorded metadata and tagged commit, and a fresh peer-inclusive install verified the public imports and corrected behavior. See [the release evidence](evidence/release-3.0.0-dev.2.md).
 
-The `SiteOperationSchedule.notify()` next-day propagation correction is approved for candidate `3.0.0-dev.3`. Publication and content verification remain pending until its release evidence is finalized.
+The `SiteOperationSchedule.notify()` next-day propagation correction is published and content-verified in exact `3.0.0-dev.3` from commit `817b3199b1964a5cd8ba1851114b085eed8dc322` and annotated tag object `929041296aa65515f2a1ea15fb68caaa4532f8e8`. Workflow run `34932583471` completed the Node 22/24 formal tests, Node 24 release guard, and Trusted Publishing. Registry bytes and all 83 files match the recorded metadata and tagged commit after LF normalization, and a fresh peer-inclusive install verified the public imports and corrected `notify()` behavior. See [the release evidence](evidence/release-3.0.0-dev.3.md).
 
 ## Company Configuration Boundary v1
 

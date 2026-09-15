@@ -16,6 +16,7 @@ Implemented:
 - AirGuardV2 root and Functions consumption of the same exact 2.4.2-dev.167 tarball/integrity with retained CCB APIs; the three correction-removed exports are unused
 - published and content-verified 3.0.0-dev.1 breaking correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and fresh public imports
 - published and content-verified 3.0.0-dev.2 ArrangementNotification correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and fresh public imports
+- published and content-verified 3.0.0-dev.3 SiteOperationSchedule next-day notification correction with exact commit/tag, successful Node 22/24 workflow tests, Node 24 release guard and Trusted Publishing, matching registry bytes/content, and peer-inclusive fresh behavior verification
 - managed common governance, exact-task capacity routing, evidence-bound identifiers, and impact-selected verification through the governance lock, policy, coordination runbook, and project validators
 
 Planned or not yet verified:
@@ -157,7 +158,7 @@ The separately approved release checkpoint created annotated tag `v3.0.0-dev.1` 
 
 AirGuardV2 root and Functions may adopt only one exact verified corrected version/content and must remove their indirect legacy root `Company` Stripe dependency in the same consumer checkpoint. A consumer that still requires a removed surface must stay on its previous verified dependency until it owns and verifies an explicit replacement.
 
-Rollback retains immutable published 3.0.0-dev.1, 3.0.0-dev.2, and exact published 2.4.2-dev.167 with their evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A package correction is released forward in a later version; a consumer adoption failure restores both AirGuardV2 root and Functions to exact 2.4.2-dev.167 and their previous consumer code, then reruns consumer compatibility evidence under consumer ownership.
+Rollback retains immutable published 3.0.0-dev.1, 3.0.0-dev.2, 3.0.0-dev.3, and exact published 2.4.2-dev.167 with their evidence. It does not unpublish, move or delete tags, rewrite history, deploy, call Stripe, or modify data. A package correction is released forward in a later version; a consumer adoption failure restores both AirGuardV2 root and Functions to exact 2.4.2-dev.167 and their previous consumer code, then reruns consumer compatibility evidence under consumer ownership.
 
 ### ArrangementNotification Timestamp Correction
 
@@ -167,9 +168,9 @@ Release validation uses the targeted `node test-arrangement-notification.js` che
 
 ### SiteOperationSchedule Next-day Notification Correction
 
-Candidate `3.0.0-dev.3` corrects `SiteOperationSchedule.notify()` so the created `ArrangementNotification.actualIsStartNextDay` is initialized from the scheduled worker's `isStartNextDay` value together with the existing actual-time and break defaults. The regression test executes the complete `notify()` path with Firestore-facing operations stubbed and restored, and verifies that a next-day schedule produces the same initial occurrence for `actualStartAt` and `startAt`. This compatible correction changes no field shape, export, dependency, consumer code, deployment, or production data.
+Published `3.0.0-dev.3` corrects `SiteOperationSchedule.notify()` so the created `ArrangementNotification.actualIsStartNextDay` is initialized from the scheduled worker's `isStartNextDay` value together with the existing actual-time and break defaults. The regression test executes the complete `notify()` path with Firestore-facing operations stubbed and restored, and verifies that a next-day schedule produces the same initial occurrence for `actualStartAt` and `startAt`. This compatible correction changes no field shape, export, dependency, consumer code, deployment, or production data.
 
-Before publication, run the targeted notification test, the formal package suite, all comprehensive release gates, `git diff --check`, and the release guard for exact candidate tag `v3.0.0-dev.3`. Record workflow, registry, tagged-content, and fresh-install evidence only after those results exist. If validation fails before publication, do not create the tag; after publication, preserve the immutable version and correct forward with a later development version.
+Release validation passed the targeted notification test under Node 22.23.2 and Node 24.19.0, the Node 22 formal package suite, all comprehensive governance/document gates, `git diff --check`, and the Node 24 release guard for exact tag `v3.0.0-dev.3`. Annotated tag object `929041296aa65515f2a1ea15fb68caaa4532f8e8` resolves to commit `817b3199b1964a5cd8ba1851114b085eed8dc322`; workflow run `34932583471` completed the Node 22, Node 24, and publish jobs. Registry version and `dev` dist-tag, shasum `8745cad6e486d49c42cf3261db5a450e1f3535b9`, integrity `sha512-d102QT5cFwAAKJ6GKwReluVFmM67ZNbfPnDdxSTrPq0FnyZaekF6XwOk4u9q1w9c5LJGDznThlKQ9RtOBG6BsA==`, 83-file tagged content, and peer-inclusive fresh-install behavior are verified in [the release evidence](evidence/release-3.0.0-dev.3.md). Future corrections preserve this immutable release and move forward with a later version.
 
 ## Git Integration
 

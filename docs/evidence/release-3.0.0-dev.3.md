@@ -1,37 +1,65 @@
 # Release Evidence: 3.0.0-dev.3
 
-- Status: Candidate validated; publication pending
+- Status: Published and content-verified
 - Date: 2026-09-15
 - Package: `@shisyamo4131/air-guard-v2-schemas@3.0.0-dev.3`
-- Commit: pending release commit
-- Annotated tag: `v3.0.0-dev.3` (planned; not yet created)
-- Workflow: pending
+- Commit: `817b3199b1964a5cd8ba1851114b085eed8dc322`
+- Annotated tag: `v3.0.0-dev.3`
+- Tag object: `929041296aa65515f2a1ea15fb68caaa4532f8e8`
+- Workflow: [run 34932583471](https://github.com/shisyamo4131/air-guard-v2-schemas/actions/runs/34932583471)
 
-## Candidate Scope
+## Scope
 
 This compatible forward correction makes `SiteOperationSchedule.notify()` initialize `ArrangementNotification.actualIsStartNextDay` from each scheduled worker's `isStartNextDay` value. Its regression test exercises the complete notification-creation path without Firestore writes and verifies that a next-day schedule gives the created notification the same initial start occurrence as the schedule.
 
-The candidate also includes the preceding project-governance update that added user-facing release proposals, early release preflight, exact test-inventory ownership, and missing PowerShell gate-script validation. Package fields, exports, dependencies, consumer code, deployment, and production data remain unchanged.
+The release also includes the preceding project-governance update that added user-facing release proposals, early release preflight, exact test-inventory ownership, and missing PowerShell gate-script validation. Package fields, exports, dependencies, consumer code, deployment, and production data remain unchanged.
 
-## Local Candidate Validation
+## Workflow Evidence
 
-- `node --test test-arrangement-notification.js` passed 9 tests under Node 22.23.2 and Node 24.19.0, each with exit status 0.
-- The fail-closed eleven-file package suite passed under Node 22.23.2 with exit status 0.
-- The Node 24.19.0 release guard for exact tag `v3.0.0-dev.3` passed with exit status 0 and included the complete package suite and public self-import.
-- The release-guard dry run reported 83 package files, 109,234 bytes packed, 534,089 bytes unpacked, SHA-1 `cc52db3e8230760542cfe65d5a5054cea398a12e`, and integrity `sha512-WPiocq96n2F5bzdd9siQhJ7XZ/ceAZBbxnbNeRY/nmR5D/gDm/uiRo84KEGrLUleMVlTA1C+SY+BP4RTHhH4CA==`.
-- Managed governance, all 15 verification-policy negative cases, and project-document validation passed independently under Windows PowerShell 5.1.26100.9444 and PowerShell 7.6.5 with exit status 0.
-- `git diff --check` passed with exit status 0 before the release commit.
+| Job | Job ID | Conclusion |
+| --- | --- | --- |
+| Node 24 formal package tests | `104263720304` | success |
+| Node 22 formal package tests | `104263720450` | success |
+| Node 24 release guard and Trusted Publishing | `104263758942` | success |
 
-The first Node 24 release-guard attempt completed all package tests but failed with exit status 1 when Windows rejected a write to the default npm cache. The entire guard was rerun with a unique process-scoped temporary cache and then passed with exit status 0. The temporary cache was removed and its absence verified.
+The workflow used exact tag `v3.0.0-dev.3` at the recorded commit. The publish job completed `npm run check:release` before `npm publish --tag dev`. At publication, remote `main` and the annotated tag both resolved to the recorded commit. No rerun, tag move, tag deletion, force push, unpublish, or deprecation was used.
 
-## Pending Publication Evidence
+## Registry and Content Evidence
 
-- release commit, annotated tag object, and actual remote commit verification;
-- GitHub Actions Node 22, Node 24, and publish job results;
-- npm registry metadata, downloaded tarball hashes, tagged-content comparison, and peer-inclusive fresh install.
+- npm `dev` dist-tag: `3.0.0-dev.3`
+- registry `gitHead`: `817b3199b1964a5cd8ba1851114b085eed8dc322`
+- published at: `2026-09-15T05:24:34.496Z`
+- shasum: `8745cad6e486d49c42cf3261db5a450e1f3535b9`
+- integrity: `sha512-d102QT5cFwAAKJ6GKwReluVFmM67ZNbfPnDdxSTrPq0FnyZaekF6XwOk4u9q1w9c5LJGDznThlKQ9RtOBG6BsA==`
+- tarball size: 108,678 bytes
+- package files: 83
+- unpacked size: 522,105 bytes
 
-Passing results, identifiers, hashes, sizes, timestamps, and success statements will be recorded only after each result exists with a successful exit status.
+The downloaded registry tarball bytes matched the registry SHA-1 and SHA-512 metadata. All 83 extracted files matched exact tagged commit `817b3199b1964a5cd8ba1851114b085eed8dc322` after LF normalization, including `src/SiteOperationSchedule.js`.
 
-## Boundary and Recovery
+## Fresh-install Evidence
 
-This release does not authorize consumer dependency changes, deployment, production-data operations, history rewrite, tag movement or deletion, npm unpublish, or deprecation. Validation failure before tag creation stops the release without publication. A failure after publication preserves the immutable release and uses a later development version for forward correction. Existing verified consumer rollback remains exact `2.4.2-dev.167` with the previous consumer code.
+A fresh credentials-free registry install under Node 24.19.0 succeeded with `@holiday-jp/holiday_jp@2.5.1` and `@shisyamo4131/air-firebase-v2@2.3.1-dev.6`. Verification confirmed:
+
+- package version `3.0.0-dev.3`;
+- successful imports from the package root, `./constants`, `./company-configuration`, `./apis`, and `./utils`;
+- `SiteOperationSchedule.notify()` creates one notification with `actualIsStartNextDay=true` for a next-day worker; and
+- the created notification's `actualStartAt` equals its scheduled `startAt` occurrence.
+
+The first verification invocation had a PowerShell here-string syntax error and exited before installation began. The corrected complete install and behavior command passed with exit status 0. Temporary tarball, extraction, npm cache, and fresh-install roots were removed and their absence was checked.
+
+## Local and Governance Validation
+
+- The targeted nine-case `test-arrangement-notification.js` suite passed under local Node 22.23.2 and Node 24.19.0.
+- The fail-closed eleven-file package suite passed under local Node 22.23.2.
+- The Node 24.19.0 release guard passed with exact `RELEASE_TAG=v3.0.0-dev.3`; it included the full package suite, public self-import, package inventory, and version/tag alignment.
+- Managed governance, all 15 verification-policy negative cases, and project-document validation each passed independently under Windows PowerShell 5.1.26100.9444 and PowerShell 7.6.5.
+- `git diff --check` passed before the release commit.
+
+Windows PowerShell's effective persistent execution policy remained `Restricted`. Direct post-publication invocations of the three validators were rejected before their script bodies started and each exited 1. The validators were then run with the previously user-approved process-scoped `-ExecutionPolicy Bypass`; all three passed with exit status 0. No persistent execution policy was changed.
+
+The first Node 24 release-guard attempt completed all package tests but failed with exit status 1 when Windows rejected a write to the default npm cache. The complete guard was rerun with a unique process-scoped temporary cache and passed with exit status 0. That cache was removed and its absence verified.
+
+## Boundary
+
+Publication does not authorize or imply AirGuardV2 dependency or code changes, Firebase or Stripe operations, deployment, data creation or migration, unpublish, deprecation, tag mutation, force push, or history rewrite. Corrected-version adoption remains a separate consumer-owned checkpoint. AirGuardV2 root and Functions must adopt one exact verified version and content together, and exact 2.4.2-dev.167 plus the previous consumer code remains their rollback baseline.
