@@ -6,6 +6,7 @@ import path from "node:path";
 export const EXPECTED_TEST_FILES = Object.freeze([
   "test-class-imports.js",
   "test-company-configuration.js",
+  "test-arrangement-notification.js",
   "test-employee-insurance.js",
   "test-error-definitions.js",
   "test-field-definitions.js",

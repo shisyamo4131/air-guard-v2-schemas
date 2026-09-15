@@ -22,13 +22,12 @@
  * @property {string} actualStartTime - Actual start time (HH:MM format)
  * @property {Date} actualStartAt - Actual start date and time (Date object) (read-only)
  * - Returns a Date object with `actualStartTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
+ * - If `actualIsStartNextDay` is true, add 1 day.
  * @property {boolean} actualIsStartNextDay - Actual next day start flag
  * @property {string} actualEndTime - Actual end time (HH:MM format)
  * @property {Date} actualEndAt - Actual end date and time (Date object) (read-only)
- * - Returns a Date object with `actualEndTime` set based on `dateAt`.
- * - If `isStartNextDay` is true, add 1 day.
- * - If `isSpansNextDay` is true, add 1 day.
+ * - Returns the first occurrence of `actualEndTime` after `actualStartAt`.
+ * - If `actualEndTime` is at or before `actualStartAt`, add 1 day.
  * @property {number} actualBreakMinutes - Actual break time (minutes)
  * @property {boolean} shouldNotify - push 通知を送るべきかどうかのフラグ（デフォルト: true, hidden: true）
  * @property {string} status - Arrangement notification status
@@ -193,30 +192,40 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       /**
        * 実際の開始日時（Date オブジェクト）
        * - `dateAt` を基に、`actualStartTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
+       * - `actualIsStartNextDay` が true の場合は1日加算。
        */
       actualStartAt: {
         configurable: true,
         enumerable: true,
         get: () => {
-          const dateOffset = this.isStartNextDay ? 1 : 0;
+          if (!this.actualStartTime) return null;
+          const dateOffset = this.actualIsStartNextDay ? 1 : 0;
           return getDateAt(this.dateAt, this.actualStartTime, dateOffset);
         },
         set: (v) => {},
       },
       /**
        * 実際の終了日時（Date オブジェクト）
-       * - `dateAt` を基に、`actualEndTime` を設定した Date オブジェクトを返す。
-       * - `isStartNextDay` が true の場合は1日加算。
-       * - `isSpansNextDay` が true の場合は1日加算。
+       * - `actualStartAt` を起点に、最初に現れる `actualEndTime` の Date オブジェクトを返す。
+       * - `actualEndTime` が `actualStartAt` 以前の場合は1日加算。
        */
       actualEndAt: {
         configurable: true,
         enumerable: true,
         get: () => {
-          const dateOffset =
-            (this.isSpansNextDay ? 1 : 0) + (this.isStartNextDay ? 1 : 0);
-          return getDateAt(this.dateAt, this.actualEndTime, dateOffset);
+          if (!this.actualStartAt || !this.actualEndTime) return null;
+
+          const actualEndAt = getDateAt(
+            this.actualStartAt,
+            this.actualEndTime,
+            0,
+          );
+
+          if (actualEndAt.getTime() <= this.actualStartAt.getTime()) {
+            return getDateAt(this.actualStartAt, this.actualEndTime, 1);
+          }
+
+          return actualEndAt;
         },
         set: (v) => {},
       },
@@ -392,7 +401,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       this.actualEndTime = this.endTime;
       this.actualBreakMinutes = 60;
       this.actualIsStartNextDay = this.isStartNextDay;
-      this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
+      this.confirmedAt = this.confirmedAt ? this.confirmedAt : new Date();
       this.arrivedAt = new Date();
       this.leavedAt = null;
       this.status = VALUES.ARRIVED.value;
@@ -417,7 +426,7 @@ export default class ArrangementNotification extends SiteOperationScheduleDetail
       state: this.toObject(),
     };
     try {
-      this.confirmedAt = this.confirmAt ? this.confirmAt : new Date();
+      this.confirmedAt = this.confirmedAt ? this.confirmedAt : new Date();
       this.arrivedAt = this.arrivedAt ? this.arrivedAt : new Date();
       this.leavedAt = new Date();
       this.status = VALUES.LEAVED.value;
