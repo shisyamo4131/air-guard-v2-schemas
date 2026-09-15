@@ -171,7 +171,7 @@ Delegated tasks edit and validate only explicitly owned files, then report exact
 
 The Schemas primary coordinator reviews accepted files, stages only those files, creates the local commit, and performs integration. Reuse a reviewed delegated commit rather than duplicating it. Never use unintegrated work as a confirmed dependency.
 
-Branch creation, stage, and local commit require the applicable approval. Tag, push, main merge, history rewrite, and publish each require a separate approval.
+Branch creation, stage, and local commit require the applicable approval. Tag, push, main merge, history rewrite, and publish must each be explicitly covered. One approved release proposal may cover several named operations as one sequence; repeat approval only when the scope, target, consequence, or rollback changes. Destructive operations remain separately identified and approved.
 
 ## Cross-project Checkpoint Loop
 
@@ -207,8 +207,8 @@ Deliver and verify the contract in this order:
 
 1. Keep the accepted contract, local implementation, targeted test, package version, and current authoritative documents aligned in one reviewed local integration.
 2. Record Node 22/24 formal-suite, targeted public-import, immutability, catalog-shape, package-file, governance, and Git evidence independently. Firebase Functions Node 22 compatibility remains consumer-owned evidence.
-3. Review and locally commit only the approved files. Produce release evidence before any remote action.
-4. Obtain separate explicit approvals for tag creation, push, and the push-triggered npm publication. A local version or tag is not publication evidence.
+3. Review and locally commit only the approved files. Prepare the release-evidence structure before remote action, but record workflow and registry success only after each result actually exists.
+4. Present tag creation, main and tag push, push-triggered npm publication, publication verification, and the final evidence push in one concrete proposal. One user approval may cover that complete named sequence. A local version or tag is not publication evidence.
 5. Confirm the published version and content before asking consumer coordinators to adopt it.
 6. Each confirmed consumer updates its dependency, code, tests, and documentation in its own repository. Combined role-preset and corrected Company/CCB adoption must use one separately approved, published, content-verified corrected version with matching resolved content and integrity in AirGuardV2 root and Functions; local catalog deletion occurs only in that consumer-owned adoption. Exact 2.4.2-dev.167 remains immutable rollback and historical evidence, not the corrected adoption target.
 
@@ -217,6 +217,28 @@ Rollback does not depend on npm unpublish, tag deletion or movement, history rew
 ## Release, Publish, Adoption, and Rollback
 
 The current workflow publishes a development package when a matching v*-dev.* tag is pushed. Merely documenting or locally preparing a version does not authorize tag creation, push, or npm publish.
+
+### User-facing Release Proposal
+
+When the user asks to release or publish without naming the mechanism, inspect the actual project state and recommend one method instead of asking the user to design the GitHub or npm procedure. During Shared-package readiness, the default recommendation is the next development prerelease through the existing GitHub Actions workflow. Recommend a stable release only after the stable-release policy and its acceptance evidence are approved.
+
+Use plain language first. A suitable proposal is: `現在は開発中なので、次の開発版として公開することを提案します。バージョンを更新してGitHubへ保存し、自動テスト後にnpmへ開発版として公開します。公開後は実際にインストールできることと修正内容まで確認します。consumer更新やdeployは含めません。この内容で進めてよいですか。`
+
+The supporting detail must identify the proposed version and explain that the approved sequence includes the release commit, annotated tag, main and tag push, workflow monitoring, npm development publication, registry digest and tagged-content comparison, peer-inclusive fresh install, durable release evidence, evidence push, and final local/remote Git report. Explain that the tag is the immutable release marker and that the later evidence commit may leave `main` one commit ahead of the release tag.
+
+The user need not name Git tag syntax, GitHub Actions, npm commands, or the npm `dev` distribution tag. Approval of this complete proposal authorizes its named operations without repeated confirmation. It does not authorize a stable release, consumer dependency changes, deployment, data operations, history rewrite, tag movement or deletion, unpublish, or other remote-service operations unless those are separately proposed and approved.
+
+The phrase `リモートに反映` alone means only the described repository update. If release intent is plausible from the surrounding request, present the release proposal and resolve the publication scope before changing the candidate version.
+
+### Development Release Sequence
+
+1. Before candidate edits, verify the primary worktree and ownership, branch and HEAD, actual remote branch and divergence, package and lock versions, candidate absence from local and remote tags and npm, workflow tag trigger, required Node runtimes, and consumer/rollback baseline.
+2. Run the Windows PowerShell 5.1 and PowerShell 7 governance entry points early. If Windows PowerShell rejects script startup, stop before candidate edits and request one process-scoped approval for the required validator commands with `-ExecutionPolicy Bypass`. Do not change the persistent execution policy. Treat any later script incompatibility as a preflight blocker, fix it in an approved owned scope, and rerun both runtimes.
+3. Update the approved implementation, tests, version metadata, changelog, and affected authorities. Run targeted checks during iteration, then the final impact-selected completion gates and release guard against the complete candidate.
+4. Create the reviewed release commit and annotated tag only after all candidate gates pass. Push `main`, then the tag that starts the workflow. Do not move or recreate a published tag.
+5. Wait for the Node 22, Node 24, and publish jobs. Record success only after each job exits successfully; on failure preserve the immutable state and correct forward with a later version.
+6. Verify the registry version, development distribution tag, `gitHead`, SHA-1, SHA-512, file count, and unpacked size. Download the published tarball, verify its bytes, compare every file with the tagged commit after LF normalization, and perform a peer-inclusive fresh install and affected-behavior check.
+7. Finalize indexed release evidence with the actual commit, tag object and peeled commit, workflow and job IDs, registry values, fresh-install result, boundaries, and cleanup. Commit and push this evidence, then report a clean local worktree, actual remote `main`, release tag target, workflow result, and npm state.
 
 Before any approved release proposal, record:
 

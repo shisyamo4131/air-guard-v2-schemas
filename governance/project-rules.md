@@ -77,11 +77,31 @@ A cross-project request is routed through current-contract inspection, duplicate
 
 ## Approval and Safety Boundaries
 
-Package-code and test writes require an explicitly approved file and behavior scope. Tag creation, push, main merge, history rewrite, npm publish, deployment, remote-service operations, and real-data operations each require separate explicit user approval.
+Package-code and test writes require an explicitly approved file and behavior scope. Tag creation, push, main merge, history rewrite, npm publish, deployment, remote-service operations, and real-data operations must each be explicitly covered by user approval. One approval may cover several named operations when the coordinator has presented them as one concrete, reviewable sequence and the user approves that complete sequence. Do not ask again for an already approved operation unless its scope, target, consequence, or rollback changes. History rewrite, tag movement or deletion, unpublish, deployment, remote-service operation, and real-data operation remain separately identified approval boundaries and are never inferred from an ordinary release approval.
 
 Network access and external writes are disabled unless separately approved. Never store secrets, credentials, session data, production records, or unredacted confidential samples in this repository.
 
 All tasks use the primary repository at C:\Users\seven\projects\AirGuard\air-guard-v2-schemas. A linked worktree, task-specific worktree, or alternate repository copy is prohibited without prior explicit user approval of its reason, path, branch, owner, integration method, lifetime, and cleanup plan. Preserve and report any unapproved worktree; do not mutate or delete it.
+
+## User-facing Release Intent and Proposal
+
+When the user says `リリース`, `公開`, `配布`, or an equivalent outcome without specifying technical mechanics, treat it as a request for a recommended release method. Do not require the user to know or choose Git tag syntax, GitHub Actions triggers, npm commands, npm distribution tags, commit order, or registry verification steps.
+
+Before changing a release candidate or performing an external action, inspect the current phase, package and lock versions, change classification, local and actual remote Git state, existing tags, registry availability when approved, workflow trigger, required runtimes, consumer state, and stable-release policy. Present one recommended method in plain language, followed by one approval question. Explain technical mechanics only as supporting details.
+
+The proposal must state:
+
+- whether a development or stable release is recommended, the proposed version, and why;
+- that the repository will be updated, automated tests will run, and the package will be published through the verified workflow;
+- the included local commit, annotated release marker, remote updates, workflow monitoring, registry and installed-package verification, durable release evidence, and final local/remote status report;
+- the consumer changes, deployment, data operations, unpublish, tag mutation, or history rewrite that are outside the proposal;
+- the forward-correction or previously verified consumer-version rollback if validation or adoption fails.
+
+During Shared-package readiness, recommend the next development prerelease through the existing tag-triggered GitHub Actions workflow unless an approved stable-release policy and stable acceptance evidence support a stable release. If more than one reasonable release type remains, recommend one and ask only for the choice that materially changes the outcome.
+
+Approval of the complete proposal authorizes only the named release sequence. It may cover version update, reviewed release commit, annotated tag creation, main and tag push, GitHub Actions monitoring, npm development publication, registry/content/fresh-install verification, release-evidence commit and push, and final status verification without repeated confirmation. A later scope change or any excluded destructive or consumer-owned action requires new approval.
+
+The phrase `リモートに反映` by itself authorizes only the explicitly described repository update and does not imply package publication. If the surrounding conversation indicates a release outcome, resolve the release method with the user-facing proposal before editing the candidate.
 
 ## Implementation and Verification
 
@@ -91,7 +111,9 @@ The coordinator reviews accepted work, stages only reviewed owned files, creates
 
 The publish workflow requires the formal package suite on Node 22 and Node 24, then uses Node 24 for the publish job after the release guard succeeds. Node 24 remains the formal validation runtime candidate; this matrix does not establish the complete supported Node range, which remains open.
 
-`npm test` runs the exact maintained ten-file root `test*.js` inventory and fails closed if a test is added, omitted, or exits nonzero. `test-error-definitions.js` uses maintained `node:test` assertions for `invalidReasons`, `isInvalid`, and `validate()`; the former obsolete diagnostic failure is resolved. Targeted tests and ad hoc diagnostics remain supporting evidence and do not replace the formal aggregate or other required completion gates.
+`npm test` runs the exact maintained root `test*.js` inventory declared by `scripts/run-package-tests.mjs` and mirrored in `docs/operations.md`; it fails closed if a test is added, omitted, or exits nonzero. Avoid embedding a second fixed test count in this rule. `test-error-definitions.js` uses maintained `node:test` assertions for `invalidReasons`, `isInvalid`, and `validate()`; the former obsolete diagnostic failure is resolved. Targeted tests and ad hoc diagnostics remain supporting evidence and do not replace the formal aggregate or other required completion gates.
+
+Run release preflight before editing a candidate version. Verify the clean or fully owned worktree, branch and actual remote divergence, package/lock alignment, candidate absence from local and remote tags and the npm registry, workflow trigger, and required local runtimes. Exercise the Windows PowerShell 5.1 and PowerShell 7 governance entry points before candidate preparation so an execution-policy or runtime-compatibility blocker is found early. If Windows PowerShell rejects script startup, stop before candidate edits and request one process-scoped approval covering only the required validators with `-ExecutionPolicy Bypass`; do not change persistent machine policy. Rerun the final impact-selected gates against the completed candidate before creating a tag.
 
 Classify affected surfaces with `governance/verification-policy.json` before implementation. Mixed changes use the union of selected stable gate IDs; unknown impact uses the comprehensive suite. Governance migration, managed sync, common-contract, permission or agent-policy, and build/release/deploy completion use the comprehensive suite. Iteration and targeted checks do not replace selected completion gates. Record every matrix-authorized omission and its reason in the task callback or completion report.
 

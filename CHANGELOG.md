@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed
+
+- Added a user-facing release-intent rule: when a user asks to release without specifying GitHub or npm mechanics, the coordinator recommends a development or stable method, proposed version, included publication and verification sequence, exclusions, and rollback in plain language before requesting one approval. A complete approved proposal may cover its named commit, tag, push, workflow, npm publication, verification, and evidence steps without repeated confirmation.
+- Moved release preflight ahead of candidate edits, including actual Git/tag/registry/workflow checks and early Windows PowerShell 5.1/PowerShell 7 validation. Replaced the stale duplicated ten-file test count with the fail-closed inventory owned by `scripts/run-package-tests.mjs` and mirrored in operations.
+- Synchronized the managed governance validator and lock to the installed common-governance 3.0.0 source, adding fail-closed checks for missing PowerShell gate scripts and the retired validator filename without changing the common contract version. Updated the project negative-test fixture to include every referenced PowerShell gate script.
+
 ## 3.0.0-dev.2 - 2026-09-15
 
 ### Added

@@ -16,7 +16,8 @@ $fixtureFiles = @(
     'AGENTS.md', 'governance\common-governance.md', 'governance\project-rules.md',
     'governance\governance.lock.toml', 'governance\verification-policy.json',
     'references\task-turnover-contract.md', 'scripts\render-governance.ps1',
-    'scripts\check-governance.ps1', 'docs\operations.md'
+    'scripts\check-governance.ps1', 'scripts\test-verification-policy.ps1',
+    'scripts\check-project-docs.ps1', 'docs\operations.md'
 )
 foreach ($relativePath in $fixtureFiles) {
     if (-not (Test-Path -LiteralPath (Join-Path $resolvedProject $relativePath) -PathType Leaf)) {
